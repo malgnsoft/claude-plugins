@@ -1,0 +1,9 @@
+{
+  "name": "claude-plugins",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check-docs": "node \"$HOME/.claude/hooks/doc-drift.mjs\""
+  }
+}

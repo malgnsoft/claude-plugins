@@ -1,0 +1,122 @@
+---
+name: shipley-proposal-methodology
+description: Shipley 6단계 BD/Capture/Proposal 라이프사이클 — Bid/No-Bid 4축 평가, Win Theme·Discriminator·Ghosting, Storyboard, 컬러팀 리뷰(Blue/Pink/Red/Gold/Green), 한국 공공·기업 적용 압축 버전. rfp-analyst/capture-strategist/writer/reviewer가 제안 방법론을 계획·검토할 때 사용한다.
+---
+
+# Shipley 제안 방법론 (Shipley Proposal Process)
+
+제안팀(rfp-analyst, capture-strategist, writer, reviewer)의 공통 방법론 기준. 미국 Shipley Associates가 체계화한 BD/Capture/Proposal 프로세스를 한국 공공·기업 제안 실무에 맞게 정리한다. 영어 용어는 실무에서 그대로 통용되므로 병기한다.
+
+## 0. 큰 그림 — 제안은 "쓰기"가 아니라 "이기는 과정"
+
+제안서 품질의 80%는 **제출 전(pre-RFP)**에 결정된다. RFP가 뜬 뒤 글만 잘 써서 이기는 경우는 거의 없다. Shipley의 핵심 통찰:
+
+- **제안은 영업 활동의 마지막 산출물**이다. 발주처를 미리 알고(capture), 우리가 이길 이유(Win Theme)를 만들어두지 않으면, RFP 공고 후 2~4주 글쓰기로는 역전이 안 된다.
+- **평가자는 우리 제안서를 "읽지" 않고 "채점"한다.** 평가표(평가항목·배점)에 답하지 않는 명문(名文)은 0점이다. → claim-proof 구조 + 평가항목별 증거 정렬(`proposal-writing-principles.md`).
+- 따라서 제안팀의 일은 두 축이다: ① **이길 포지션 만들기**(capture-strategist) ② **그 포지션을 평가표 언어로 증명하기**(rfp-analyst + writer + reviewer).
+
+## 1. Shipley 6단계 라이프사이클 (BD Lifecycle)
+
+| 단계 | 영문 | 핵심 질문 | 우리 담당 |
+|------|------|----------|----------|
+| 0. 시장 식별 | Market Segmentation | 우리가 이길 수 있는 시장은? | researcher, capture-strategist |
+| 1. 기회 평가 | Opportunity Assessment | 이 건을 추적할 가치가 있나? | capture-strategist |
+| 2. 캡처 계획 | Capture Planning | 어떻게 이길 것인가? (Win Strategy) | capture-strategist |
+| 3. 제안 계획 | Proposal Planning | 무엇을 어떻게 쓸 것인가? (Storyboard) | rfp-analyst + writer |
+| 4. 제안 개발 | Proposal Development | 실제 집필 + 컬러팀 리뷰 | writer + reviewer |
+| 5. 사후 검토 | Post-Submittal | 결과 분석, 디브리핑 | coo, trainer(lessons) |
+
+게이트(Gate Review)가 단계마다 있다. 각 게이트를 통과해야 다음 단계로 간다. 한국 실무에서도 최소 **Bid/No-Bid 게이트(1→2)**와 **Pink/Red Team 게이트(4)**는 반드시 둔다.
+
+## 2. Bid / No-Bid 결정 (기회 평가 게이트)
+
+추적할지 말지를 **감이 아니라 점수로** 결정한다. 무리한 입찰은 인건비·기회비용 낭비 + 저가 출혈을 부른다.
+
+### 평가 4축 (각 1~5점, 가중 합산)
+1. **승산 (Probability of Win, Pwin)** — 발주처와의 관계, 사전 영업 여부, 경쟁 구도, 우리 차별점이 평가표에 먹히는가.
+2. **적합성 (Fit)** — 우리 역량·레퍼런스가 과업과 맞는가. 자격요건(면허·실적·인증)을 충족하는가.
+3. **수익성 (Profitability)** — 예산 대비 원가, 마진, 후속 사업 가능성.
+4. **전략적 가치 (Strategic Value)** — 신규 시장 진입, 레퍼런스 확보, 관계 구축 등 금액 외 가치.
+
+### No-Bid를 적극 권하는 신호 (하나라도 강하면 재검토)
+- 발주처를 한 번도 안 만났고 경쟁사가 사전 영업을 끝낸 정황 (이미 "기울어진 운동장")
+- 자격요건(실적·면허·인증) 미달 → **실격**. 무리한 컨소시엄/명의 동원은 리스크.
+- 예정가/예산 대비 우리 원가가 높아 적정 마진이 안 나옴
+- 평가표가 경쟁사에 유리하게 설계됨(특정 인증·특정 방식 요구) → 우리 차별점이 점수로 안 잡힘
+
+> 산출물: `docs/proposal/bid-no-bid-[건명].md` — 4축 점수표 + 권고(Bid/No-Bid/조건부) + 근거. capture-strategist가 작성.
+
+## 3. 캡처 계획 (Capture Planning) — 이길 전략 만들기
+
+### 3.1 발주처/경쟁사/Customer Hot Button
+- **발주처 분석**: 발주 배경(왜 지금?), 진짜 통점(pain), 의사결정 구조, 과거 발주 이력, 평가위원 성향(공공은 외부위원 풀 추정).
+- **경쟁사 분석**: 예상 경쟁사, 각자의 강점/약점, 단가 전략, 발주처와의 관계.
+- **Customer Hot Button**: 발주처가 가장 두려워하는 것(리스크), 가장 원하는 것(성과). 제안 전체를 이 핫버튼에 정렬한다.
+
+### 3.2 Win Theme (윈 테마)
+제안 전체를 관통하는 **"우리를 뽑아야 하는 이유"** 메시지. 좋은 Win Theme은 3요소를 갖춘다:
+```
+[발주처 니즈/핫버튼] + [우리의 차별적 능력(Discriminator)] + [그것이 주는 증명된 이익(benefit, 수치)]
+```
+- 나쁜 예: "최고의 품질로 최선을 다하겠습니다" (어느 회사나 쓸 수 있음 = 0점짜리)
+- 좋은 예(공공): "교육 시스템 무중단 전환이 최대 리스크인 본 사업에서, 당사는 동종 5개 대학 무중단 이관 실적(다운타임 0분)으로 학사일정 차질 위험을 제거합니다."
+- 좋은 예(기업): "수기 정산에 월 40시간을 쓰는 귀사에, 자동화로 연 4,800만 원(인건비 환산)을 절감하고 9개월 내 투자비를 회수합니다."
+
+Win Theme은 보통 3~5개. 각 평가 대항목에 1개 이상 배치한다(평가표 앵커링).
+
+### 3.3 Discriminator (차별 요소)
+**경쟁사는 못 하고 우리만 할 수 있는, 발주처가 가치 있게 여기는 것.** 단순 강점(strength)과 다르다 — 경쟁사도 가진 강점은 차별 요소가 아니다.
+- 판별 질문: "경쟁사도 이 문장을 자기 제안서에 그대로 쓸 수 있나?" → 쓸 수 있으면 차별 요소가 아니다.
+- 유형: 독보적 실적/레퍼런스, 검증된 방법론·IP, 핵심 인력, 기술 특허, 발주처 도메인 경험, 무위험 전환 보장 등.
+
+### 3.4 Ghosting (고스팅)
+경쟁사를 직접 비방하지 않으면서, **경쟁사의 약점을 평가 기준으로 부각**시켜 발주처가 스스로 경쟁사를 배제하게 만드는 기법.
+- 방법: "본 사업은 [X 역량]이 없으면 [구체적 리스크]가 발생합니다. 당사는 [X 실적]으로 이를 보장합니다." — X가 경쟁사의 약점일 때, 발주처는 평가 시 X를 따지게 된다.
+- 예: 경쟁사가 신생/실적 부족이면 → "장기 운영 안정성이 중요한 본 사업"을 강조하고 우리의 10년 운영 실적을 증거로. (경쟁사 이름은 절대 거론 안 함)
+- 윤리·법적 경계: 허위·비방은 금지. 사실에 근거한 평가 기준 환기까지만.
+
+> 산출물: `docs/proposal/capture-plan-[건명].md` — 발주처/경쟁사/핫버튼 분석 + Win Theme 표 + Discriminator 목록 + Ghosting 포인트. capture-strategist가 작성.
+
+## 4. 제안 계획 — Storyboard (스토리보드)
+
+집필 전, 각 섹션을 **한 장짜리 설계도**로 먼저 짠다. 백지에서 바로 쓰지 않는다. 글의 품질은 스토리보드에서 결정된다.
+
+### 섹션별 스토리보드 1장 구성
+- **대응 요구사항**: 이 섹션이 답하는 RFP 요구사항 ID / 평가항목·배점
+- **Win Theme**: 이 섹션에서 밀 윈 테마
+- **핵심 메시지 (Key Message / Action Caption)**: 평가자가 이 섹션에서 가져갈 단 하나의 결론 (보통 섹션 제목/소제목에 박는다)
+- **Proof (증거)**: 실적, 수치, 다이어그램, 사례 — claim을 뒷받침할 것 목록
+- **그래픽 컨셉**: 어떤 표/그림으로 보여줄지 스케치 (제안서는 "보여주기"가 "말하기"보다 강함)
+- **분량/배치**: 페이지 수, 위치
+
+> Mock-up / Storyboard 리뷰를 거쳐야 본 집필에 들어간다. 산출물: `docs/proposal/storyboard-[건명].md`.
+
+## 5. 컬러팀 리뷰 (Color Team Reviews) ★ reviewer 협업의 핵심
+
+제안서를 **단계별로 다른 색의 팀이 다른 관점에서** 검토한다. 자기가 쓴 글은 객관적으로 못 본다는 전제. reviewer 에이전트가 평가위원 페르소나 패널로 이를 수행한다(`reviewer.md` "제안서 컬러팀 리뷰").
+
+| 컬러팀 | 시점 | 무엇을 보는가 | reviewer 페르소나 구성 |
+|--------|------|-------------|----------------------|
+| **Blue Team** | 캡처 후/계획 시 | Win Strategy·Win Theme이 타당한가, 접근 방향이 옳은가 | 전략 검토자 (발산형 포함) |
+| **Pink Team** | 초안(60~70%) | 스토리보드대로 갔는가, 핵심 메시지·구조·증거 골격이 평가표에 정렬됐는가 | 평가위원 페르소나 + 구조 검토자 |
+| **Red Team** | 최종 직전(90%+) | **평가위원 입장에서 채점하면 몇 점인가.** 실격요인·누락·약한 증거 적출 | 공공 정량/정성 평가위원, 기업 의사결정자 — **평가표 기반 점수 예측** |
+| **Gold Team** | 제출 직전 | 경영진 최종 승인, 가격·리스크·서명 | coo + finance |
+| **Green Team** | (가격) | 가격 전략·원가·마진 검토 (공공은 입찰가/적정성) | finance |
+
+- **Pink과 Red가 가장 중요**하다. Pink는 "구조가 맞나", Red는 "이대로 내면 떨어지나"를 본다.
+- Red Team은 반드시 **평가표로 모의 채점**한다. "이 섹션 평가항목 10점 중 6점 — 증거가 정성적이라 정량 실적 추가 필요" 식.
+- 컬러팀 지적은 심각도(🔴실격위험/🟠감점/🟡개선/🔵재구성)로 분류하고 재작업 우선순위를 매긴다.
+
+## 6. 한국 공공·기업 적용 시 압축 버전
+
+소규모 제안에서 6단계 풀세트는 과하다. 최소 골격:
+1. **Bid/No-Bid** (반드시) — 30분 회의라도 점수표로.
+2. **Win Theme 3개 + Discriminator** (반드시) — 이게 없으면 평범한 제안.
+3. **Storyboard** (권장) — 평가표 매핑 + 핵심 메시지만이라도.
+4. **Pink + Red Team** (반드시) — Red는 평가표 모의 채점.
+5. **제출 전 실격방지 체크** (반드시) — `korea-public-procurement.md` / Skill `compliance-matrix-template`.
+
+## 출처 및 참고
+- Shipley Associates, *Proposal Guide* / *Capture Guide* (BD-Lifecycle, Color Team, Win Theme/Discriminator/Ghosting 표준 용어)
+- APMP (Association of Proposal Management Professionals) Body of Knowledge — 컬러팀 리뷰 정의
+- 한국 적용·압축은 나라장터 협상에 의한 계약 실무 기준으로 재구성 (`korea-public-procurement.md` 참조)
