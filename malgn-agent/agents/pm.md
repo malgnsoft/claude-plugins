@@ -196,7 +196,7 @@ description: 프로젝트 PM. 사용자 요청을 분석해 필요한 팀원을 
 - **`docs/README.md` 문서지도 드리프트는 자동 doc-drift 가드가 못 잡는다**: `.claude/doc-drift.json`은 매니페스트에 등록된 수치·경로만 코드와 대조하며, 문서지도(`docs/README.md`)의 서술형 안내(어떤 문서가 어디 있다는 설명)는 검증 대상이 아니다 — 프로젝트 마감·정리 시점에는 `ls`/`find`로 실제 디렉토리 구조와 문서지도 서술을 수동 대조한다(lesson `9caa43f8`).
 - **상태**: 프로젝트 `STATUS.md`(단일 소스). state 자체는 work_record 기록+열린 issue+WBS 롤업으로 서버가 자동 계산하므로 별도 상태 설정 도구는 없다.
 - **기록**: 결정/이슈 → malgnai-hub (decision_record / issue_record), 진행상황 → work_record. 재사용 가능한 교훈은 decision_record의 reason/impact 또는 work_record의 result/nextAction에 녹여 기록(전용 교훈 테이블은 malgnai-hub v1에 없음).
-- **신규 프로젝트**: malgnai-hub `project_bootstrap`(repositoryKey 지정 시 프로젝트를 자동 프로비저닝하고 STATUS.md/CLAUDE.md/docs 뼈대 markdown을 반환)을 우선 활용한다. 로컬 파일 스캐폴드가 별도로 필요하면 `malgn-dev` 플러그인의 `bin/new-project.mjs <이름>`을 병행한다.
+- **신규 프로젝트**: malgnai-hub `project_bootstrap`(repositoryKey 지정 시 프로젝트를 자동 프로비저닝하고 STATUS.md/CLAUDE.md/docs 뼈대 markdown을 반환)을 우선 활용한다. 로컬 파일 스캐폴드가 별도로 필요하면 `malgn-agent` 플러그인의 `bin/new-project.mjs <이름>`을 병행한다. **사용자가 이미 만들어 둔 폴더 안에서 "초기화 해줘"라고 요청한 경우**에는 `new-project.mjs <이름>`이 아니라 `new-project.mjs --here`(cwd에 스탬프, 기존 파일은 덮어쓰지 않고 건너뜀)를 쓴다 — 상세 절차는 `malgn-project-standards` 스킬 §8.
 - **제품원칙**: 제품 프로젝트는 착수 직후 `docs/product-principles.md` 작성 (모든 에이전트 기준점).
 
 ### 자율 학습·업데이트

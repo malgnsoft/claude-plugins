@@ -13,10 +13,7 @@
 //   - Read/Grep 등 조회성 도구만 썼거나 아무 도구도 안 썼다 → 트리비얼로 간주(스킵)
 // 파싱 실패/불확실하면 항상 안전한 쪽(리마인더 표시)으로 폴백한다 — 기록 누락 방지가
 // 노이즈 감소보다 우선.
-//
-// 참고: 이 파일은 원래 malgnai-mcp(로컬 MCP) 대상이었고 §9 원격 승인(command_add) 리마인더도
-// 겸했으나, malgnai-hub(회사 공용 원격 MCP) v1에는 command_add/웹 승인 재개 기능이 없어
-// 그 기능은 제거했다. 이 hook은 이제 기록(record) 리마인더만 담당한다.
+
 const fs = require("fs");
 
 const WRITE_TOOL_RE = /^(Edit|Write|NotebookEdit|Bash|Agent|Workflow)$/;

@@ -21,7 +21,7 @@
  *   file+regex— 파일 내 정규식 전역 매치 수
  *   측정 불가(경로 없음/다른 호스트) → 해당 check skip(드리프트 아님).
  *
- * 사용: node <malgn-dev 플러그인 경로>/hooks/doc-drift.mjs [projectDir]   (기본 cwd)
+ * 사용: node <malgn-agent 플러그인 경로>/hooks/doc-drift.mjs [projectDir]   (기본 cwd)
  * 재사용: import { computeDrift } from '.../doc-drift.mjs'
  */
 import { readFileSync, readdirSync } from 'node:fs'
