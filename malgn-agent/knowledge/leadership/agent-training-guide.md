@@ -4,7 +4,7 @@
 **작성일**: 2026-07-09  
 **기밀등급**: 내부용  
 **대상 독자**: PM, trainer 에이전트  
-**관련 파일**: `agent-md-format-standard.md` · `agent-skill-definitions.md` · `agent-skill-status-2026.md`
+**관련 파일**: `docs/methodology/agent-development-methodology.md` §3.1 (MD 골격 정본; `agent-md-format-standard.md`는 2026-08-07 폐기된 구버전 archive)
 
 ---
 
@@ -83,7 +83,7 @@
 | 스킬 정의 | 스킬 테이블 (배점 합산 100점) | 배점은 핵심 가치 비례로 차등 부여 |
 | 경험 이력 | 프로젝트 경험 + 소소한 학습 이력 | 기여와 성과는 측정 가능하게 |
 | 지식 참조 | knowledge 파일 경로 목록 | 파일 없으면 경로 추가 전 파일 먼저 생성 |
-| 금지/승인 | 금지·승인 필요 목록 | skill-definitions.js EMPLOYEE_CARDS와 동기화 |
+| 금지/승인 | 금지·승인 필요 목록 | skill-definitions.js EMPLOYEE_CARDS와 동기화(미번들 — 없으면 각 에이전트 MD를 직접 대조) |
 | 토큰 효율 | 자기중단·압축반환·(리더형) 서브감독 | 리더형은 서브 감독 항목 반드시 포함 |
 
 ## 2.3 샘플 에이전트 포맷 예시 — architect
@@ -164,11 +164,11 @@
 
 ## 2.4 기존 MD 마이그레이션 절차
 
-1. 백업 실행: `cp -r ~/.claude/agents ~/.claude/agents_backup_$(date +%Y%m%d)` (에이전트 MD를 전역 `~/.claude/agents`에서 운용하는 경우. 이 플러그인 번들 agents/를 직접 갱신한다면 해당 디렉터리를 백업 대상으로 한다)
+1. 백업 실행 — 절차는 §7.1 참조(이 플러그인 번들 `agents/`를 직접 갱신하면 git 커밋 단위 백업, 전역 `~/.claude/agents`에서 개별 운용하는 경우에만 cp 백업)
 2. 기존 MD에서 교훈 목록 추출 (손실 없이)
 3. 7섹션 새 포맷으로 재작성
 4. 교훈 목록 대조 — 누락 0 확인
-5. `skill-definitions.js` EMPLOYEE_CARDS에서 금지/승인 동기화
+5. `skill-definitions.js` EMPLOYEE_CARDS에서 금지/승인 동기화(미번들 — 없으면 각 에이전트 MD를 직접 대조)
 6. 경험 이력 섹션 초기화 (기존 프로젝트 경험 이행)
 
 **에이전트당 소요 시간**: 15~30분
@@ -181,7 +181,7 @@
 
 ## 3.1 스킬 점수 계산
 
-**자동 측정 명령**: `node bin/sync-agents.js`
+**자동 측정 명령**: `node bin/sync-agents.js`(이 스크립트는 이 플러그인에 번들되지 않음 — 운영 프로젝트에 구축되어 있다면 그 경로를 사용, 없으면 수동 산정)
 
 MD 키워드를 스캔해 스킬별 level(1~5)을 자동 계산한다.
 
@@ -324,7 +324,7 @@ knowledge/  (이 플러그인 기준 상대 경로)
 ### 모드 1: 개별 에이전트 학습
 
 1. 해당 에이전트 MD 읽기
-2. 스킬 점수 확인 (`node bin/sync-agents.js`)
+2. 스킬 점수 확인 (`node bin/sync-agents.js`, 미번들 — §3.1 참조)
 3. 관련 knowledge 파일 읽기
 4. 취약 스킬 분석 + 산출물 진단 병행
 5. WebSearch로 최신 자료 수집
@@ -447,21 +447,22 @@ malgnai-mcp 기록: 완료 / 미완료
 
 **모든 MD 갱신 전 필수 선행 단계:**
 
-```bash
-cp -r ~/.claude/agents ~/.claude/agents_backup_$(date +%Y%m%d)
-```
-
-백업 경로: `~/.claude/agents_backup_YYYYMMDD/`
-백업 확인: `ls ~/.claude/ | grep agents_backup`
+- **이 플러그인 번들(`agents/`)을 직접 갱신하는 경우(기본 케이스)**: git으로 버전 관리되므로 별도 cp 백업이 필요 없다. 갱신 전 `git status`/`git diff`로 현재 상태를 확인하고, 필요하면 `git stash` 또는 별도 브랜치로 분리한다. 되돌릴 커밋 해시를 기록해 둔다.
+- **에이전트 MD를 전역 `~/.claude/agents`에서 개별 운용하는 경우(이 플러그인과 별개의 로컬 구성일 때만)**:
+  ```bash
+  cp -r ~/.claude/agents ~/.claude/agents_backup_$(date +%Y%m%d)
+  ```
+  백업 경로: `~/.claude/agents_backup_YYYYMMDD/`
+  백업 확인: `ls ~/.claude/ | grep agents_backup`
 
 ## 7.2 새 포맷 마이그레이션 체크리스트
 
 ```
 [ ] 1. 백업 완료 확인
 [ ] 2. 기존 MD 읽기 → 교훈 목록 추출 (Before 목록 작성)
-[ ] 3. agent-md-format-standard.md 참조해 7섹션 재작성
+[ ] 3. `docs/methodology/agent-development-methodology.md` §3.1 골격(frontmatter→핵심원칙→역할경계→스킬상세→전제조건→자기검증→산출물→학습자료→토큰효율) 참조해 재작성 (agent-md-format-standard.md의 구 7섹션 포맷은 폐기됨, 참조 금지)
 [ ] 4. 교훈 목록 대조 — Before 개수 = After 개수 확인
-[ ] 5. skill-definitions.js EMPLOYEE_CARDS에서 금지/승인 동기화
+[ ] 5. skill-definitions.js EMPLOYEE_CARDS에서 금지/승인 동기화(미번들 — 없으면 각 에이전트 MD를 직접 대조)
 [ ] 6. 경험 이력 섹션에 기존 프로젝트 경험 이행
 [ ] 7. 토큰 효율 섹션 — 리더형은 서브 감독 포함 여부 확인
 [ ] 8. last_trained 날짜 갱신
@@ -488,8 +489,8 @@ After:  [교훈A, 교훈B, 교훈C, ...]  ← 동일 개수, 동일 핵심 내�
 
 # 8장. 현재 에이전트별 스킬 현황 (2026-07-09 기준)
 
-측정 방법: `node bin/sync-agents.js` (키워드 매칭 Lv1~5)
-상세 분석: `knowledge/leadership/agent-skill-status-2026.md` (이 플러그인 번들)
+측정 방법: `node bin/sync-agents.js` (키워드 매칭 Lv1~5, 이 스크립트는 이 플러그인에 번들되지 않음 — 운영 프로젝트에 구축되어 있다면 그 경로를 사용, 없으면 수동 산정)
+상세 분석: 구 `knowledge/leadership/agent-skill-status-2026.md`(2026-08-07 감사 §2.1 retire — 19명 기준 스냅샷이 실제 21명과 불일치해 폐기, 아래 표는 참고용으로만 유지)
 
 ## 8.1 전체 19명 점수 요약표
 
@@ -562,9 +563,8 @@ After:  [교훈A, 교훈B, 교훈C, ...]  ← 동일 개수, 동일 핵심 내�
 
 | 파일 | 용도 |
 |------|------|
-| `knowledge/leadership/agent-md-format-standard.md` (이 플러그인 번들) | MD 표준 포맷 (7섹션 구조 정본) |
-| `knowledge/leadership/agent-skill-definitions.md` (이 플러그인 번들) | 에이전트별 스킬 정의 및 배점 |
-| `knowledge/leadership/agent-skill-status-2026.md` (이 플러그인 번들) | 2026-07 스킬 현황 상세 분석 |
+| `docs/methodology/agent-development-methodology.md` §3.1 | MD 골격 정본(frontmatter→핵심원칙→역할경계→스킬상세→전제조건→자기검증→산출물→학습자료→토큰효율) |
+| `knowledge/leadership/agent-md-format-standard.md` (이 플러그인 번들) | [폐기된 구버전 archive] 구 7섹션 포맷 — 참조 금지, 연혁 추적용으로만 보존 |
 | `knowledge/common/beyond-mediocre-output.md` (이 플러그인 번들) | 산출물 진단 5가지 냄새 기준 |
 | `knowledge/common/token-efficient-collaboration.md` (이 플러그인 번들) | 토큰 효율 원칙 |
 | 스킬 정의/자동계산 스크립트 (예: `bin/skill-definitions.js`, `bin/sync-agents.js`) | 이 플러그인에는 미포함 — 운영 프로젝트에 구축되어 있다면 그 경로를 사용, 없으면 수동 산정 |

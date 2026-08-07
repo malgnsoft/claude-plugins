@@ -2,6 +2,8 @@
 
 vue-zero는 단일 `.vue` SFC(Single File Component) 기반의 간결한 아키텍처를 따릅니다. 아래 세 가지 핵심 규칙을 반드시 준수해야 합니다.
 
+**역할 분담(정본)**: 이 문서가 vue-zero의 **규칙 정본**이다 — "무엇을 해야/하면 안 되는가"(Composables 금지 여부, 파일 구성, 공유 로직 위치)는 이 문서를 유일한 기준으로 삼는다. `knowledge/frontend/vue-zero-patterns.md`는 이 규칙을 실제 코드로 구현하는 **패턴 상세**(컴포넌트 예시·API 연동·Bootstrap 5·모달·접근성·실전 프로젝트 사례)만 다루며, 두 문서의 서술이 다르면 **이 문서가 항상 우선**한다.
+
 ## 핵심 규칙 3가지
 
 ### 1. Composables 절대 금지
@@ -253,5 +255,5 @@ vue-zero 프로젝트 착수 전:
 
 ## 관련 참고 자료
 
-- 이 플러그인에 함께 번들된 `knowledge/frontend/vue-zero-patterns.md` — 범용 UX 교훈, 실전 패턴 (API 연동, 폼, 레이아웃)
+- 이 플러그인에 함께 번들된 `knowledge/frontend/vue-zero-patterns.md` — **패턴 상세**(위 "역할 분담" 참조): 범용 UX 교훈, 실전 패턴 (API 연동, 폼, 레이아웃). 이 문서의 규칙과 모순되면 이 문서가 우선한다.
 - 프로젝트 `CLAUDE.md` — 규칙 5 "Blob URL 패턴" (왜 import가 작동 안 하는지)

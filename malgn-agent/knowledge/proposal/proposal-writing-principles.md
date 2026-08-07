@@ -73,7 +73,7 @@ capture-strategist가 정한 Ghosting 포인트를 본문에 자연스럽게 심
 5. **솔직한 경계**(기업 제안): 한계·전제를 숨기지 않고 대응책과 함께 — 신뢰를 만든다.
 
 ## 9. 협업 흐름
-rfp-analyst(Compliance Matrix + 배점) → capture-strategist(Win Theme·Discriminator·Ghosting·Storyboard) → **writer(claim-proof로 평가표 정렬 집필)** → reviewer(Pink: 구조/정렬, Red: 평가표 모의채점) → writer 보강 → rfp-analyst(실격방지 게이트) → presenter(PT 슬라이드) → coo/finance(Gold/Green).
+rfp-analyst(Compliance Matrix + 배점) → capture-strategist(Win Theme·Discriminator·Ghosting·Storyboard) → **writer(claim-proof로 평가표 정렬 집필)** → reviewer(Pink: 구조/정렬, Red: 평가표 모의채점) → writer 보강 → rfp-analyst(실격방지 게이트) → presenter(PT 슬라이드) → pm/finance(Gold/Green).
 
 ## 출처 및 참고
 - Shipley *Proposal Guide* — Claim-Proof-Benefit, Action Caption, Theme Statement

@@ -19,7 +19,7 @@
 | 2. 캡처 계획 | Capture Planning | 어떻게 이길 것인가? (Win Strategy) | capture-strategist |
 | 3. 제안 계획 | Proposal Planning | 무엇을 어떻게 쓸 것인가? (Storyboard) | rfp-analyst + writer |
 | 4. 제안 개발 | Proposal Development | 실제 집필 + 컬러팀 리뷰 | writer + reviewer |
-| 5. 사후 검토 | Post-Submittal | 결과 분석, 디브리핑 | coo, trainer(lessons) |
+| 5. 사후 검토 | Post-Submittal | 결과 분석, 디브리핑 | pm, trainer(lessons) |
 
 게이트(Gate Review)가 단계마다 있다. 각 게이트를 통과해야 다음 단계로 간다. 한국 실무에서도 최소 **Bid/No-Bid 게이트(1→2)**와 **Pink/Red Team 게이트(4)**는 반드시 둔다.
 
@@ -95,7 +95,7 @@ Win Theme은 보통 3~5개. 각 평가 대항목에 1개 이상 배치한다(평
 | **Blue Team** | 캡처 후/계획 시 | Win Strategy·Win Theme이 타당한가, 접근 방향이 옳은가 | 전략 검토자 (발산형 포함) |
 | **Pink Team** | 초안(60~70%) | 스토리보드대로 갔는가, 핵심 메시지·구조·증거 골격이 평가표에 정렬됐는가 | 평가위원 페르소나 + 구조 검토자 |
 | **Red Team** | 최종 직전(90%+) | **평가위원 입장에서 채점하면 몇 점인가.** 실격요인·누락·약한 증거 적출 | 공공 정량/정성 평가위원, 기업 의사결정자 — **평가표 기반 점수 예측** |
-| **Gold Team** | 제출 직전 | 경영진 최종 승인, 가격·리스크·서명 | coo + finance |
+| **Gold Team** | 제출 직전 | 경영진 최종 승인, 가격·리스크·서명 | pm + finance |
 | **Green Team** | (가격) | 가격 전략·원가·마진 검토 (공공은 입찰가/적정성) | finance |
 
 - **Pink과 Red가 가장 중요**하다. Pink는 "구조가 맞나", Red는 "이대로 내면 떨어지나"를 본다.

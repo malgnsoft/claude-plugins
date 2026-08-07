@@ -1,67 +1,6 @@
-# Vue-Zero 프론트엔드 패턴
+# Vue-Zero 프론트엔드 구현 패턴
 
-## vue-zero 핵심 규칙
-
-1. **Options API만 사용** (setup/Composition API 금지)
-2. **`<style scoped>` 금지** — 전역 CSS 사용
-3. **script 블록에서 import 금지** (★ 규칙 5) — vue-zero는 script을 Blob URL로 변환하므로 상대경로 import 불가
-4. **composables는 window.* 경유로만 사용** — script에서 직접 import 금지, composables/index.js에서 미리 window에 등록해 호출
-5. 파일 추가/삭제 시 `pnpm run scan` 필요
-
-### 규칙 5 상세: Blob URL 패턴 (★ 필수)
-
-**문제**: vue-zero는 `.vue`의 `<script>` 블록을 **Blob URL**로 변환 후 `import()`로 실행합니다. Blob URL에는 기본 경로가 없어서 **상대 경로 `import`가 작동하지 않습니다.**
-
-**❌ 절대 금지:**
-```js
-// script에서 import → "useAuth is not defined" 런타임 에러
-import { useAuth } from '../composables/useAuth.js'
-import { MOCK_DEALS } from '../../composables/mockData.js'
-
-export default {
-  created() {
-    const { login } = useAuth()  // 에러 발생
-  }
-}
-```
-
-**✅ 올바른 방법:**
-1. `composables/mockData.js`에서 export:
-   ```js
-   export const MOCK_DEALS = [...]
-   export const MOCK_COMPANIES = [...]
-   ```
-
-2. `composables/index.js`에서 import 후 window 등록:
-   ```js
-   import { useAuth } from './useAuth.js'
-   import { useCompanies } from './useCompanies.js'
-   import { MOCK_DEALS } from './mockData.js'
-   
-   window.useAuth = useAuth
-   window.useCompanies = useCompanies
-   window.MOCK_DEALS = MOCK_DEALS
-   ```
-
-3. `.vue` 파일의 script에서 window.* 사용:
-   ```js
-   export default {
-     data() {
-       return {
-         companies: [],
-         deals: window.MOCK_DEALS,  // import 없이 사용
-       }
-     },
-     methods: {
-       async loadCompanies() {
-         const { search } = window.useCompanies()  // window.* 경유
-         this.companies = await search()
-       }
-     }
-   }
-   ```
-
-**생성 템플릿 규칙**: .vue 파일 생성 시 script 블록에 절대 `import` 문을 넣으면 안 됩니다. 모든 함수/데이터는 `window.*` 형태로 호출합니다.
+**역할 분담(패턴 상세)**: 이 문서는 vue-zero의 **구현 패턴 상세**(컴포넌트 예시·API 연동·Bootstrap 5·모달·접근성·실전 프로젝트 사례)만 다룬다. **규칙 정본은 `knowledge/architecture/vue-zero-architecture.md`**다 — Composables 절대 금지, 페이지별 단일 `.vue` 파일 구성, Blob URL 때문에 import가 작동하지 않는 이유, 공유 로직을 `utils.js`에 모아 `window.*`로 등록하는 절차 등 "무엇을 해야/하면 안 되는가"는 그 문서를 따른다. 이 문서와 그 문서가 다르게 말하면 **architecture.md가 우선**한다(2026-08-07 이전 판에는 "composables는 window.* 경유로만 사용"이라는 서술이 있었으나, architecture.md의 "Composables 절대 금지" 규칙 및 이 문서 자신의 "vue-zero 실전 패턴"·"vue-zero 규칙 재확인" 절과 정면 모순되는 구식 서술이라 제거했다).
 
 ## Options API 컴포넌트 패턴
 

@@ -1,6 +1,6 @@
 ---
 name: domain-backend-api-security
-description: 백엔드 API 보안 체크리스트 — 인증/인가, 입력검증, 레이트 제한, SQL주입, 크로스테넌시 방지. API 보안 검토·입력검증·인가 검사·레이트 제한 작업 시 사용.
+description: 백엔드 API 보안 체크리스트 — 인증/인가, 입력검증, 레이트 제한, SQL주입, 크로스테넌시 방지. API 보안 검토·입력검증·인가 검사·레이트 제한 작업 시 사용. malgnai 스택(Hono·site_id·error.name) 구현 특화 패턴은 domain-backend-security-audit을 별도 참조 — 이 스킬은 스택 비특정 원론만 다루며 그와 중복되지 않는다.
 ---
 
 # Backend API Security Checklist
@@ -35,6 +35,48 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 app.get('/admin/users', requireAdmin, handler);
+```
+
+**IDOR (Insecure Direct Object Reference) — OWASP A01 병합**:
+- [ ] 리소스 조회/수정 API가 URL의 ID값만으로 접근을 허용하지 않고, 요청자가 그 리소스의 소유자/권한자인지 확인하는가? (다른 사용자의 리소스에 ID 값만 바꿔 접근 가능하면 IDOR 취약점)
+
+```javascript
+// ❌ 위험: 소유권 확인 없이 ID로 바로 조회 (IDOR)
+app.get('/api/items/:id', async (c) => {
+  const item = await getItem(id)
+  return c.json(item) // 다른 사용자의 item도 그대로 반환됨
+})
+
+// ✅ 권장: 소유권 확인 후 반환
+app.get('/api/items/:id', async (c) => {
+  const item = await getItem(id)
+  if (item.userId !== c.get('jwtPayload').sub) {
+    return c.json({ error: 'Forbidden' }, 403)
+  }
+  return c.json(item)
+})
+```
+(§5 크로스테넌시 격리와 역할 분담: §5는 테넌트 경계, 이 항목은 동일 테넌트 내 리소스 소유권 경계를 다룹니다.)
+
+**CORS 설정 — OWASP A01 병합 (신규: 기존 체크리스트에 없던 항목)**
+
+원칙: CORS는 기본적으로 닫혀 있어야 하며, 허용 오리진은 화이트리스트로 명시합니다.
+
+- [ ] `Access-Control-Allow-Origin`이 `*`(전체 허용)로 설정되어 있지 않은가?
+- [ ] 인증정보(쿠키/Authorization 헤더)를 포함하는 요청에서 `Access-Control-Allow-Credentials: true`와 와일드카드 오리진을 동시에 쓰지 않는가?
+- [ ] 허용 오리진이 환경변수/화이트리스트 배열로 명시 관리되는가?
+- [ ] preflight(OPTIONS) 응답이 허용 메서드/헤더를 필요한 범위로만 제한하는가?
+
+```javascript
+// ❌ 위험: 모든 오리진 허용 + 자격증명 동시 허용
+app.use('*', cors({ origin: '*', credentials: true }))
+
+// ✅ 권장: 화이트리스트 오리진만 허용
+const ALLOWED_ORIGINS = ['https://app.example.com']
+app.use('*', cors({
+  origin: (origin) => ALLOWED_ORIGINS.includes(origin) ? origin : null,
+  credentials: true
+}))
 ```
 
 ---
@@ -109,6 +151,18 @@ const user = await User.findOne(`SELECT * FROM users WHERE id = '${id}'`);
 const user = await User.findOne('SELECT * FROM users WHERE id = ?', [id]);
 ```
 
+**명령어 실행 인젝션 — OWASP A03 병합**:
+- [ ] 셸 명령어 실행에 사용자 입력이 그대로 포함되지 않는가? (OS Command Injection)
+- [ ] 외부 프로세스 호출이 필요하면 인자를 배열로 전달(셸 해석 우회)하고, 셸 문자열 조합을 쓰지 않는가?
+
+```javascript
+// ❌ 위험: 사용자 입력을 셸 명령에 직접 결합
+exec(`convert ${filename} output.png`);
+
+// ✅ 권장: 인자 배열로 전달, 셸 해석 없이 실행
+execFile('convert', [filename, 'output.png']);
+```
+
 ---
 
 ### 5. 크로스테넌시 데이터 격리 (Multi-Tenancy Isolation)
@@ -162,6 +216,12 @@ app.get('/api/orders/:id', (req, res) => {
 
 ---
 
-**참고**: 이 체크리스트는 OWASP Top 10 기반 백엔드 보안 가이드입니다. 정기적으로 보안 감사를 실시하고, 의존성 취약점을 모니터링하세요.
+**참고**: 이 체크리스트는 OWASP Top 10(A01/A03 포함, 2026-08-07 `knowledge/security/owasp-security-checklist.md`에서 분산 병합) 기반 백엔드 보안 가이드입니다. 정기적으로 보안 감사를 실시하고, 의존성 취약점을 모니터링하세요.
 
-**malgnai 스택(Hono/site_id 멀티테넌시/error.name 매핑) 구현 특화 패턴은 Skill: backend-security-audit 참조** — 이 문서는 프레임워크 무관 원론, backend-security-audit은 그 원론의 malgnai 구현형입니다.
+## 이 스킬의 범위 (원론 ↔ 구현형 분리 — 상호 배제)
+
+이 문서는 **프레임워크 무관 원론** 체크리스트입니다. 특정 스택의 코드 규약(미들웨어 네이밍, 테넌트 컬럼명, 에러 매핑 방식 등)은 다루지 않습니다.
+
+**malgnai 스택(Hono 프레임워크 · `site_id` 멀티테넌시 · `error.name` 기반 에러 매핑) 구현 특화 패턴은 이 문서의 범위가 아니며 Skill: domain-backend-security-audit을 참조하십시오.** `requireRole()`/`requireExecutive()` 네이밍 규약, `site_id` WHERE 필터 규약, 4위치별(라우트/비즈니스로직/DB/에러처리) 입력검증 구현, DB 제약조건 예시, 외부 호출(타임아웃/재시도/멱등성) 패턴은 domain-backend-security-audit이 전담합니다.
+
+이 두 스킬은 **원론(본 문서) ↔ malgnai 구현형(domain-backend-security-audit)** 관계로 상호 배제되며 — 같은 항목을 양쪽에 중복 서술하지 않고, 함께 사용해 원론 체크를 먼저 통과한 뒤 malgnai 구현 세부를 확인합니다.

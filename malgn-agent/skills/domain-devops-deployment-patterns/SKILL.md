@@ -54,6 +54,28 @@ CMD ["node", "dist/index.js"]
 - [ ] RUN 명령어가 레이어 수 최소화하는가?
 - [ ] 이미지 크기가 목표 범위 내인가? (`docker images` 확인)
 
+**보안 강화 체크리스트 (Infra Security)**:
+- [ ] 컨테이너를 root 사용자로 실행하지 않는가? (`USER` 지시자로 비루트 사용자 지정)
+- [ ] 불필요한 시스템 패키지가 포함되어 있지 않은가? (공격 표면 최소화)
+- [ ] .dockerignore에 민감 파일(.env, 인증서, SSH 키, .git 등)이 포함되어 있는가?
+- [ ] .env 파일이 .gitignore에 포함되어 커밋되지 않는가?
+- [ ] 시크릿(API 키, DB 비밀번호 등)이 코드·Dockerfile·이미지 레이어에 하드코딩되어 있지 않은가? (Docker secrets, 런타임 환경변수 주입, Vault 등으로 대체)
+- [ ] .env.example에는 실제 값이 아니라 설명/플레이스홀더만 있는가?
+
+**비루트 실행 Dockerfile 예**:
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+  && chown -R appuser:appgroup /app
+USER appuser   # root 대신 비루트 사용자로 실행 — 컨테이너 탈출 시 호스트 피해 최소화
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+```
+
 ---
 
 ### 2. CI/CD 파이프라인 (Pipeline Standards)
@@ -361,6 +383,8 @@ spec:
 - [ ] 경량 베이스 이미지(alpine) 사용?
 - [ ] .dockerignore 파일에 불필요한 파일 제외?
 - [ ] 이미지 크기 목표 달성? (<100MB for Node.js)
+- [ ] 컨테이너가 비root 사용자로 실행되는가?
+- [ ] .env가 .gitignore에 포함되고 시크릿이 하드코딩되어 있지 않은가?
 
 ### CI/CD 파이프라인 설정
 

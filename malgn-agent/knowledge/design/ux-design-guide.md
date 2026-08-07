@@ -126,7 +126,7 @@
 이 프로젝트 스택에서 화면을 재현 가능하게 캡처하는 최소 방법. 새 도구 도입 비용은 거의 없다 — Playwright는 이미 `package.json`의 test 스크립트로 선언되어 있다.
 
 1. **로컬 서버 기동 확인**: `pnpm run dev` (예: http://127.0.0.1:9000). 떠 있지 않으면 먼저 띄운다.
-2. **캡처 스크립트 실행**: `bin/capture-all.js`가 있으면 `node bin/capture-all.js`. 없으면 `review/screenshot-capture-guide.md`의 표준 템플릿을 복사해 라우트·뷰포트만 프로젝트에 맞게 고쳐 만든 뒤 실행. (1회 작성, 이후 재사용)
+2. **캡처 실행**: 이 플러그인의 `bin/capture.mjs`(`node <malgn-agent 경로>/bin/capture.mjs <url> [output.png] [플래그]`)로 라우트별 캡처. 플래그(`--full/--vp/--wait/--click/--sel/--dark/--responsive`)와 위험도별 캡처 깊이는 `skills/common-screen-verification-and-capture/SKILL.md` 참조.
    - 최소판: 헤드리스 chromium으로 각 라우트를 `goto` → `screenshot({ fullPage: true })`로 `docs/screenshots/`에 저장.
    - 데스크톱(1440×900) + 모바일(390×844) 두 뷰포트는 반응형 판단에 거의 필수.
 3. **이미지를 Read로 직접 본다**: 저장된 png를 Read 도구로 열어 눈으로 확인하고, 그 이미지를 근거로 지적/개선을 적는다.

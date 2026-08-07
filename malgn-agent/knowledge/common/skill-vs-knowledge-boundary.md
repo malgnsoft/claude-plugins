@@ -1,5 +1,12 @@
 # Skill과 Knowledge의 경계 정의
 
+> **지위 (2026-08-07)**: 이 문서의 판정 원칙은 `docs/methodology/agent-development-methodology.md` §1.1/§1.3/
+> §2.2가 실행 가능한 판정 기준(rubric)으로 그대로 채택했다. 실무 판정은 그 rubric을 정본으로 쓰고, 이 문서는
+> 배경·기원 자료로 유지한다. §4의 "Trainer 모드 10" 제안은 미채택 로드맵으로 확정됐다(`agents/trainer.md`
+> 로드맵 각주 참조) — 상세 설계는 `docs/roadmap/trainer-mode-10-curriculum-design.md`로 이관. 이 문서가 서술하는
+> "Trainer 모드 1~9" 번호 체계는 작성 당시 구상이며 현재 `agents/trainer.md`의 실제 모드 구성(1~6, 구 모드7은
+> evaluator로 이관)과 다르다 — 모드 번호는 참고하지 말고 `agents/trainer.md`를 정본으로 볼 것.
+
 ## 1. 정의
 
 ### Skill (실행형)
@@ -78,9 +85,9 @@
 ```markdown
 ## 스킬 참조
 [링크 목록만]
-- Skill: "프로젝트 구조" → ~/.claude/knowledge/common/project-folder-structure.md
-- Skill: "패키지 매니저 선택" → ~/.claude/knowledge/common/package-manager-policy.md
-- Knowledge: "왜 pnpm 모노레포를 피하는가" → ~/.claude/knowledge/common/monorepo-tradeoffs.md
+- Skill: "프로젝트 구조" → <knowledge 루트>/common/project-folder-structure.md
+- Skill: "패키지 매니저 선택" → <knowledge 루트>/common/package-manager-policy.md
+- Knowledge: "왜 pnpm 모노레포를 피하는가" → <knowledge 루트>/common/monorepo-tradeoffs.md
 
 ## 학습 루프
 1. Skill을 빠르게 참조 (3-5분)
@@ -105,74 +112,12 @@
 
 ---
 
-## 4. Trainer의 다음 모드 10: Knowledge와 Skill 자동 분리 커리큘럼 생성
+## 4. (미채택 로드맵) Trainer 모드 10: Knowledge·Skill 자동 분리 커리큘럼 생성
 
-### 개념
-Trainer 모드 10은 기존 7개 모드(실행 지원)를 넘어, 사용자가 작성한 문서를 자동으로 분석해 **Skill과 Knowledge로 분류**하고 **학습 경로를 생성**하는 모드.
-
-### 동작 흐름
-```
-입력: 에이전트 MD 파일 또는 MEMORY 문서
-     ↓
-[1단계] 텍스트 분석
-  - 명령형 문장 추출 (must/must not) → Skill 후보
-  - 설명형 문장 추출 (why/because) → Knowledge 후보
-     ↓
-[2단계] 분류 및 링크 생성
-  - Skill: 금지 사항 + 체크리스트 + 한 줄 설명
-  - Knowledge: 배경 + 사고사례 + 트레이드오프
-  - 자동 링크: Skill → Knowledge (역방향 금지)
-     ↓
-[3단계] 커리큘럼 생성
-  - 초급: Skill만 (빠른 참조)
-  - 중급: Skill + Knowledge 연결
-  - 고급: Knowledge + 심화 사례
-     ↓
-출력: 분류된 .md 파일 + 학습 경로 맵
-```
-
-### 예시: 기존 MEMORY 문서를 모드 10으로 분석
-
-**입력 (기존):**
-```markdown
-## X 문제 회고
-
-프로젝트 A에서 pnpm-workspace.yaml을 만들어서 의존성이 충돌했다.
-왜냐하면 A와 B 패키지가 다른 버전의 react를 요구했는데, 모노레포가
-버전 통일을 강제했기 때문이다. 해결: 각 프로젝트를 독립적으로 분리했다.
-```
-
-**출력 (모드 10 분류):**
-```markdown
-## Skill: pnpm 모노레포 금지
-체크리스트:
-- [ ] pnpm-workspace.yaml을 만들지 않았는가
-- [ ] 각 프로젝트는 독립적인 package.json과 pnpm-lock.yaml을 가지는가
-- [ ] 공유 락파일을 제거했는가
-
-참조 Knowledge: "왜 pnpm 모노레포를 피하는가"
-
----
-
-## Knowledge: 왜 pnpm 모노레포를 피하는가
-배경: 프로젝트 A에서 의존성 버전 충돌로 인한 문제 발생
-  - react: A는 18.x, B는 17.x 요구
-  - 모노레포 구조 → 버전 통일 강제 → 한쪽 프로젝트 동작 불가
-
-교훈: 각 프로젝트는 독립적인 환경이 필요
-  (배포, 테스트, 의존성 관리의 자율성)
-
-트레이드오프:
-  - 장점: 코드 공유 용이
-  - 단점: 버전 관리 복잡, 배포 사이클 강제, 테스트 격리 어려움
-  - 선택: 우리는 독립성을 우선시 (배포 자유도 > 코드 공유)
-```
-
-### 모드 10의 가치
-- **자동 정제:** MEMORY/CLAUDE.md에 분산된 규칙을 중앙화
-- **일관성:** 모든 에이전트 MD가 같은 구조 (Skill 참조 → Knowledge)
-- **학습 경로:** 개발자가 필요에 따라 깊이를 선택 (빠른 참조 vs 깊은 이해)
-- **메인터넌스:** 새 규칙이 생기면 자동으로 Skill/Knowledge로 분류, 위치 제안
+이 문서를 작성하며 함께 제안됐던 아이디어(문서를 자동 분석해 Skill/Knowledge로 분류하고 학습 커리큘럼을
+생성하는 모드)는 `agents/trainer.md`에 "로드맵, 미구현 — 별도 신설 판정 필요"로만 남기고 실제 모드로는
+만들지 않기로 확정됐다(2026-08-07). 상세 설계는 `docs/roadmap/trainer-mode-10-curriculum-design.md`(이
+저장소 자신의 로드맵 메모, 배포판 미포함)에 원형 그대로 보존.
 
 ---
 
@@ -186,13 +131,13 @@ Trainer 모드 10은 기존 7개 모드(실행 지원)를 넘어, 사용자가 �
 
 #### Q2: 문체가 명령형(must/must not)이고, 3-5분 안에 읽을 수 있는가?
 - YES → **Skill** ✓
-  - 파일 위치: `~/.claude/knowledge/common/` 또는 프로젝트 `CLAUDE.md`
+  - 파일 위치: `<knowledge 루트>/common/` 또는 프로젝트 `CLAUDE.md`
   - 템플릿: 체크리스트 + 금지 사항 + Knowledge 참조 1개
 - NO → Q3로
 
 #### Q3: 설명이 길고, "왜"를 다루거나 사고사례가 있는가?
 - YES → **Knowledge** ✓
-  - 파일 위치: `~/.claude/knowledge/common/` (일반) 또는 프로젝트 `MEMORY.md` (특수)
+  - 파일 위치: `<knowledge 루트>/common/` (일반) 또는 프로젝트 `MEMORY.md` (특수)
   - 템플릿: 배경 + 사고사례 + 트레이드오프 + 예외 상황
 - NO → 다시 작성 필요 (너무 짧거나 불명확)
 
@@ -202,7 +147,7 @@ Trainer 모드 10은 기존 7개 모드(실행 지원)를 넘어, 사용자가 �
 
 #### Q5: 이것이 프로젝트별 특수 사례인가?
 - YES (예: "프로젝트 A에서만...") → 프로젝트 `MEMORY.md` 또는 트레이닝 리포트
-- NO (예: "모든 프로젝트에...") → `~/.claude/knowledge/common/`
+- NO (예: "모든 프로젝트에...") → `<knowledge 루트>/common/`
 
 ### 새 Skill 작성 템플릿
 ```markdown
@@ -308,7 +253,7 @@ Trainer 모드 10은 기존 7개 모드(실행 지원)를 넘어, 사용자가 �
 
 ## 7. 다음 단계
 
-1. **기존 문서 감시:** ~/.claude/knowledge/common/의 모든 문서가 Skill/Knowledge 중 하나로 명확한지 확인
+1. **기존 문서 감시:** <knowledge 루트>/common/의 모든 문서가 Skill/Knowledge 중 하나로 명확한지 확인
 2. **에이전트 MD 갱신:** PM, Trainer, Reviewer 각 CLAUDE.md를 새 구조로 개편
-3. **Trainer 모드 10 개발:** 자동 분류 및 커리큘럼 생성 기능
+3. ~~Trainer 모드 10 개발~~ (미채택 확정, 위 지위 안내 참조)
 4. **MEMORY 정제:** 기존 사고사례를 Skill + Knowledge로 재구성

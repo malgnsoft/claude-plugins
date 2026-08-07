@@ -1,9 +1,9 @@
 ---
 name: reflect-lessons
-description: 프로젝트 교훈을 에이전트 Knowledge/MD에 반영(trainer 모드 5). "교훈 반영", "lessons 적용" 요청 시 사용.
+description: 프로젝트 교훈을 에이전트 Knowledge/MD에 반영(trainer 모드 4). "교훈 반영", "lessons 적용" 요청 시 사용.
 ---
 
-# Reflect Lessons Skill (모드 5)
+# Reflect Lessons Skill (모드 4)
 
 프로젝트 회고 파일(`docs/training-report-*.md`)의 교훈을 에이전트 역량별로 분류하고, 아직 반영되지 않은 내용을 Knowledge/MD에 추가합니다.
 
@@ -16,11 +16,11 @@ description: 프로젝트 교훈을 에이전트 Knowledge/MD에 반영(trainer 
 **⚠️ malgnai-hub v1에는 lesson_* 도구가 없음 — 이 워크플로우는 malgnai-mcp(사내 전용) 환경에서만 동작하며, malgnai-hub 연동판에서는 해당 기능 없음.** 원래 목적은 아직 분류되지 않은 원시 학습 이력을 pending 큐에서 가져와 이 스킬의 분류 대상으로 삼는 것이었다. malgnai-hub에는 구조화된 pending→classified 큐가 없으므로, malgnai-hub 연동판에서는 `mcp__malgnai-hub__project_search_history`(repositoryKey, query, types=['decision','work'], since=최근 기간)로 최근 decision_record/work_record 중 재사용 가능한 교훈 후보를 직접 찾아 이하 단계를 진행한다.
 
 > 아래는 malgnai-mcp 전용 원본 절차(malgnai-hub에서는 미동작, 참고용으로 보존):
-> (2026-07-16부터 — 로컬 파일 대신 malgnai `lessons` 큐) malgnai-mcp `lesson_list`(status='pending', 필요 시 project_id 필터)로 아직 분류되지 않은 원시 학습 이력을 가져온다. retro-prompt.txt(자동회고)·coo.md 상시 캡처·`/project-retrospective`는 모두 `lesson_add`로 캡처만 하고 분류·MD 반영은 이 스킬(또는 아래 정정 경로)로 넘긴다.
+> (2026-07-16부터 — 로컬 파일 대신 malgnai `lessons` 큐) malgnai-mcp `lesson_list`(status='pending', 필요 시 project_id 필터)로 아직 분류되지 않은 원시 학습 이력을 가져온다. retro-prompt.txt(자동회고)·pm.md 상시 캡처·`/project-retrospective`는 모두 `lesson_add`로 캡처만 하고 분류·MD 반영은 이 스킬(또는 아래 정정 경로)로 넘긴다.
 >
 > **대상 lesson이 여러 건이면, 각 lesson의 원문 확인 및 관련 후보 파일 탐색(Read/Grep)을 lesson별로 순차 호출하지 말고 같은 턴에서 병렬로 묶어 조회한다.**
 >
-> **(2026-07-21 정정, lesson `fd35f13c`)** pending → classified/rejected 종결 권한은 이 스킬 호출 여부에 매이지 않는다: trainer가 해당 lesson의 MD/knowledge 반영을 완료하고, evaluator가 판정+전역승격(`promote-*.mjs --confirm`, md5 MATCH)까지 확인해준 뒤라면 — COO가 이 스킬을 거치지 않고 trainer→evaluator를 직접 체이닝한 자율 사이클 경로에서도 — trainer가 직접 `lesson_classify`를 호출해 종결까지 책임진다. (다중 대상 반영 시에는 각 이름의 MD에 실제로 반영됐는지 grep으로 먼저 확인한다, lesson `1ada1efb`.)
+> **(2026-07-21 정정, lesson `fd35f13c`)** pending → classified/rejected 종결 권한은 이 스킬 호출 여부에 매이지 않는다: trainer가 해당 lesson의 MD/knowledge 반영을 완료하고, evaluator가 판정+전역 승격(git 커밋→evaluator 판정→PR merged 확인, methodology §1.5 절차)까지 확인해준 뒤라면 — PM이 이 스킬을 거치지 않고 trainer→evaluator를 직접 체이닝한 자율 사이클 경로에서도 — trainer가 직접 `lesson_classify`를 호출해 종결까지 책임진다. (다중 대상 반영 시에는 각 이름의 MD에 실제로 반영됐는지 grep으로 먼저 확인한다, lesson `1ada1efb`.)
 > - 각 lesson의 `content`에서 4부 구조(전제조건/권장행동/반례/판별질문)를 확인 — 비어있으면 여기서 보완
 
 ### 2단계: 교훈 분류
@@ -32,9 +32,9 @@ description: 프로젝트 교훈을 에이전트 Knowledge/MD에 반영(trainer 
 - **2개 이상 에이전트/공통 자산에 걸치면 신중히 판단** — 확신 없으면 `docs/retro-pending-approval.md`에 적어 사람 승인을 먼저 받는다(malgnai-mcp 환경에서는 승인 전까지 해당 lesson을 `lesson_classify` 하지 않고 pending으로 남긴다 — malgnai-hub v1에는 lesson_* 큐가 없으므로 이 문장은 malgnai-mcp 전용, malgnai-hub 연동판에서는 해당 없음).
 
 ### 3단계: Knowledge 추가 (해당하는 경우만)
-정말 재사용 가능한 일반 지식이면 `~/.claude/knowledge/` 도메인 폴더에 문서 작성(대부분은 4단계 MD 보강만으로 충분 — 별도 knowledge 문서는 예외적인 경우만):
+정말 재사용 가능한 일반 지식이면 `malgn-agent/knowledge/` 도메인 폴더에 문서 작성(대부분은 4단계 MD 보강만으로 충분 — 별도 knowledge 문서는 예외적인 경우만):
 - 기존 파일은 절대 덮어쓰지 말고 추가만
-- **INDEX 등록 필수**: `~/.claude/knowledge/INDEX.md`에 새 문서 1줄 등록. 인덱스에 없는 교훈은 검색되지 않아 없는 것과 같다.
+- **README 등록 필수**: `malgn-agent/knowledge/README.md`에 새 문서 1줄 등록(폴더-대상 매핑 표). 등재에 없는 교훈은 검색되지 않아 없는 것과 같다.
 
 ### 4단계: MD 보강
 해당 에이전트 MD 섹션에:
@@ -45,7 +45,15 @@ description: 프로젝트 교훈을 에이전트 Knowledge/MD에 반영(trainer 
 
 **서로 다른 파일을 건드리는 편집은 파일 간 의존관계가 없는 한 같은 턴에서 병렬로 Edit한다.**
 
-### 5단계: 학습 기록 + pending 종결
+### 5단계: git 커밋 + evaluator 인계 (agents/evaluator.md §2·§3)
+
+malgn-agent 소스를 git으로 관리하는 조직(맑은소프트 한정으로는 `claude-plugins` 저장소 자신)에서만 적용된다. 소스클론이 없으면 이 단계는 건너뛰고 4단계 Edit 결과를 그대로 evaluator에게 보고한다.
+
+- trainer: `git checkout -b trainer/reflect-lessons-<YYYYMMDD>` → 3~4단계에서 Edit한 knowledge/MD 파일을 `git commit`까지만 수행(push/PR은 하지 않는다 — 초안 작성과 승격 실행을 분리 유지).
+- evaluator에게 인계: `git diff main..<branch>`로 변경 확인 → evaluator가 evaluator.md §2) 판정 체크리스트로 게이트 판정 → PASS 시 `git push` + `gh pr create`(등급별 merge 조건은 evaluator.md §3) 4단계 그대로 적용, Sensitive/Refactor급이면 사람 승인 전 merge 금지).
+- `gh` 미설치 또는 GitHub 외 호스팅이면 evaluator가 push까지만 하고 사람에게 PR/MR을 직접 열어달라고 `AskUserQuestion`으로 요청한다.
+
+### 6단계: 학습 기록 + pending 종결
 
 malgnai-hub v1 기준:
 - **⚠️ `lesson_classify`는 malgnai-hub v1에 대응 도구가 없음** — pending 큐 자체가 없으므로 "종결" 개념도 없다. malgnai-hub 연동판에서는 해당 기능 없음.

@@ -77,8 +77,8 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
   - 파일명 키워드로 관련 보고서 찾기
   - "예방" 섹션에서 체크리스트 추출
 - [ ] **팀 공유 자산 확인:**
-  - `~/.claude/skills/` 스킬 (특히 common-* 공통 패턴)
-  - `~/.claude/knowledge/` 팀 지식 (디자인 시스템, 보안 정책)
+  - 이 플러그인의 관련 공용 스킬(skills/common-*, skills/domain-*)이 이미 이 절차를 다루는지 확인
+  - 관련 knowledge/ 문서(에이전트 MD가 참조하는 경로)를 확인
 
 #### 2. Risk Assessment with Lessons
 - [ ] **이전 교훈에서 위험 확인:**
@@ -106,7 +106,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
   - 예상치 못한 문제 (에러 메시지, 상황, 임시 해결책)
   - malgnai-hub `issue_record`: "XXX 문제 발생, YYY로 우회 (근본 해결 필요)"
 - [ ] **외부 제약 대응:**
-  - 권한 부족 → `permission-policy-compliance` 따르기 + 기록
+  - 권한 부족 → `common-permission-policy-compliance` 따르기 + 기록
   - 정책 제약 → malgnai-hub 연동판에서는 해당 없음(웹 승인 재개 기능 없음) — 제약 사항을 `issue_record`로 남기고 사람에게 직접 확인
 
 #### 5. Experiment & Validation
@@ -154,7 +154,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
   - "이 기술은 다른 기능에도 쓸 수 있을까?" (일반화)
   - 재사용 가능하면 → 공유 스킬/guide로 추상화
 - [ ] **팀 공유:**
-  - 중요 패턴 → `~/.claude/skills/` 추가 (공통 스킬)
+  - 중요 패턴 → 공용 스킬(skills/common-* 또는 skills/domain-*, §2.4 승격 기준 참조)로 추상화해 편입
   - 프로젝트 특수 → STATUS.md 또는 learning-report
   - 개인 참고 → malgnai-hub `decision_record`/`work_record`에 녹여 기록 (별도 메모리 도구 없음)
 

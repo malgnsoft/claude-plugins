@@ -1,40 +1,14 @@
-# 진행 상황 기록 템플릿 (progress.md / STATUS.md)
+# 진행 상황 기록 템플릿 (STATUS.md)
 
 > PM이 프로젝트 진행 상황을 추적할 때 쓰는 표준 템플릿.
 
-PM은 프로젝트 루트에 두 파일로 진행 상황을 기록한다: **단계별 진행 기록 `progress.md`**(각 단계 시작/완료 시 업데이트)와 **현재 상태 요약 `STATUS.md`**(프로젝트 전체 현황을 한눈에 파악할 수 있는 단일 소스).
+> **2026-08-07 정정**: 과거 이 문서는 `progress.md`(단계별 진행 기록)와 `STATUS.md`(현재 상태 요약)를 병행하는 2-파일 모델을 정식 템플릿으로 제시했다. 이는 폐기됐다 — 진행 상태의 단일 소스는 루트 `STATUS.md` 하나뿐이며, 정확한 파일 포맷·부트스트랩 절차의 정본은 `knowledge/common/project-folder-structure.md`와 `skills/project-standards`다(§10.1 중복 서술 금지 원칙에 따라 이 문서에서 포맷을 다시 정의하지 않는다). `progress.md`라는 파일명과 "실시간 전체 로그 누적" 방식은 이 표준과 모순되므로 쓰지 않는다.
 
-## progress.md (단계별 진행 기록)
+PM은 프로젝트 루트의 `STATUS.md` 하나로 진행 상황을 기록한다 — 세션을 새로 시작할 때 코드·문서를 다시 통독하지 않고 이 파일만으로 현재 상황을 파악할 수 있어야 한다.
 
-각 단계 시작/완료 시 업데이트한다. 위치: 프로젝트 루트의 `progress.md`
+## STATUS.md (현재 상태 요약 — 단일 소스)
 
-```markdown
-# [프로젝트명] 진행 상황
-
-최종 업데이트: [날짜 시간]
-
-## 상태: 진행중
-
-## 팀 구성
-- researcher: 자료 수집 → 완료 ✓
-- planner: 기획서 작성 → 진행중
-- writer: 대기
-
-## 완료된 작업
-- [시간] researcher: 경쟁사 3사 분석 완료 → docs/research.md
-
-## 다음 작업
-- planner: 기획서 작성 시작 예정
-
-## 결과물
-- docs/research.md
-```
-
-리스크가 식별되면 progress.md에 "리스크 현황" 섹션을 추가해 추적한다. (리스크 대응 전략·에스컬레이션 절차는 `risk-escalation-guide.md` 참조)
-
-## STATUS.md (현재 상태 요약)
-
-위치: 프로젝트 루트의 `STATUS.md` — 진행 상태의 단일 소스(single source of truth)다. 세션을 새로 시작할 때 코드·문서를 다시 통독하지 않고 이 파일만으로 현재 상황을 파악할 수 있어야 한다.
+위치: 프로젝트 루트의 `STATUS.md`. 기본 포맷은 `knowledge/common/project-folder-structure.md`를 참조.
 
 ```markdown
 # [프로젝트명] 현황
@@ -45,6 +19,10 @@ PM은 프로젝트 루트에 두 파일로 진행 상황을 기록한다: **단�
 ## 완료
 - [작업] — 완료일, 결과물 위치 (decision #123)
 ```
+
+과거 `progress.md`가 담당하던 "팀 구성", "다음 작업" 같은 필드가 필요하면 위 템플릿의 "진행중" 섹션 항목에 담아 축약한다(예: `- planner: 기획서 작성 진행중 — 다음: writer 착수 예정`). 별도 파일을 만들지 않는다.
+
+리스크가 식별되면 STATUS.md의 "진행중" 섹션 항목에 리스크를 함께 명시하거나(1줄 요약), 상세는 `issue_add`로 기록하고 STATUS.md에는 id만 남긴다. (리스크 대응 전략·에스컬레이션 절차는 `risk-escalation-guide.md` 참조)
 
 회고 완료 시 STATUS.md를 갱신해 완료를 기록한다. (회고 절차는 `retrospective-framework.md` 참조)
 

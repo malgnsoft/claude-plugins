@@ -34,14 +34,16 @@ pnpm run check-docs    # 구조 서술 ↔ 코드 실측 드리프트 대조
 
 ## Architecture
 - 루트 `.claude-plugin/marketplace.json` — 마켓플레이스 정의(`malgnsoft-plugins`), 플러그인 목록: `malgn-agent` (단일, `malgn-danny`는 폐기됨)
-- `malgn-agent/` — 맑은소프트 개발 에이전트 플러그인, 사실상 마켓플레이스의 핵심 (v0.3.0)
+- `malgn-agent/` — 맑은소프트 개발 에이전트 플러그인, 사실상 마켓플레이스의 핵심 (v1.0.0, 2026-08-07 방법론 rubric 기반 전면 재구축)
   - `.claude-plugin/plugin.json` — `mcpServers.malgnai-hub`(원격 HTTP, `https://malgnai-hub.apiserver.kr/mcp`) + `userConfig.device_token`(설치 시 개인 토큰 입력받아 `${user_config.device_token}`로 Authorization 헤더에 주입)
-  - `agents/` 총 21개 — 전역 `~/.claude/agents/`에서 이식한 20개(architect/backend-dev/frontend-dev/qa-engineer 등) + `pm.md`(신규 작성: coo.md/대니 페르소나를 이름·회사전체권한 프레이밍 제거하고 범용 프로젝트 PM 오케스트레이터로 일반화 — malgnai-hub 툴링·WBS·위임/검증 원칙은 그대로 보존)
-  - `skills/` 총 35종 — `malgn-project-standards`(신규 작성: pnpm/프로젝트구조/STATUS.md 3층 부트스트랩/드리프트 가드) + 전역 `~/.claude/skills/`에서 이식한 사용자 직접 저술 노하우 34종(common-*, learning-loop-patterns, domain-*, architecture-patterns-reference, system-design-principles, shipley-proposal-methodology, screen-verification-and-capture 등). Cloudflare 벤더 문서 번들 스킬(cloudflare, turnstile-spin, agents-sdk, durable-objects, sandbox-sdk, web-perf, workers-best-practices, wrangler, cloudflare-*, 총 375+파일)은 "내 노하우와 성격이 다르다"는 사용자 판단으로 제외
-  - `knowledge/` 총 61개(신규 이식) — 전역 `~/.claude/knowledge/`에서 이식(architecture/backend/common/design/devops/finance/frontend/leadership/localization/marketing/planning/presentation/proposal/quality/review/security/writing). `.lessons-removed-2026-07-16/`(폐기된 개인 교훈 아카이브, 31개)는 배포 부적합 판단으로 제외
-  - `bin/new-project.mjs` — 신규 프로젝트 표준 스캐폴더 (사용법 안내를 플러그인 상대 경로로 일반화)
-  - `hooks/hooks.json` + `session-context.mjs`(SessionStart) + `hook-stop-mcp-reminder.cjs`(Stop) + `doc-drift.mjs` — `${CLAUDE_PLUGIN_ROOT}` 기준 포터블화
+  - `agents/` 총 21개(architect/backend-dev/frontend-dev/qa-engineer/pm 등) — 전원 pm.md 기준 위임모델로 통일(COO 페르소나 잔존 제거)
+  - `skills/` 총 34종 — 명명 규칙(참조 에이전트 수 기반 common-*/domain-*/무접두어) 전수 정비 완료. 오케스트레이션 3종(agent-upskill/project-retrospective/topic-learning/reflect-lessons/training-scorecard-eval)은 승격 파이프라인이 git PR 기반으로 재설계됨
+  - `knowledge/` 총 49개 — 개인 절대경로·중복·고아 문서(구 61개 대비 -12) 정리 완료
+  - `bin/new-project.mjs`(신규 프로젝트 스캐폴더) + `bin/capture.mjs`(신규, Playwright 기반 화면 캡처 — 전역 개인도구 의존 제거)
+  - `templates/e2e-template/` — Playwright storageState 인증 표준 스캐폴드(신규)
+  - `hooks/hooks.json` + `sessionstart-context.mjs`(SessionStart, 구 session-context.mjs) + `stop-mcp-reminder.cjs`(Stop, 구 hook-stop-mcp-reminder.cjs) + `doc-drift.mjs` — `${CLAUDE_PLUGIN_ROOT}` 기준 포터블화
   - ✅ agents/skills/hooks의 malgnai-mcp→malgnai-hub 도구명 어댑테이션 완료(decision_record/issue_record/work_record/project_get_context/project_search_history/wbs_*/project_bootstrap). malgnai-hub에 대응 없는 기능(command_add 승인큐/project_autonomy/lesson_*/memory_add)은 "해당 없음" 명시 처리
+  - **재구축 근거 문서**: `docs/methodology/agent-development-methodology.md`(rubric v1.0, 신규 agent/skill/knowledge 작성 시 판정 기준) · `docs/methodology/audit-report.md`·`decisions-log.md`(D1~D15) · `docs/methodology/final-verification-report.md`(독립 재검증 PASS)
   - 🚧 개인 절대경로(`/Users/hopegiver/...`)·`~/.claude/...` 참조·저자 개인화 내용을 일반화하는 포터빌리티 패스 진행 중(agents/skills/knowledge 전체 대상, 백그라운드 에이전트 다수 병렬)
 - `malgn-djkim/`, `malgn-dotype/` — 빈 플레이스홀더 디렉토리만 존재, marketplace.json에 아직 미등록
 - (플러그인이 추가될 때마다 marketplace.json 목록과 .claude/doc-drift.json 갱신)

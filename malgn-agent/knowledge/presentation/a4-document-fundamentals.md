@@ -3,7 +3,9 @@
 ## 개요
 
 A4 세로형(세로 방향, 297mm H × 210mm W) 인쇄 문서는 **슬라이드(1280×720, 가로 16:9)와 완전 다른 제약과 원칙**을 따른다. 
-이 문서는 HTML→PDF 변환 시 필요한 기술적 기초(페이지 크기, 여백, 콘텐츠 배치, CSS 최적화)를 정리한다.
+이 문서는 HTML→PDF 변환 시 필요한 기술적 기초(페이지 크기, 여백, 콘텐츠 배치, CSS 최적화)와 그 배경(왜 그렇게 설계했는가)을 정리한다.
+
+**이 문서 vs Skill**: 실행 절차·측정/검증 스크립트·PDF 변환 명령은 Skill `a4-vertical-layout`이 정본이다. 이 문서는 배경 지식(치수·여백 산식, 그리디 채택 이유, 함정의 원인)만 다루며, Skill과 겹치는 절차 항목은 스텁 처리해 Skill을 가리킨다(2026-08-07 감사 패턴4 이관절차③ 정정).
 
 ---
 
@@ -136,28 +138,7 @@ A4 세로형(세로 방향, 297mm H × 210mm W) 인쇄 문서는 **슬라이드(
 
 ### 측정 방법
 
-**도구**: Playwright + headless Chrome
-```javascript
-const { chromium } = require('playwright-core');
-
-const browser = await chromium.launch({ channel: 'chrome' });
-const page = await browser.newPage();
-
-// 캐시버스팅 필수 (file:// URL이 캐시되므로)
-const timestamp = Date.now();
-await page.goto(`file:///path/to/draft.html?v=${timestamp}`);
-
-// 각 콘텐츠 블록의 높이 측정
-const blocks = await page.locator('.content > *').all();
-for (let i = 0; i < blocks.length; i++) {
-  const box = await blocks[i].boundingBox();
-  const heightMm = (box.height / 37.8).toFixed(1);  // px to mm @96dpi
-  const tagName = await blocks[i].evaluate(el => el.tagName);
-  console.log(`[${i}] ${tagName}: ${heightMm}mm`);
-}
-
-await browser.close();
-```
+**절차·스크립트는 Skill `a4-vertical-layout` 단계 2에 정본으로 있다** — `playwright`(전체 설치) 표준 import로 `.content > *` 각 블록의 `boundingBox()`를 측정한다. 이 문서에는 절차를 다시 싣지 않는다(2026-08-07 감사 패턴4 이관절차③ 정정 — 구 버전은 `require('playwright-core')` 인라인 방식을 실었으나 이는 package.json 미선언 상태로 전역 캐시에 의존하는 §7.4 위반 패턴이라 삭제했다. D8 결정에 따라 표준 설치(`pnpm add -D playwright && pnpm exec playwright install chromium`)로 대체됨).
 
 ### 해상도별 px↔mm 변환
 ```
@@ -177,29 +158,9 @@ await browser.close();
 ### 오버플로 정의
 콘텐츠가 페이지 높이(297mm)를 초과하는 상태. CSS `overflow:hidden`으로 숨겨지지만, PDF/인쇄 시 깨진다.
 
-### 검증 방법
-```javascript
-const pages = await page.locator('.page').all();
-const MAX_HEIGHT_MM = 297;
-const MAX_HEIGHT_PX = 297 * 37.8;  // ~1122.5px
+### 검증 방법과 수정 루프
 
-for (let i = 0; i < pages.length; i++) {
-  const box = await pages[i].boundingBox();
-  const heightMm = (box.height / 37.8).toFixed(1);
-  
-  if (box.height > MAX_HEIGHT_PX) {
-    console.warn(`⚠ Page ${i+1}: ${heightMm}mm (오버플로!)`);
-  } else {
-    console.log(`✓ Page ${i+1}: ${heightMm}mm`);
-  }
-}
-```
-
-### 오버플로 수정
-1. 오버플로난 페이지의 **마지막 콘텐츠 블록 1개**를 다음 페이지로 이동
-2. HTML 파일 편집
-3. 다시 측정 (캐시버스팅 쿼리스트링 재생성)
-4. 모든 페이지 < 297mm이 될 때까지 반복
+**절차·스크립트는 Skill `a4-vertical-layout` 단계 4에 정본으로 있다** — `.page` 각 요소의 실측 높이를 297mm(=~1122.5px @96dpi)와 비교하고, 오버플로 페이지는 마지막 블록 1개를 다음 페이지로 옮긴 뒤 캐시버스팅 재측정을 반복한다. 이 문서에는 절차를 다시 싣지 않는다(2026-08-07 감사 패턴4 이관절차③ 정정).
 
 ---
 
@@ -337,11 +298,8 @@ Chrome headless:
 ```
 
 ### Step 3: PDF → 검증
-```bash
-pdfinfo output.pdf           # 페이지 수
-pdftoppm -png -r 100 output.pdf /tmp/page  # 페이지 이미지
-# 눈으로 스캔: 빈 페이지, 잘림, 페이지번호
-```
+
+**명령·절차는 Skill `a4-vertical-layout` 단계 7에 정본으로 있다**(`pdfinfo`로 페이지 수 확인, `pdftoppm`으로 페이지 이미지화 후 눈으로 스캔). 이 문서에는 절차를 다시 싣지 않는다(2026-08-07 감사 패턴4 이관절차③ 정정).
 
 ---
 
@@ -362,7 +320,6 @@ pdftoppm -png -r 100 output.pdf /tmp/page  # 페이지 이미지
 ## 참고 자료
 
 - 플러그인 번들 `knowledge/design/html-style-guide/html-스타일가이드-세로형.html` — 정본 스타일 (토큰, 레이아웃 클래스)
-- 플러그인 번들 Skill `a4-vertical-layout` — 단계별 절차
-- (사내 교훈 아카이브에 실제 사고 & 4부 교훈 기록 존재)
+- 플러그인 번들 Skill `a4-vertical-layout` — 단계별 절차 정본(측정·검증 스크립트, PDF 변환 명령은 이 Skill에만 있다)
 - W3C CSS Paged Media: https://www.w3.org/TR/css-page-3/
 - CSS Print 가이드: https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/

@@ -1,6 +1,6 @@
 ---
 name: domain-security-audit-checklist
-description: 보안 감사 체크리스트 — 의존성 취약점, SAST, 접근제어, 암호화, 로깅/모니터링 규약. 보안 감사·의존성 점검·취약점 진단 시 사용.
+description: 보안 감사 체크리스트 — 의존성 취약점, SAST, 접근제어, 암호화, 로깅/모니터링, XSS 방지 규약(OWASP Top 10 A02/A07/A09 흡수). 보안 감사·의존성 점검·취약점 진단 시 사용. Cloudflare Workers·Hono·D1·MCP 서버리스/엣지 스택 특유의 인증 함정·CORS reflect·서버리스 DoS는 domain-serverless-edge-api-security를 따로 참조 — 이 스킬은 스택 비특정 일반론만 다루며 그와 중복되지 않는다.
 ---
 
 # Security Audit Checklist
@@ -129,6 +129,7 @@ module.exports = {
 - [ ] 환경 변수(.env)는 버전 관리에 포함되지 않는가?
 - [ ] 로그에 토큰/키가 노출되지 않는가?
 - [ ] 백업/복제본도 암호화되는가?
+- [ ] JWT 시크릿이 코드에 하드코딩되어 있지 않은가? (환경변수/비밀 관리 서비스에서 로드하는가?) *(OWASP A02 흡수)*
 
 **안티패턴**:
 ```javascript
@@ -155,6 +156,7 @@ const hashedPassword = await bcrypt.hash(password, 10);
 - [ ] 로그 보존 기간: 최소 90일 (규제에 따라 1년 이상)
 - [ ] 로그에는 민감 데이터(비밀번호, 토큰) 마스킹
 - [ ] 실시간 알림: 로그인 실패 5회 이상, 권한 변경 등
+- [ ] 서버 에러 응답에 스택 트레이스·내부 파일 경로·쿼리문이 노출되지 않는가? (클라이언트에는 일반화된 메시지만) *(OWASP A09 흡수)*
 
 **로깅 레벨**:
 - `ERROR`: 보안 위반, 인가 실패, 데이터 손상
@@ -169,6 +171,7 @@ const hashedPassword = await bcrypt.hash(password, 10);
 - [ ] 로그에 민감 데이터가 포함되지 않는가?
 - [ ] 실시간 알림 규칙이 설정되었는가?
 - [ ] 정기적 로그 검토 프로세스가 있는가?
+- [ ] 에러 스택 트레이스가 클라이언트 응답에 노출되지 않는가? *(OWASP A09 흡수)*
 
 **구현 예**:
 ```javascript
@@ -194,6 +197,52 @@ app.use((req, res, next) => {
 });
 ```
 
+**안티패턴** *(OWASP A09 흡수)*:
+```javascript
+// ❌ 피할 것: 에러 핸들러가 스택 트레이스·내부 정보를 그대로 클라이언트에 반환
+app.use((err, req, res, next) => {
+  res.status(500).json({ error: err.message, stack: err.stack }); // 내부 파일 경로·쿼리문 노출
+});
+
+// ✅ 권장: 서버 로그에는 상세 기록, 클라이언트에는 일반화된 메시지만
+app.use((err, req, res, next) => {
+  logger.error({ message: err.message, stack: err.stack, path: req.path });
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+```
+
+---
+
+### 6. XSS 방지 (Cross-Site Scripting) *(OWASP A07 흡수, 2026-08-07)*
+
+**원칙**: 사용자 입력을 HTML/DOM에 반영할 때는 항상 이스케이프를 거치고, 신뢰할 수 없는 원문을 그대로 렌더링하지 않습니다.
+
+**구현 규칙**:
+- [ ] 사용자 입력을 HTML로 출력할 때 프레임워크의 자동 이스케이프 바인딩을 사용 (원문 삽입 금지)
+- [ ] Vue의 `v-html`, React의 `dangerouslySetInnerHTML` 등 원문 HTML 삽입 API는 사용자 입력에 절대 사용하지 않음 — 불가피하면 DOMPurify 등으로 새니타이즈 후 사용
+- [ ] `Content-Security-Policy` 헤더로 인라인 스크립트·외부 스크립트 출처를 제한
+- [ ] 사용자 입력을 `eval`/`Function`/`setTimeout(string)` 등 문자열 실행 API에 전달하지 않음
+
+**체크리스트**:
+- [ ] 사용자 입력이 HTML에 이스케이프 없이 출력되는가?
+- [ ] `v-html`/`dangerouslySetInnerHTML`이 사용자 입력에 사용되는가?
+- [ ] `Content-Security-Policy` 헤더가 설정되어 있는가?
+- [ ] 새니타이즈 라이브러리(DOMPurify 등) 없이 원문 HTML을 렌더링하는 경로가 있는가?
+
+**안티패턴**:
+```html
+<!-- ❌ 피할 것: v-html에 사용자 입력을 그대로 삽입 (XSS 취약) -->
+<div v-html="userInput"></div>
+
+<!-- ✅ 권장: 텍스트 바인딩은 자동 이스케이프됨 -->
+<div>{{ userInput }}</div>
+
+<!-- 원문 HTML 렌더링이 불가피하면 새니타이즈 후 사용 -->
+<div v-html="sanitizeHtml(userInput)"></div>
+```
+
+> Vue-Zero 프로젝트에서 `v-html`을 실제로 다루는 구현 세부사항은 Skill `frontend-vue-zero-patterns`를 참조하되, 이 XSS 방어 원칙 자체는 프레임워크 비특정 일반론이다.
+
 ## 적용 체크리스트
 
 ### 정기 감시 (월 1회)
@@ -202,6 +251,7 @@ app.use((req, res, next) => {
 - [ ] 심각한 취약점 발견 시 패치 계획 수립
 - [ ] SAST 리포트 확인 (SonarQube, Semgrep 등)
 - [ ] 로그에서 이상 활동 패턴 검토 (실패한 로그인 등)
+- [ ] 신규 화면·컴포넌트의 XSS 벡터(원문 HTML 삽입 API 사용 여부) 검토
 
 ### 분기 감시 (3개월 1회)
 
@@ -219,4 +269,8 @@ app.use((req, res, next) => {
 
 ---
 
-**참고**: 이 체크리스트는 NIST Cybersecurity Framework와 CIS Controls에 기반합니다. 프로젝트 규모와 규제 요건에 맞게 조정하세요.
+**참고**: 이 체크리스트는 NIST Cybersecurity Framework, CIS Controls, OWASP Top 10(A02 암호화 실패·A07 XSS·A09 로깅/모니터링 실패, 2026-08-07 `knowledge/security/owasp-security-checklist.md`에서 분산 병합)에 기반합니다. 프로젝트 규모와 규제 요건에 맞게 조정하세요.
+
+**관련 스킬 경계**:
+- Cloudflare Workers·Hono·D1·MCP 서버리스/엣지 스택 특화 보안 점검(인증 5대 함정·CORS reflect·서버리스 DoS)은 `domain-serverless-edge-api-security`를 참조 — 이 스킬과 중복 없이 스택 특유 함정만 다룬다(역방향 배타 문구, description 참조).
+- devops 연관성 판단: §1(의존성 취약점)·§2(SAST)의 CI/CD 파이프라인 통합 항목은 devops의 배포 파이프라인 구성과 맞닿아 있으나, Docker 이미지·환경변수 등 인프라 하드닝 자체는 `domain-devops-deployment-patterns` §1이 전담한다(D13 분산 병합 결정). 따라서 `agents/devops.md` 학습자료에 이 스킬을 신규 참조로 추가할지는 이 스킬 쪽에서 강제하지 않으며, devops 보유자 확인 후 별도 결정 대상으로 남긴다(D6 실행항목 미확정 사항).

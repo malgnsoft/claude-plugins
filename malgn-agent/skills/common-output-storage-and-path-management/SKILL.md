@@ -36,7 +36,7 @@ description: 전 에이전트 인프라 규칙 — 산출물 추적성 확보, �
       └─ memory/              → 에이전트 세션별 메모리
           └─ MEMORY.md
 
-~/.claude/
+${CLAUDE_PLUGIN_ROOT}/            → malgn-agent 플러그인이 제공하는 공유 자원 (설치된 모든 프로젝트에서 공통, 개인 디렉터리 아님)
   ├─ skills/                  → 공유 에이전트 스킬 라이브러리
   │   └─ common-*.md
   │
@@ -44,14 +44,16 @@ description: 전 에이전트 인프라 규칙 — 산출물 추적성 확보, �
   │   ├─ [도메인]/
   │   └─ design/              → 전역 디자인 시스템
   │
-  ├─ agents/                  → 에이전트 역할 정의
-  │   ├─ coo.md               → COO 페르소나
-  │   ├─ architect.md
-  │   ├─ reviewer.md
-  │   └─ ...
-  │
-  └─ CLAUDE.md                → 사용자 전역 설정
+  └─ agents/                  → 에이전트 역할 정의
+      ├─ pm.md               → PM 페르소나
+      ├─ architect.md
+      ├─ reviewer.md
+      └─ ...
+
+~/.claude/CLAUDE.md           → (참고, 선택적) 사용자 개인 전역 설정 — 플러그인과 별개로 사용자별 1개만 존재하는 진짜 개인 파일. 위 세 경로(skills/knowledge/agents)와 달리 플러그인이 제공하는 자원이 아니므로 같은 목록에 동일 취급하지 않는다.
 ```
+
+**이 저장소(`claude-plugins`) 자신의 감사 산출물**: 이 스킬이 서술하는 위계는 malgn-agent를 설치한 각 프로젝트에 적용되는 일반 규칙이다. `claude-plugins` 저장소 자신의 방법론 감사·검증 산출물(예: 전수 감사 보고서)은 이 저장소의 `docs/history/audit-*.md`에 보관한다(판정 기준은 방법론 문서 §9.7).
 
 ### 2. 경로 명시 규칙
 

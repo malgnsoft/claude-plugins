@@ -1,9 +1,9 @@
 ---
 name: project-retrospective
-description: 프로젝트 완료 후 산출물·진행 이력을 분석하여 교훈 수집(trainer 모드 3). "프로젝트 회고", "lessons 만들어" 요청 시 사용.
+description: 프로젝트 완료 후 산출물·진행 이력을 분석하여 교훈 수집(trainer 모드 2). "프로젝트 회고", "lessons 만들어" 요청 시 사용.
 ---
 
-# Project Retrospective Skill (모드 3)
+# Project Retrospective Skill (모드 2)
 
 프로젝트 완료 또는 마일스톤 달성 후, 산출물과 진행 기록을 분석하여 **에이전트별 성과**와 **재사용 가능한 교훈**을 추출합니다. (malgnai-mcp 환경: `lesson_add`로 캡처 — malgnai-hub v1에는 lesson_* 도구가 없어 해당 없음. malgnai-hub 연동판에서는 4단계에서 설명하는 대체 방식을 사용한다.)
 
@@ -68,13 +68,13 @@ description: 프로젝트 완료 후 산출물·진행 이력을 분석하여 �
 
 ### 5단계: 여기서 MD를 직접 고치지 않는다
 
-이 스킬은 **캡처까지만** 한다. 분류·에이전트 MD 반영은 **`/reflect-lessons`(모드5)가 전담**한다 — 캡처 지점(이 스킬, retro-prompt.txt, coo.md 상시 캡처)이 각자 반영까지 해버리면 중복·충돌이 생긴다. "학습 후 최종 정리"는 항상 한 곳(모드5)에서만. (malgnai-mcp 환경에서는 pending 종결이 `lesson_classify` 호출로 이루어졌으나, malgnai-hub v1에는 lesson_* 큐가 없어 이 종결 단계 자체가 해당 없음.)
+이 스킬은 **캡처까지만** 한다. 분류·에이전트 MD 반영은 **`/reflect-lessons`(모드4)가 전담**한다 — 캡처 지점이 여러 곳으로 늘어나 각자 반영까지 해버리면 중복·충돌이 생긴다. "학습 후 최종 정리"는 항상 한 곳(모드4)에서만. (malgnai-mcp 환경에서는 pending 종결이 `lesson_classify` 호출로 이루어졌으나, malgnai-hub v1에는 lesson_* 큐가 없어 이 종결 단계 자체가 해당 없음.)
 
 ## 산출물
 
 - (malgnai-mcp 환경) malgnai `lessons` 테이블에 캡처된 pending 항목 id 목록 — malgnai-hub 연동판에서는 해당 없음
 - (malgnai-hub 연동판) `decision_record`/`work_record`로 기록한 항목 id 목록
-- (선택) 사람이 읽을 보고서가 따로 필요하면 `/workspace/[프로젝트]/docs/training-report-[주제]-YYYY-MM-DD.md`에 프로젝트 개요·성과 요약을 남길 수 있다 — malgnai-hub 연동판에서 교훈 자체의 정본은 decision_record/work_record다.
+- (선택) 사람이 읽을 보고서가 따로 필요하면 프로젝트 루트의 `docs/training-report-[주제]-YYYY-MM-DD.md`에 프로젝트 개요·성과 요약을 남길 수 있다 — malgnai-hub 연동판에서 교훈 자체의 정본은 decision_record/work_record다.
 
 ## 효율 규칙
 

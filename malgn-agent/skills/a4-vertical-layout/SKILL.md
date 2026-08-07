@@ -15,6 +15,18 @@ description: A4 세로형(210×297mm) HTML/PDF 인쇄 문서 페이지 배치 �
 - 각 `.page` 요소가 정확히 297mm(±0.5mm)를 채우는 최종 HTML
 - 페이지별 오버플로 0, 여백 균일 (챕터 전환 제외)
 
+**사전 조건(브라우저 구동)**: 이 스킬의 단계 2·4는 실제 렌더 높이를 측정하기 위해 headless
+Chromium을 구동한다. `skills/common-screen-verification-and-capture`와 동일한 표준 설치를 그대로
+따른다 — 대상 프로젝트 루트에서 1회:
+```bash
+pnpm add -D playwright && pnpm exec playwright install chromium
+```
+이 스킬이 필요로 하는 것은 화면 캡처가 아니라 **블록별 렌더 높이 측정**이라 `bin/capture.mjs`를
+그대로 재사용하지는 않는다(성격이 다른 스크립트). 대신 아래 단계 2·4의 측정/검증 스크립트를
+`playwright`(전체 설치, `playwright-core` 아님) 표준 import로 그때그때 작성해 실행한다 — 과거
+버전의 `require('playwright-core')` 인라인 패턴(package.json 미선언 상태로 전역 캐시에 의존)은
+더 이상 쓰지 않는다.
+
 ---
 
 ## 절차
@@ -39,10 +51,12 @@ description: A4 세로형(210×297mm) HTML/PDF 인쇄 문서 페이지 배치 �
    - 표, 코드블록, 이미지 등 원자 블록(자를 수 없는 요소) 식별
 
 2. **각 블록의 렌더 높이 측정** (매우 중요):
-   ```
-   사용 도구: playwright-core (headless Chrome)
-   const { chromium } = require('playwright-core');
-   const browser = await chromium.launch({channel:'chrome'});
+   ```javascript
+   // 사전 조건: pnpm add -D playwright && pnpm exec playwright install chromium (프로젝트 루트에서 1회)
+   // 사용 도구: playwright (전체 설치, headless Chromium) — playwright-core 인라인 require 금지
+   import { chromium } from 'playwright';
+
+   const browser = await chromium.launch();
    const page = await browser.newPage();
    await page.goto('file:///absolute/path/to/output/draft.html?v=' + Date.now());
    const blocks = await page.locator('.content > *').all();
@@ -50,6 +64,7 @@ description: A4 세로형(210×297mm) HTML/PDF 인쇄 문서 페이지 배치 �
      const box = await block.boundingBox();
      console.log(`Block: ${box.height}px (~${(box.height/37.8).toFixed(1)}mm)`);
    }
+   await browser.close();
    ```
    - 파일 경로에 `?v=<timestamp>` 캐시버스팅 필수 (Chrome이 stale HTML 캐시함)
    - 모든 폰트가 로드될 때까지 대기 (네트워크 폰트 사용 시)
@@ -106,15 +121,17 @@ description: A4 세로형(210×297mm) HTML/PDF 인쇄 문서 페이지 배치 �
 ### 단계 4: 렌더 높이 검증 & 오버플로 수정 루프
 **검증 스크립트**:
 ```javascript
-const { chromium } = require('playwright-core');
-const browser = await chromium.launch({channel:'chrome'});
+// 사전 조건: pnpm add -D playwright && pnpm exec playwright install chromium (프로젝트 루트에서 1회)
+import { chromium } from 'playwright';
+
+const browser = await chromium.launch();
 const page = await browser.newPage();
 await page.goto('file:///path/to/final.html?v=' + Date.now());
 
 const pages = await page.locator('.page').all();
 let maxHeight = 0;
-for (const p of pages) {
-  const box = await p.boundingBox();
+for (let i = 0; i < pages.length; i++) {
+  const box = await pages[i].boundingBox();
   const heightMm = (box.height / 37.8).toFixed(1);
   console.log(`Page ${i}: ${heightMm}mm`);
   if (box.height > 1122.5) { // 297mm @96dpi
@@ -122,6 +139,7 @@ for (const p of pages) {
   }
   maxHeight = Math.max(maxHeight, box.height);
 }
+await browser.close();
 ```
 
 **오버플로 발견 시 대응**:
@@ -219,3 +237,4 @@ pdftoppm -png -r 100 output.pdf /tmp/page  # 각 페이지 이미지화
 - 이 플러그인의 `knowledge/design/html-style-guide/html-스타일가이드-세로형.html` — 정본 스타일
 - 이 플러그인의 `knowledge/presentation/a4-document-fundamentals.md` — 기술 배경 (페이지 크기·여백·렌더 측정 원리)
 - `presenter.md` "세로형(A4) 페이지 채움 게이트" 섹션
+- `skills/common-screen-verification-and-capture` — 화면 캡처가 필요하면(디자인 검토용 스크린샷 등) 이 스킬을 참조. 이 스킬(a4-vertical-layout)의 렌더 높이 측정과는 목적이 다르지만 브라우저 구동 사전 조건(`pnpm add -D playwright && pnpm exec playwright install chromium`)은 동일하다.

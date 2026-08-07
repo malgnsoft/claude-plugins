@@ -17,8 +17,7 @@
  *     → 사용자가 이미 만들어 둔 현재 디렉토리(cwd)에 스탬프한다.
  *       STATUS.md가 이미 있으면 "이미 초기화됨"으로 보고 중단한다(동기화는 malgnai-hub project_bootstrap 사용).
  *       그 외 기존 파일(package.json 등)은 덮어쓰지 않고 건너뛴다.
- *   (malgn-agent 플러그인이 활성화된 Claude Code 세션에서는 bin/ 이 PATH에 잡혀
- *    `new-project.mjs ...`로 바로 실행 가능하다)
+ *   (참고: bin/ 은 PATH에 자동 등록되지 않는다 — 항상 위처럼 node로 전체 경로를 지정해 호출한다)
  */
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
 import { join, basename } from 'node:path'
@@ -139,7 +138,7 @@ pnpm run check-docs    # 구조 서술 ↔ 코드 실측 드리프트 대조
     private: true,
     type: 'module',
     scripts: {
-      'check-docs': "node -e \"const fs=require('fs'),os=require('os'),p=os.homedir()+'/.claude/hooks/doc-drift.mjs';if(fs.existsSync(p)){require('child_process').execSync('node '+JSON.stringify(p),{stdio:'inherit'})}else{console.log('doc-drift.mjs를 로컬에서 찾지 못했습니다. malgn-agent 플러그인이 설치된 Claude Code 세션에서는 SessionStart마다 자동으로 드리프트를 검사하니, 수동 확인이 필요하면 그 세션에서 요청하세요.')}\"",
+      'check-docs': "node -e \"const fs=require('fs'),os=require('os'),path=require('path');const home=os.homedir();let found=null;const mp=path.join(home,'.claude','plugins','marketplaces');if(fs.existsSync(mp)){for(const d of fs.readdirSync(mp)){const c=path.join(mp,d,'plugins','malgn-agent','hooks','doc-drift.mjs');if(fs.existsSync(c)){found=c;break}}}if(!found){const legacy=path.join(home,'.claude','hooks','doc-drift.mjs');if(fs.existsSync(legacy))found=legacy}if(found){require('child_process').execSync('node '+JSON.stringify(found),{stdio:'inherit'})}else{console.log('doc-drift.mjs를 찾지 못했습니다. malgn-agent 플러그인의 SessionStart 훅이 세션 시작 시 이미 자동으로 드리프트를 검사하니, 수동 확인이 필요하면 그 세션에서 요청하세요.')}\"",
     },
   }, null, 2) + '\n',
 }

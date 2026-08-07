@@ -1,9 +1,9 @@
 ---
 name: topic-learning
-description: 주제 기반 학습 — 기술/패턴 주제로 가이드 작성 후 관련 에이전트 MD에 반영(trainer 모드 4). "학습시켜줘", "주제 학습" 요청 시 사용.
+description: 주제 기반 학습 — 기술/패턴 주제로 가이드 작성 후 관련 에이전트 MD에 반영(trainer 모드 3). "학습시켜줘", "주제 학습" 요청 시 사용.
 ---
 
-# Topic Learning Skill (모드 4)
+# Topic Learning Skill (모드 3)
 
 "Docker 보안", "API 설계 패턴", "마이크로서비스" 같은 **주제**를 중심으로 최신 자료를 수집하고, 관련 에이전트들의 역량을 일괄 강화하는 모드입니다.
 
@@ -31,7 +31,7 @@ description: 주제 기반 학습 — 기술/패턴 주제로 가이드 작성 �
 
 ### 3단계: Knowledge 파일 작성 (1시간)
 
-`~/.claude/knowledge/[도메인]/[주제]-YYYY-MM-DD.md`:
+`malgn-agent/knowledge/[도메인]/[주제]-YYYY-MM-DD.md`(설치 조직의 malgn-agent 소스 경로 기준 — 개인 홈 디렉토리가 아니라 이 플러그인 자신의 knowledge 폴더):
 
 **구조**:
 ```
@@ -67,6 +67,8 @@ description: 주제 기반 학습 — 기술/패턴 주제로 가이드 작성 �
 - [출처 2] 링크
 ```
 
+작성 후 `malgn-agent/knowledge/README.md`의 폴더-대상 매핑 표에 등재한다(신규 도메인 폴더면 필수).
+
 ### 4단계: 에이전트 MD에 반영 (1시간)
 
 주제와 관련된 각 에이전트 MD에 **참조 링크 + 체크리스트** 추가:
@@ -74,7 +76,7 @@ description: 주제 기반 학습 — 기술/패턴 주제로 가이드 작성 �
 **예시 (devops.md "배포 보안" 섹션)**:
 ```
 ### Docker 보안 (2024-07-15)
-[Docker 보안 가이드](~/.claude/knowledge/devops/docker-security-2024-07-15.md) 참고.
+[Docker 보안 가이드](malgn-agent/knowledge/devops/docker-security-2024-07-15.md) 참고.
 
 **필수 체크리스트**:
 - [ ] Dockerfile에 image scan 단계 포함
@@ -85,19 +87,34 @@ description: 주제 기반 학습 — 기술/패턴 주제로 가이드 작성 �
 **예시 (backend-dev.md "데이터 보안" 섹션)**:
 ```
 ### 민감정보 관리
-[Docker 보안 가이드의 "Secrets Management"](~/.claude/knowledge/devops/docker-security-2024-07-15.md#secrets-management) 섹션 참고.
+[Docker 보안 가이드의 "Secrets Management"](malgn-agent/knowledge/devops/docker-security-2024-07-15.md#secrets-management) 섹션 참고.
 ```
 
-### 5단계: 학습 기록 (선택)
+### 5단계: 변경사항 커밋 (초안 작성까지 — 승격 실행은 evaluator 소관)
 
-Trainer가 이 스킬을 완료하면:
-- 작성한 Knowledge 파일 경로
-- 업데이트한 에이전트 MD 목록
+여기까지는 trainer가 malgn-agent 소스 clone에서 직접 파일을 Edit한 **초안 작성** 단계다. 반영을 전사에 실제로 퍼뜨리는 **승격 실행**(git push + PR + 등급별 merge)은 이 스킬의 범위가 아니라 evaluator가 담당한다:
+
+```
+1) trainer: git checkout -b trainer/topic-<주제>-<YYYYMMDD> (malgn-agent 소스 clone에서)
+2) trainer: 3~4단계에서 만든 knowledge 파일 + 에이전트 MD 변경을 git commit까지만 수행
+   (push/PR은 하지 않는다 — 초안 작성과 승격 실행을 분리 유지)
+3) evaluator에게 인계: git diff로 변경 확인 → 판정 체크리스트 통과 시
+   git push + gh pr create → 등급별 merge(Standard/Sensitive는 evaluator.md 절차를 따른다)
+```
+
+evaluator가 없거나 조직이 malgn-agent 소스를 git으로 관리하지 않는 경우, 이 3단계는 생략하고 변경 파일 목록만 사람에게 전달한다.
+
+### 6단계: 완료 보고 (malgnai-hub 기록은 PM 소관)
+
+`agents/trainer.md`의 '## 역할 경계' 절 '책임 구분 요약' 표는 malgnai-hub 기록(`decision_record`/`issue_record`/`work_record`)을 PM 전속으로 명시한다(`agents/evaluator.md`의 역할 경계도 동일하게 "malgnai-hub 기록은 PM 소관"이라 재확인). 따라서 trainer는 이 스킬을 완료해도 malgnai-hub에 직접 기록하지 않는다 — 아래 내용을 PM에게 인계하면, PM이 `work_record`(status='completed')를 남긴다:
+- summary: 학습 주제 + 대상 에이전트 목록
+- result: 작성한 knowledge 파일 경로, 업데이트한 에이전트 MD 목록, PR URL(5단계에서 evaluator가 PR을 열었다면)
 
 ## 산출물
 
-- `~/.claude/knowledge/[도메인]/[주제]-YYYY-MM-DD.md` — 주제 가이드 (2~4KB)
+- `malgn-agent/knowledge/[도메인]/[주제]-YYYY-MM-DD.md` — 주제 가이드 (2~4KB)
 - 각 에이전트 MD 업데이트 (참조 링크 + 체크리스트)
+- PM에게 인계하는 완료 보고 1건(진단·보고 서사의 1차 정본은 PR body) — malgnai-hub `work_record` 기록은 trainer가 아니라 PM이 수행한다(`agents/trainer.md` 역할 경계 참조)
 
 ## 효율 규칙
 
@@ -105,3 +122,4 @@ Trainer가 이 스킬을 완료하면:
 - **빈도**: 분기 1~2회 (비정기, 필요시)
 - **범위**: 주제당 3~5개 에이전트만 (과도한 업데이트 방지)
 - **산출**: 파일 저장 후 경로 + 핵심 3~4개 개념 반환
+</content>

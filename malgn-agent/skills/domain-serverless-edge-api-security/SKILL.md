@@ -5,6 +5,12 @@ description: Cloudflare Workers·Hono·D1·MCP 서버리스/엣지 스택 전용
 
 # 서버리스/엣지 API 보안 점검 (Cloudflare Workers · Hono · D1 · MCP)
 
+## 범위 — domain-security-audit-checklist와의 관계 (상호 배제)
+
+이 스킬과 `domain-security-audit-checklist`는 중복 없이 상호 배타적인 범위를 다룬다.
+- **OWASP 일반론**(의존성 취약점·SAST·일반 접근제어·암호화·로깅/모니터링 규약 등 스택 불문 공통 체크리스트)은 `domain-security-audit-checklist`를 따른다 — 이 스킬에서는 다루지 않는다.
+- **이 스택(Cloudflare Workers·Hono·D1·MCP) 특유의 함정**(인증 5대 함정, CORS reflect, 서버리스 DoS 비용 폭증, MCP 무인증 노출 등)은 이 스킬이 전담한다 — `domain-security-audit-checklist`에는 없는 내용이다.
+
 ## 강한 보안 산출물의 조건
 
 추상 항목("입력 검증을 하세요") 나열이 아니라:
