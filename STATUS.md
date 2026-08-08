@@ -4,7 +4,7 @@ project_id: e3c8eba1-7016-4c40-81fc-7d15cdcefd75
 ---
 
 # STATUS — claude-plugins
-_최종 갱신: 2026-08-07_
+_최종 갱신: 2026-08-08_
 
 > **claude-plugins** = 클로드코드 플러그인
 > **새 세션은 이 파일(라이브 상태) + `CLAUDE.md`(구조·규칙)면 오리엔테이션 충분.** 구조 상세는 malgnai-mcp `get_current_context`, 깊은 문서는 `docs/README.md`. 상황 파악하려고 코드/docs 통독 금지.
@@ -22,8 +22,9 @@ _최종 갱신: 2026-08-07_
 - "초기화 해줘" 인플레이스 초기화 지원 + STATUS.md YAML frontmatter 전환 (2026-07-29, decision `018f6481`)
 
 ## 🚧 진행 중 / 다음
-- **다음 세션 시작점**: malgn-agent v2.0(agents 21·skills 34·knowledge 49·hooks 4)은 완성됐으나 **실제 클로드코드 세션에서 설치 검증은 아직 안 됨** — `/plugin marketplace add hopegiver/claude-plugins` → `/plugin install malgn-agent@malgnsoft-plugins`로 실제 로드되는지, userConfig 디바이스토큰 프롬프트·malgnai-hub 실제 호출이 정상 동작하는지 확인 필요
-- git 커밋/푸시 여부 확인 필요 — 오늘 재구축한 방대한 변경분이 아직 커밋되지 않았을 수 있음(세션 종료 전 `git status`로 확인)
+- **메인 루프 PM화 구현+reviewer 풀패널 GO, 커밋은 사람 승인 대기 (2026-08-09, decision `e95e5533`)**: CLAUDE.md 동의기반 설치 메커니즘(SessionStart 훅이 감지·넛지만, 실제 쓰기는 사용자 동의 후 모델이 Edit) 구현 완료. 산출물: `hooks/pm-orchestration-nudge.mjs`+`pm-orchestration-block.md`(신규)+`hooks.json` 등록, `skills/project-orchestration/SKILL.md`(신규 148줄), `agents/pm.md` 스킬상세 스텁화, `agents/writer.md` 역참조 정정. 1차 검증 Critical 1건(블록텍스트 미배포, issue `9856dc0c`) 수정 후 재검증 GO. **다음: 사용자 커밋 승인만 남음**(Sensitive 등급, 현재 미커밋 워킹트리 diff 상태).
+- **[완료] 커밋·푸시**: 오늘 재구축분 113 files 커밋(`0cb2517`) 및 origin main 푸시 완료(decision 기록됨). `malgn-agent.bak/`(세션 이전부터 있던 미추적 디렉토리)는 이 세션 소관이 아니라 제외 — 필요 여부는 사용자 확인 필요
+- **다음 세션 시작점**: malgn-agent v1.0.0(agents 21·skills 34·knowledge 49·hooks 4)은 완성·푸시됐으나 **실제 클로드코드 세션에서 설치 검증은 아직 안 됨** — `/plugin marketplace add hopegiver/claude-plugins` → `/plugin install malgn-agent@malgnsoft-plugins`로 실제 로드되는지, userConfig 디바이스토큰 프롬프트·malgnai-hub 실제 호출이 정상 동작하는지 확인 필요
 - `malgn-djkim`, `malgn-dotype` — 빈 디렉토리만 생성됨, 각 담당자가 채운 뒤 marketplace.json에 등록 필요
 
 ## ⛔ 막힌 것 / 열린 이슈
