@@ -3,6 +3,7 @@
 This file provides guidance to Claude Code when working with code in this repository.
 
 <!-- 구조 드리프트 대조: .claude/doc-drift.json + `pnpm run check-docs`. 전역 SessionStart 훅이 세션 시작 시 자동 경고. -->
+<!-- malgn-agent:pm-orchestration:installed:v1 -->
 
 ## 새 세션 부트스트랩 (읽기 순서 = 토큰 예산)
 새 세션은 **자동 주입되는 `STATUS.md` + 이 `CLAUDE.md` 두 개면 오리엔테이션이 끝난다.** 현 상황 파악하려고 코드/docs를 통독하지 말 것.
@@ -37,9 +38,9 @@ pnpm run check-docs    # 구조 서술 ↔ 코드 실측 드리프트 대조
 - `malgn-agent/` — 맑은소프트 개발 에이전트 플러그인, 사실상 마켓플레이스의 핵심 (v1.0.0, 2026-08-07 방법론 rubric 기반 전면 재구축)
   - `.claude-plugin/plugin.json` — `mcpServers.malgnai-hub`(원격 HTTP, `https://malgnai-hub.apiserver.kr/mcp`) + `userConfig.device_token`(설치 시 개인 토큰 입력받아 `${user_config.device_token}`로 Authorization 헤더에 주입)
   - `agents/` 총 21개(architect/backend-dev/frontend-dev/qa-engineer/pm 등) — 전원 pm.md 기준 위임모델로 통일(COO 페르소나 잔존 제거)
-  - `skills/` 총 34종 — 명명 규칙(참조 에이전트 수 기반 common-*/domain-*/무접두어) 전수 정비 완료. 오케스트레이션 3종(agent-upskill/project-retrospective/topic-learning/reflect-lessons/training-scorecard-eval)은 승격 파이프라인이 git PR 기반으로 재설계됨
+  - `skills/` 총 35종 — 명명 규칙(참조 에이전트 수 기반 common-*/domain-*/무접두어) 전수 정비 완료. 오케스트레이션 3종(agent-upskill/project-retrospective/topic-learning/reflect-lessons/training-scorecard-eval)은 승격 파이프라인이 git PR 기반으로 재설계됨. `token-usage-diagnosis`(신규, 무접두어 — pm.md 1곳만 참조) — 직원이 자기 세션에서 "토큰 사용량 봐줘"라고 하면 `bin/analyze-usage.mjs`를 실행해 결과를 해석·가이드까지 제시. 리뷰 대기 중(브랜치 `trainer/token-usage-diagnosis-skill-20260810`, 아직 main 미병합).
   - `knowledge/` 총 49개 — 개인 절대경로·중복·고아 문서(구 61개 대비 -12) 정리 완료
-  - `bin/new-project.mjs`(신규 프로젝트 스캐폴더) + `bin/capture.mjs`(신규, Playwright 기반 화면 캡처 — 전역 개인도구 의존 제거)
+  - `bin/new-project.mjs`(신규 프로젝트 스캐폴더) + `bin/capture.mjs`(Playwright 기반 화면 캡처) + `bin/analyze-usage.mjs`(신규, Claude Code 로컬 세션 로그 기반 토큰 사용량 자가진단 — `token-usage-diagnosis` 스킬이 감쌈, 무의존성 Node 내장모듈만 사용해 Windows/macOS 동일 실행)
   - `templates/e2e-template/` — Playwright storageState 인증 표준 스캐폴드(신규)
   - `hooks/hooks.json` + `sessionstart-context.mjs`(SessionStart, 구 session-context.mjs) + `stop-mcp-reminder.cjs`(Stop, 구 hook-stop-mcp-reminder.cjs) + `doc-drift.mjs` — `${CLAUDE_PLUGIN_ROOT}` 기준 포터블화
   - ✅ agents/skills/hooks의 malgnai-mcp→malgnai-hub 도구명 어댑테이션 완료(decision_record/issue_record/work_record/project_get_context/project_search_history/wbs_*/project_bootstrap). malgnai-hub에 대응 없는 기능(command_add 승인큐/project_autonomy/lesson_*/memory_add)은 "해당 없음" 명시 처리
