@@ -1,4 +1,5 @@
 <!-- 버전 규칙(이 파일이 단일 소스): 아래 한 줄짜리 버전 마커의 정수만 버전을 나타낸다. 의무 내용(행동 규율의 실질 요구사항)이 바뀔 때만 값을 올린다. 문구 다듬기·오타 수정은 값을 유지한다. 이 파일은 더 이상 CLAUDE.md로 복사되지 않는다 — 훅(pm-orchestration-nudge.mjs)이 매 세션 이 파일을 직접 읽어 additionalContext로 주입한다. -->
+<!-- 이 파일은 이제 두 경로로 로드된다: ①위 훅의 안전망 주입(항상 동작) ②installed 프로젝트 CLAUDE.md의 `@<이 파일 절대경로>` import(승인 시, docs/decision/pm-orchestration-block-import-design.md §3/§4) — 편집 시 두 경로 모두를 염두에 둘 것. -->
 <!-- malgn-agent:pm-orchestration:version:1 -->
 ## PM 행동 규율 (malgn-agent 자동 주입)
 

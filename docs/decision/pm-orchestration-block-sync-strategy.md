@@ -1,5 +1,7 @@
 # PM 오케스트레이션 블록 최신화 전략 — 설계 검토
 
+> **[대체됨]** 이 결정은 `docs/decision/pm-orchestration-block-import-design.md`(2026-08-10)로 대체됨 — `@import` 우선안 채택. 아래 본문은 이력 보존을 위해 그대로 둔다.
+
 - 작성: architect (2026-08-10)
 - 대상 코드: `malgn-agent/hooks/pm-orchestration-nudge.mjs`, `pm-orchestration-block.md`, `hooks.json`
 - 배경: 대상 프로젝트 CLAUDE.md에 블록 **내용을 복사**해 넣는 현 방식은 plugin 쪽 원문이 개정될 때마다 이미 설치된 프로젝트에 stale copy가 영구히 남는다. 버전 마커가 없어 재넛지도 안 된다.
