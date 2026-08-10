@@ -1,7 +1,7 @@
 {
   "name": "malgn-agent",
   "displayName": "맑은소프트 개발 에이전트",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "맑은소프트 전 프로젝트 공통 운영 표준(패키지 매니저, 프로젝트 구조, STATUS.md/CLAUDE.md/docs 3층 부트스트랩), 범용 개발 에이전트 21종(pm 오케스트레이터 + architect/backend-dev/frontend-dev/qa-engineer 등), 노하우 스킬 34종 + knowledge 참고자료 49종. SessionStart에 STATUS.md/문서드리프트를 자동 주입하고 Stop에 malgnai-hub 기록 여부를 리마인드하는 hook 포함. malgnai-hub(사내 공용 프로젝트 메모리 MCP)를 원격 MCP로 연결. 2026-08-07 방법론 rubric 기반 전면 재구축(v1.0) — 상세: docs/methodology/.",
   "author": {
     "name": "Malgnsoft",
