@@ -113,6 +113,6 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const hasDrift = !!(r && r.drift.length)
   const hasPmIssue = !!(pmCheck && pmCheck.status !== 'ok')
   if (hasDrift) console.log('\n⚠️ 문서 드리프트 — 매니페스트 expected 와 문서 서술을 실측에 맞춰 갱신하라.')
-  if (!hasDrift && r) console.log('\n✅ 문서가 코드와 일치.')
+  if (!hasDrift && !hasPmIssue && r) console.log('\n✅ 문서가 코드와 일치.')
   process.exit(hasDrift || hasPmIssue ? 1 : 0)
 }
