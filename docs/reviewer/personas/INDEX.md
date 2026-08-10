@@ -20,12 +20,17 @@
 | persona-script-skill-consistency-auditor.md | 문서가 서술하는 약속(옵션·임계값·근거)과 코드 구현이 실제로 정확히 일치하는지 한 줄씩 대조하는 정합성 감사관 | 수렴 | 2026-08-10 | token-usage-diagnosis-skill / 1차 |
 | persona-self-service-scope-challenger.md | 조직 차원 문제로 시작한 조사가 개인용 셀프서비스 도구로 축소(scope reduction)된 것은 아닌지 의심하는 발산형 | 발산 | 2026-08-10 | token-usage-diagnosis-skill / 1차 |
 | persona-verifiable-claim-discipline-auditor.md | claimed(해석)와 verified(스크립트 산출)의 구분이 문서 전 지점에서 실제로 지켜지는지(계산하지 않은 숫자를 지어내지 않는지) 보는 검증가능성 감사관 | 수렴 | 2026-08-10 | token-usage-diagnosis-skill / 1차 |
+| persona-enforcement-gap-auditor.md | 원칙 문장이 체크리스트/영속 필드로 강제 가능한지, 아니면 자기판단에 맡겨진 서술인지 가르는 강제력 격차 감사관 | 수렴 | 2026-08-10 | reviewer-repeat-review-reduction / 1차 |
+| persona-mechanism-longevity-realist.md | 새 프로세스 장치(INDEX.md 등)가 다음 라운드·동시세션 환경에서도 실제로 유지되는가를 묻는 운영 현실주의자 | 수렴 | 2026-08-10 | reviewer-repeat-review-reduction / 1차 |
+| persona-process-mechanism-zero-based-challenger.md | 도입한 메커니즘 전체가 문제 크기에 비례하는지, 더 단순한 개입(링크 필수 포함 등)으로 같은 효과를 낼 수 있는지 의심하는 발산형 | 발산 | 2026-08-10 | reviewer-repeat-review-reduction / 1차 |
 
 > **알려진 중복 역할개념 (§4.2 적용 이력 예시로 처리됨, 병합·삭제는 이번 스코프 밖)**:
 > - `persona-ops-drift-realist.md` ≈ `persona-ops-maintainability-realist.md` — 둘 다 "6개월 후에도 살아있는가/사용자에게 감지 가능한가"를 묻는 운영 현실주의자.
 > - `persona-mechanism-zero-based-challenger.md` ≈ `persona-zero-based-redesigner.md` — 둘 다 "구조 자체가 최선인가, 대안이 있는가"를 묻는 발산형.
 >
 > 새 리뷰에서 이 역할개념이 다시 필요하면 신규 파일을 만들지 말고 `persona-ops-maintainability-realist.md`/`persona-zero-based-redesigner.md`(먼저 생성된 쪽)를 재사용하고, 해당 파일 "적용 이력"에 항목만 추가한다.
+
+> **재사용 시도 실패 기록 (2026-08-10, reviewer-repeat-review-reduction 1차 리뷰)**: 위 표의 "역할개념(1줄)"만 보면 `persona-skeptical-verification-architect.md`/`persona-ops-maintainability-realist.md`/`persona-zero-based-redesigner.md`가 이번 리뷰(reviewer 자체 프로세스 설계 검토)와 개념적으로 겹쳐 보여 재사용을 시도했으나, 세 파일 모두 "정체성/관심사/평가기준/참고파일"(6대 요소 본문)이 이전 라운드 대상(`pm-main-agent-methodology.md`, "훅+스킬 조합" 등)에 구체적으로 고정돼 있어(§0 "역할개념 고정" 규칙이 소급 적용 안 됨) 문자 그대로 재사용하면 엉뚱한 대상을 리뷰하게 됨 — 그대로 재사용하지 않고 신규 페르소나로 처리함(상세 근거: `docs/reviewer/review-reviewer-repeat-review-reduction-2026-08-10.md` RV-002). **후속 필요**: 위 3개 파일의 6대 요소 본문을 역할개념 수준으로 일반화하는 소급 정리(trainer 후속 과제).
 
 ## 유지 책임
 
