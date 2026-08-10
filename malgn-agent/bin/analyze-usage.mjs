@@ -14,7 +14,8 @@
  * 옵션:
  *   --days N     기본 1. 로컬 타임존 기준 최근 N일(오늘 포함)을 집계.
  *   --project S  cwd에 S가 부분 포함된 세션만 집계 (필터 없으면 전체).
- *   --top N      세션/API호출 순위에서 상위 몇 건을 보여줄지. 기본 5 (API 호출 Top은 기본 10).
+ *   --top N      세션/API호출/도구별/서브에이전트별/프로젝트별 순위에서 상위 몇 건을 보여줄지.
+ *                기본 5 (API 호출 Top만 기본 10, 세션 Top의 2배).
  *   --out PATH   같은 리포트를 마크다운 파일로도 저장.
  */
 
@@ -67,7 +68,7 @@ function printHelp() {
 
   --days N     최근 N일 집계 (기본 1 = 오늘, 로컬 타임존 기준)
   --project S  cwd에 S가 포함된 세션만 집계
-  --top N      세션 순위 Top N (기본 5, API 호출 Top은 자동으로 그 2배)
+  --top N      세션/도구별/서브에이전트별/프로젝트별 순위 Top N (기본 5, API 호출 Top은 자동으로 그 2배)
   --out PATH   결과를 마크다운 파일로도 저장
 `);
 }
@@ -140,6 +141,23 @@ function isHumanPromptContent(content) {
   return false;
 }
 
+/** user 라인 content에서 사람이 입력한 프롬프트의 텍스트만 뽑아 공백 정규화한 한 줄로 변환 */
+function extractHumanPromptText(content) {
+  let raw;
+  if (typeof content === 'string') {
+    raw = content;
+  } else if (Array.isArray(content)) {
+    raw = content
+      .filter((b) => b && b.type === 'text' && typeof b.text === 'string')
+      .map((b) => b.text)
+      .join(' ');
+  } else {
+    raw = '';
+  }
+  raw = (raw || '').replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim();
+  return raw || '(텍스트 없음)'; // 이미지/파일첨부 등 텍스트 블록이 없는 경우
+}
+
 /** assistant 라인 content에서 tool_use 블록 이름들을 추출 */
 function extractToolUseNames(content) {
   if (!Array.isArray(content)) return [];
@@ -161,6 +179,8 @@ function newSessionAgg(sessionId) {
     cwd: null,
     firstTs: null,
     lastTs: null,
+    firstPrompt: null,
+    lastPrompt: null,
     tokens: { input: 0, output: 0, cacheCreate: 0, cacheRead: 0 },
     mainTokens: { input: 0, output: 0, cacheCreate: 0, cacheRead: 0 },
     sidechainTokens: { input: 0, output: 0, cacheCreate: 0, cacheRead: 0 },
@@ -184,6 +204,27 @@ function addTokens(bucket, usage) {
 function tokenSum(bucket) {
   return bucket.input + bucket.output + bucket.cacheCreate + bucket.cacheRead;
 }
+
+function newBucket() {
+  return { input: 0, output: 0, cacheCreate: 0, cacheRead: 0 };
+}
+
+/** usage를 divisor로 균등 분할해 bucket에 누적 (한 API 호출에 도구가 여러 개면 나눠 귀속) */
+function addSplitTokens(bucket, usage, divisor) {
+  const d = divisor > 0 ? divisor : 1;
+  bucket.input += (usage.input_tokens || 0) / d;
+  bucket.output += (usage.output_tokens || 0) / d;
+  bucket.cacheCreate += (usage.cache_creation_input_tokens || 0) / d;
+  bucket.cacheRead += (usage.cache_read_input_tokens || 0) / d;
+}
+
+/** 정렬기준 합계: input + cache_creation + output (cache_read는 재사용이라 제외 — 기존 Top10 로직과 동일 스펙) */
+function sortMetricOf(bucket) {
+  return bucket.input + bucket.cacheCreate + bucket.output;
+}
+
+// 서브에이전트 위임에 쓰이는 도구명. 표준 Claude Code는 "Task", 이 조직의 커스텀 하네스는 "Agent"를 쓴다.
+const SUBAGENT_TOOL_NAMES = new Set(['Task', 'Agent']);
 
 async function run() {
   const opts = parseArgs(process.argv.slice(2));
@@ -211,6 +252,8 @@ async function run() {
   const dailyTotals = new Map(); // dateStr -> total tokens (all 4 fields summed)
   const dailySessionIds = new Map(); // dateStr -> Set(sessionId) — 세션 파편화 분석용
   const apiCalls = []; // { ts, sessionId, cwd, tokens{...}, sortMetric, toolNames, isSidechain }
+  const toolAgg = new Map(); // toolName -> { count, tokens: bucket }
+  const subagentAgg = new Map(); // label(subagent_type||description) -> { count, tokens: bucket }
   let totalTurns = 0;
   let totalApiCalls = 0;
   let parseErrors = 0;
@@ -268,6 +311,13 @@ async function run() {
         if (isHumanPromptContent(content)) {
           agg.turns++;
           totalTurns++;
+          // 세션 식별용 프롬프트 요약은 최상위(non-sidechain) 턴만 대상으로 한다 —
+          // sidechain(서브에이전트 내부) 턴까지 섞으면 "이 세션이 무슨 작업이었는지"가 흐려진다.
+          if (!isSidechain) {
+            const promptText = extractHumanPromptText(content);
+            if (agg.firstPrompt === null) agg.firstPrompt = promptText;
+            agg.lastPrompt = promptText;
+          }
         }
         continue;
       }
@@ -301,6 +351,44 @@ async function run() {
         const toolNames = toolBlocks.map((b) => b.name);
 
         if (toolNames.length > 0) agg.lastToolName = toolNames[toolNames.length - 1];
+
+        // 도구별 / 서브에이전트별 집계: 한 API 호출에 도구가 여러 개면 그 호출의 토큰을 도구 수만큼 균등 분할해 귀속한다.
+        if (toolBlocks.length > 0) {
+          const divisor = toolBlocks.length;
+          for (const block of toolBlocks) {
+            let tAgg = toolAgg.get(block.name);
+            if (!tAgg) {
+              tAgg = { count: 0, tokens: newBucket() };
+              toolAgg.set(block.name, tAgg);
+            }
+            tAgg.count++;
+            addSplitTokens(tAgg.tokens, usage, divisor);
+
+            if (SUBAGENT_TOOL_NAMES.has(block.name)) {
+              const input = block.input || {};
+              const label =
+                (typeof input.subagent_type === 'string' && input.subagent_type.trim()) ||
+                (typeof input.description === 'string' && input.description.trim()) ||
+                '(subagent_type/description 없음)';
+              let sAgg = subagentAgg.get(label);
+              if (!sAgg) {
+                sAgg = { count: 0, tokens: newBucket() };
+                subagentAgg.set(label, sAgg);
+              }
+              sAgg.count++;
+              addSplitTokens(sAgg.tokens, usage, divisor);
+            }
+          }
+        } else {
+          const key = '(텍스트 응답, 도구 없음)';
+          let tAgg = toolAgg.get(key);
+          if (!tAgg) {
+            tAgg = { count: 0, tokens: newBucket() };
+            toolAgg.set(key, tAgg);
+          }
+          tAgg.count++;
+          addSplitTokens(tAgg.tokens, usage, 1);
+        }
 
         // 개별 API 호출 비용 (스펙: input + cache_creation + output, cache_read 제외)
         const sortMetric =
@@ -436,14 +524,18 @@ async function run() {
 
   push(`## 3. 세션별 토큰 소비 순위 (Top ${opts.top})`);
   push();
-  push(`| 순위 | 세션ID | 프로젝트(cwd) | 시작~종료 | 총 토큰 | 턴 수 | API 호출 | 턴당 평균 API 호출 |`);
-  push(`|---|---|---|---|---|---|---|---|`);
+  push(
+    `| 순위 | 세션ID | 프로젝트(cwd) | 첫 프롬프트 | 마지막 프롬프트 | 시작~종료 | 총 토큰 | 턴 수 | API 호출 | 턴당 평균 API 호출 |`
+  );
+  push(`|---|---|---|---|---|---|---|---|---|---|`);
   sessionList.slice(0, opts.top).forEach((s, idx) => {
     const { agg, total, avgApiPerTurn } = s;
     const period = agg.firstTs && agg.lastTs ? `${localTimeStr(agg.firstTs)} ~ ${localTimeStr(agg.lastTs)}` : '(알 수 없음)';
     const avgStr = avgApiPerTurn === Infinity ? '∞ (턴 없이 API 호출)' : avgApiPerTurn.toFixed(1);
+    const firstPromptLabel = truncate(agg.firstPrompt || '(없음)', 90);
+    const lastPromptLabel = truncate(agg.lastPrompt || '(없음)', 90);
     push(
-      `| ${idx + 1} | ${shortId(agg.sessionId)} | ${truncate(agg.cwd || '(unknown)', 40)} | ${period} | ${fmt(
+      `| ${idx + 1} | ${shortId(agg.sessionId)} | ${truncate(agg.cwd || '(unknown)', 40)} | ${firstPromptLabel} | ${lastPromptLabel} | ${period} | ${fmt(
         total
       )} | ${agg.turns} | ${agg.apiCalls} | ${avgStr} |`
     );
@@ -517,6 +609,103 @@ async function run() {
     }
   } else {
     push(`분석할 세션이 없습니다.`);
+  }
+  push();
+
+  // 8. 도구별 사용량
+  const toolList = [...toolAgg.entries()]
+    .map(([name, v]) => ({ name, count: v.count, tokens: v.tokens, sortMetric: sortMetricOf(v.tokens) }))
+    .sort((a, b) => b.sortMetric - a.sortMetric);
+
+  push(`## 8. 도구별 사용량 (Top ${opts.top})`);
+  push();
+  push(
+    `(정렬 기준: input + cache_creation + output 합산 토큰 — cache_read는 재사용 비용이라 제외. ` +
+      `한 API 호출에서 도구를 여러 개 동시 사용했다면 그 호출의 토큰을 도구 수만큼 균등 분할해 귀속합니다.)`
+  );
+  push();
+  if (toolList.length === 0) {
+    push(`집계된 도구 호출이 없습니다.`);
+  } else {
+    push(`| 순위 | 도구 | 호출 횟수 | input | cache_creation | output | cache_read | 정렬기준 합계 |`);
+    push(`|---|---|---|---|---|---|---|---|`);
+    toolList.slice(0, opts.top).forEach((t, idx) => {
+      push(
+        `| ${idx + 1} | ${t.name} | ${t.count} | ${fmt(t.tokens.input)} | ${fmt(t.tokens.cacheCreate)} | ${fmt(
+          t.tokens.output
+        )} | ${fmt(t.tokens.cacheRead)} | ${fmt(t.sortMetric)} |`
+      );
+    });
+  }
+  push();
+
+  // 9. 서브에이전트별 위임 집계
+  const subagentList = [...subagentAgg.entries()]
+    .map(([label, v]) => ({ label, count: v.count, tokens: v.tokens, sortMetric: sortMetricOf(v.tokens) }))
+    .sort((a, b) => b.sortMetric - a.sortMetric);
+
+  push(`## 9. 서브에이전트별 위임 집계 (Task/Agent 도구, Top ${opts.top})`);
+  push();
+  if (subagentList.length === 0) {
+    push(`서브에이전트 위임(Task/Agent 도구) 호출이 탐지되지 않았습니다.`);
+  } else {
+    push(
+      `(표시된 토큰은 위임을 호출한 시점의 API 호출 토큰입니다 — 서브에이전트 내부 실행에서 실제로 소비된 토큰은 별도 ` +
+        `sidechain으로 집계되며 여기에는 포함되지 않습니다. sidechain 총량 비중은 1번 섹션을 참고하세요.)`
+    );
+    push();
+    push(`| 순위 | 서브에이전트(subagent_type/description) | 위임 횟수 | input | cache_creation | output | cache_read | 정렬기준 합계 |`);
+    push(`|---|---|---|---|---|---|---|---|`);
+    subagentList.slice(0, opts.top).forEach((s, idx) => {
+      push(
+        `| ${idx + 1} | ${truncate(s.label, 60)} | ${s.count} | ${fmt(s.tokens.input)} | ${fmt(
+          s.tokens.cacheCreate
+        )} | ${fmt(s.tokens.output)} | ${fmt(s.tokens.cacheRead)} | ${fmt(s.sortMetric)} |`
+      );
+    });
+  }
+  push();
+
+  // 10. 프로젝트(cwd)별 집계
+  const projectAgg = new Map(); // cwd -> { sessionIds: Set, tokens: bucket }
+  for (const agg of sessions.values()) {
+    const key = agg.cwd || '(unknown)';
+    let pAgg = projectAgg.get(key);
+    if (!pAgg) {
+      pAgg = { sessionIds: new Set(), tokens: newBucket() };
+      projectAgg.set(key, pAgg);
+    }
+    pAgg.sessionIds.add(agg.sessionId);
+    pAgg.tokens.input += agg.tokens.input;
+    pAgg.tokens.output += agg.tokens.output;
+    pAgg.tokens.cacheCreate += agg.tokens.cacheCreate;
+    pAgg.tokens.cacheRead += agg.tokens.cacheRead;
+  }
+  const projectList = [...projectAgg.entries()]
+    .map(([cwd, v]) => {
+      const total = tokenSum(v.tokens);
+      const denom = v.tokens.input + v.tokens.cacheCreate + v.tokens.cacheRead;
+      const hitRate = denom > 0 ? v.tokens.cacheRead / denom : null;
+      return { cwd, total, sessionCount: v.sessionIds.size, hitRate };
+    })
+    .sort((a, b) => b.total - a.total);
+
+  push(`## 10. 프로젝트(cwd)별 집계 (Top ${opts.top})`);
+  push();
+  push(`(개인정보 유의: cwd는 로컬 작업 디렉터리 절대경로입니다. 공유 전 SKILL.md의 "개인정보 유의" 안내를 참고하세요.)`);
+  push();
+  if (projectList.length === 0) {
+    push(`집계된 프로젝트가 없습니다.`);
+  } else {
+    push(`| 순위 | 프로젝트(cwd) | 총 토큰 | 세션 수 | 캐시 히트율 |`);
+    push(`|---|---|---|---|---|`);
+    projectList.slice(0, opts.top).forEach((p, idx) => {
+      push(
+        `| ${idx + 1} | ${truncate(p.cwd, 50)} | ${fmt(p.total)} | ${p.sessionCount} | ${
+          p.hitRate === null ? '데이터 없음' : pct(p.hitRate)
+        } |`
+      );
+    });
   }
   push();
 
