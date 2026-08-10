@@ -94,6 +94,8 @@ This file provides guidance to Claude Code when working with code in this reposi
 ①중요한 작업 완료 ②WBS 단계 변경 ③중요한 설계 결정 ④blocker 발생/해결 ⑤세션 종료 ⑥context compact 직전.
 그 외에는 malgnai-hub \`work_record\`/\`decision_record\`/\`issue_record\`에만 기록하고 STATUS.md는 그대로 둔다 — STATUS.md는 "현재 스냅숏"이지 "매 턴 로그"가 아니다.
 
+**필수 규율:** ①주요 결정/이슈/교훈은 malgnai-hub에 기록. ②구조를 바꾸면 \`.claude/doc-drift.json\`과 아래 서술을 함께 갱신.
+
 ## Project Overview
 ${name} — ${desc}
 
