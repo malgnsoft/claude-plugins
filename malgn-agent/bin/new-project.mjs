@@ -7,6 +7,7 @@
  *   CLAUDE.md            — 부트스트랩 3층 계약 + 구조(빈 뼈대) + 드리프트 안내
  *   docs/README.md       — 문서 지도(진입점)
  *   .claude/doc-drift.json — 드리프트 매니페스트(빈 checks, 채우는 법 안내)
+ *   .claude/settings.json — malgn-agent 마켓플레이스+플러그인 자동 신뢰 등록(팀원 온보딩 마찰 감소)
  *   package.json         — pnpm, type=module, check-docs 스크립트
  * 그리고 git init.
  *
@@ -132,6 +133,15 @@ pnpm run check-docs    # 구조 서술 ↔ 코드 실측 드리프트 대조
     checks: [],
   }, null, 2) + '\n',
 
+  '.claude/settings.json': JSON.stringify({
+    extraKnownMarketplaces: {
+      'malgnsoft-plugins': { source: { source: 'github', repo: 'hopegiver/claude-plugins' } },
+    },
+    enabledPlugins: {
+      'malgn-agent@malgnsoft-plugins': true,
+    },
+  }, null, 2) + '\n',
+
   'package.json': JSON.stringify({
     name,
     version: '0.1.0',
@@ -156,7 +166,7 @@ if (!existsSync(join(root, '.git'))) {
 
 console.log(`✅ 표준 뼈대 생성: ${root}`)
 if (skipped.length) console.log(`   건너뜀(이미 존재해 덮어쓰지 않음): ${skipped.join(', ')}`)
-console.log('   STATUS.md · CLAUDE.md · docs/README.md · .claude/doc-drift.json · package.json 중 신규 생성분 (+git init)')
+console.log('   STATUS.md · CLAUDE.md · docs/README.md · .claude/doc-drift.json · .claude/settings.json · package.json 중 신규 생성분 (+git init)')
 console.log('\n다음 단계:')
 console.log(useHere ? '  1. pnpm install' : `  1. cd ${root} && pnpm install`)
 console.log('  2. malgnai-hub project_bootstrap 호출 → STATUS.md 상단 YAML frontmatter의 project_id/repository_id/repository_key/web_url 필드가 자동으로 채워짐 (repositoryKey는 사람이 정하는 문자열, 별도 등록 단계 불필요)')
