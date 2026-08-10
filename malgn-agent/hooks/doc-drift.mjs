@@ -28,6 +28,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname, basename } from 'node:path'
 import { homedir } from 'node:os'
 import { fileURLToPath } from 'node:url'
+import { findMalgnAgentBlockPath, AMBIGUOUS } from './lib/find-pm-block-path.mjs'
 
 function countGlob(baseDir, pattern) {
   const dir = join(baseDir, dirname(pattern))
@@ -69,12 +70,49 @@ export function computeDrift(cwd = process.cwd()) {
   return { results, drift, skipped }
 }
 
+/**
+ * checkPmBlockImport() — CLAUDE.md 의 PM 행동규율 `@import` 줄이 실제 malgn-agent 설치 경로와
+ * 여전히 일치하는지 수동 점검한다(docs/decision/malgnai-hub-project-bootstrap-redesign.md §4-5).
+ *
+ * SessionStart 훅(자동)은 없앴지만, `pnpm run check-docs`로 수동 확인은 남겨둬 `@import`가 조용히
+ * 깨졌을 때(마켓플레이스 별칭 변경, external-import 승인 거절 후 방치 등) 감지할 방법을 하나는
+ * 남긴다. import 줄 자체가 없으면(미설치 상태 — 이 저장소 자신 포함) 점검 대상이 아니므로 null을
+ * 반환해 조용히 스킵한다 — 강제 설치를 유도하지 않는다.
+ */
+export function checkPmBlockImport(cwd = process.cwd()) {
+  let claudeMd
+  try { claudeMd = readFileSync(join(cwd, 'CLAUDE.md'), 'utf8') } catch { return null }
+  const IMPORT_LINE_RE = /^@(.+pm-orchestration-block\.md)\s*$/m
+  const m = claudeMd.match(IMPORT_LINE_RE)
+  if (!m) return null // import 줄 자체가 없으면(미설치 상태 — 이 저장소 자신 포함) 점검 대상 아님, 강제하지 않는다
+  let resolved
+  try { resolved = findMalgnAgentBlockPath() } catch { resolved = null }
+  if (resolved === AMBIGUOUS) return { status: 'ambiguous', message: 'malgn-agent 마켓플레이스 후보가 2개 이상이라 경로를 하나로 특정할 수 없다.' }
+  if (!resolved) return { status: 'plugin-missing', message: 'malgn-agent 플러그인 원본을 찾을 수 없다(마켓플레이스 제거/미등록 가능성).' }
+  if (resolved !== m[1]) return { status: 'drift', message: `import 경로(${m[1]}) != 현재 설치 경로(${resolved}) — Edit로 교정 필요.` }
+  return { status: 'ok' }
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const cwd = process.argv[2] || process.cwd()
   const r = computeDrift(cwd)
-  if (!r) { console.log('(.claude/doc-drift.json 없음 — 드리프트 체크 대상 아님)'); process.exit(0) }
-  for (const x of r.results) console.log(`  ${x.actual === x.expected ? '✅' : '⚠️'} ${x.label}: 문서=${x.expected} 실측=${x.actual}`)
-  if (r.skipped.length) console.log('  (skip, 측정불가:', r.skipped.join(', ') + ')')
-  if (r.drift.length) { console.log('\n⚠️ 드리프트 — 매니페스트 expected 와 문서 서술을 실측에 맞춰 갱신하라.'); process.exit(1) }
-  console.log('\n✅ 문서가 코드와 일치.'); process.exit(0)
+  if (!r) { console.log('(.claude/doc-drift.json 없음 — 드리프트 체크 대상 아님)'); }
+  else {
+    for (const x of r.results) console.log(`  ${x.actual === x.expected ? '✅' : '⚠️'} ${x.label}: 문서=${x.expected} 실측=${x.actual}`)
+    if (r.skipped.length) console.log('  (skip, 측정불가:', r.skipped.join(', ') + ')')
+  }
+
+  // PM 행동규율 @import 드리프트는 doc-drift.json 매니페스트 유무와 무관하게 항상 점검한다
+  // (§4-5) — 단, sessionstart-context.mjs 는 computeDrift() 만 import 해서 쓰므로 이 CLI 블록
+  // 자체가 여기 있다는 사실만으로 "자동 세션 점검엔 포함 안 됨"이 구조적으로 보장된다.
+  const pmCheck = checkPmBlockImport(cwd)
+  if (pmCheck) {
+    console.log(pmCheck.status === 'ok' ? '  ✅ PM 행동규율 @import 정상' : `  ⚠️ PM 행동규율 @import: ${pmCheck.message}`)
+  }
+
+  const hasDrift = !!(r && r.drift.length)
+  const hasPmIssue = !!(pmCheck && pmCheck.status !== 'ok')
+  if (hasDrift) console.log('\n⚠️ 문서 드리프트 — 매니페스트 expected 와 문서 서술을 실측에 맞춰 갱신하라.')
+  if (!hasDrift && !hasPmIssue && r) console.log('\n✅ 문서가 코드와 일치.')
+  process.exit(hasDrift || hasPmIssue ? 1 : 0)
 }

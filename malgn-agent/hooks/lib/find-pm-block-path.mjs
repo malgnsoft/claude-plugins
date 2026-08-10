@@ -1,0 +1,102 @@
+/**
+ * find-pm-block-path.mjs — malgn-agent pm-orchestration-block.md 실제 설치 경로를 찾는 공용 유틸.
+ *
+ * 원래 hooks/pm-orchestration-nudge.mjs(SessionStart 훅, 2026-08-11 삭제됨)에 있던 로직을
+ * **변경 없이 그대로** 옮겼다(docs/decision/malgnai-hub-project-bootstrap-redesign.md §4-4).
+ * 유일한 차이는 pm-orchestration-block.md 를 찾는 상대경로 기준점뿐이다 — 원본은 hooks/ 안에
+ * 있어 같은 디렉토리를 봤지만, 이 파일은 hooks/lib/ 로 한 단계 옮겨졌으므로 부모 디렉토리를 본다
+ * (findMalgnAgentBlockPath() 자체의 마켓플레이스 글롭스캔 로직은 원본과 완전히 동일하다).
+ *
+ * 세 소비자가 이 모듈을 공유한다:
+ *   1. bin/new-project.mjs — 스캐폴딩 시점 1회 @import 삽입(§4-2)
+ *   2. skills/project-standards/scripts/check-pm-orchestration-block.mjs — 온디맨드 재확인(§4-3)
+ *   3. hooks/doc-drift.mjs — `pnpm run check-docs` 수동 드리프트 점검(§4-5)
+ *
+ * 이 모듈 자신은 SessionStart 훅이 아니다 — 어떤 이벤트에도 자동으로 실행되지 않는다. import 되지
+ * 않으면 아무 일도 하지 않는다(§4-1 "자동 없음, 온디맨드만" 원칙).
+ */
+import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { join, dirname } from 'node:path'
+import { homedir } from 'node:os'
+import { fileURLToPath } from 'node:url'
+
+// CLAUDE.md 안의 상태 마커: <!-- malgn-agent:pm-orchestration:installed:v1 --> / :declined:v1
+// 하위호환: 이 리팩터 이전에 설치된 구버전 마커는 "installed:" 리터럴 없이 그냥
+// <!-- malgn-agent:pm-orchestration:v1 --> 형태다. (installed|declined): 부분을 옵션으로 두어
+// 구버전도 매치하고, state 미캡처 시 'installed'로 취급한다(소비자 쪽 책임).
+export const STATE_MARKER_RE = /<!--\s*malgn-agent:pm-orchestration:(?:(installed|declined):)?v(\d+)\s*-->/
+// pm-orchestration-block.md 안의 버전 마커(그 파일이 버전의 단일 소스): <!-- malgn-agent:pm-orchestration:version:1 -->
+export const BLOCK_VERSION_RE = /<!--\s*malgn-agent:pm-orchestration:version:(\d+)\s*-->/
+// CLAUDE.md 안의 기존 @import 줄 탐지.
+export const IMPORT_LINE_RE = /^@(.+pm-orchestration-block\.md)\s*$/m
+
+// findMalgnAgentBlockPath() 가 "2개 이상 매치인데 enabledPlugins 로도 하나로 특정 못 함" 상태를 나타내는 내부 전용
+// 센티널. 어떤 실제 경로 문자열과도 절대 같을 수 없으므로 안전하게 구분된다(파일에 쓰이거나 직렬화되지 않음).
+export const AMBIGUOUS = Symbol('ambiguous-malgn-agent-marketplace-match')
+
+export function readBlockFile() {
+  const raw = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), '..', 'pm-orchestration-block.md'),
+    'utf8'
+  )
+  const m = raw.match(BLOCK_VERSION_RE)
+  if (!m) return null
+  const version = Number(m[1])
+  // 본문 = 버전 마커가 있는 줄 다음부터 (그 위의 버전규칙 설명 주석, 마커 줄 자체는 제외)
+  const markerLineEnd = raw.indexOf('\n', m.index)
+  const body = (markerLineEnd === -1 ? '' : raw.slice(markerLineEnd + 1)).trim()
+  return { version, body }
+}
+
+/**
+ * 마켓플레이스 로컬 별칭을 몰라도 파일시스템을 직접 스캔해 malgn-agent 플러그인의
+ * pm-orchestration-block.md 실제 위치를 찾는다(정적 하드코딩 금지).
+ * 0개 → null, 1개 → 그 경로, 2개 이상 → enabledPlugins 의 "malgn-agent@<별칭>" 키로 소거,
+ * 그래도 모호하면 AMBIGUOUS.
+ */
+export function findMalgnAgentBlockPath() {
+  const marketplacesDir = join(homedir(), '.claude', 'plugins', 'marketplaces')
+  let entries = []
+  try {
+    entries = readdirSync(marketplacesDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+  } catch {
+    return null
+  }
+
+  const matches = []
+  for (const alias of entries) {
+    const candidate = join(marketplacesDir, alias, 'malgn-agent', 'hooks', 'pm-orchestration-block.md')
+    if (existsSync(candidate)) matches.push({ alias, path: candidate })
+  }
+
+  if (matches.length === 0) return null
+  if (matches.length === 1) return matches[0].path
+
+  // 2개 이상: ~/.claude/settings.json + .claude/settings.json + .claude/settings.local.json 의
+  // enabledPlugins 에서 "malgn-agent@<별칭>" 패턴을 찾아 그 별칭과 일치하는 경로를 우선 채택.
+  const enabledAliases = new Set()
+  const settingsPaths = [
+    join(homedir(), '.claude', 'settings.json'),
+    join(process.cwd(), '.claude', 'settings.json'),
+    join(process.cwd(), '.claude', 'settings.local.json'),
+  ]
+  for (const p of settingsPaths) {
+    try {
+      const s = JSON.parse(readFileSync(p, 'utf8'))
+      const enabled = s && s.enabledPlugins
+      if (enabled && typeof enabled === 'object') {
+        for (const key of Object.keys(enabled)) {
+          if (!enabled[key]) continue
+          const m = key.match(/^malgn-agent@(.+)$/)
+          if (m) enabledAliases.add(m[1])
+        }
+      }
+    } catch {}
+  }
+
+  const resolved = matches.filter((m) => enabledAliases.has(m.alias))
+  if (resolved.length === 1) return resolved[0].path
+  return AMBIGUOUS // 그래도 모호함 — 임의 선택 금지
+}
