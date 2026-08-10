@@ -55,10 +55,8 @@ mkdirSync(join(root, '.claude'), { recursive: true })
 const files = {
   'STATUS.md': `---
 provider: malgnai-hub
-project_id:
-repository_id:
+project_id: # 참고용 표시값 — 실제 도구 호출엔 repository_key만 사용됨(project_bootstrap 응답으로 채워짐)
 repository_key:
-web_url:
 ---
 
 # STATUS — ${name}
@@ -88,12 +86,13 @@ This file provides guidance to Claude Code when working with code in this reposi
 <!-- 구조 드리프트 대조: .claude/doc-drift.json + \`pnpm run check-docs\`. 전역 SessionStart 훅이 세션 시작 시 자동 경고. -->
 
 ## 새 세션 부트스트랩 (읽기 순서 = 토큰 예산)
-새 세션은 **자동 주입되는 \`STATUS.md\` + 이 \`CLAUDE.md\` 두 개면 오리엔테이션이 끝난다.** 현 상황 파악하려고 코드/docs를 통독하지 말 것.
-- **L0 (자동 주입):** \`STATUS.md\`(라이브 상태) + \`CLAUDE.md\`(안정 구조·규칙). → 시작에 충분.
-- **L1 (필요 시 pull):** malgnai-hub \`project_get_context\` / \`project_search_history\`.
+- **L0 (자동 주입):** \`STATUS.md\`(라이브 상태, 1000토큰 이내 유지) + 이 \`CLAUDE.md\`(구조·규칙). → 대부분의 경우 이것만으로 충분.
+- **L1 (필요할 때만 호출):** malgnai-hub \`project_get_context\`(project_id) 등 — L0로 충분하면 호출하지 않는다. 불필요한 호출은 토큰 낭비.
 - **L2 (깊은 작업만):** \`docs/README.md\` 지도 → 필요한 문서만.
 
-**필수 규율:** ①진행 상태는 \`STATUS.md\` 단일 소스(끝내기 전 갱신). ②주요 결정/이슈/교훈은 malgnai-hub에 기록. ③구조를 바꾸면 \`.claude/doc-drift.json\`과 아래 서술을 함께 갱신.
+**STATUS.md 재작성은 다음 6가지 상황으로 제한한다** — 그 외 평범한 진행 중에는 건드리지 않는다:
+①중요한 작업 완료 ②WBS 단계 변경 ③중요한 설계 결정 ④blocker 발생/해결 ⑤세션 종료 ⑥context compact 직전.
+그 외에는 malgnai-hub \`work_record\`/\`decision_record\`/\`issue_record\`에만 기록하고 STATUS.md는 그대로 둔다 — STATUS.md는 "현재 스냅숏"이지 "매 턴 로그"가 아니다.
 
 ## Project Overview
 ${name} — ${desc}
@@ -169,5 +168,6 @@ if (skipped.length) console.log(`   건너뜀(이미 존재해 덮어쓰지 않�
 console.log('   STATUS.md · CLAUDE.md · docs/README.md · .claude/doc-drift.json · .claude/settings.json · package.json 중 신규 생성분 (+git init)')
 console.log('\n다음 단계:')
 console.log(useHere ? '  1. pnpm install' : `  1. cd ${root} && pnpm install`)
-console.log('  2. malgnai-hub project_bootstrap 호출 → STATUS.md 상단 YAML frontmatter의 project_id/repository_id/repository_key/web_url 필드가 자동으로 채워짐 (repositoryKey는 사람이 정하는 문자열, 별도 등록 단계 불필요)')
-console.log('  3. 구조 잡히면 .claude/doc-drift.json 의 checks 채우고 `pnpm run check-docs`')
+console.log('  2. malgnai-hub project_bootstrap 호출 → 응답 중 provider/project_id/repositoryKey 3개를 STATUS.md 상단 YAML frontmatter의 동일한 이름 필드에 채워 넣는다(repository_id/web_url은 응답에 포함되어도 저장하지 않는다).')
+console.log('  3. STATUS.md는 1000토큰 이내로 유지하고, 재작성은 6가지 트리거(중요 작업 완료/WBS 단계변경/중요 설계결정/blocker 발생·해결/세션종료/context compact 직전)로 제한한다 — 평범한 진행 중에는 건드리지 않는다.')
+console.log('  4. 구조 잡히면 .claude/doc-drift.json 의 checks 채우고 `pnpm run check-docs`')
