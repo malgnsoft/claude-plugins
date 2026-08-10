@@ -1,5 +1,7 @@
 # PM 오케스트레이션 블록 전파 메커니즘 — `@import` 우선 + 드리프트 가드 설계
 
+> **[일부 대체됨, 2026-08-11]** `docs/decision/malgnai-hub-project-bootstrap-redesign.md` §4로 **SessionStart 훅 기반 상시 넛지/드리프트 감시 레이어만** 대체됐다(`pm-orchestration-nudge.mjs`가 `hooks.json`에서 빠지고, 그 로직은 `project-standards` 스킬의 온디맨드 절차로 이관됨 — 사용자가 명시 요청할 때만 실행). **`@import` 삽입 자체(이 문서 §2~§3의 경로탐색·표기 설계)는 대체되지 않고 계속 유효하다** — 다만 그 삽입 시점이 "매 세션 훅"에서 "`new-project.mjs` 스캐폴딩 시점 1회"로 바뀐다. STATUS.md 관련 결정(별도, `malgnai-hub-project-bootstrap-redesign.md` §1~§3)과는 무관한 변경이다. 아래 본문은 이력 보존을 위해 그대로 둔다(§4의 훅 상시주입 안전망 서술은 더 이상 SessionStart 경로로는 적용되지 않는다는 점만 유의).
+
 - 작성: architect (2026-08-10)
 - 확정 방향(사용자 지시): **`@import` 우선 방식 + 경로 취약성은 드리프트 가드로 보완**
 - 대상 코드: `malgn-agent/hooks/pm-orchestration-nudge.mjs`, `pm-orchestration-block.md`, `hooks.json`

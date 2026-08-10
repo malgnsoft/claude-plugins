@@ -17,7 +17,7 @@
 
 캡이 걸리면 중복 주입되더라도 최악 2×1000토큰 이하로 상한이 걸린다 — 이 저장소 자신의 현재 실측(약 1,844토큰, cl100k_base 근사, 2026-08-11 tiktoken 실측)보다도 낮은 수준이다. 즉 "훅 두 개가 겹쳐 도는 것" 자체는 이번 결정으로 없애지 않지만, 겹쳐 돌아도 감당 가능한 크기로 눌러두는 쪽을 택했다.
 
-**부수 조치**: SessionStart 훅 제거 계획(오전 §0/§4, hooks.json 변경안)도 함께 철회한다(§4) — STATUS.md가 살아있으니 그 훅들이 원래 하던 일(자동 주입, PM 블록 넛지)도 다시 필요하다.
+**부수 조치(2026-08-11 재수정)**: SessionStart 훅 제거 계획은 STATUS.md 쪽(`sessionstart-context.mjs`)만 철회하고 복원했다. **PM 행동규율 블록 넛지(`pm-orchestration-nudge.mjs`)는 이후 별도 사용자 지시(decision `547c67be`)로 다시 SessionStart에서 빠졌다** — 두 훅을 동일하게 취급하지 않는다. §4에서 정확히 구분해 다룬다.
 
 ## 1. STATUS.md YAML frontmatter — 3필드로 축소
 
@@ -37,7 +37,22 @@ repository_key:
 - `project_id`는 `(user_id, repository_id)` 조합으로 **직원별로 다르게 발급**된다 — 같은 저장소라도 직원 A/B가 각자 `project_bootstrap`을 호출하면 서로 다른 `project_id`를 받는다.
 - malgnai-hub MCP 도구 10개는 전부 `repositoryKey`만 입력 파라미터로 받고, `projectId`는 어떤 도구에도 클라이언트 입력 파라미터로 존재하지 않는다.
 
-즉 `project_id`는 실제 도구 호출에는 전혀 쓰이지 않는 **순수 표시/참고용 값**이다. STATUS.md는 git에 커밋되므로, 최초 커밋자 이후 다른 직원이 그 파일을 열어보면 자신의 실제 `project_id`가 아닌 값을 보게 될 수 있다 — 기능은 깨지지 않는다(어떤 도구도 이 값을 안 쓰므로) 하지만 오해 소지가 있어 필드 옆에 짧은 캐비어트 주석을 남긴다(위 YAML 블록 참고). 이 사실만으로 `project_id` 필드를 다시 빼는 것은 제안하지 않는다 — 사용자가 이미 3필드로 확정했다.
+즉 `project_id`는 실제 도구 호출에는 전혀 쓰이지 않는 **순수 표시/참고용 값**이다. 필드 옆에 짧은 캐비어트 주석을 남긴다(위 YAML 블록 참고: "실제 도구 호출엔 repository_key만 사용됨"). 이 사실만으로 `project_id` 필드를 다시 빼는 것은 제안하지 않는다 — 사용자가 이미 3필드로 확정했다.
+
+> **2026-08-11 추가 수정(§1-b 참고)**: 이전 버전은 여기서 "STATUS.md가 git에 커밋되므로 최초 커밋자 이후 다른 직원이 자신의 실제 project_id가 아닌 값을 보게 될 수 있다"는 문제를 지적했었다. 이 문단은 **더 이상 유효하지 않다** — STATUS.md 자체를 git 추적에서 제외하기로 결정했기 때문이다(아래 §1-b). "실제 도구 호출엔 repository_key만 쓰이고 project_id는 참고용"이라는 사실 부분만 남기고, "다른 직원이 다른 값을 본다"는 우려는 근본 원인이 없어졌으므로 삭제한다.
+
+### 1-b. STATUS.md — git 추적 제외로 전환 (2026-08-11 추가, decision `00173a38`)
+
+**결정**: `new-project.mjs`가 스캐폴딩 시점부터 `STATUS.md`를 `.gitignore`에 등록해 git 추적에서 제외한다.
+
+**근거**: 위에서 확인한 대로 `project_id`는 `(user_id, repository_id)` 조합으로 직원별로 다르게 발급된다 — STATUS.md가 git에 커밋되는 공유 파일이면 이 "직원별로 다른 값"과 "팀 전체가 공유하는 파일" 사이에 구조적 불일치가 생긴다. STATUS.md를 애초에 git 추적 대상에서 빼면(팀 공유 파일 → 개인 로컬 캐시로 전환) 이 문제 자체가 근본적으로 사라진다 — 이는 malgnai-hub의 "프로젝트=직원 개인 작업기록" 데이터모델과도 정합성이 맞다(같은 저장소를 여러 직원이 각자 `project_bootstrap`하는 것 자체가 이미 이 모델을 전제하고 있었다).
+
+**구현**:
+1. `new-project.mjs`가 스캐폴딩 시 프로젝트 루트에 `.gitignore`를 생성한다(이미 있으면 append). `STATUS.md` 항목을 추가한다.
+2. `.claude/settings.json`/`.claude/doc-drift.json`은 이번 gitignore 대상이 **아니다** — 계속 커밋 대상으로 남는다. `.gitignore`에는 `STATUS.md` 한 줄만 추가한다(다른 항목을 임의로 더 넣지 않는다).
+3. `project-standards/SKILL.md`의 "STATUS.md는 git에 커밋되는 파일이므로 여기 넣을 수 있는 값은 project_id 등 식별자뿐이다"(§3 서술) — **이제 커밋되지 않는 파일**이므로 이 문장을 정정한다: "STATUS.md는 git에 커밋되지 않는 개인 로컬 캐시다(`.gitignore` 등록, 이번 결정) — 토큰/시크릿을 넣지 않는 이유는 이제 '커밋되는 파일이라서'가 아니라 단순히 STATUS.md의 책임범위가 아니기 때문이다(인증은 여전히 `device_token`이 전담)."
+
+**범위 밖(§9 참고)**: 이미 STATUS.md를 커밋해버린 기존 프로젝트를 어떻게 정리할지(`git rm --cached STATUS.md` 등 마이그레이션)는 이번 결정의 범위 밖이다.
 
 ### repository_key 값 관례 — 권장안(이번 원복의 핵심은 아님, 후속 검토)
 
@@ -79,34 +94,131 @@ repository_key:
 그 외에는 malgnai-hub `work_record`/`decision_record`/`issue_record`에만 기록하고 STATUS.md는 그대로 둔다 — STATUS.md는 "현재 스냅숏"이지 "매 턴 로그"가 아니다.
 ```
 
-## 4. SessionStart 훅 복원 — 오전의 제거 계획 전부 철회
+## 4. SessionStart 훅 — STATUS.md용은 유지, PM 블록용은 다시 제거 (2026-08-11 재수정, decision `547c67be`)
 
-오전 버전이 세운 다음 계획을 **전부 철회**한다:
-- ~~`hooks.json`에서 `SessionStart` 키 전체 삭제~~
-- ~~`sessionstart-context.mjs` 삭제~~
-- ~~`pm-orchestration-nudge.mjs` 삭제 + `findMalgnAgentBlockPath()`를 `lib/find-pm-block-path.mjs`로 이관~~
-- ~~`new-project.mjs`가 스캐폴딩 시점에 PM 블록 `@import`를 1회 삽입(오전 버전 §3)~~
-- ~~`doc-drift.mjs`에 `checkPmBlockImport()` 확장 추가(오전 버전 §4)~~
+**이 절은 두 개의 서로 다른 훅을 다르게 취급한다 — 섞어 읽지 말 것.**
 
-**복원 상태**: `hooks.json`은 원래 형태 그대로 유지한다 — 이번 결정에서 변경하지 않는다.
+| 훅 | 용도 | 상태 |
+|---|---|---|
+| `sessionstart-context.mjs` | STATUS.md 자동 주입 + doc-drift 경고 | **SessionStart에 그대로 유지** — §1~§3 STATUS.md 저비용화 결정과 세트, 이번 절에서 변경 없음 |
+| `pm-orchestration-nudge.mjs` | PM 행동규율 블록 마커 파싱 + 넛지 + 마켓플레이스 경로 드리프트 가드 | **SessionStart에서 다시 제거**(§4-1~§4-4). 파일 자체도 삭제하고 로직을 분리 이관한다 |
 
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      { "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/sessionstart-context.mjs\"" } ] },
-      { "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/pm-orchestration-nudge.mjs\"" } ] }
-    ],
-    "Stop": [
-      { "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/stop-mcp-reminder.cjs\"" } ] }
-    ]
-  }
+이전 라운드(바로 위 §0 마지막 문단, 이 문서 이전 버전)에서 "훅 제거 계획을 전부 철회하고 hooks.json을 원본 그대로 유지한다"고 썼던 것을 이번에 **PM 블록 쪽만 다시 뒤집는다** — STATUS.md 쪽은 그대로 둔다.
+
+### 4-1. 왜 PM 블록 쪽만 다시 제거하는가
+
+사용자 지시(malgnai-mcp decision `547c67be`) 원문: "import 체크는 매세션마다 하지 않고 첫 스캇폴딩시에만 적용. 필요시 사용자의 요구에 따라 스킬로 처리. 즉 pm 블록처리를 훅으로 하지 않음."
+
+STATUS.md는 "매 세션 현재 상태를 보여줘야 하는" 성격이라 SessionStart 훅이 필요하다(값이 세션마다 달라진다). 반면 PM 행동규율 블록의 `@import` 참조는 **스캐폴딩 시점에 한 번 정확히 걸어두면 그 뒤로는 값이 거의 바뀌지 않는 정적 배선**이다(마켓플레이스 별칭 변경도 극히 드물다). 매 세션 이 정적 배선을 다시 확인하는 비용(프로세스 기동+파싱)이 실익 대비 크다고 판단해 "스캐폴딩 시 1회 + 필요할 때만 온디맨드 재확인 + `pnpm run check-docs`로 수동 드리프트 감지"로 전환한다.
+
+### 4-2. `@import` 삽입 — `new-project.mjs`가 스캐폴딩 시점 1회
+
+오늘 오전 첫 재설계안(STATUS.md 폐기안, 지금은 그 부분만 철회됨) §3에서 이미 이 설계가 나와 있었다 — PM 블록 부분은 원래도 유효했던 아이디어라 그대로 재사용한다.
+
+**핵심 통찰**: `new-project.mjs`는 PM이 이미 `~/.claude/plugins/marketplaces/*/malgn-agent/` 아래의 **버전 없는 마켓플레이스 clone 경로**를 직접 지정해서 실행한다(`${CLAUDE_PLUGIN_ROOT}` 방식이 아니다 — 그건 hooks.json의 command에서만 쓰인다). 즉 `new-project.mjs` 안에서는 **자기 자신의 `import.meta.url`이 이미 정답 경로**다 — 별도 글롭 스캔이 필요 없다.
+
+```js
+// new-project.mjs, 기존 import 블록에 추가
+function loadPmOrchestrationBlockRef() {
+  try {
+    const blockPath = join(dirname(fileURLToPath(import.meta.url)), '..', 'hooks', 'pm-orchestration-block.md')
+    const raw = readFileSync(blockPath, 'utf8')
+    const m = raw.match(/<!--\s*malgn-agent:pm-orchestration:version:(\d+)\s*-->/)
+    if (!m) return null
+    return { path: blockPath, version: Number(m[1]) }
+  } catch { return null }
+}
+const pmBlock = loadPmOrchestrationBlockRef()
+```
+
+CLAUDE.md 템플릿에 (pmBlock이 있을 때만) 삽입:
+
+```markdown
+<!-- malgn-agent:pm-orchestration:installed:v${pmBlock.version} -->
+@${pmBlock.path}
+```
+
+`pmBlock`이 `null`이면(배포 누락 등 이례적 상황) 이 블록을 건너뛰고 콘솔에 경고만 출력한다 — 스캐폴딩 자체를 실패시키지 않는다. 이 로직은 CLAUDE.md 템플릿에만 관여하며 STATUS.md 생성 로직(§1~§3)과는 독립적이다.
+
+**동의 흐름은 다시 만들지 않는다**: `new-project.mjs`가 만드는 프로젝트는 빈 상태에서 시작하므로 "물어볼 대상"이 없다 — `.claude/settings.json`에 마켓플레이스+플러그인을 이미 무조건 등록하는 것과 같은 성격의 표준 스탬핑이다. installed/declined 마커는 "스캐폴딩 당시 몇 버전이었는지"의 수동적 메타데이터로 남는다.
+
+### 4-3. 온디맨드 재확인/재설치 — `project-standards` 스킬 확장 (신규 스킬 만들지 않음)
+
+**대상 상황**: 이미 스캐폴딩된 프로젝트에서 나중에 재확인/재설치가 필요할 때 — 마켓플레이스 별칭이 바뀌었거나, PM 블록 버전이 올라갔거나, 사용자가 처음에 거절했다가 나중에 설치하고 싶을 때. **매 세션 자동이 아니라 사용자가 명시적으로 요청했을 때만** 실행한다(예: "PM 행동규율 다시 확인해줘", "마켓플레이스 옮겼는데 PM 블록 깨졌나 봐줘").
+
+**신규 스킬 vs 기존 스킬 확장 — 판단(①의무, 대안 비교)**: 새 스킬을 만들지 않고 **`project-standards` 스킬에 절차를 추가**한다.
+- **대안 A(신규 스킬, 기각)**: 트리거 설명을 독립적으로 정교화할 수 있다는 장점은 있으나, 이 절차가 project-standards가 이미 소유한 동일 생애주기 이벤트(스캐폴딩 §7, 기존 폴더 초기화 §8)와 정확히 같은 범주(프로젝트 부트스트랩 상태 점검)라 스킬을 쪼개면 "부트스트랩 상태를 점검하려면 어느 스킬을 불러야 하나"를 매번 다시 판단해야 하는 부담이 생긴다. 이 절차 하나만으로 별도 스킬을 정당화할 만큼 넓은 주제도 아니다.
+- **대안 B(project-standards 확장, 채택)**: project-standards가 이미 "기존 폴더 초기화"(§8)에서 "STATUS.md 있으면 이미 초기화됨, `project_bootstrap`으로 동기화"라는 유사한 패턴을 다루고 있어 자연스럽게 이어붙는다. 스킬 하나가 "프로젝트 부트스트랩 전반"을 계속 담당하는 게 예측 가능성이 높다.
+
+**절차(SKILL.md 신규 절, 가칭 "§9. PM 행동규율 블록 재확인/재설치 — 온디맨드")**:
+
+```
+트리거: 사용자가 명시적으로 요청할 때만("PM 행동규율 다시 확인해줘" 류). 매 세션 자동 실행 아님.
+
+1. cwd의 CLAUDE.md를 읽어 `<!-- malgn-agent:pm-orchestration:(installed|declined)?:?vN -->` 마커와
+   `@...pm-orchestration-block.md` import 줄 존재 여부를 확인한다.
+2. 마커 자체가 없으면 AskUserQuestion으로 설치 여부를 묻는다(기존 pm-orchestration-nudge.mjs의
+   askInstallNudge() 안내문 로직을 그대로 재사용).
+3. installed인데 import 줄이 없거나(구버전) 경로가 실제 설치 위치와 다르면(드리프트):
+   findMalgnAgentBlockPath()로 정확한 경로를 재계산해 Edit로 교정한다.
+4. declined인데 사용자가 이번에 설치를 요청했다면 마커+import를 installed로 교체한다.
+5. findMalgnAgentBlockPath()가 AMBIGUOUS/null을 반환하면 사용자에게 그 사실을 알리고 진행하지 않는다.
+```
+
+**재사용 로직**: `findMalgnAgentBlockPath()`(마켓플레이스 글롭스캔 + `enabledPlugins` 별칭 소거 + `AMBIGUOUS` 처리), 마커 정규식(`STATE_MARKER_RE`/`BLOCK_VERSION_RE`/`IMPORT_LINE_RE`), `readBlockFile()`, `askInstallNudge()` 등의 안내문 문구 — 지금 `pm-orchestration-nudge.mjs`에 이미 구현되어 있다. **새로 짜지 않는다** — 아래 4-4에서 정확히 어디로 옮기는지 다룬다.
+
+### 4-4. 로직 분리 이관 — 세 소비자가 같은 경로탐색 알고리즘을 공유
+
+이번 라운드에서 코디네이터가 추가한 요구사항(아래 §4-5)까지 반영하면, `findMalgnAgentBlockPath()`/`AMBIGUOUS`를 필요로 하는 소비자가 **세 곳**으로 늘어난다 — ①(과거) SessionStart 훅 ②4-3의 온디맨드 스킬 ③4-5의 `doc-drift.mjs` 수동 점검. 오늘 오전 첫 재설계안 §4가 이미 이 정확한 이유로 공용 모듈 추출을 설계해뒀다("여러 트랙이 같은 범용 유틸을 필요로 하면 기존 트랙 코드를 직접 고치지 말고 공용 lib로 추출" 원칙) — 그 설계를 그대로 재사용한다. 두 선택지를 검토했다:
+
+- (a) `pm-orchestration-nudge.mjs`를 완전 삭제 — 장점: 죽은 코드 없음. 단점: 검증된 로직(마켓플레이스 별칭 소거, `AMBIGUOUS` 처리)을 그 자리에서 통째로 잃는다. 단독으로는 기각.
+- (b) 로직을 공용 lib로 추출한 뒤 원본 파일은 삭제 — **채택**.
+
+**이관 계획**:
+1. **`malgn-agent/hooks/lib/find-pm-block-path.mjs`(신설)** — `findMalgnAgentBlockPath()`/`AMBIGUOUS`/`readBlockFile()`/`STATE_MARKER_RE`/`BLOCK_VERSION_RE`/`IMPORT_LINE_RE`를 **로직 변경 없이 그대로** 옮긴다. 세 소비자 모두가 필요로 하는 공통부다.
+2. **`malgn-agent/hooks/doc-drift.mjs`(확장)** — §4-5에서 상세.
+3. **`malgn-agent/skills/project-standards/scripts/check-pm-orchestration-block.mjs`(신설)** — `lib/find-pm-block-path.mjs`를 import해서 경로 계산을 위임하고, 그 위에 온디맨드 스킬 전용 로직(마커 읽기/쓰기 지시문 생성 — 기존 `askInstallNudge()`/`migrateToImportInstruction()`/`rewriteImportInstruction()` 등)을 얹는다. Claude 세션이 4-3 절차를 따라가며 이 스크립트를 호출해 "지금 상태가 뭔지" 확인하고, 실제 마커/import 줄 쓰기는 세션이 Edit 도구로 수행한다(기존 `pm-orchestration-nudge.mjs`가 "훅은 파일을 쓰지 않는다"는 불변식을 지켰던 것과 동일 원칙 — 이 스크립트도 파일을 쓰지 않는다).
+4. **`malgn-agent/hooks/pm-orchestration-nudge.mjs`(삭제)** — 위 1~3으로 로직이 전부 분리 이관됐으므로 원본은 삭제한다. `hooks.json`에서 이미 참조가 빠졌으므로(§4-1, 실제 파일도 이번 세션에 수정 완료 — §6) 죽은 코드로 남기지 않는다.
+
+### 4-5. `doc-drift.mjs` 확장 — `pnpm run check-docs`로 `@import` 드리프트 수동 점검 (코디네이터 추가 지시)
+
+SessionStart 훅(자동)은 없애지만, 최소한 **수동 확인 경로는 남겨야** `@import`가 조용히 깨졌을 때(마켓플레이스 별칭 변경, external-import 승인 다이얼로그 거절 후 방치 등) 자동은 물론 수동으로도 감지할 방법이 하나도 없는 상태를 막을 수 있다. 오늘 오전 첫 재설계안 §4에 이미 상세 설계가 있었다 — 그대로 재사용한다.
+
+```js
+// malgn-agent/hooks/doc-drift.mjs 에 추가
+import { findMalgnAgentBlockPath, AMBIGUOUS } from './lib/find-pm-block-path.mjs'
+
+const IMPORT_LINE_RE = /^@(.+pm-orchestration-block\.md)\s*$/m
+
+export function checkPmBlockImport(cwd = process.cwd()) {
+  let claudeMd
+  try { claudeMd = readFileSync(join(cwd, 'CLAUDE.md'), 'utf8') } catch { return null }
+  const m = claudeMd.match(IMPORT_LINE_RE)
+  if (!m) return null // import 줄 자체가 없으면(미설치 상태 — 이 저장소 자신 포함) 점검 대상 아님, 강제하지 않는다
+  let resolved
+  try { resolved = findMalgnAgentBlockPath() } catch { resolved = null }
+  if (resolved === AMBIGUOUS) return { status: 'ambiguous', message: 'malgn-agent 마켓플레이스 후보가 2개 이상이라 경로를 하나로 특정할 수 없다.' }
+  if (!resolved) return { status: 'plugin-missing', message: 'malgn-agent 플러그인 원본을 찾을 수 없다(마켓플레이스 제거/미등록 가능성).' }
+  if (resolved !== m[1]) return { status: 'drift', message: `import 경로(${m[1]}) != 현재 설치 경로(${resolved}) — Edit로 교정 필요.` }
+  return { status: 'ok' }
 }
 ```
 
-`sessionstart-context.mjs`(STATUS.md 자동 주입 + doc-drift 경고)와 `pm-orchestration-nudge.mjs`(PM 블록 넛지 + 마켓플레이스 경로 드리프트 가드 — `pm-orchestration-block-import-design.md`의 원 설계 그대로)는 삭제하지 않고 기존 로직 그대로 유지한다. 이 두 훅에 대해 이번 문서는 별도 수정을 요구하지 않는다.
+CLI 실행부(`if (process.argv[1] ... )` 블록, `pnpm run check-docs`가 부르는 부분) 말미에 추가:
 
-**`docs/decision/pm-orchestration-block-import-design.md`에 오전에 추가했던 "[malgnai-hub 대상 프로젝트 한정 대체됨]" 포인터도 이번 세션에서 제거한다** — 그 문서의 원 설계(`@import` 우선 + 훅 상시주입 안전망 이중 레이어)가 다시 그대로 유효해졌으므로 "대체됨" 문구는 지금 시점에 부정확하다.
+```js
+const pmCheck = checkPmBlockImport(cwd)
+if (pmCheck) {
+  console.log(pmCheck.status === 'ok' ? '  ✅ PM 행동규율 @import 정상' : `  ⚠️ PM 행동규율 @import: ${pmCheck.message}`)
+  if (pmCheck.status !== 'ok') process.exitCode = 1
+}
+```
+
+**"매 세션 체크 아님"을 코드 구조로도 보장**: `checkPmBlockImport()`는 `doc-drift.mjs`의 named export일 뿐이고, 위 CLI 블록 안에서만 호출된다. 이 CLI 블록은 `doc-drift.mjs`가 **직접 스크립트로 실행될 때만**(`pnpm run check-docs`) 돌고, `sessionstart-context.mjs`가 `computeDrift()`만 import해서 쓰는 경로(매 세션 자동 실행)에서는 이 블록 자체가 실행되지 않는다 — **`sessionstart-context.mjs`는 이번 확장과 무관하며 수정하지 않는다.** 이 구조가 "자동 없음 + 수동만 있음"을 우연이 아니라 구조적으로 보장한다.
+
+(오전 §4의 원 설계와 차이: 그때는 `PROJECT_IDENTITY_MARKER_RE`로 "malgnai-hub 신규 스캐폴딩 대상"인지 먼저 게이트했었다 — 그건 그 설계가 CLAUDE.md에 project-identity YAML 블록을 새로 만드는 걸 전제했기 때문이다. 이번 원복으로 그 블록 자체가 없어졌으므로(§0/§1, project_id는 STATUS.md에 있다) 그 게이트는 빼고 **`@import` 줄의 유무 자체로 게이트**하도록 단순화했다 — 없으면 애초에 점검할 대상이 없다는 뜻이라 조용히 스킵한다.)
+
+**`docs/decision/pm-orchestration-block-import-design.md`의 포인터 노트도 이번 세션에서 다시 갱신했다**(정확한 문구로 — SessionStart 상시 넛지/드리프트 감시 레이어만 대체, `@import` 삽입 자체는 계속 유효) — §6에 실제 파일 조치를 명시한다.
 
 ## 5. L1(malgnai-hub 조회) — 다시 "선택적 호출" 원칙으로
 
@@ -120,14 +232,18 @@ repository_key:
 
 | 파일 | 변경 |
 |---|---|
-| `malgn-agent/hooks/hooks.json` | **변경 없음**(오전 삭제안 철회 — 원본 그대로 유지). |
-| `malgn-agent/hooks/sessionstart-context.mjs` | **변경 없음**(삭제 계획 철회). STATUS.md 실측 크기를 emit에 함께 표시하는 개선은 §2에서 언급한 선택적 후속 작업(이번 결정의 필수 항목 아님). |
-| `malgn-agent/hooks/pm-orchestration-nudge.mjs` | **변경 없음**(삭제 및 로직 이관 계획 철회). |
-| `malgn-agent/hooks/doc-drift.mjs` | **변경 없음**(`checkPmBlockImport` 확장 계획 철회). STATUS.md 크기 체크용 신규 프리미티브는 Tier 2 후속. |
-| `malgn-agent/hooks/pm-orchestration-block.md` | **변경 없음**(오전 §6이 제안한 상단 주석 갱신도 철회 — 훅이 원래대로 유일한 전달 경로이므로 "두 경로" 서술이 필요 없다). |
-| `malgn-agent/bin/new-project.mjs` | `STATUS.md` 파일 생성 **복원**(YAML frontmatter 3필드 — §1). `CLAUDE.md` 템플릿의 "새 세션 부트스트랩" 문구를 §3의 신규 템플릿(L0/L1 + 6가지 재작성 트리거)으로 교체. `docs/README.md` 템플릿도 STATUS.md 참조 복원. PM 블록 `@import` 삽입 로직(오전 §3)은 **추가하지 않음**(훅이 원래대로 처리). 콘솔 안내문은 §8로 교체. |
-| `docs/decision/pm-orchestration-block-import-design.md` | 오전에 추가한 "[malgnai-hub 대상 프로젝트 한정 대체됨]" 포인터 **제거**(§4). |
-| `malgn-agent/skills/project-standards/SKILL.md` | §3 YAML frontmatter 예시를 3필드로 갱신(§1) + `project_id` 비고 문구 추가. §3에 "1000토큰 상한 + 압축 규율 강화(완료 섹션 5~7개→3~5개)" 반영(§2). §5(L0/L1/L2)는 원래 서술이 사실상 그대로 맞으므로 §3 템플릿의 "6가지 트리거" 문구만 추가 반영. **오전 버전이 계획했던 "provider 분기 신설"(§0에 malgnai-hub/malgnai-mcp를 다르게 취급)은 철회** — 다시 단일 절차로 되돌아간다. |
+| `malgn-agent/hooks/hooks.json` | **실제 반영 완료(이번 세션)** — `SessionStart`에서 `pm-orchestration-nudge.mjs` 항목만 제거. `sessionstart-context.mjs`(STATUS.md용)와 `Stop`(stop-mcp-reminder.cjs)은 그대로 유지(§4-1). |
+| `malgn-agent/hooks/sessionstart-context.mjs` | **변경 없음.** STATUS.md 자동 주입 + `computeDrift()`만 호출한다 — `checkPmBlockImport()`(§4-5)는 호출하지 않는다(자동 체크 아님을 코드 구조로 보장, §4-5 마지막 문단). |
+| `malgn-agent/hooks/pm-orchestration-nudge.mjs` | **삭제.** 로직은 `lib/find-pm-block-path.mjs`(공통부)와 `skills/project-standards/scripts/check-pm-orchestration-block.mjs`(온디맨드 스킬 전용부)로 분리 이관한다(§4-4). |
+| `malgn-agent/hooks/lib/find-pm-block-path.mjs` | **신설.** `findMalgnAgentBlockPath()`/`AMBIGUOUS`/`readBlockFile()`/`STATE_MARKER_RE`/`BLOCK_VERSION_RE`/`IMPORT_LINE_RE`를 로직 변경 없이 이관(§4-4). `doc-drift.mjs`와 `check-pm-orchestration-block.mjs` 둘 다 이 모듈을 import한다. |
+| `malgn-agent/hooks/doc-drift.mjs` | `checkPmBlockImport()` export 추가, CLI 블록(`pnpm run check-docs`)에서만 호출(§4-5). STATUS.md 크기 체크용 신규 프리미티브(`fileTokenApprox`)는 Tier 2 후속으로 별도. |
+| `malgn-agent/hooks/pm-orchestration-block.md` | 상단 안내 주석 갱신 — "이 파일은 ①`new-project.mjs`가 스캐폴딩 시 1회 삽입하는 `@import`(§4-2) ②`project-standards` 스킬의 온디맨드 재확인 절차(§4-3), 두 경로로만 참조된다 — 더 이상 매 세션 훅이 읽지 않는다." 본문(행동 규율 내용) 자체는 변경 없음. |
+| `malgn-agent/bin/new-project.mjs` | `STATUS.md` 파일 생성 복원(YAML frontmatter 3필드 — §1) + 스캐폴딩 시 `.gitignore`를 생성/append해 `STATUS.md` 항목 추가(§1-b, 신규). `CLAUDE.md` 템플릿의 "새 세션 부트스트랩" 문구를 §3의 신규 템플릿(L0/L1 + 6가지 재작성 트리거)으로 교체. `docs/README.md` 템플릿도 STATUS.md 참조 복원. **PM 블록 `@import` 삽입 로직을 추가한다**(§4-2 — 이전 라운드에서는 "추가하지 않음"이었으나 이번 라운드에서 다시 필요해짐, 표 아래 비고 참고). 콘솔 안내문은 §8로 교체(3필드 + `.gitignore` 언급 반영 필요, §8 갱신). |
+| `docs/decision/pm-orchestration-block-import-design.md` | 포인터 노트를 **정확한 문구로 갱신**(이번 세션에 이미 반영) — "SessionStart 훅 기반 상시 넛지/드리프트 감시 레이어만 대체됨(스킬 온디맨드로 이관), `@import` 삽입 자체는 스캐폴딩 시점 1회로 계속 유지"(§4). |
+| `malgn-agent/skills/project-standards/SKILL.md` | §3 YAML frontmatter 예시를 3필드로 갱신(§1) + `project_id` 비고 문구 추가(수정본 — "다른 직원이 다른 값을 본다" 우려는 삭제, "repository_key만 실사용" 사실만 유지, §1). **"STATUS.md는 git에 커밋되는 파일이므로..." 서술을 "STATUS.md는 git에 커밋되지 않는 개인 로컬 캐시다(.gitignore 등록)"로 정정**(§1-b, 신규). §3에 "1000토큰 상한 + 압축 규율 강화(완료 섹션 5~7개→3~5개)" 반영(§2). §3 템플릿에 "6가지 트리거" 문구 추가 반영(§3). **신규 §9 "PM 행동규율 블록 재확인/재설치 — 온디맨드" 절 추가**(§4-3, `check-pm-orchestration-block.mjs` 호출 절차). "provider 분기 신설" 계획은 이전 라운드에서 이미 철회된 채로 유지(단일 절차). |
+| `malgn-agent/skills/project-standards/scripts/check-pm-orchestration-block.mjs` | **신설.** `lib/find-pm-block-path.mjs`를 import해 경로 계산을 위임하고, 마커 읽기/쓰기 지시문 생성(구 `askInstallNudge()`류)을 얹는다. 파일을 쓰지 않는다(§4-4). |
+
+**표 안 비고(§4-2 관련)**: PM 블록 `@import` 삽입 로직의 "추가/미추가" 판단이 문서 라운드마다 바뀐 이유를 명확히 해둔다 — ①오전(STATUS.md 폐기안): 훅이 통째로 없어지므로 스캐폴딩이 대신 삽입해야 했다(추가). ②직전 라운드(STATUS.md만 원복): PM 블록 훅도 함께 부활한다고 오판해 "훅이 처리하니 불필요"로 썼다(미추가, **이 판단은 틀렸다** — 아래 ③에서 정정됨). ③이번 라운드(decision `547c67be`): PM 블록 훅은 다시 제거되므로 스캐폴딩이 다시 삽입해야 한다(추가, 최종 확정).
 
 ### Tier 2 — 후속 검토 (이번 결정에서 확정하지 않음)
 
@@ -153,13 +269,17 @@ repository_key:
 ```
 2. malgnai-hub project_bootstrap 호출 → 응답 중 provider/project_id/repositoryKey 3개를 STATUS.md 상단 YAML frontmatter의 동일한 이름 필드에 채워 넣는다(repository_id/web_url은 응답에 포함되어도 저장하지 않는다).
 3. STATUS.md는 1000토큰 이내로 유지하고, 재작성은 6가지 트리거(중요 작업 완료/WBS 단계변경/중요 설계결정/blocker 발생·해결/세션종료/context compact 직전)로 제한한다 — 평범한 진행 중에는 건드리지 않는다.
-4. 구조 잡히면 .claude/doc-drift.json 의 checks 채우고 `pnpm run check-docs`
+4. STATUS.md는 .gitignore에 등록되어 git에 커밋되지 않는다(개인 로컬 캐시) — 팀과 공유할 내용은 malgnai-hub(work_record/decision_record/issue_record)에 남긴다.
+5. PM 행동규율(@import)이 걸려 있다 — 다음 세션(또는 재시작) 시 외부 파일 승인 다이얼로그가 뜰 수 있다, 반드시 승인할 것. 나중에 마켓플레이스 별칭 변경 등으로 재확인이 필요하면 project-standards 스킬에 "PM 행동규율 다시 확인해줘"로 요청한다(매 세션 자동 점검 아님).
+6. 구조 잡히면 .claude/doc-drift.json 의 checks 채우고 `pnpm run check-docs`(문서 드리프트 + PM 블록 @import 상태를 함께 점검 — 자동 세션 점검은 STATUS.md/doc-drift만 해당, PM 블록은 수동 점검만 있음)
 ```
 
 ## 9. 정직 명시 / 후속 조치
 
-- 이 문서는 같은 경로의 오전 버전("STATUS.md 폐기 + 훅 제거")을 덮어써서 대체한다 — 옛 내용은 git log로 조회 가능하다.
-- `docs/decision/pm-orchestration-block-import-design.md`의 대체 포인터 제거는 이 세션에서 함께 수행한다(§4, §6).
+- 이 문서는 같은 경로의 오전 버전("STATUS.md 폐기 + 훅 제거")을 덮어써서 대체한다 — 옛 내용은 git log로 조회 가능하다. 이후 같은 날 두 차례 더 개정됐다(PM 블록 훅 재제거 — decision `547c67be`, STATUS.md gitignore 전환 — decision `00173a38`) — 이 파일이 그 세 차례 개정을 모두 흡수한 최종본이다.
+- `docs/decision/pm-orchestration-block-import-design.md`의 포인터 노트는 이 세션에서 두 번 수정됐다(1차: 전체 대체 표기 → 제거, 2차: "SessionStart 상시감시 레이어만 대체, @import 삽입 자체는 유효"로 정확화) — 현재 버전이 최종이다.
 - STATUS.md 1000토큰 상한을 기계적으로 강제할 도구가 아직 없다(§2, §6 Tier 2) — 당분간은 PM의 자기 규율(§3 안내문)에 의존한다.
 - `project_get_context` 응답 스키마는 여전히 미검증이다(malgnai-hub 도구가 이번 세션에 연결되어 있지 않아 실측 불가) — L1이 다시 선택적이 되면서 리스크는 줄었지만 완전히 사라진 것은 아니다.
 - `repository_key`를 git remote 슬러그 기반으로 바꾸는 권장안(§1)은 실제 `project-standards/SKILL.md` 개정까지는 이번 세션에서 하지 않는다(Tier 2 후속).
+- **이미 STATUS.md를 커밋해버린 기존 프로젝트의 정리(`git rm --cached STATUS.md` 등 마이그레이션)는 이번 결정의 범위 밖이다**(§1-b) — `new-project.mjs`(신규 스캐폴딩)에만 적용되며, 기존 커밋 이력에서 STATUS.md를 제거하는 절차는 이번 문서에서 설계하지 않는다.
+- PM 블록 온디맨드 스킬의 `check-pm-orchestration-block.mjs` 정확한 CLI 인터페이스(예: `--report` 플래그 여부)는 이번 문서가 확정하지 않는다(§4-4) — trainer 구현 시 결정.
