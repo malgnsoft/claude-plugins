@@ -36,7 +36,9 @@ description: 맑은소프트 프로젝트 운영 표준 — 패키지 매니저(
   - `project_bootstrap`이 `project_id`/`repository_key`를 채운다(malgnai-hub 연동 시). frontmatter 다음 줄부터 `# STATUS — <이름>` 본문이 이어진다.
   - **`project_id` 비고**: `project_id`는 `(user_id, repository_id)` 조합으로 직원별로 다르게 발급되는 값이라, 다른 직원이 같은 STATUS.md를 열어보면 자신의 실제 값과 다른 project_id를 보게 될 수 있다 — 하지만 malgnai-hub MCP 도구는 전부 `repositoryKey`만 입력 파라미터로 받고 `projectId`는 어떤 도구에도 쓰이지 않으므로 기능은 깨지지 않는다. 순수 참고용 표시값이다.
   - **`repository_id`/`web_url`은 STATUS.md에 저장하지 않는다** — 내부 DB id·화면 링크는 실사용 가치가 낮다고 판단해 필드에서 제외했다(2026-08-11 원복 결정).
-  - **토큰/시크릿은 여기 넣지 않는다**: 인증은 프로젝트 단위가 아니라 플러그인 설치 시 입력한 `device_token`(사용자 단위, `userConfig`에 저장)으로 처리된다. STATUS.md는 git에 커밋되는 파일이므로 여기 넣을 수 있는 값은 project_id 등 식별자뿐이다.
+  - **토큰/시크릿은 여기 넣지 않는다**: 인증은 프로젝트 단위가 아니라 플러그인 설치 시 입력한 `device_token`(사용자 단위, `userConfig`에 저장)으로 처리된다. STATUS.md는 git에 커밋되지 않는 개인 로컬 캐시다(`.gitignore` 등록, 2026-08-11 결정) — 토큰/시크릿을 넣지 않는 이유는 이제 "커밋되는 파일이라서"가 아니라 단순히 STATUS.md의 책임범위가 아니기 때문이다(인증은 여전히 `device_token`이 전담).
+  - **git 추적 제외**: `new-project.mjs`가 스캐폴딩 시 `.gitignore`에 `STATUS.md`를 등록한다 — `project_id`가 `(user_id, repository_id)` 조합으로 직원별로 다르게 발급되는 값이라, 팀 공유 파일(git 커밋)로 두면 "직원별로 다른 값"과 "팀 전체가 공유하는 파일" 사이에 구조적 불일치가 생긴다. STATUS.md를 개인 로컬 캐시로 전환하면 이 문제 자체가 사라진다.
+- **이 상한/트리거는 malgnai-hub 대상 프로젝트를 우선 목표로 하며, `provider: malgnai-mcp` 프로젝트(이 저장소 `claude-plugins` 포함)에는 소급 적용을 강제하지 않는다.**
 - **크기 상한: 1000토큰 이내로 유지한다.** 이 저장소 자신의 STATUS.md가 압축 규율(완료 섹션 5~7개 유지)을 따르고도 약 1,844토큰까지 불어난 실측이 있었다(cl100k_base 근사, 2026-08-11) — 그 정도로는 부족하다는 뜻이다. 더 타이트하게 조인다:
   - **관리 규칙:** 완료 항목은 1줄 요약(+MCP id), 완료 섹션은 최근 **3~5개**만 유지(5~7개에서 축소). 헤더 라인은 매번 통째로 교체(과거 세션 "직전:" 체이닝 금지).
   - "진행 중(🚧)" 섹션도 append하지 않는다 — 단계가 바뀔 때마다 현재 상태로 즉시 재압축한다(lesson `1f2d41b6`).
@@ -98,6 +100,30 @@ node <이 플러그인 경로>/bin/new-project.mjs <프로젝트명> ["한 줄 �
 3. **pnpm install** 실행 (package.json이 새로 생겼거나 이미 있던 경우 모두).
 4. **malgnai-hub `project_bootstrap` 호출**로 프로젝트를 동기화한다. `repositoryKey`는 폴더명 기반으로 제안하고 사용자 확인 후 확정한다. 반환된 `project_id`/`repository_key`를 `STATUS.md` 상단 YAML frontmatter의 동일한 이름 필드에 채운다.
 5. 결과를 요약 보고한다: 새로 만든 파일 / 건너뛴(기존 유지) 파일 / malgnai-hub 연동 결과.
+
+**기존 5필드 STATUS.md(2026-08-11 원복 이전에 스캐폴딩된 프로젝트)는 그대로 둬도 기능상 문제없다** — 어떤 도구도 `repository_id`/`web_url` 필드를 파싱하지 않는다(SessionStart 훅은 STATUS.md를 필드 단위가 아니라 파일 전체를 문자열로 주입한다). 억지로 지금 3필드로 정리할 필요는 없다 — 다음 갱신 시점에 자연스럽게 3필드로 옮겨가면 되고, 급하지 않다.
+
+## 9. PM 행동규율 블록 재확인/재설치 — 온디맨드
+
+**대상 상황**: 이미 스캐폴딩된 프로젝트에서 나중에 재확인/재설치가 필요할 때 — 마켓플레이스 별칭이 바뀌었거나, PM 블록 버전이 올라갔거나, 사용자가 처음에 거절했다가 나중에 설치하고 싶을 때.
+
+**트리거: 사용자가 명시적으로 요청할 때만**(예: "PM 행동규율 다시 확인해줘", "마켓플레이스 옮겼는데 PM 블록 깨졌나 봐줘"). **매 세션 자동 실행이 아니다** — `new-project.mjs`가 스캐폴딩 시점 1회 `@import`를 삽입한 뒤(§7), 그 정적 배선을 매 세션 다시 확인하던 SessionStart 훅(구 `pm-orchestration-nudge.mjs`)은 제거됐다. 상시 감시가 없는 대신 이 온디맨드 절차와, `pnpm run check-docs`(수동 드리프트 점검, §6)가 안전망이다.
+
+절차:
+
+```bash
+node <이 플러그인 경로>/skills/project-standards/scripts/check-pm-orchestration-block.mjs [cwd]
+```
+
+이 스크립트는 파일을 쓰지 않는다 — cwd의 CLAUDE.md를 읽어 현재 상태를 JSON으로 출력할 뿐이다. 실제 CLAUDE.md 수정은 이 결과를 읽은 세션이 아래 절차대로 Edit로 수행한다:
+
+1. cwd의 CLAUDE.md에서 `<!-- malgn-agent:pm-orchestration:(installed|declined)?:?vN -->` 마커와 `@...pm-orchestration-block.md` import 줄 존재 여부를 확인한다(위 스크립트 `status` 필드로 판정: `no-marker`/`declined`/`legacy-no-import`/`ambiguous`/`plugin-missing`/`drift`/`ok`).
+2. `no-marker`(마커 자체가 없음): AskUserQuestion으로 설치 여부를 묻는다.
+3. `legacy-no-import`(installed인데 import 줄이 없음, 구버전) 또는 `drift`(경로가 실제 설치 위치와 다름): 스크립트가 제시한 `resolvedPath`로 Edit해 교정한다(사용자 재동의 불필요 — 콘텐츠 변경이 아니라 전달 방식/경로 교정일 뿐).
+4. `declined`인데 사용자가 이번에 설치를 요청했다면 마커+import를 installed로 교체한다.
+5. `ambiguous`/`plugin-missing`이면 CLAUDE.md를 건드리지 않고 그 사실을 사용자에게 알린다.
+
+경로 계산 로직(`findMalgnAgentBlockPath()`/`AMBIGUOUS`/`readBlockFile()`)은 `hooks/lib/find-pm-block-path.mjs`가 단일 소스다 — 이 스크립트와 `new-project.mjs`, `hooks/doc-drift.mjs`(수동 드리프트 점검) 셋 모두 같은 모듈을 import해 동일한 알고리즘을 공유한다.
 
 ## 체크리스트
 
