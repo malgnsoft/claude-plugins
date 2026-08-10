@@ -29,3 +29,8 @@
 
 ## 6. 출력포맷 (Output Format)
 reviewer-persona-panel-standard §5 표준 형식 — 지적마다 파일·줄 또는 diff 인용, 페르소나 종합판정(RAG) 명시.
+
+## 적용 이력 (Application Log)
+- 2026-08-10 / target_id: pm-orchestration-block-propagation / 3차 (review-pm-import-implementation-2026-08-10.md): @import 실제 구현의 배포 후 드리프트·조용한 열화 리스크 검증
+
+> 참고: 이 페르소나는 `persona-ops-maintainability-realist.md`와 역할개념이 사실상 동일하다(`docs/reviewer/personas/INDEX.md` 참조). 향후 재검토에서는 신규 파일을 만들지 말고 `persona-ops-maintainability-realist.md`를 재사용할 것.

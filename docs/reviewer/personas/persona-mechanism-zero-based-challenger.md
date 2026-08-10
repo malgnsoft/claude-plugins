@@ -23,3 +23,8 @@
 
 ## 6. 출력포맷 (Output Format)
 🔵 Rethink 항목으로 보고서 별도 섹션에 기록. "현재 구조 / 제안 구조 / 왜 더 나은가 / 예상 비용·리스크" 4열 표.
+
+## 적용 이력 (Application Log)
+- 2026-08-10 / target_id: pm-orchestration-block-propagation / 3차 (review-pm-import-implementation-2026-08-10.md): @import+드리프트가드 3중 구조 자체의 타당성 재검증(발산형)
+
+> 참고: 이 페르소나는 `persona-zero-based-redesigner.md`와 역할개념이 사실상 동일하다(`docs/reviewer/personas/INDEX.md` 참조). 향후 재검토에서는 신규 파일을 만들지 말고 `persona-zero-based-redesigner.md`를 재사용할 것.
