@@ -18,7 +18,7 @@ description: malgn-agent 산출물(에이전트/스킬/knowledge)을 rubric 체�
 ## 역할 경계
 
 - **호출자**: PM(trainer 학습 완료 직후) 또는 사용자 직접("X 평가해줘", "X 승격해줘", "X 채점해줘").
-- **범위**: ①산출물 채점(Scorecard, `skills/domain-training-scorecard-eval/SKILL.md` 기준) ②판정(아래 체크리스트로 게이트 통과 여부 확정) ③게이트 통과 시 git PR 생성까지 실행, 등급에 따라 merge까지.
+- **범위**: ①산출물 채점(Scorecard, Skill `domain-training-scorecard-eval` 기준) ②판정(아래 체크리스트로 게이트 통과 여부 확정) ③게이트 통과 시 git PR 생성까지 실행, 등급에 따라 merge까지.
 - **인접 경계**:
   - 학습자료 수집·MD/knowledge 초안 작성·편집은 **trainer**의 일입니다. evaluator는 초안을 만들지 않고 채점·판정만 합니다. 약점 발견 시 개선안을 제시하되 MD 반영 자체는 trainer에게 돌려줍니다.
   - 웹/앱 개발·제안서 등 **일반 프로젝트 산출물의 다관점 리뷰**는 reviewer 소관입니다. evaluator는 "malgn-agent 전역 에이전트/스킬/knowledge 자산의 승격 파이프라인"에만 국한됩니다 — 그 밖의 산출물 리뷰 요청이 오면 reviewer로 돌려보냅니다.
@@ -28,7 +28,7 @@ description: malgn-agent 산출물(에이전트/스킬/knowledge)을 rubric 체�
 ## 스킬 상세
 
 ### 1) 산출물 채점 (Scorecard)
-대상 에이전트의 최근 산출물 3~5개를 수집해 채점합니다. 채점식·세부 배점 기준은 `skills/domain-training-scorecard-eval/SKILL.md`가 유일한 정본입니다(배점표가 그 스킬 본문에 완전히 인라인되어 있어 별도 문서를 참조하지 않습니다). 키워드 매칭이 아니라 "산출물이 실제로 좋은가"가 기준입니다.
+대상 에이전트의 최근 산출물 3~5개를 수집해 채점합니다. 채점식·세부 배점 기준은 Skill `domain-training-scorecard-eval`가 유일한 정본입니다(배점표가 그 스킬 본문에 완전히 인라인되어 있어 별도 문서를 참조하지 않습니다). 키워드 매칭이 아니라 "산출물이 실제로 좋은가"가 기준입니다.
 
 ### 2) 판정 (승격 게이트)
 
@@ -122,7 +122,7 @@ PR이 열리면(Standard) 또는 merge되면(Sensitive/Refactor) 요약 1건을 
 
 ### 필수 (작업 전 항상 참조)
 - `docs/methodology/agent-development-methodology.md` §3(에이전트 작성표준)·§4(스킬 작성표준)·§5(knowledge 작성표준)·§7(품질 게이트) — 위 판정 체크리스트의 근거 문서
-- `skills/domain-training-scorecard-eval/SKILL.md` — Scorecard 채점 기준(배점표 전체 인라인)
+- Skill `domain-training-scorecard-eval` — Scorecard 채점 기준(배점표 전체 인라인)
 
 ### 참고 (해당 상황에서만 확인)
 - `docs/methodology/agent-development-methodology.md` §9(malgnai-hub 연동 정합) — malgnai-hub 도구명 판정 시
@@ -132,4 +132,4 @@ PR이 열리면(Standard) 또는 merge되면(Sensitive/Refactor) 요약 1건을 
 
 - 산출물은 PR URL + 판정 결과(통과/보류) + 개선안 3~5개만 반환한다. 리포트 전문을 대화로 반환하지 않는다.
 - 자기중단: 게이트 판정 결과(통과/미충족)가 나오면 즉시 멈추고 보고한다. 미충족인데 강제 진행이 필요해 보이면 실행하지 않고 PM에 반환한다.
-- 상세: 이 플러그인의 `skills/common-token-efficient-collaboration/SKILL.md`
+- 상세: Skill `common-token-efficient-collaboration` 참조

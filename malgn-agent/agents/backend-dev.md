@@ -74,7 +74,7 @@ description: 아키텍처 문서를 기반으로 실제 동작하는 백엔드 �
 - [ ] 설계의 모든 엔드포인트가 구현되었고, 모든 WHERE 쿼리에 테넌트 필터가 있는가?
 - [ ] 설계에서 명시한 트랜잭션/타임아웃/부분실패 시나리오를 구현했는가?
 - [ ] 모든 에러 응답이 설계의 권한 매트릭스와 일치하는가?
-- [ ] Sensitive 등급(DB·권한·인증·배포·결제·개인정보) 작업이면 Impact Check와 롤백 기준을 별도로 확인했는가? (기준: 이 플러그인의 `skills/common-task-grading-and-verification-depth/SKILL.md`)
+- [ ] Sensitive 등급(DB·권한·인증·배포·결제·개인정보) 작업이면 Impact Check와 롤백 기준을 별도로 확인했는가? (기준: Skill `common-task-grading-and-verification-depth`)
 - [ ] API 응답 스키마에서 필드를 제외·이름변경(특히 보안/리팩터링 목적)했다면, 그 필드명을 프론트에서 grep해 실제 소비처(URL 라우팅·재요청 API·selection 키 등)가 있는지 확인했는가 — 있으면 같은 세션에서 함께 갱신하거나 최소한 이슈로 명시 등록했는가? "백엔드 단독 변경 완료" 선언 전 필수 확인(lesson `2a6dfd3d`).
 - [ ] 기존 실행경로의 조회 캡/임계치(예: "3일·최대3건")를 공용 함수로 추출해 새 실행경로에 재사용했다면, 코드만 재사용한 게 아니라 그 캡 값의 존재 이유가 새 호출부의 목적과도 맞는지 별도로 검증했는가 — 값을 그대로 물려받으면 새 경로의 목적을 무력화할 수 있다(lesson `4566ec13`).
 - [ ] 설정파일(`wrangler.toml` 등) Edit 직후 `git diff` 라인수가 실제 변경량과 비례하는가? 안 맞으면(변경 안 한 라인까지 -/+로 보이면) CRLF 오염을 의심하고 `file <path>`로 라인엔딩을 확인한다(lesson `e22ac951`).
@@ -93,8 +93,8 @@ description: 아키텍처 문서를 기반으로 실제 동작하는 백엔드 �
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- **이 플러그인의 `skills/domain-backend-security-audit/SKILL.md`** — 3대 보안 규약 + 4가지 입력검증 위치 (매번 적용)
-- **이 플러그인의 `skills/domain-system-design-principles/SKILL.md`** — 4대 설계 의무(③비정상케이스 ④완결성)를 구현에서 충족하는지 검증
+- **Skill `domain-backend-security-audit`** — 3대 보안 규약 + 4가지 입력검증 위치 (매번 적용)
+- **Skill `domain-system-design-principles`** — 4대 설계 의무(③비정상케이스 ④완결성)를 구현에서 충족하는지 검증
 
 ### 참고 (상황별 확인)
 - **[상황: 기능 개발·버그 수정 착수 전/후 학습 루프를 돌릴 때]** Skill `learning-loop-patterns` — 작업 전 이력 확인→작업 중 결정 기록→작업 후 교훈 자산화 3단계 체크리스트와 구체 예시(malgnai-hub 기록 규칙 자체는 `common-learning-loop-knowledge-management` 참조)
@@ -106,4 +106,4 @@ description: 아키텍처 문서를 기반으로 실제 동작하는 백엔드 �
 
 ## 토큰 효율
 
-상세: 이 플러그인의 `skills/common-token-efficient-collaboration/SKILL.md` 참조
+상세: Skill `common-token-efficient-collaboration` 참조

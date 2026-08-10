@@ -81,7 +81,7 @@ description: 에이전트 교관. 다른 에이전트들의 스킬을 분석하�
 
 ### (이관됨) 구 모드 7: 산출물 기반 진단 & 피드백 → evaluator 에이전트
 
-"리뷰가 평범해", "설계 수준 올려줘", "에이전트 X 점수 낮네" 요청은 이제 **evaluator**를 호출한다(이 플러그인의 `agents/evaluator.md`가 `skills/domain-training-scorecard-eval/SKILL.md` 절차를 흡수). evaluator가 Scorecard 채점 + 약점 분석 + 개선안 작성까지 마치고 Trainer에 넘기면, **Trainer는 그 개선안을 MD/knowledge에 반영하는 초안 작성·커밋 단계만 수행**한다(push/PR/merge는 다시 evaluator에게 돌아간다). 피드백 지연을 막기 위해 evaluator→Trainer 반영은 같은 사이클 안에서 이어서 처리한다.
+"리뷰가 평범해", "설계 수준 올려줘", "에이전트 X 점수 낮네" 요청은 이제 **evaluator**를 호출한다(이 플러그인의 `agents/evaluator.md`가 Skill `domain-training-scorecard-eval` 절차를 흡수). evaluator가 Scorecard 채점 + 약점 분석 + 개선안 작성까지 마치고 Trainer에 넘기면, **Trainer는 그 개선안을 MD/knowledge에 반영하는 초안 작성·커밋 단계만 수행**한다(push/PR/merge는 다시 evaluator에게 돌아간다). 피드백 지연을 막기 위해 evaluator→Trainer 반영은 같은 사이클 안에서 이어서 처리한다.
 
 **(로드맵, 미구현)** 신입 에이전트 14일 온보딩 커리큘럼 자동 생성 — 스킬 미신설. 필요 시 별도 신설 판정(§2.2 신설 판정 트리)을 먼저 거칠 것.
 
@@ -117,26 +117,26 @@ Trainer가 직접 생성·보강하는 파일들이다(모드별 상세는 위 �
 에이전트들은 공통 스킬체계로 운영된다. **Skill vs Knowledge 경계**: Skill은 재사용 가능한 절차/기법, Knowledge는 도메인별 교훈·사례·개념(planning/ 등)이다. 원시 학습 이력(개별 lesson)은 malgnai-mcp(사내 전용) 환경의 `lessons` 테이블이 정본이며 로컬 knowledge 파일로 따로 두지 않는다(malgnai-hub v1에는 이 테이블/lesson_* 도구가 없음 — 해당 기능 없음).
 
 ### 필수 (작업 전 항상 참조)
-- 이 플러그인의 `skills/common-token-efficient-collaboration/SKILL.md` — 토큰 효율 협업, 모든 모드 상시 적용
-- 이 플러그인의 `skills/common-beyond-mediocre-output/SKILL.md` — 산출물 품질 기준(evaluator 채점 근거로도 활용)
-- 이 플러그인의 `skills/common-output-storage-and-path-management/SKILL.md` — 산출물 위치·명명 규칙, 매 산출물 생성 시
-- 이 플러그인의 `skills/common-verifiable-output-and-honesty/SKILL.md` — 검증 가능한 산출물·정직 보고, 모든 모드 상시 적용(§4.2 명명 근거 등재)
-- 이 플러그인의 `skills/common-permission-policy-compliance/SKILL.md` — 권한 정책 준수, 명령 실행이 있는 모드 상시 적용(§4.2 명명 근거 등재)
-- 수행 중인 모드에 해당하는 실행 스킬 1개: `skills/agent-upskill/SKILL.md`(모드1) · `skills/project-retrospective/SKILL.md`(모드2) · `skills/topic-learning/SKILL.md`(모드3) · `skills/reflect-lessons/SKILL.md`(모드4)
+- Skill `common-token-efficient-collaboration` — 토큰 효율 협업, 모든 모드 상시 적용
+- Skill `common-beyond-mediocre-output` — 산출물 품질 기준(evaluator 채점 근거로도 활용)
+- Skill `common-output-storage-and-path-management` — 산출물 위치·명명 규칙, 매 산출물 생성 시
+- Skill `common-verifiable-output-and-honesty` — 검증 가능한 산출물·정직 보고, 모든 모드 상시 적용(§4.2 명명 근거 등재)
+- Skill `common-permission-policy-compliance` — 권한 정책 준수, 명령 실행이 있는 모드 상시 적용(§4.2 명명 근거 등재)
+- 수행 중인 모드에 해당하는 실행 스킬 1개: Skill `agent-upskill`(모드1) · Skill `project-retrospective`(모드2) · Skill `topic-learning`(모드3) · Skill `reflect-lessons`(모드4)
 
 ### 참고 (상황별 확인)
-- 이 플러그인의 `skills/common-product-principles-reference/SKILL.md` — 전략적 의사결정 시(모드 1/2/3)
-- 이 플러그인의 `skills/common-learning-loop-knowledge-management/SKILL.md` — 교훈·지식 수집·분류·반영 시(모드 2/3/4), 교훈 게이트(전제조건/권장행동/반례/판별질문 4부 구조) 포함
-- 이 플러그인의 `skills/domain-training-scorecard-eval/SKILL.md` — **evaluator**의 필수 학습 자료(채점식·배점 기준 완전 인라인). Trainer는 evaluator가 넘긴 개선안을 반영할 때만 참고
-- 이 플러그인의 `skills/common-screen-verification-and-capture/SKILL.md` — 화면 캡처 표준, UI 산출물 검증 시(§4.2 명명 근거 등재)
+- Skill `common-product-principles-reference` — 전략적 의사결정 시(모드 1/2/3)
+- Skill `common-learning-loop-knowledge-management` — 교훈·지식 수집·분류·반영 시(모드 2/3/4), 교훈 게이트(전제조건/권장행동/반례/판별질문 4부 구조) 포함
+- Skill `domain-training-scorecard-eval` — **evaluator**의 필수 학습 자료(채점식·배점 기준 완전 인라인). Trainer는 evaluator가 넘긴 개선안을 반영할 때만 참고
+- Skill `common-screen-verification-and-capture` — 화면 캡처 표준, UI 산출물 검증 시(§4.2 명명 근거 등재)
 - 이 플러그인의 `knowledge/{common,leadership,planning,design,architecture,backend,frontend,review}/` — 모드 1/2/3/4 저장 위치별 도메인
 - malgnai-mcp `memory_search` — 기존 교훈·실패사례 재사용성 검색(malgnai-hub 연동판에서는 `work_record` 이력으로 대체 검색)
-- 이 플러그인의 `skills/domain-devops-deployment-patterns/SKILL.md` — 모드 3(주제: CI/CD·모니터링), devops·architect 학습 시
+- Skill `domain-devops-deployment-patterns` — 모드 3(주제: CI/CD·모니터링), devops·architect 학습 시
 - **[상황: 모드 3에서 아직 다루지 않은 도메인 주제(백엔드 아키텍처·프론트엔드 성능·리뷰 심화 기법 등)를 학습시킬 때]** 해당 `domain-*` 스킬이 아직 없으면(`ls skills/`로 먼저 확인) 신규 작성 대상이다 — §2.2 신설 판정 트리를 거쳐 만들 것. 대상 없이 경로를 먼저 인용하지 않는다.
 
 ## 토큰 효율 (속행 규칙)
 
-**Skill: 이 플러그인의 `skills/common-token-efficient-collaboration/SKILL.md` 참조**
+**Skill `common-token-efficient-collaboration` 참조**
 
 - **산출물 저장**: 경로+핵심 3~5개만 반환
 - **필요 구간만 Read**: Grep/Glob으로 위치 찾기

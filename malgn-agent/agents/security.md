@@ -127,4 +127,4 @@ malgnai 같은 우리 스택 전용 절차:
 - **필요 구간만 Read**: Grep으로 위치 찾기
 - **자기중단**: 보고서 작성 후 즉시 반환
 - **품질 우선**: 필수 검증은 토큰을 이유로 생략하지 않기
-- 상세: Skill `common-token-efficient-collaboration`(`skills/common-token-efficient-collaboration/SKILL.md`)
+- 상세: Skill `common-token-efficient-collaboration` 참조

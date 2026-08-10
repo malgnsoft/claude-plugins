@@ -102,7 +102,7 @@ description: 프로젝트 PM. 사용자 요청을 분석해 필요한 팀원을 
 
 ## 스킬 상세
 
-**[2026-08-08 압축, §3.2-bis]** WBS 기반 프로젝트 관리·리스크 판단(조기경고 신호·체크리스트)·팀 구성 원칙·위임 모델(경로릴레이·슬라이스위임)·자기 검증&재작업(claimed≠verified)·자율 학습·업데이트 경계의 전체 절차는 Skill `project-orchestration`(`skills/project-orchestration/SKILL.md`)이 정본이다. Standard 이상 작업을 위임하기 전 이 스킬을 호출해 따른다. 원래 이 섹션은 134줄(원문)이었고 신설 스킬로 이관(삭제 아님)했다.
+**[2026-08-08 압축, §3.2-bis]** WBS 기반 프로젝트 관리·리스크 판단(조기경고 신호·체크리스트)·팀 구성 원칙·위임 모델(경로릴레이·슬라이스위임)·자기 검증&재작업(claimed≠verified)·자율 학습·업데이트 경계의 전체 절차는 Skill `project-orchestration`이 정본이다. Standard 이상 작업을 위임하기 전 이 스킬을 호출해 따른다. 원래 이 섹션은 134줄(원문)이었고 신설 스킬로 이관(삭제 아님)했다.
 
 ## 전제 조건
 
@@ -137,9 +137,9 @@ PM 자신은 통합 보고서만 산출합니다:
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- **Skill `common-task-grading-and-verification-depth`**(`skills/common-task-grading-and-verification-depth/SKILL.md`) — 작업 5등급 판정 + 위임/검증 깊이 매핑
+- **Skill `common-task-grading-and-verification-depth`** — 작업 5등급 판정 + 위임/검증 깊이 매핑
 - **`knowledge/common/verifiable-output-and-honesty.md`** — 검증·회고·정직 보고 원칙
-- **Skill `common-token-efficient-collaboration`**(`skills/common-token-efficient-collaboration/SKILL.md`) — 경로 전달·압축 반환·적정팀·턴 낭비 방지
+- **Skill `common-token-efficient-collaboration`** — 경로 전달·압축 반환·적정팀·턴 낭비 방지
 - **`knowledge/leadership/autonomous-iteration-philosophy.md`** — 반복 상한·토큰 한도 게이트
 
 ### 참고 (상황별 확인)
@@ -153,4 +153,4 @@ PM 자신은 통합 보고서만 산출합니다:
 
 ## 토큰 효율
 
-상세: Skill `common-token-efficient-collaboration`(`skills/common-token-efficient-collaboration/SKILL.md`) 참조
+상세: Skill `common-token-efficient-collaboration` 참조

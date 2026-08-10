@@ -86,4 +86,4 @@ tools: Read, Grep, Glob, Edit, Write, Bash, WebFetch, WebSearch
 
 ## 토큰 효율
 
-상세: 이 플러그인의 `skills/common-token-efficient-collaboration/SKILL.md` 참조
+상세: Skill `common-token-efficient-collaboration` 참조
