@@ -9,14 +9,15 @@
  * macOS/Linux/Windows 동일 동작 (os.homedir() 기준 경로, path.join으로 구분자 처리).
  *
  * 사용법:
- *   node analyze-usage.mjs [--days N] [--project <cwd 부분일치>] [--top N] [--out <md파일경로>]
+ *   node analyze-usage.mjs [--days N] [--project <cwd 부분일치>] [--top N]
  *
  * 옵션:
  *   --days N     기본 1. 로컬 타임존 기준 최근 N일(오늘 포함)을 집계.
  *   --project S  cwd에 S가 부분 포함된 세션만 집계 (필터 없으면 전체).
  *   --top N      세션/API호출/도구별/서브에이전트별/프로젝트별 순위에서 상위 몇 건을 보여줄지.
  *                기본 5 (API 호출 Top만 기본 10, 세션 Top의 2배).
- *   --out PATH   같은 리포트를 마크다운 파일로도 저장.
+ *
+ * 콘솔 출력만 지원한다(파일 저장 옵션 없음) — 필요하면 셸 리다이렉트를 직접 사용할 것.
  */
 
 import fs from 'node:fs';
@@ -27,7 +28,7 @@ import readline from 'node:readline';
 // ── CLI 인자 파싱 ──────────────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const opts = { days: 1, project: null, top: 5, apiTop: 10, out: null };
+  const opts = { days: 1, project: null, top: 5, apiTop: 10 };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     switch (a) {
@@ -47,9 +48,6 @@ function parseArgs(argv) {
         }
         break;
       }
-      case '--out':
-        opts.out = argv[++i] ?? null;
-        break;
       case '--help':
       case '-h':
         printHelp();
@@ -64,12 +62,13 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`사용법: node analyze-usage.mjs [--days N] [--project <cwd 부분일치>] [--top N] [--out <md파일경로>]
+  console.log(`사용법: node analyze-usage.mjs [--days N] [--project <cwd 부분일치>] [--top N]
 
   --days N     최근 N일 집계 (기본 1 = 오늘, 로컬 타임존 기준)
   --project S  cwd에 S가 포함된 세션만 집계
   --top N      세션/도구별/서브에이전트별/프로젝트별 순위 Top N (기본 5, API 호출 Top은 자동으로 그 2배)
-  --out PATH   결과를 마크다운 파일로도 저장
+
+콘솔 출력만 지원합니다 (파일 저장 옵션 없음).
 `);
 }
 
@@ -794,15 +793,6 @@ async function run() {
 
   const report = lines.join('\n');
   console.log(report);
-
-  if (opts.out) {
-    try {
-      fs.writeFileSync(opts.out, report, 'utf8');
-      console.log(`\n(마크다운 리포트 저장됨: ${path.resolve(opts.out)})`);
-    } catch (err) {
-      console.error(`\n마크다운 파일 저장 실패: ${err.message}`);
-    }
-  }
 }
 
 run().catch((err) => {
