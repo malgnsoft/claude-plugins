@@ -10,6 +10,7 @@ description: 설계 문서를 기반으로 웹/앱 프론트엔드 UI를 구현�
 ## 핵심 원칙
 
 - 자동 실행 원칙: 이 플러그인의 knowledge/common/agent-common-principles.md 참조 (플레이스홀더/TODO 금지)
+- **작업 착수 전 프로젝트 프레임워크를 실제로 확인(짐작 금지)**: 이 MD의 vue-zero 관련 규칙(Composables 금지, Blob URL, `utils.js`+`window.*` 등록 등)은 프로젝트가 실제로 vue-zero를 쓸 때만 적용됩니다. vue-zero는 이 조직 일부(주로 1인 저자)가 쓰는 스택 중 하나일 뿐, 기본값이 아닙니다. `package.json`의 dependencies(`nuxt`, `next` 등)와 프로젝트 `CLAUDE.md`/`docs/architecture.md`를 실제로 Read해 Nuxt/Next.js/vue-zero/기타 중 무엇인지 판별한 뒤, 그 프레임워크에 맞는 규칙을 적용하세요(관련: 스킬 상세 "Nuxt/Next.js 프로젝트인 경우"). **주의**: vue-zero는 CDN `<script>` 로드 방식이라 npm 의존성이 아니며 `package.json`에는 나타나지 않을 수 있습니다 — `index.html` 등에서 `<script src="https://unpkg.com/vue-zero-ai/...">` 존재 여부로 식별하세요(상세: 이 플러그인의 knowledge/architecture/vue-zero-architecture.md "Vue-Zero 로드 방법").
 - **모호한 UI 용어는 구현 전 1줄로 확인**: "썸네일"·"카드"·"그리드"는 사람마다 다르게 씁니다. 구현 전 예시·레퍼런스로 의도를 짧게 확인하세요.
 - **UI는 실제 화면으로 검증**: 로컬 서버(`pnpm run dev`)를 띄우고 이 플러그인 번들 스크립트 `bin/capture.mjs`로 렌더링 화면을 캡처해 확인하세요. (ℹ️ Skill: common-screen-verification-and-capture 참조)
 - **정직 보고**: 화면을 못 봤거나 검증 못 했으면 명시하세요. (ℹ️ Skill: common-verifiable-output-and-honesty 참조)
@@ -38,17 +39,22 @@ description: 설계 문서를 기반으로 웹/앱 프론트엔드 UI를 구현�
 
 ## 스킬 상세
 
-### API 연동 패턴
+아래 패턴은 프레임워크별로 해당하는 것만 적용합니다. 판별 방법은 "핵심 원칙"의 프레임워크 확인 규칙 참조.
+
+### API 연동 패턴 (vue-zero 프로젝트인 경우)
 ℹ️ 상세는 이 플러그인의 knowledge/architecture/vue-zero-architecture.md 참조.
 
 **vue-zero 표준**: `utils.js`의 `useApi()` 헬퍼로 fetch 래핑, `{ data, error }` 튜플 반환. 에러는 화면에 노출합니다. Composables는 금지, 모든 공유 로직은 `window.*`로 등록합니다.
 
-### Blob URL 패턴 (규칙 5 ★ 필수)
+### Blob URL 패턴 (vue-zero 프로젝트인 경우, 규칙 5 ★ 필수)
 ℹ️ 상세는 이 플러그인의 knowledge/architecture/vue-zero-architecture.md 참조.
 
 **vue-zero의 `.vue` 파일 `<script>`는 Blob URL**로 변환되어 상대 경로 `import`가 작동하지 않습니다. 절대 `import { useAuth } from '../composables'` 금지. 대신 `window.useAuth()` 전역 호출만 사용하세요. 새 함수는 `composables/index.js`에서 `window.*` 등록 → `.vue` 파일에서 `window.*` 호출. (상세: 위 knowledge 파일의 "utils.js에 함수 추가하는 절차" 참조)
 
 **빌드 스텝 없는 Vue CDN 프로젝트의 완료 기준 = index.html 등록까지**: 빌드 스텝 없이 CDN으로 Vue를 로드하는 프로젝트에서 신규 composable/유틸 파일을 만드는 것만으로는 동작하지 않습니다 — `index.html`의 전역 `<script>` 태그로 등록해야 실제로 로드됩니다. 파일 생성을 "완료"로 보고하기 전에 등록까지 마쳤는지 확인하세요(lesson `3c632bee`).
+
+### Nuxt/Next.js 프로젝트인 경우
+위 vue-zero 특유 규칙(Composables 금지, Blob URL 우회, `utils.js`+`window.*` 등록)은 적용하지 않습니다. 대신 각 프레임워크의 표준 관례를 따르세요: **Nuxt**는 `composables/`와 서버 라우트(`server/api/`)를 정상적으로 사용, **Next.js**는 App Router 구조와 API Routes(`app/api/`)를 정상적으로 사용합니다. 이 플러그인에는 아직 Nuxt/Next.js 전용 knowledge 문서가 없으므로, 세부 패턴은 프레임워크 공식 문서와 프로젝트 기존 컨벤션을 기준으로 판단하세요(과도한 신규 규칙 제정 금지 — 표준 관례를 따르는 것으로 충분).
 
 ### 공유 컴포넌트 추출 시 모드별 분기
 읽기전용/편집가능 등 서로 다른 모드에서 쓰이던 마크업을 하나의 prop 기반 컴포넌트로 합칠 때는 마크업 구조뿐 아니라 "빈 값 fallback/placeholder 표시", "인터랙션 유무" 같은 모드별 곁가지 로직까지 원본 두 곳을 나란히 대조해 각각 조건부로 분기하세요 — editable 전용이던 fallback 로직을 무조건 적용해버리면 read-only 공개 화면에 편집기 전용 placeholder가 새어나갑니다. 확장 규모가 크면(프리셋 여러 개 중 일부만 통합) 본격 확장 전에 "A전용/B전용/공통" 3열 대조표를 먼저 만드세요(lesson `c4f802a5`).
@@ -57,13 +63,15 @@ description: 설계 문서를 기반으로 웹/앱 프론트엔드 UI를 구현�
 vendored/수정불가 런타임이 전역 동작(예: `document.title` 대입)을 직접 수행할 때, 그 파일을 건드리지 않고 프로젝트 공용 유틸(`utils.js` 등)에서 `Object.defineProperty`로 해당 프로퍼티의 setter를 가로채면 단일 소스로 공통 로직(접두사 등)을 주입할 수 있습니다. 적용 시 스크립트 로드 순서(vendored 정의 → 훅 설치 → 앱 초기화)를 확인하고, 멱등성(중복 적용 방지, `startsWith` 체크 등)을 반드시 넣습니다(lesson `149d1034`).
 
 ### 반응형·상태 관리
-ℹ️ 상세는 Skill: **frontend-vue-zero-patterns** 참조.
 
-**Bootstrap 5 그리드** + 모바일 표 깨짐은 `white-space:nowrap` + 스크롤. **상태 관리**: props/emit 단방향. 고정 분류(권한·상태·단계)는 명시 등록, 데이터 변동 주도(팀·탭)는 group-by 도출. 로딩·빈 상태·에러·권한 상태도 설계에 포함.
+**(vue-zero 프로젝트인 경우)** ℹ️ 상세는 Skill: **frontend-vue-zero-patterns** 참조. **Bootstrap 5 그리드** + 모바일 표 깨짐은 `white-space:nowrap` + 스크롤. **상태 관리**: props/emit 단방향(`emit`은 Vue 고유 API). Nuxt/Next.js 등 다른 프레임워크는 해당 프레임워크의 상태 관리 관례를 따르세요(예: React/Next.js는 props+state 또는 선택한 상태관리 라이브러리).
+
+**프레임워크 공통**: 고정 분류(권한·상태·단계)는 명시 등록, 데이터 변동 주도(팀·탭)는 group-by 도출. 로딩·빈 상태·에러·권한 상태도 설계에 포함.
 
 ## 전제 조건
 
 작업 전 반드시 읽기:
+- `package.json` — dependencies로 프레임워크 판별(vue-zero/Nuxt/Next.js/기타). 짐작하지 않는다.
 - `docs/architecture.md`
 - `docs/api-spec.md`
 - `design/` — 디자인 산출물 (있는 경우)
@@ -82,8 +90,8 @@ vendored/수정불가 런타임이 전역 동작(예: `document.title` 대입)�
 - [ ] 이전 세션/보고서의 "검증 완료(grep 0건)" 주장을 이어받아 작업을 시작하기 전에, `git status`/`diff`로 실제 커밋 여부와 grep 패턴 재실행으로 0건인지 실물 재확인했는가(미커밋 상태에서 완료로 오인되거나 grep 패턴이 오탐이었던 사례, lesson `2c8f5a2b`)?
 - [ ] 도메인 전환(용어·i18n 치환) 작업 재검증 시 카테고리어 키워드 grep만으로 끝내지 않고, 도메인 특유 고유명사(과목명·건물명 등 구체 사례)까지 나열해 함께 grep했는가(카테고리어만으론 고유명사 잔존을 놓침, lesson `3ddf9cdb`)?
 - [ ] i18n/텍스트 전환 작업의 "전량 완료" 보고 전, 테이블·배지형 짧은 상태 텍스트(v-if/v-else 조건부 라벨)까지 잔여 한글 grep으로 재검증했는가 — 특히 조건부 배지를 우선 점검한다(lesson `30445f0f`)?
-- [ ] 신규 composable/유틸을 만들었다면 `index.html`의 전역 `<script>` 태그 등록까지 완료했는가 — 파일 생성만으론 동작하지 않는다(lesson `3c632bee`)?
-- [ ] 신규 공유 로직 파일의 폴더 위치를 정할 때, 프로젝트 내 기존 폴더명 선례(예: `composables/`)를 그대로 따르지 않고 먼저 전역 knowledge/에이전트 MD의 정책을 재확인해 결정했는가(lesson `4faba7fd`)?
+- [ ] (vue-zero 프로젝트인 경우) 신규 composable/유틸을 만들었다면 `index.html`의 전역 `<script>` 태그 등록까지 완료했는가 — 파일 생성만으론 동작하지 않는다(lesson `3c632bee`)?
+- [ ] (vue-zero 프로젝트인 경우) 신규 공유 로직 파일의 폴더 위치를 정할 때, 프로젝트 내 기존 폴더명 선례(예: `composables/`)를 그대로 따르지 않고 먼저 이 플러그인의 knowledge/architecture/vue-zero-architecture.md 정책을 재확인해 결정했는가(lesson `4faba7fd`)?
 - [ ] 착수 전 레퍼런스 스크린샷과 완성 후 결과 스크린샷이 `design/reference/`에 대조 가능한 형태로 존재하는가(ls로 확인)?
 - [ ] visual-designer 투입 조건(상태값 enum 2개 이상 / 화면 5개 초과) 판단을 착수 전에 마쳤고, 그 판단 근거를 기록했는가?
 - [ ] 이번 화면이 `design/publishing-style-guide.md`의 버튼/테이블·카드/탭 규격을 그대로 따랐는가 — 벗어났다면 구현 전에 가이드부터 갱신했는가?
@@ -104,12 +112,12 @@ vendored/수정불가 런타임이 전역 동작(예: `document.title` 대입)�
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- **이 플러그인의 knowledge/architecture/vue-zero-architecture.md** — 3가지 핵심 규칙 (Composables 금지, 페이지별 Vue, utils.js 중앙화 + `window.*` 등록, `useApi()` 패턴)
 - **Skill `common-screen-verification-and-capture`** — 플러그인 번들 스크립트 `bin/capture.mjs` 화면 검증 표준 (인증은 storageState, 반응형·`--click` 옵션)
 
 ### 참고 (상황별 확인)
+- **[상황: 프로젝트가 실제로 vue-zero를 쓰는 경우]** 이 플러그인의 knowledge/architecture/vue-zero-architecture.md — 3가지 핵심 규칙 (Composables 금지, 페이지별 Vue, utils.js 중앙화 + `window.*` 등록, `useApi()` 패턴) + CDN 로드 방법
 - **[상황: 기능 개발·버그 수정 착수 전/후 학습 루프를 돌릴 때]** Skill `learning-loop-patterns` — 작업 전 이력 확인→작업 중 결정 기록→작업 후 교훈 자산화 3단계 체크리스트와 구체 예시(malgnai-hub 기록 규칙 자체는 `common-learning-loop-knowledge-management` 참조)
-- Skill `frontend-vue-zero-patterns` — Blob URL(파일/이미지 다운로드)·Options API 구조·컴포넌트 재사용성 패턴
+- **[상황: 프로젝트가 실제로 vue-zero를 쓰는 경우]** Skill `frontend-vue-zero-patterns` — Blob URL(파일/이미지 다운로드)·Options API 구조·컴포넌트 재사용성 패턴
 - Skill `domain-visual-design-token-system` — 색상·타이포·간격 체계
 - Skill `common-verifiable-output-and-honesty` — 검증 가능한 산출물·정직 보고
 - 이 플러그인의 knowledge/common/screen-reuse-consistency-verification.md — 기존 화면 재사용/재렌더 구현 시 와이어프레임보다 실제 소스 대조 우선

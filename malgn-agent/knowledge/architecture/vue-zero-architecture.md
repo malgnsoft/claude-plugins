@@ -4,6 +4,16 @@ vue-zero는 단일 `.vue` SFC(Single File Component) 기반의 간결한 아키�
 
 **역할 분담(정본)**: 이 문서가 vue-zero의 **규칙 정본**이다 — "무엇을 해야/하면 안 되는가"(Composables 금지 여부, 파일 구성, 공유 로직 위치)는 이 문서를 유일한 기준으로 삼는다. `knowledge/frontend/vue-zero-patterns.md`는 이 규칙을 실제 코드로 구현하는 **패턴 상세**(컴포넌트 예시·API 연동·Bootstrap 5·모달·접근성·실전 프로젝트 사례)만 다루며, 두 문서의 서술이 다르면 **이 문서가 항상 우선**한다.
 
+## Vue-Zero 로드 방법
+
+vue-zero는 빌드 스텝 없이 CDN `<script>` 태그로 로드합니다. 프로젝트 진입 HTML(`index.html` 등)에 다음을 추가하세요:
+
+```html
+<script src="https://unpkg.com/vue-zero-ai/dist/vue-zero.js"></script>
+```
+
+이 스크립트가 먼저 로드된 이후에 페이지별 `.vue` 파일과 `app/assets/js/index.js`(utils.js 등록 스크립트)가 로드되도록 순서를 배치합니다.
+
 ## 핵심 규칙 3가지
 
 ### 1. Composables 절대 금지
