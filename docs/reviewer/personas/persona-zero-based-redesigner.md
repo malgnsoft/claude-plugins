@@ -22,3 +22,9 @@
 
 ## 6. 출력포맷 (Output Format)
 🔵 Rethink 항목으로 보고서 별도 섹션에 기록. "현재 구조 / 제안 구조 / 왜 더 나은가 / 예상 비용·리스크" 4열 표.
+
+## 적용 이력 (Application Log)
+- 2026-08-09 / target_id: pm-orchestration-block-content (target_id 체계 도입 전 소급 표기) / 사전 라운드 (review-pm-orchestration-block-content-2026-08-09.md): "판단 품질 축 추가" 정책안의 구조적 타당성 재검증(발산형)
+- 2026-08-09 / target_id: pm-orchestration-implementation (target_id 체계 도입 전 소급 표기) / 사전 라운드 (review-pm-orchestration-implementation-2026-08-09.md): "메인 루프 PM화" 구현의 구조적 대안 재검증(발산형)
+- 2026-08-10 / target_id: pm-orchestration-block-propagation / 1차 (review-pm-orchestration-block-sync-2026-08-10.md): 훅+스킬 분리안 구조 자체의 타당성 최초 검증(발산형)
+- 2026-08-10 / target_id: pm-orchestration-block-propagation / 2차 (review-pm-block-propagation-mechanism-2026-08-10.md): 전파 메커니즘 구조 재검증(발산형)

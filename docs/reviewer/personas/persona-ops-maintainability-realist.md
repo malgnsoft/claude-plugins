@@ -29,3 +29,9 @@
 
 ## 6. 출력포맷 (Output Format)
 reviewer-persona-panel-standard §5 표준 형식 준수 — 위치 인용 + 문제 + 개선안, RAG 판정.
+
+## 적용 이력 (Application Log)
+- 2026-08-09 / target_id: pm-orchestration-block-content (target_id 체계 도입 전 소급 표기) / 사전 라운드 (review-pm-orchestration-block-content-2026-08-09.md): "판단 품질 일관성 축 추가 여부" 정책 문안 토론 재검증
+- 2026-08-09 / target_id: pm-orchestration-implementation (target_id 체계 도입 전 소급 표기) / 사전 라운드 (review-pm-orchestration-implementation-2026-08-09.md): "메인 루프 PM화" 구현 코드/문서 검증
+- 2026-08-10 / target_id: pm-orchestration-block-propagation / 1차 (review-pm-orchestration-block-sync-2026-08-10.md): 훅+스킬 분리안 최초 검증
+- 2026-08-10 / target_id: pm-orchestration-block-propagation / 2차 (review-pm-block-propagation-mechanism-2026-08-10.md): "정체성 지속성" 근거의 독립성 재검증
