@@ -327,13 +327,26 @@ function step4_failOpenAndJwt(files) {
   if (authFiles.length === 0) {
     out.push('미들웨어/인증 관련 파일을 찾지 못했습니다 — middleware/auth.js 등을 수동 확인하세요.');
   }
-  const failOpenRe = /if\s*\(\s*!\s*([\w.]+)\s*\)\s*\{([^{}]{0,300}?)\}/gs;
+  // 중괄호 블록형: if (!x) { ... next() ... }
+  const failOpenBraceRe = /if\s*\(\s*!\s*([\w.]+)\s*\)\s*\{([^{}]{0,300}?)\}/gs;
+  // 브레이스리스 단일문장형: if (!x) return next(); / if (!x) next(); / if (!x) await next();
+  // 음의 전방탐색으로 '{'로 시작하는 블록형과는 겹치지 않게 하고, ';'까지를 한 문장으로 본다
+  // (세미콜론·개행·중괄호가 나오기 전까지만 허용해 이후 문장까지 잘못 삼키지 않는다).
+  const failOpenInlineRe = /if\s*\(\s*!\s*([\w.]+)\s*\)\s*(?!\{)([^;\n{}]{0,150});/g;
   for (const f of authFiles) {
     let m;
-    while ((m = failOpenRe.exec(f.content))) {
+    while ((m = failOpenBraceRe.exec(f.content))) {
       if (/\bnext\s*\(\s*\)/.test(m[2])) {
         const ln = lineAt(f.content, m.index);
         out.push(`❌ [${f.rel}:${ln}] fail-open 후보: if (!${m[1]}) { …next()… } — 조건 미충족 시 인증 없이 통과. 확인 필요.`);
+      }
+    }
+    failOpenInlineRe.lastIndex = 0;
+    while ((m = failOpenInlineRe.exec(f.content))) {
+      if (/\bnext\s*\(\s*\)/.test(m[2])) {
+        const ln = lineAt(f.content, m.index);
+        const stmt = m[2].trim();
+        out.push(`❌ [${f.rel}:${ln}] fail-open 후보(브레이스리스): if (!${m[1]}) ${stmt}; — 조건 미충족 시 인증 없이 통과. 확인 필요.`);
       }
     }
   }
