@@ -111,6 +111,28 @@ PM(`agents/pm.md`)이 작업을 위임한 **이후** 실행을 관리하는 절�
 - **권위자 매핑**: architecture=architect, requirements/prd=planner, src=backend/frontend-dev, 문서=writer, 발표=presenter, 리뷰=reviewer, 에이전트MD/knowledge 초안=trainer, 전역 자산(에이전트/스킬/knowledge) 채점·판정·승격=evaluator.
 - **공유 가정 주입**: 여러 에이전트가 같은 수치(마진율·CAC)를 쓸 때, 위임 전에 PM이 값을 고정해 동일하게 주입.
 
+## 3.5 산출물 지도 (누가 무엇을 읽고 만드는가)
+
+웹/앱 개발 파이프라인에서 단계별 에이전트가 읽는 입력 문서와 만드는 산출물 경로를 정리한 지도다. §5 자기 검증의 "산출물이 지정된 경로에 실제로 존재하는가" 확인은 이 표를 기준으로 한다.
+
+> **주의(유지보수)**: 이 표는 참고용 요약이지 진실의 원천이 아니다 — 각 에이전트 MD(`agents/<name>.md`) 자체가 정본이다. 에이전트의 산출물 파일명·경로가 바뀌면 trainer가 해당 에이전트 MD를 고치는 김에 이 표도 함께 갱신한다.
+
+| 단계 | 에이전트 | 읽는 문서 | 만드는 문서 |
+|------|----------|-----------|-------------|
+| STAGE 1 (기획) | planner | - | `docs/requirements.md`, `docs/prd.md`, `docs/product-principles.md`(선택 — 있으면 이후 전 에이전트가 참조) |
+| STAGE 2 (설계) | architect | requirements.md, prd.md, product-principles.md(있으면) | `docs/architecture.md`, `docs/tech-stack.md`, `docs/api-spec.md`, `docs/data-model.md` |
+| 디자인 트랙(설계와 병행) | ux-designer | prd.md, requirements.md | `design/ux-flow.md`(또는 docs/), `design/wireframes.md`, `design/ia.md` (참조: 플러그인 번들 `knowledge/design/ux-design-guide.md`) |
+| 디자인 트랙(조건부 투입: 상태값 enum 2개 이상 또는 화면 5개 초과) | visual-designer | - | `design/design-system.md`, `design/brand.md`(브랜딩 프로젝트인 경우만) |
+| STAGE 3 (구현) | backend-dev | architecture.md, api-spec.md, data-model.md | 코드 + `docs/security-plan.md`(누적 기록, security와 공유) |
+| STAGE 3 (구현) | frontend-dev | architecture.md, api-spec.md | `design/publishing-style-guide.md`(프로젝트에 없으면 플러그인 번들 `knowledge/design/publishing-style-guide-template.md`를 복사해 그 자리에서 생성 — 백지 작성 금지, 이후 전 화면이 이를 따름) |
+| STAGE 4 (검증) | qa-engineer | `docs/api-spec.md`(테스트 기준) | `tests/`(단위·통합 테스트) + `tests/test-report.md`(전체/통과/실패 수·커버리지·시나리오 표) |
+| 보안(개발 전 구간 상시 병행) | security | api-spec.md, architecture.md(있으면) | 개발 단계: `docs/security-plan.md`(비차단, 발견 적재) / 최종 단계: `docs/security-report.md`(사용자 승인 후에만) |
+| STAGE 5 (배포) | devops | `docs/tech-stack.md` | `docs/deployment-runbook-YYYY-MM-DD.md` |
+| 독립 트랙 | researcher | - | `docs/research.md`(또는 PM 지정 파일명) |
+| 독립 트랙 | localizer | `docs/i18n-glossary.md`(있으면 재사용·갱신) | `docs/i18n-glossary.md`(없으면 감사/번역 중 확정한 용어로 신규 생성 제안) |
+
+**표에 없는 에이전트(writer/reviewer/finance/presenter/marketer/capture-strategist 등)**: 자체 산출물은 각자 도메인 폴더에 만든다. `docs/product-principles.md`를 조건부로만 참조한다 — 있으면 읽고 방향성에 맞춰 작성, 없으면 그냥 진행(파일이 없다고 오류 처리하거나 임의로 만들어내지 않는다).
+
 ## 4. 위임 모델
 - **경로 릴레이 순차**: A 에이전트 호출 → A가 파일 저장·경로 반환 → PM이 제어권 회수 → B 호출 (인계 주체=항상 PM).
 - **슬라이스 위임**: 무거운 에이전트(backend-dev 등)에는 "이 엔드포인트 하나" 같은 좁은 산출물 1개 단위만.
@@ -128,7 +150,7 @@ PM(`agents/pm.md`)이 작업을 위임한 **이후** 실행을 관리하는 절�
 - **신규 외부발송 기능은 no-op 우선 착지 위임**: 이메일 알림 등 외부 서비스 연동이 필요한 기능을 승인했으나 외부 리소스(Worker 배포·API 키)가 아직 없다면, 구현 자체를 미루라고 위임하지 않는다 — 기존 코드베이스의 유사 미설정-skip 패턴(예: VAPID 키 없으면 조용히 skip하는 push-notifier.js)을 재사용해 "설정 전엔 완전 no-op, 설정되면 바로 동작"하는 형태로 먼저 구현하도록 위임하고, 외부 리소스 생성·시크릿 발급은 별도 후속 단계로 분리한다(lesson `9fdb72f2`).
 
 ## 5. 자기 검증 & 재작업
-1. 위임 결과 검증 (claimed ≠ verified 원칙)
+1. 위임 결과 검증 (claimed ≠ verified 원칙) — 각 에이전트 산출물이 지정된 경로에 실제로 존재하는가는 §3.5 산출물 지도를 기준으로 확인한다.
 2. 문제 발견 시 재지시 + 재검증 (최대 2회)
 3. 중요 산출물은 직접 실물 검증 (PDF 페이지·UI·끝부터 끝까지)
 4. 미검증 항목은 "미검증 + 사유"로 정직하게 보고.
