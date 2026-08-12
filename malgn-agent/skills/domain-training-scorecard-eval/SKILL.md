@@ -61,14 +61,53 @@ description: 에이전트 산출물 평가 + 피드백 통합 — Scorecard 채�
 - evaluator 반려로 인한 산출물 전체 재작성 1회당 -15
 - 최저 0점(하한)
 
-**3) 총점 계산**:
+**3) 총점 계산 — 반드시 스크립트로 (암산 금지)**:
+
+집계·가중합·threshold 비교는 전부 결정론적 산식이다. 위 a)~d)에서 낸 정성 점수(0~100 하위점수, Pass/Partial/Fail 판정, 감점 사유 건수)만 LLM이 판단하고, 그 값을 `bin/calc-training-scorecard.mjs`(의존성 없는 Node 내장 스크립트, `bin/analyze-usage.mjs`와 동일 패턴)에 JSON으로 넘겨 최종 점수·성공률·전월 대비 판정을 계산한다 — **암산으로 가중합을 다시 계산하지 않는다.**
+
+```bash
+node bin/calc-training-scorecard.mjs --input scorecard.json
+# 또는
+echo '{ ...JSON... }' | node bin/calc-training-scorecard.mjs
 ```
-최종 점수 = (기본수행 × 0.6) + (Eval Set × 0.25) + (성공률 × 0.1) + (비용 × 0.05)
+
+입력 JSON에 채워 넣는 값 (전부 이 단계에서 LLM이 채점/관찰한 정성 판단 결과):
+```json
+{
+  "agent": "architect",
+  "period": "2026-08",
+  "basicPerformance": {
+    "requirementUnderstanding": 12,
+    "scopeManagement": 10,
+    "accuracy": 20,
+    "verificationQuality": 15,
+    "riskAwareness": 8,
+    "reportClarity": 9,
+    "outputEfficiency": 4
+  },
+  "evalSet": ["pass", "pass", "partial", "fail", "pass"],
+  "successRate": { "approvedFirstTry": 8, "totalDelegated": 10 },
+  "costEfficiency": { "fullRereadCount": 1, "repeatedConfirmCount": 2, "fullRewriteCount": 0 },
+  "previousScore": 75
+}
 ```
+
+스크립트가 결정론적으로 계산해 출력하는 것:
+- 기본수행 7항목 합산(배점 상한 검증 포함) → 기본수행 점수
+- Eval Set Pass=100/Partial=50/Fail=0 환산 후 평균 → Eval Set 점수
+- 실전 성공률 = 1차승인건수 / 전체위임건수 × 100
+- 비용 효율 = 100 - (통독×10 + 반복재확인×5 + 전체재작성×15), 하한 0
+- 최종 점수 = 기본수행×0.6 + EvalSet×0.25 + 성공률×0.1 + 비용×0.05
+- 전월 대비 diff와 상승(+threshold 이상)/정체(±threshold 이내)/하락(-threshold 이하) 판정(기본 threshold=5점, `--threshold N`으로 조정 가능)
+
+여러 에이전트를 한 번에 계산하려면 입력을 배열(또는 `{"agents":[...]}`)로 감싸면 스크립트가 각 에이전트 리포트 + 요약표(에이전트|지난회|이번회|변화|상태)까지 함께 출력한다. 상세 입력 스키마·옵션은 `node bin/calc-training-scorecard.mjs --help` 또는 스크립트 상단 주석 참고.
+
+배점표(a~d)와 산식 자체의 정본은 이 SKILL.md이고, 스크립트는 그 산식을 그대로 코드로 고정한 것일 뿐이다 — 산식을 바꾸려면 SKILL.md와 스크립트 상수(`WEIGHTS`/`BASIC_ITEMS`/`EVAL_SCORE_MAP`/`COST_PENALTY`/`DEFAULT_THRESHOLD`)를 함께 갱신한다.
 
 ### Phase 2: 약점 분석 + 즉시 피드백 (2시간, 같은 턴에)
 
 **1) 지난달 대비 변화 추적**:
+- Phase 1에서 `calc-training-scorecard.mjs` 실행 결과에 이미 diff·상태(상승/정체/하락)가 포함돼 있다 — 여기서 다시 계산하지 않고 그 출력을 그대로 사용한다.
 - **상승** (+5점 이상): 좋은 사례 정리
 - **정체** (±5점 이내): 현상유지
 - **하락** (-5점 이상): 근본 원인 분석
@@ -156,3 +195,4 @@ impact:
 
 - 배점 기준·산출물 형식은 이 문서가 정본이다(외부 문서를 참조하지 않는다).
 - 키워드 점수는 보조 지표만 사용(Scorecard가 주평가).
+- **집계·가중합·threshold 판정은 암산이 아니라 `bin/calc-training-scorecard.mjs`로 계산한다**(위 "3) 총점 계산" 절 참고). 하위 정성 채점(0~100점 자체, Pass/Partial/Fail 판정, 감점 사유 관찰)은 그대로 evaluator의 판단 영역이다 — 스크립트는 그 결과를 입력받아 재계산 오류 없이 집계할 뿐 채점을 대신하지 않는다.
