@@ -1,6 +1,6 @@
 ---
 name: domain-serverless-edge-api-security
-description: Cloudflare Workers·Hono·D1·MCP 서버리스/엣지 스택 전용 API 보안 점검 절차 — 인증 5대 함정(전역 미들웨어 누락·개별부착 구조적 누락·fail-open·MCP 무인증 노출·IDOR), CORS reflect, 서버리스 DoS(비용 폭증) 벡터, §7 순서형 실행 체크리스트(스키마→미들웨어→Grep→fail-open→mcp/tools.js→bind→cors). backend-dev·security가 이 스택의 API를 구현·점검할 때 사용한다. OWASP 일반론은 domain-security-audit-checklist를 따로 참조 — 이 스킬은 그와 중복 없이 이 스택 특유의 함정만 다룬다.
+description: Cloudflare Workers·Hono·D1·MCP 서버리스/엣지 스택 전용 API 보안 점검 절차 — 인증 5대 함정(전역 미들웨어 누락·개별부착 구조적 누락·fail-open·MCP 무인증 노출·IDOR), CORS reflect, 서버리스 DoS(비용 폭증) 벡터. §7 체크리스트(스키마→미들웨어→Grep→fail-open→mcp/tools.js→bind→cors)는 무의존성 Node 스크립트 `bin/check-edge-api-security.mjs`로 자동 실행해 후보를 뽑고, 그 후보를 사람/에이전트가 실제 코드로 확인하는 순서로 진행한다(스크립트는 후보 탐지만, 최종 위험도 판단은 하지 않음). backend-dev·security가 이 스택의 API를 구현·점검할 때 사용한다. OWASP 일반론은 domain-security-audit-checklist를 따로 참조 — 이 스킬은 그와 중복 없이 이 스택 특유의 함정만 다룬다.
 ---
 
 # 서버리스/엣지 API 보안 점검 (Cloudflare Workers · Hono · D1 · MCP)
@@ -72,13 +72,34 @@ Hono `cors()`를 인자 없이 쓰면 `Access-Control-Allow-Origin`을 요청 Or
 - 직접 구현한 JWT 검증(`crypto.subtle`)은 **헤더 `alg`를 검증하는지** 확인(alg 혼동/`none` 공격 방지). 만료(`exp`)·서명 검증 둘 다 있는지.
 - 운영 시크릿은 고엔트로피(32+ bytes 랜덤) + Workers Secret 주입, 로컬/운영 분리.
 
-## 7. 점검 체크리스트 (이 스택 전용, 순서대로)
+## 7. 점검 체크리스트 (이 스택 전용) — 스크립트 우선 실행
 
-1. `dao/init.js` 스키마 → 민감 컬럼 식별 (등급 기준 확보)
-2. `index.js` 전역 미들웨어 체인 → 인증 유무, `/mcp` 라우트 보호 유무
-3. `Grep "Middleware"` → 부착 위치 전수 → 비-GET 라우트와 대조해 누락 잡기
-4. `middleware/auth.js` → fail-open 분기 / JWT alg 검증 확인
-5. `mcp/tools.js` → 무인증 노출 쓰기 도구 식별
-6. 전 DAO → bind 파라미터화 확인(SQLi 양호 근거), 동적 컬럼명 유무
-7. `cors()` 설정, sync 루프 상한, rate limit, `.dev.vars` 추적 여부
-8. 각 발견을 **원인→증폭→데이터→영향→재현→권고** 체인으로 기술. 단일 결함의 결합 효과를 반드시 평가.
+이 8단계는 원래 라우트를 하나씩 눈으로 세며 서술로 처리하는 절차였다. 그 방식은 **구조적으로 반복되는 실수**를 낳는다 — 함정 2(개별 부착 누락)가 대표적인 예로, 사람이 라우트를 하나씩 눈으로 대조하면 반드시 일부를 놓친다. 1~7단계는 결정론적으로 자동화 가능한 grep/구조 대조이므로, **먼저 스크립트를 실행해 후보 목록을 뽑고, 그 후보를 실제 코드로 하나씩 확인**하는 순서로 진행한다. 8단계(원인→증폭 체인 서술)만 LLM의 판단 몫이다.
+
+### 7-1. 스크립트 실행
+
+```bash
+node <malgn-agent 플러그인 경로>/bin/check-edge-api-security.mjs [projectRoot]
+```
+
+- 인자 없으면 `process.cwd()`를 점검 대상으로 삼는다. 다른 프로젝트를 점검하려면 그 루트 경로를 인자로 넘긴다.
+- **사전 조건 없음** — `bin/analyze-usage.mjs`와 동일하게 순수 Node.js 내장 모듈만 사용해 설치 없이 바로 실행된다.
+- 콘솔 출력만 지원한다(파일 저장 옵션 없음).
+- 출력은 STEP 1~7이 아래 원래 8단계 순서와 1:1로 대응하고, STEP 8은 자동화 대상이 아님을 스크립트 자신이 출력 말미에 명시한다:
+  1. `dao/init.js`류 스키마 → 민감 컬럼 식별 (CREATE TABLE 파싱 + 민감 키워드 대조)
+  2. `index.js` 전역 미들웨어 체인 → 인증 유무, `/mcp` 라우트 보호 유무 (`app.use`/`app.all`/`app.route` 인자 분석)
+  3. 라우트별 미들웨어 부착 전수 조사 → 모든 비-GET 라우트와 대조해 누락 잡기 (Grep을 사람이 대조하는 대신 스크립트가 라우트 콜마다 인자를 파싱해 대조)
+  4. `middleware/auth.js`류 → fail-open 분기(`if (!x) { …next()… }` 패턴) / JWT `alg` 검증 참조 유무
+  5. `mcp/tools.js`류 → 등록 도구를 읽기/쓰기로 분류하고, §2에서 `/mcp`가 무인증으로 판정됐으면 쓰기 도구를 우선순위 후보로 표시
+  6. 전 DAO → `.prepare().bind()` 파라미터화 확인(SQLi 양호 근거) + 템플릿 리터럴 동적 삽입/문자열 결합 SQL 후보
+  7. `cors()` 무인자 호출, `for...of` + `await ...run()` 상한 미검증 루프, rate limit 코드 존재 여부, `.dev.vars`/`.env`의 git 추적 여부(`git ls-files` 대조)
+
+### 7-2. 후보 확인 (사람/에이전트 몫)
+
+- 스크립트 출력의 **"확인 필요"/❌ 표시는 전부 그레이 영역 후보**다 — 정규식·구조 매칭 기반이라 false positive/negative가 있을 수 있다. 예: 의도적으로 무인증이어야 하는 public GET 엔드포인트, `route()`로만 마운트돼 실제 보호 여부를 하위 라우터까지 봐야 아는 경우.
+- 스크립트는 **후보를 정확히 찾아내는 역할까지만** 한다. 최종 위험도(Critical/High/Med/Low) 판단, 악용 체인 서술, 권고 문구는 스크립트가 하지 않는다 — 각 후보를 실제 파일:라인으로 열어 확인한 뒤 사람/에이전트가 판단한다.
+- 스크립트 출력에 없는 항목이 나왔다고 점검이 끝난 게 아니다: 정규식이 못 잡는 패턴(예: 동적으로 조합된 미들웨어 이름, 런타임에 결정되는 라우트)은 여전히 수동 확인이 필요할 수 있다.
+
+### 7-3. 8단계 — 체인 서술 (자동화 대상 아님)
+
+각 확인된 발견을 **원인→증폭→데이터→영향→재현→권고** 체인으로 기술한다. 단일 결함이 아니라 결함들의 결합 효과를 반드시 평가한다(예: 함정1 무인증 → CORS reflect로 증폭 → 어떤 데이터가 → 누구에게 → `curl` 재현 → 권고).
