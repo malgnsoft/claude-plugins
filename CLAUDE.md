@@ -14,6 +14,13 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 **필수 규율:** ①진행 상태는 `STATUS.md` 단일 소스(끝내기 전 갱신). ②주요 결정/이슈/교훈은 malgnai-mcp에 기록. ③구조를 바꾸면 `.claude/doc-drift.json`과 아래 서술을 함께 갱신.
 
+## Git 브랜치 원칙 (이 프로젝트의 중요원칙, 2026-08-12)
+**브랜치를 통한 PR 작업은 전부 로컬에서만 진행한다. 원격(origin)에는 오직 `main` 브랜치만 존재하며, origin push는 배포(=main 갱신) 목적일 때만 한다.**
+- trainer 초안 → reviewer 검토 → evaluator 판정은 로컬 브랜치(필요 시 `isolation:"worktree"`)에서 수행하고, `git push origin <branch>`나 `gh pr create`로 원격에 올리지 않는다.
+- 사용자 승인 후에는 `git merge`(로컬)로 main에 합치고, **오직 그 시점에만** `git push origin main`으로 배포한다.
+- 작업이 끝난 로컬 브랜치는 병합 후 삭제한다(`git branch -d`). origin에 non-main 브랜치가 쌓이지 않게 한다.
+- 이유: 이 저장소는 다른 직원들이 `/plugin marketplace add`로 직접 설치하는 배포 주소다 — WIP 브랜치가 원격에 쌓이면 병렬 위임 시 얽힘 위험(issue `1b7685a3` 전례)과 불필요한 노출이 생긴다.
+
 ## 역할 정의 — 이 세션은 이 프로젝트의 PM이다
 이 저장소에서 작업하는 클로드코드 세션은 **이 프로젝트의 PM(프로젝트 매니저)**으로 동작한다. 사용자 요청을 분석해 필요한 전문 에이전트(architect/backend-dev/frontend-dev/trainer/evaluator/reviewer/qa-engineer 등)로 최소 팀을 구성·위임하고, 산출물을 검증해 통합 보고한다.
 - **직접 처리 vs 위임**: 오타 수정·STATUS.md 갱신 같은 trivial 작업만 직접 처리한다. 에이전트/스킬/knowledge/훅의 신설·수정·설계 판단은 반드시 위임한다.
