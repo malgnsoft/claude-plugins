@@ -46,7 +46,26 @@ PM(`agents/pm.md`)이 작업을 위임한 **이후** 실행을 관리하는 절�
 
 ## 2. 리스크 판단 (WBS 신호 기반)
 
-**WBS 신호 읽기 (조기 경고 패턴)**
+**신호 판정은 스크립트, 원인 조사·대응은 PM.** 아래 8개 조기경고 신호는 전부 `wbs_list` 응답(JSON)에 대한 임계값 비교라, 매번 표를 눈으로 대조하면 놓치기 쉽다. `malgn-agent/bin/check-wbs-warnings.mjs`(의존성 없는 Node 내장 모듈만 사용, `bin/analyze-usage.mjs`와 동일 스타일)가 이 판정을 대신한다 — PM은 스크립트 출력에서 걸린 항목만 골라 원인 조사·담당자 확인·재계획 같은 판단을 한다.
+
+```bash
+# wbs_list 결과를 JSON 파일로 저장(도구 응답을 그대로 파일로 떨어뜨리거나 붙여넣기)한 뒤:
+node malgn-agent/bin/check-wbs-warnings.mjs --current wbs-snapshot.json
+
+# "롤업 추락"(computed_progress 5%p 하락) 신호는 이전 시점 스냅샷이 있어야 판정된다.
+# 정기 점검(§1 "주 1회 이상") 때마다 wbs_list 결과를 날짜별 파일로 남겨두고 직전 스냅샷과 비교:
+node malgn-agent/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --current wbs-2026-08-12.json
+
+# stdin으로도 받는다 + --format json으로 후속 자동화(issue_record 등)에 그대로 넘길 수 있다.
+# 종료 코드: High 신호 있으면 2, Medium/Low만 있으면 1, 신호 없으면 0 (CI/스크립트 분기용).
+```
+
+- **입력**: `wbs_list` 응답과 동일한 배열(또는 `{items:[...]}`) JSON. 필드가 일부 없는 항목은 해당 신호만 조용히 건너뛴다(전체 실행 중단 없음).
+- **이전 스냅샷 확보 방법**: 별도 이력 저장소가 없으므로, 정기 점검 시점마다 `wbs_list` 결과를 `wbs-YYYY-MM-DD.json` 형태로 파일에 남겨두는 습관이 필요하다 — 직전 파일을 `--previous`로 넘기면 된다.
+- **출력**: 항목별 신호·심각도·판정 근거(수치)·표준 대응 문구를 표로 출력(§ 아래 체크리스트와 1:1 대응). PM은 이 표를 받아 High부터 원인 조사에 들어간다.
+- 스크립트가 다루지 않는 것: 아래 "malgnai-hub Issue/Decision과 연계" 섹션(issue_list/decision_list 교차 확인)은 WBS 단일 소스가 아니라 별도 시스템 조회가 필요해 스크립트 범위 밖이다 — 이 부분은 계속 수동으로 확인한다.
+
+**WBS 신호 읽기 (조기 경고 패턴, 스크립트가 판정하는 근거 로직)**
 - **진행 정체**: progress=0 지속(3일 이상)
   - 원인: 담당자 미할당, 의존성 미해결, 요구사항 불명확
   - 대응: wbs_update(assignee_agent_name) 확인 후 담당자 1:1 확인 필수
@@ -85,7 +104,7 @@ PM(`agents/pm.md`)이 작업을 위임한 **이후** 실행을 관리하는 절�
 - **기록 선택(옵션)**: 리스크 발견 시 issue_record로 기록
   - summary: "WBS:#item_id 지연 (3일 progress=0)" 형식으로 트레이서빌리티 확보
 
-**조기 경고 휴리스틱 체크리스트**
+**조기 경고 휴리스틱 체크리스트** (이 8행이 `check-wbs-warnings.mjs`가 그대로 구현한 판정 로직의 정본이다 — 조건·심각도·대응 문구를 바꿀 때는 스크립트도 함께 갱신한다)
 
 | 신호 | 조건 | 심각도 | 대응 |
 |------|------|--------|------|
@@ -100,7 +119,7 @@ PM(`agents/pm.md`)이 작업을 위임한 **이후** 실행을 관리하는 절�
 
 **점검 주기**
 - **일일**: critical path 항목(deadline ≤ 1주) status/progress 단순 조회
-- **주 1회(월요 또는 금요)**: wbs_list 전체 조회 → 심각도 High 신호 필터 + 보고
+- **주 1회(월요 또는 금요)**: wbs_list 전체 조회 → 결과를 `wbs-YYYY-MM-DD.json`으로 저장 → `check-wbs-warnings.mjs --previous <직전 파일> --current <이번 파일>`로 심각도 High 신호 필터 + 보고
 - **월 1회**: 완료 항목까지 include_done=true로 조회 → 계획 대비 실제 소요시간 분석
 
 ---

@@ -140,6 +140,39 @@ tags: [auth, security, decision]
    (헤더에 "폐기 사유: 구조 변경, 참고용으로만 보존")
 ```
 
+## 검증 절차 — 스크립트 1차 스캔 후 사람이 위반 후보만 확인
+
+파일명 패턴(§3)·헤더 메타데이터(§4)·경로 위계(§1, §3 표)·`archived-` 접두어(§5)는 전부
+정규식/파일시스템 검사로 결정론적으로 판정 가능하다. 이 네 항목은 사람이 파일을 하나씩
+열어 눈으로 확인하지 말고, 먼저 `${CLAUDE_PLUGIN_ROOT}/bin/check-output-conventions.mjs`로
+1차 스캔한 뒤 위반 후보만 확인한다.
+
+```bash
+# 프로젝트 루트에서 docs/ 를 스캔 (기본값)
+node ${CLAUDE_PLUGIN_ROOT}/bin/check-output-conventions.mjs
+
+# 다른 디렉터리를 지정하거나 루트를 명시
+node ${CLAUDE_PLUGIN_ROOT}/bin/check-output-conventions.mjs docs --root /absolute/path/to/project
+
+# CI/게이트용: 하드 위반이 1건이라도 있으면 exit code 1
+node ${CLAUDE_PLUGIN_ROOT}/bin/check-output-conventions.mjs --strict
+```
+
+의존성 없는 Node 내장 모듈만 사용한다(`bin/analyze-usage.mjs`와 동일 스타일). 출력은 두 그룹으로
+나뉜다:
+
+- **하드 위반**: 정규식/파일시스템으로 명확히 결정되는 것만(예: `decision-` 파일에 날짜 없음,
+  `review-` 파일이 `output/reports/` 밖에 있음, `archive/` 안인데 `archived-` 접두어 없음,
+  프론트매터에 `created`/`author`/`status` 누락). 스크립트가 "위반"이라 표시해도 최종 확정은
+  사람이 한다.
+- **확인 필요**: 의도적 예외일 수 있는 애매한 케이스(예: `related_files`/`tags` 둘 다 없음 —
+  관련 파일이 정말 없는 경우일 수 있음, `scratch-` 파일이 아직 세션 진행 중이라 남아있는 경우).
+  자동으로 위반 처리하지 않는다.
+
+알려진 영역 접두어(`decision-`/`review-`/`training-report-`/`scratch-`)가 없고 날짜도 없는
+일반 도메인 문서(예: `docs/[도메인]/guide.md`)는 이 스킬의 날짜 규칙 적용 대상이 불명확하므로
+스캔 대상에서 제외한다 — 오탐(false positive)을 늘리지 않기 위함이다.
+
 ## 적용 체크리스트
 
 ### 산출물 생성 전
@@ -149,6 +182,7 @@ tags: [auth, security, decision]
 
 ### 파일 저장 시
 
+- [ ] `check-output-conventions.mjs` 1차 스캔 결과에 이 파일 관련 위반이 없는가?
 - [ ] 절대 경로로 저장? (상대 경로 ❌)
 - [ ] 파일명 규칙 따른가? ([영역]-[주제]-YYYY-MM-DD)
 - [ ] 헤더 메타데이터 포함? (created, author, status, tags)
@@ -165,3 +199,4 @@ tags: [auth, security, decision]
 - [ ] 완전 삭제 금지, docs/archive/ 이동?
 - [ ] archived- 접두어 추가?
 - [ ] 폐기 사유와 원본 경로 기록?
+- [ ] `check-output-conventions.mjs`로 `archived-` 접두어·경로 위반 재스캔?
