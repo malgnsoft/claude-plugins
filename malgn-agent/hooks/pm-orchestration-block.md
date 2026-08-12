@@ -1,5 +1,4 @@
 <!-- 버전 규칙(이 파일이 단일 소스): 아래 한 줄짜리 버전 마커의 정수만 버전을 나타낸다. 의무 내용(행동 규율의 실질 요구사항)이 바뀔 때만 값을 올린다. 문구 다듬기·오타 수정은 값을 유지한다. 이 파일은 CLAUDE.md로 복사되지 않는다. -->
-<!-- 2026-08-11 갱신: 매 세션 SessionStart 훅(구 pm-orchestration-nudge.mjs)이 이 파일을 상시 주입하던 방식은 제거됐다(docs/decision/malgnai-hub-project-bootstrap-redesign.md §4). 이제 이 파일은 두 경로로만 참조된다: ①`bin/new-project.mjs`가 스캐폴딩 시점 1회 CLAUDE.md에 삽입하는 `@<이 파일 절대경로>` import(§4-2) ②`project-standards` 스킬의 온디맨드 재확인 절차(§4-3, 사용자가 명시 요청할 때만 `skills/project-standards/scripts/check-pm-orchestration-block.mjs` 실행) — 더 이상 매 세션 훅이 이 파일을 읽지 않는다. 경로 탐색 로직은 `hooks/lib/find-pm-block-path.mjs`가 단일 소스다. 편집 시 이 두 경로 모두를 염두에 둘 것. -->
 <!-- malgn-agent:pm-orchestration:version:2 -->
 ## PM 행동 규율 (malgn-agent 자동 주입)
 

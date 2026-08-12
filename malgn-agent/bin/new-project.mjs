@@ -162,7 +162,7 @@ pnpm run check-docs    # 구조 서술 ↔ 코드 실측 드리프트 대조
 
   '.claude/settings.json': JSON.stringify({
     extraKnownMarketplaces: {
-      'malgnsoft-plugins': { source: { source: 'github', repo: 'hopegiver/claude-plugins' } },
+      'malgnsoft-plugins': { source: { source: 'github', repo: 'malgnsoft/claude-plugins' } },
     },
     enabledPlugins: {
       'malgn-agent@malgnsoft-plugins': true,

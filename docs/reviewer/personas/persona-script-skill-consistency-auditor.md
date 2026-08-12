@@ -33,3 +33,6 @@
 ## 6. 출력포맷 (Output Format)
 표: | SKILL.md 서술 | 코드 실측 | 일치 여부 | 근거(파일:줄) |
 명명 판정은 별도 문단으로 "재현 결과 + §4.2 적용 여부 + 결론".
+
+## 적용 이력 (Application Log)
+- **2026-08-12, script-based-skills-batch-20260812 (Standard 등급 약식 리뷰)**: 5개 스킬(common-output-storage-and-path-management, domain-pre-deployment-verification-gate, domain-serverless-edge-api-security, domain-training-scorecard-eval, project-orchestration) 개정분과 대응 `bin/*.mjs` 5개의 SKILL.md 서술 ↔ 코드 실측 정합성 대조에 재사용. 6대 요소 본문(관심사: 옵션·임계값·근거 일치 여부)이 이번 라운드에도 문자 그대로 적용 가능해 신규 페르소나 작성 없이 재사용함. 상세 결과는 `docs/reviewer/review-script-based-skills-batch-2026-08-12.md` 참조.

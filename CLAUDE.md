@@ -4,6 +4,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 <!-- 구조 드리프트 대조: .claude/doc-drift.json + `pnpm run check-docs`. 전역 SessionStart 훅이 세션 시작 시 자동 경고. -->
 <!-- malgn-agent:pm-orchestration:installed:v1 -->
+@/Users/hopegiver/.claude/plugins/marketplaces/malgnsoft-plugins/malgn-agent/hooks/pm-orchestration-block.md
 
 ## 새 세션 부트스트랩 (읽기 순서 = 토큰 예산)
 새 세션은 **자동 주입되는 `STATUS.md` + 이 `CLAUDE.md` 두 개면 오리엔테이션이 끝난다.** 현 상황 파악하려고 코드/docs를 통독하지 말 것.
@@ -22,7 +23,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 ## Project Overview
 claude-plugins — 맑은소프트 전 직원 배포용 클로드코드 플러그인 마켓플레이스이자, 그 핵심 플러그인 `malgn-agent`(공통 표준 에이전트·스킬·지식·훅)를 만들고 관리하는 프로젝트.
-GitHub: https://github.com/hopegiver/claude-plugins (이 저장소 자체가 마켓플레이스 주소).
+GitHub: https://github.com/malgnsoft/claude-plugins (이 저장소 자체가 마켓플레이스 주소).
 핵심 플러그인은 `malgn-agent`(공통 표준+범용 에이전트 21종+PM 오케스트레이터+노하우 스킬/knowledge+malgnai-hub 연동). `malgn-djkim`, `malgn-dotype` 등 개인/팀별 플러그인도 이 저장소 하위에 추가될 예정.
 
 ## Tech Stack

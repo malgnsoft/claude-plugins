@@ -5,26 +5,27 @@
 
 ## 2. 관심사 (Concerns)
 - cwd(작업 디렉터리 절대경로) 노출 — SKILL.md가 다루는 것과 동일
-- **cwd보다 더 심각할 수 있는 것: 도구 호출 입력(input) 원문 노출.** "반복 호출 패턴" 표는 `JSON.stringify(tool_use.input)`을 120자까지 그대로 truncate해 보여준다 — Read는 file_path뿐이라 안전하지만, Bash/Edit/Write/WebFetch 등의 input에는 명령어 전문·코드 스니펫·URL 쿼리스트링(토큰 포함 가능)이 들어갈 수 있다
-- PM이 Micro 등급으로 이 리포트를 malgnai-hub `work_record`/`decision_record`에 그대로 기록하면, 로컬 1회성 데이터가 회사 전체가 검색 가능한 중앙 저장소로 전파될 위험
-- SKILL.md의 "개인정보 유의" 절(105행)이 cwd만 언급하고 위 두 가지(도구 input 원문, 중앙 기록 전파)를 다루지 않는다는 점
+- 도구 호출 입력(input) 원문 노출. "반복 호출 패턴" 표는 `JSON.stringify(tool_use.input)`을 120자까지 그대로 truncate해 보여준다 — Read는 file_path뿐이라 안전하지만, Bash/Edit/Write/WebFetch 등의 input에는 명령어 전문·코드 스니펫·URL 쿼리스트링(토큰 포함 가능)이 들어갈 수 있다 (v1.2.1 RV-003로 이미 Major 판정 + SKILL.md 보강 완료)
+- **(신규, 2026-08-10 3축 집계 리뷰) 세션별 첫/마지막 사용자 프롬프트 원문 노출(§3, `extractHumanPromptText`).** 90자까지 truncate하지만 공백 정규화 외에는 원문 그대로다 — RV-003(도구 input JSON 조각)보다 노출 표면이 크다: 자연어 문장 전체가 통째로 찍히므로 동료·거래처·제품에 대한 비판, 업무 맥락, 때로는 민감한 내용이 그대로 드러날 수 있다(실제 로컬 로그 실행에서 "UI/UX 검증 안했나... 적절히 조직도화 되어야 하는데 안되어 있네" 같은 실제 인물 비판성 문장이 그대로 노출되는 것을 확인함).
+- **caveat 존치 여부 판단**: trainer 1차 커밋(`d69bd60`)이 이 노출면에 대한 SKILL.md 경고 문구를 추가했으나, 코디네이터 후속 커밋(`05a7833`)이 "사용자 요청 리포트는 순수 로컬 개인 진단용, 외부 공유 계획 없음"을 근거로 그 문구만 제거했다. 이 판단이 **이 스킬의 배포 스코프**(맑은소프트 전 직원 배포, 특정 개인 전용이 아님 — SKILL.md 자체가 "특정 소수 전문 에이전트 전용이 아니다... 세션 중인 어느 에이전트든 사용자가 물으면 바로 실행" + "저장 규칙" 절이 "기록으로 남겨줘/파일로 줘" 요청 시 `--out` 저장을 공식 지원한다고 명시)과 양립 가능한지가 핵심 쟁점.
+- SKILL.md의 "개인정보 유의" 절(109행)이 cwd·§10 프로젝트집계만 명시하고, §3 프롬프트 노출은 언급하지 않는다는 점 — RV-003 때 "반복 호출 패턴" 표는 같은 절 하위에 별도 항목으로 명시됐는데, 이번엔 동일 패턴(더 큰 노출면)이 삭제된 채 남았다.
 
 ## 3. 평가기준 (Evaluation Criteria)
 - 🔴 Critical: 실제로 크리덴셜/시크릿이 기본 실행 경로에서 콘솔에 노출되고 문서가 이를 전혀 경고하지 않는 경우
-- 🟠 Major: 구조적으로 민감정보가 샐 수 있는 코드 경로가 실존하는데 문서의 경고가 그 경로를 다루지 않는 경우
+- 🟠 Major: 구조적으로 민감정보가 샐 수 있는 코드 경로가 실존하는데 문서의 경고가 그 경로를 다루지 않는 경우(전례: RV-003)
 - 🟡 Minor: 경고는 있으나 강도가 약하거나(예: cwd만) 실행 가능한 대응책이 없는 경우
 - ⚪ Nit: 문구 보강 제안
 
 ## 4. 평가방법론 (Methodology)
-1. `bin/analyze-usage.mjs`의 toolCallCounts 수집 로직(323~336행)과 반복호출 표 렌더링(486~497행)을 읽고 어떤 도구의 input이 노출되는지 코드로 확인
-2. 실제 로컬 로그로 스크립트를 실행해 반복 호출 표에 무엇이 찍히는지 실물 확인(민감정보가 실제 있는지와 무관하게 "찍힐 수 있는 구조"인지가 핵심)
-3. SKILL.md "개인정보 유의"(105행)·"저장 규칙"(83행)이 이 노출면을 다루는지 대조
-4. pm.md의 malgnai-hub 기록 관행(work_record/decision_record)과 교차해, 이 스킬 산출물이 로컬 1회성에서 회사 중앙 저장소로 전파될 경로가 있는지 확인
+1. `bin/analyze-usage.mjs`의 `extractHumanPromptText`(144~159행)·프롬프트 캡처 로직(311~320행)·§3 렌더링(525~542행)을 읽고 어떤 콘텐츠가 노출되는지 코드로 확인
+2. 실제 로컬 로그로 스크립트를 실행해 §3 표에 무엇이 찍히는지 실물 확인 — 민감정보가 실제 있는지와 무관하게 "찍힐 수 있는 구조"인지가 핵심이지만, 이번엔 실제로 실물 민감 사례(인물 비판 문장)를 확보해 구조적 위험을 실증 사례로 승격
+3. SKILL.md "개인정보 유의"(109행)·"저장 규칙"이 이 노출면을 다루는지 대조하고, RV-003 당시 "반복 호출 패턴"에 적용됐던 처리(같은 절 하위 별도 하위불릿)와 이번 삭제 결정을 나란히 비교
+4. "순수 로컬, 공유 계획 없음"이라는 정당화가 **이번 세션 한정 판단**인지 **스킬 전체(전 직원 배포)에 적용 가능한 일반 원칙**인지 구분 — SKILL.md "대상"·"저장 규칙" 절의 배포 스코프 서술과 대조
 
 ## 5. 참고파일 (References)
-- `/Users/hopegiver/workspace/claude-plugins/malgn-agent/bin/analyze-usage.mjs` (323~336행, 486~497행)
-- `/Users/hopegiver/workspace/claude-plugins/malgn-agent/skills/token-usage-diagnosis/SKILL.md` (83~106행)
-- `/Users/hopegiver/workspace/claude-plugins/malgn-agent/agents/pm.md` (malgnai-hub 기록 원칙)
+- `/Users/hopegiver/workspace/claude-plugins/malgn-agent/bin/analyze-usage.mjs` (144~159행, 311~320행, 525~542행)
+- `/Users/hopegiver/workspace/claude-plugins/malgn-agent/skills/token-usage-diagnosis/SKILL.md` (13행 "대상", 83행 "저장 규칙", 109~111행 "개인정보 유의")
+- `/Users/hopegiver/workspace/claude-plugins/docs/reviewer/review-token-usage-diagnosis-skill-2026-08-10.md` (RV-003 전례)
 
 ## 6. 출력포맷 (Output Format)
 표: | 노출면 | 코드 위치 | 실물 확인 결과 | 문서의 대응 여부 | 심각도 | 권고 |
