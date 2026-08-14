@@ -9,7 +9,7 @@
 | `common/` | 전체 | 프로젝트 관리, 품질 검토 |
 | `leadership/` | pm | 팀 구성 패턴, 파이프라인 관리 |
 | `planning/` | planner, researcher | 요구사항 분석, 시장조사 |
-| `design/` | ux-designer, visual-designer | UX 설계, 비주얼 디자인 시스템 |
+| `design/` | ux-designer, visual-designer, security(마스킹 기준만) | UX 설계, 비주얼 디자인 시스템, 화면 개인정보 마스킹 기준 |
 | `architecture/` | architect | 시스템 설계 패턴, API 설계 |
 | `backend/` | backend-dev | Hono/D1 구현 패턴, DAO |
 | `frontend/` | frontend-dev | vue-zero 패턴, Bootstrap 5 |
@@ -74,6 +74,7 @@
 - `html-style-guide/html-스타일가이드-가로형.html`, `html-스타일가이드-세로형.html` — 맑은소프트 HTML 문서/슬라이드 브랜드 스타일가이드 정본(2026-07~, CSS 토큰·클래스 어휘의 단일 소스). presenter/writer가 HTML/PDF 문서 제작 시 Read. 가로형=16:9 슬라이드, 세로형=A4 인쇄 문서. (2026-07-09 `claude-code-guide/docs/`에서 이전)
 - (레퍼런스 벤치마킹 스크린샷 대조 표준은 knowledge가 아니라 skill로 이관됨 — `skills/reference-benchmarking-standard/SKILL.md`, 2026-07-23. frontend-dev/visual-designer/ux-designer 공용)
 - `publishing-style-guide-template.md` — 퍼블리싱 스타일가이드 전역 기본 템플릿(버튼 3사이즈·테이블/카드 기본형·탭 2종), 프로젝트별로 값만 채움. frontend-dev 주 사용 (2026-07-23 합의)
+- `personal-data-masking-standards.md` — 화면(UI) 단위 개인정보 마스킹 기준(이름/휴대폰/이메일/주민번호/계좌/카드/주소 필드별 노출 자릿수 수치), 마스킹 해제 정책, 화면 설계 체크리스트. security·ux-designer 공용 (2026-08-14 신설, djkim DOCS-화면설계서작성표준 §7 참고)
 
 ### architecture/
 - `system-design-patterns.md` — (2026-07-24 C4모델·아키텍처패턴·REST API·데이터모델링·분산동기화 본문은 `skills/architecture-patterns-reference/SKILL.md`로 이관, 우수설계 7대기법 A~G는 기존 `skills/system-design-principles/SKILL.md`와 중복이라 이관 제외) 배경·출처만 남음
@@ -104,6 +105,7 @@
 ### presentation/
 - `slide-design-guide.md` — Marp 문법, 슬라이드 원칙, 테마, 스토리텔링
 - `a4-document-fundamentals.md` — A4 세로형 문서 기술 배경(페이지 크기·여백·렌더 측정 원리)
+- `horizontal-slide-filling-techniques.md` — 가로형(16:9) 슬라이드 콘텐츠 채움 기법(flex 균등확장, `justify-content:space-between` 지양, 스코프 클래스 단위 폰트 조정). `a4-document-fundamentals.md`(세로 인쇄물)와 역할 다름 (2026-08-14 신설, djkim doc-authoring 참고)
 - (A4 세로형 단계별 절차서는 knowledge가 아니라 skill로 이관됨 — `skills/a4-vertical-layout/SKILL.md`, 2026-07-23)
 
 ### marketing/

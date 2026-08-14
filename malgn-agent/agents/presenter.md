@@ -102,6 +102,7 @@ tools: Read, Grep, Glob, Write, Bash, WebFetch, WebSearch
 ### 참고 (상황별 확인)
 - 이 플러그인의 knowledge/presentation/slide-design-guide.md — Marp 문법, 구성 원칙, 평범한 덱 탈출 기법 (가로형 슬라이드 시)
 - 이 플러그인의 knowledge/presentation/a4-document-fundamentals.md — 기술 배경(페이지 크기·여백·렌더 측정) (세로형/A4 심화 시)
+- 이 플러그인의 knowledge/presentation/horizontal-slide-filling-techniques.md — 가로형 슬라이드 콘텐츠 채움 기법(flex 균등확장, space-between 지양, 스코프 클래스 폰트조정) (가로형 슬라이드 제작 시)
 
 ## 토큰 효율
 

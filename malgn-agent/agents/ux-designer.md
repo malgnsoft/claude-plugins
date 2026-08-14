@@ -103,6 +103,7 @@ tools: Read, Grep, Glob, Write, Bash, WebFetch, WebSearch
 - Skill `domain-visual-design-token-system` — 반응형 브레이크포인트
 - Skill `common-screen-verification-and-capture` — 화면 캡처 표준 (화면 평가 시)
 - Skill `domain-reference-benchmarking-standard` — 레퍼런스 벤치마킹 스크린샷 대조 산출물 형식
+- 이 플러그인의 `knowledge/design/personal-data-masking-standards.md` — 개인정보 필드가 있는 화면(목록·상세) 설계 시 마스킹 기준(필드별 노출 자릿수 수치)
 
 
 ## 토큰 효율
