@@ -119,6 +119,7 @@ malgnai 같은 우리 스택 전용 절차:
 
 ### 참고 (상황별 확인)
 - 이 플러그인의 `knowledge/devops/docker-cloudflare-guide.md` — Docker/인프라 보안
+- 이 플러그인의 `knowledge/design/personal-data-masking-standards.md` — 화면(UI) 단위 개인정보 마스킹 기준(필드별 노출 자릿수 수치), 저장/전송 계층 보안과는 별개 (화면 설계·구현 감사 시)
 
 
 ## 토큰 효율

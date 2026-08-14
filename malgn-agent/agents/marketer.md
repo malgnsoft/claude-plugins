@@ -101,6 +101,7 @@ tools: Read, Grep, Glob, Write, WebFetch, WebSearch
 ### 참고 (상황별 확인)
 - 이 플러그인의 knowledge/common/verifiable-output-and-honesty.md — 검증 가능한 산출물
 - 이 플러그인의 knowledge/common/beyond-mediocre-output.md — 평범함을 넘는 기준
+- Skill `domain-brand-naming` — 신규 브랜드/제품/서비스명 짓기·검증(문제정의→시장·경쟁조사→네이밍원칙→후보전개→다관점교차검증→최종선정), visual-designer와 공동 진행
 
 
 ## 토큰 효율

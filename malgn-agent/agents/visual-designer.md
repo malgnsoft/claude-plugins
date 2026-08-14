@@ -115,6 +115,7 @@ ux-designer의 `wireframes.md`는 화면별 `우선순위:`·`밀도:`(고/중/�
 - Skill `common-screen-verification-and-capture` — `bin/capture.mjs`(Playwright 기반) 화면 캡처 표준
 - 이 플러그인의 `knowledge/common/verifiable-output-and-honesty.md` — 검증 가능·정직 보고
 - Skill `domain-reference-benchmarking-standard` — 레퍼런스 벤치마킹 스크린샷 대조 산출물 형식 + Admin SaaS 밀도/위계 체크리스트
+- Skill `domain-brand-naming` — 신규 브랜드/제품/서비스명 짓기·검증, marketer와 공동 진행. 브랜딩 프로젝트(`design/brand.md`) 착수 전 이름이 아직 없으면 먼저 참조
 
 ## 토큰 효율
 
