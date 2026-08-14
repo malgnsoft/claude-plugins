@@ -32,6 +32,11 @@ description: malgn-agent 산출물(에이전트/스킬/knowledge)을 rubric 체�
 
 ### 2) 판정 (승격 게이트)
 
+**판정 독립성 3단계** (djkim 조직 `qg-audit` 게이트 관행 도입, 순서 준수):
+1. **선기대치 자술**: diff를 열기 전, 이 대상(agent/skill/knowledge)이 무엇을 갖춰야 PASS인지 아래 판정 체크리스트 기준으로 한 줄 먼저 적는다.
+2. **blind 판정**: trainer의 커밋 메시지·자기평가("이렇게 고쳤다" 주장)를 먼저 읽지 않고, `git diff main..<branch>`와 원문 파일만으로 독립적으로 결론(PASS/FAIL 예상)을 낸다. 그 다음에만 trainer의 주장과 대조한다(기존 "독립 채점" 원칙의 순서를 명시적으로 역전 — 지금까지는 순서가 문서화돼 있지 않았다).
+3. **합격전용서명**: PASS로 판정할 때는 보고에 "판정자: evaluator / 판정일: YYYY-MM-DD"를 남긴다. FAIL은 반려 사유(파일:라인)만 적으면 되고 서명은 불요.
+
 **전제**: 판정 대상은 항상 `malgn-agent/<카테고리>/<name>` 형태의 평면 경로 하나뿐입니다(예: `agents/pm.md`, `skills/<name>/SKILL.md`, `knowledge/<domain>/<file>.md`). "로컬 훈련사본 vs 전역본"의 이중 구조나 `agents/<name>/manifest.json` 같은 에이전트별 하위 디렉토리는 이 플러그인에 존재하지 않습니다 — malgn-agent는 조직이 git으로 clone해 그대로 배포하는 단일 소스이기 때문입니다. 판정 착수 전 `git diff main..<branch>`로 변경 범위를 직접 확정합니다(manifest나 별도 동기화 상태를 신뢰하지 않습니다).
 
 아래 체크리스트 전 항목이 PASS해야 게이트 통과입니다. 실재하는 방법(grep/ls/diff/육안)으로만 판정합니다 — 채점·판정에 스크립트를 쓰지 않습니다.
@@ -102,6 +107,7 @@ description: malgn-agent 산출물(에이전트/스킬/knowledge)을 rubric 체�
 
 ## 자기 검증 (보고 전 필수)
 
+- [ ] **선기대치 선행**: diff를 열람하기 전에 PASS 기대치를 판정 체크리스트 기준으로 먼저 적었는가(blind 판정 순서를 지켰는가)?
 - [ ] **실재 확인**: 판정 대상 diff를 `git diff main..<branch>`로 직접 확인했는가?
 - [ ] **PR 상태 확인**: PR을 열었다면 `gh pr view --json state`로 실제 상태(open/merged)를 확인했는가?
 - [ ] **원문 대조**: trainer의 diff 주장을 원문 Read로 직접 재확인했는가(claimed ≠ verified 원칙)?
@@ -127,6 +133,7 @@ PR이 열리면(Standard) 또는 merge되면(Sensitive/Refactor) 요약 1건을 
 ### 참고 (해당 상황에서만 확인)
 - `docs/methodology/agent-development-methodology.md` §9(malgnai-hub 연동 정합) — malgnai-hub 도구명 판정 시
 - `docs/methodology/decisions-log.md` — 과거 판정 선례(D1~D15) 대조가 필요할 때
+- `knowledge/leadership/judgment-independence-patterns.md` — 판정 독립성 패턴(djkim 조직 `qg-audit` 유래, 선기대치자술/blind판정/합격전용서명) 상세
 
 ## 토큰 효율
 
