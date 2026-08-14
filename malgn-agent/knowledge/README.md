@@ -59,12 +59,14 @@
 - `autonomous-iteration-philosophy.md` — 자율 반복 상한(3~5회)·수확체감 우선 종료조건, 일일 토큰 예산 게이트와 한도 초과 시 대표 보고 절차 (`agents/pm.md` 실참조)
 - `coo-rule-rationale.md` — PM 핵심 운영 규칙의 근거 모음(orchestrator 흡수, 집필 위임 원칙, 공유 가정 주입, 경로 릴레이 순차 위임) — 각 규칙이 유래한 실제 사고 사례 포함 (`agents/pm.md` 실참조)
 - `progress-status-templates.md` — `progress.md`/`STATUS.md` 표준 템플릿, STATUS.md 비대화 방지 아카이빙·헤더 교체 규칙
+- `judgment-independence-patterns.md` — 판정 독립성 설계 3요소(선기대치 자술/blind 판정/합격에만 서명) 참고 노트, 타 AI 조직 사례 재정리. evaluator 판정 체크리스트 개선 논의의 참고 자료(2026-08-13 djkim 노하우 접목, evaluator.md 자체는 미수정)
 
 ### planning/
 - `requirements-analysis.md` — 요구사항 도출 프로세스, PRD 템플릿, 사용자 스토리
 - `prd-craft-patterns.md` — 상용 수준 PRD 고급 기법 (분할 전략, FR-ID 추적성, 인수조건, 시나리오 6요소, 범위 경계 3중, 도메인 용어 사전). coaching 우수 사례 역추출
 - `market-research.md` — TAM/SAM/SOM, Porter 5 Forces, SWOT, 기술 비교 기준
 - `business-brief-patterns.md` — 전략 브리프 고급 기법 (벤치마킹 포지셔닝, 시장규모 현실 인식, 수익 산식, Why now, 해자 정당화, 리스크↔대응). coaching 우수 사례 역추출
+- `twenty-questions-convergence.md` — 스무고개 수렴 기법: AI가 질문자가 되어 `(N/20)` 서술형 질문 1개씩 탐색→전환(전제 뒤집기 강제 1회)→수렴 진행. planner가 요구사항이 불명확한 상황(신규 브랜드/제품 기획 등)에서 참고 (2026-08-13 djkim 노하우 접목)
 
 ### design/
 - `ux-design-guide.md` — 사용자 흐름, 와이어프레임 표기, IA, 인터랙션, 접근성
@@ -86,6 +88,7 @@
 ### quality/
 - `testing-guide.md` — (2026-07-24 경계값분석·동등분할·상태전이 기법 + Vitest/E2E 패턴·보고서 형식·커버리지 함정 처방 본문은 `skills/software-test-design-techniques/SKILL.md`로 이관) 배경·출처만 남음
 - `e2e-testing-guide.md` — E2E 테스트(Playwright Test) vs 즉석 화면 검증(`bin/capture.mjs`) 역할 구분, `templates/e2e-template/` 스캐폴드 복사 절차, 프로젝트별 브라우저 설치·인증 setup 가이드
+- `intent-fit-vs-correctness-split.md` — "기획의도 부합성 vs 동작정확성" 축 분리 개념 노트. qa-engineer/reviewer가 검수 체크리스트를 짤 때 참고 (2026-08-13 djkim 노하우 접목)
 
 ### security/
 - (OWASP Top 10 체크리스트는 knowledge가 아니라 skill로 분산 이관됨, 2026-08-07 — A01/A03→`skills/domain-backend-api-security` §1/§4, A02/A07/A09→`skills/domain-security-audit-checklist` §4/§5/§6, 인프라(Docker/환경변수)→`skills/domain-devops-deployment-patterns` §1, 심각도 CVSS 매핑→`agents/security.md` "핵심 원칙")
