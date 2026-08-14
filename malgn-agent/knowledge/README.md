@@ -142,6 +142,6 @@ PM은 프로젝트 완료 시:
 
 ## 학습 자료 추가 방법
 
-1. 해당 폴더에 `.md` 파일 추가
+1. 해당 폴더에 `.md` 파일 추가 — **신규 knowledge 문서는 파일 최상단(제목 바로 아래)에 `owner`(작성 에이전트 이름)와 `최종검토일`(YYYY-MM-DD) 메타 라인을 포함한다**(예: `> owner: trainer · 최종검토일: 2026-08-14`). 기존 49개 문서에는 이번에 일괄 소급 적용하지 않는다 — 2026-08-14 이후 신설되는 문서부터 점진 적용한다(djkim `knowledge-curator` 노하우 접목, 파일럿 5건: `leadership/judgment-independence-patterns.md`, `planning/twenty-questions-convergence.md`, `quality/intent-fit-vs-correctness-split.md`, `presentation/horizontal-slide-filling-techniques.md`, `design/personal-data-masking-standards.md`).
 2. 이 README.md에 항목 추가
 3. 관련 에이전트 MD의 `## 학습 자료` 섹션에 경로 추가

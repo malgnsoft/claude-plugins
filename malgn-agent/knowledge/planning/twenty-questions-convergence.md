@@ -1,5 +1,7 @@
 # 스무고개 수렴 기법
 
+> owner: trainer · 최종검토일: 2026-08-14
+
 > 출처: `docs/analysis/djkim-knowhow-analysis-2026-08-13.md` §3.2 — 타 AI 조직의 요구사항 수렴 방법론을 우리 언어로 재정리.
 > 원문은 인용하지 않고 구조만 재서술함. **원문 자체는 malgn-agent 플러그인에 번들되지 않으며, claude-plugins 소스 저장소 작업본에만 존재하는 내부 분석 자료다(재현 불가 시에도 이 knowledge 문서만으로 개념 이해에 지장 없음).**
 
