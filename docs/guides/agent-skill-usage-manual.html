@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>malgn-agent 에이전트·스킬 효과적 사용법</title>
+<style>
+/* ============================================================
+   design tokens: knowledge/design/html-style-guide/html-스타일가이드-가로형.html 계승
+   ============================================================ */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root{
+  --brand-deep:#1647C7; --brand:#1E5EFF; --brand-bright:#3D7BFF; --brand-soft:#C9D9FF;
+  --navy-deep:#0B1F3A; --navy:#16335B; --navy-mid:#1F4276; --navy-soft:#3A5C8C;
+  --ink:#0E1726; --ink-2:#3D4861; --ink-3:#6B7488; --canvas:#F6F8FC; --line:#E2E8F2; --white:#FFFFFF;
+  --sans:'Pretendard Variable',Pretendard,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:#0a0f1c;font-family:var(--sans);}
+.tnum{font-variant-numeric:tabular-nums;}
+.mono{font-family:var(--mono);letter-spacing:0;}
+
+/* ---- slide page: 1280 x 720 (16:9) ---- */
+.slide{
+  position:relative;width:1280px;height:720px;overflow:hidden;
+  background:var(--canvas);color:var(--ink);letter-spacing:-0.02em;
+  padding:56px 76px 52px;display:flex;flex-direction:column;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  margin:0 auto;
+}
+@media screen{ .slide{margin:22px auto;box-shadow:0 10px 40px rgba(0,0,0,.4);border-radius:6px;} }
+
+.eyebrow{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:0.30em;color:var(--brand);text-transform:uppercase;}
+.s-head{display:flex;align-items:flex-start;justify-content:space-between;gap:28px;}
+.s-head .num{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:0.06em;color:var(--ink-3);white-space:nowrap;padding-top:2px;}
+.s-title{font-size:31px;line-height:37px;font-weight:800;margin:12px 0 0;letter-spacing:-0.03em;}
+.s-title .hl{color:var(--brand);}
+.s-lead{font-size:17px;line-height:26px;font-weight:400;color:var(--ink-2);max-width:1020px;margin:10px 0 0;text-wrap:balance;}
+.rule{height:1px;background:var(--line);margin:20px 0 0;}
+.body{margin-top:26px;flex:1;min-height:0;}
+
+.s-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--mono);font-size:12px;letter-spacing:0.04em;color:var(--ink-3);padding-top:16px;}
+.logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;letter-spacing:-0.03em;color:var(--ink-2);font-size:14px;}
+.logo img{display:block;height:14px;width:auto;}
+.logo-chip{display:inline-flex;align-items:center;background:#fff;padding:8px 14px;border-radius:9px;box-shadow:0 2px 12px rgba(0,0,0,.20);}
+.logo-chip img{display:block;height:18px;width:auto;}
+
+.badge{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 13px;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:-0.01em;}
+.badge.solid{background:var(--brand);color:#fff;}
+.badge.soft{background:var(--brand-soft);color:var(--brand-deep);}
+.badge.navy{background:var(--navy);color:#fff;}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;}
+.box{border-radius:14px;padding:20px 22px;border:1px solid var(--line);background:#fff;}
+.box.tint{background:#EEF3FF;border-color:#D8E3FF;}
+.box.edge{border-left:4px solid var(--brand);}
+.callout{background:#EEF3FF;border:1px solid #D8E3FF;border-left:4px solid var(--brand);border-radius:12px;
+  padding:16px 22px;font-size:16px;line-height:24px;color:var(--navy);font-weight:600;}
+.callout b{color:var(--brand-deep);}
+
+.blist{display:flex;flex-direction:column;gap:15px;}
+.blist .it{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline;}
+.blist .it .dot{width:8px;height:8px;border-radius:50%;background:var(--brand);transform:translateY(-2px);}
+.blist .it .tt{font-size:17px;font-weight:700;color:var(--navy);}
+.blist .it .dd{font-size:15px;line-height:1.55;color:var(--ink-2);margin-top:4px;}
+
+.step{display:grid;grid-template-columns:36px 1fr;gap:15px;align-items:start;
+  border:1px solid var(--line);border-radius:12px;padding:16px 20px;background:#fff;}
+.step .n{width:36px;height:36px;border-radius:9px;background:var(--brand-soft);color:var(--brand-deep);
+  display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:15px;}
+.step h5{font-size:16px;font-weight:700;}
+.step p{margin-top:5px;font-size:14px;line-height:20px;color:var(--ink-2);}
+
+.stat{border:1px solid var(--line);border-radius:12px;padding:18px 22px;background:#fff;}
+.stat.hi{background:linear-gradient(135deg,#1E5EFF,#1647C7);border:none;color:#fff;}
+.stat .lab{font-size:14px;color:var(--ink-3);font-weight:600;}
+.stat.hi .lab{color:var(--brand-soft);}
+.stat .big{font-size:34px;font-weight:800;line-height:1;margin-top:8px;letter-spacing:-0.03em;}
+
+.kbd{font-family:var(--mono);font-size:0.92em;background:#EEF3FF;color:var(--brand-deep);border:1px solid #D8E3FF;
+  border-radius:6px;padding:1px 7px;font-weight:600;letter-spacing:0;}
+
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+.cmp-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;display:flex;flex-direction:column;}
+.cmp-card .hd{padding:18px 24px 16px;color:#fff;}
+.cmp-card.a .hd{background:var(--navy);}
+.cmp-card.b .hd{background:linear-gradient(135deg,#1E5EFF,#1647C7);}
+.cmp-card .hd .meta{font-family:var(--mono);font-size:12px;letter-spacing:0.14em;opacity:.85;text-transform:uppercase;}
+.cmp-card .hd .ttl{font-size:23px;font-weight:800;margin-top:6px;letter-spacing:-0.02em;}
+.cmp-card .hd .sub{font-size:14px;margin-top:5px;opacity:.9;}
+.cmp-card .bd{padding:18px 24px 20px;display:flex;flex-direction:column;gap:0;flex:1;}
+.cmp-row{display:grid;grid-template-columns:96px 1fr;gap:14px;padding:11px 0;align-items:baseline;}
+.cmp-row + .cmp-row{border-top:1px solid var(--line);}
+.cmp-row .k{font-size:13px;font-weight:700;color:var(--ink-3);letter-spacing:0.02em;}
+.cmp-row .v{font-size:15px;color:var(--ink);line-height:1.5;}
+
+.flow{display:flex;align-items:stretch;gap:0;}
+.flow .node{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;}
+.flow .node .role{font-family:var(--mono);font-size:10.5px;letter-spacing:0.08em;color:var(--brand);font-weight:700;text-transform:uppercase;}
+.flow .node .nm{font-size:18px;font-weight:800;color:var(--navy);letter-spacing:-0.02em;}
+.flow .node .job{font-size:11.5px;color:var(--ink-3);line-height:1.4;}
+.flow .node.me{background:linear-gradient(135deg,#1E5EFF,#1647C7);border:none;}
+.flow .node.me .role{color:var(--brand-soft);}
+.flow .node.me .nm,.flow .node.me .job{color:#fff;}
+.flow .op{display:flex;align-items:center;justify-content:center;width:34px;flex:0 0 34px;
+  font-family:var(--mono);font-size:20px;font-weight:700;color:var(--brand);}
+
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+
+.chk{list-style:none;display:flex;flex-direction:column;gap:12px;}
+.chk li{display:grid;grid-template-columns:24px 1fr;gap:11px;align-items:start;}
+.chk .ic{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-weight:800;font-size:13px;color:#fff;margin-top:1px;}
+.chk .ic.x{background:var(--navy);}
+.chk .ic.o{background:var(--brand);}
+.chk .t{font-size:15px;font-weight:700;color:var(--ink);line-height:1.4;}
+.chk .d{font-size:13.5px;line-height:1.45;color:var(--ink-2);margin-top:2px;}
+
+.dtable{width:100%;border-collapse:collapse;font-size:15px;}
+.dtable th,.dtable td{padding:14px 18px;text-align:left;vertical-align:middle;}
+.dtable thead th{background:var(--navy-deep);color:#fff;font-weight:700;font-size:14px;}
+.dtable thead th:first-child{border-radius:10px 0 0 0;}
+.dtable thead th:last-child{border-radius:0 10px 0 0;color:var(--brand-soft);}
+.dtable tbody td{border-bottom:1px solid var(--line);}
+.dtable tbody tr:nth-child(even){background:#fff;}
+.dtable tbody tr:nth-child(odd){background:var(--canvas);}
+.dtable .loc{font-family:var(--mono);font-size:14px;color:var(--brand-deep);letter-spacing:0;font-weight:600;}
+.dtable .strong{font-weight:800;color:var(--navy);}
+
+.slide.dark{background:var(--navy-deep);color:#fff;}
+.slide.dark .grad{position:absolute;inset:0;
+  background:radial-gradient(120% 90% at 80% 10%, rgba(61,123,255,.55) 0%, rgba(30,94,255,0) 55%),
+    linear-gradient(125deg,#0B1F3A 0%,#10306a 48%,#1647C7 100%);}
+.slide.dark .grid-tex{position:absolute;inset:0;opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+  background-size:72px 72px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40%);}
+.deco{position:absolute;border:1px solid rgba(201,217,255,.32);border-radius:10px;}
+.deco.fill{background:rgba(61,123,255,.16);border-color:rgba(201,217,255,.18);}
+.slide.dark .inner{position:relative;z-index:2;display:flex;flex-direction:column;height:100%;}
+
+.slide.pivot{background:linear-gradient(125deg,#0B1F3A 0%,#16335B 55%,#1647C7 130%);color:#fff;justify-content:center;}
+.slide.pivot .eyebrow{color:var(--brand-soft);}
+
+.label{font-family:var(--mono);font-size:11px;letter-spacing:0.10em;color:var(--brand-deep);background:var(--brand-soft);
+  display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;text-transform:uppercase;margin:0 0 10px;}
+
+@page{ size:1280px 720px; margin:0; }
+@media print{
+  html,body{background:#fff;}
+  .slide{margin:0;box-shadow:none;border-radius:0;page-break-after:always;break-after:page;}
+  .slide:last-child{page-break-after:auto;break-after:auto;}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== 1 · 표지 ==================== -->
+<section class="slide dark">
+  <div class="grad"></div>
+  <div class="grid-tex"></div>
+  <div class="deco fill" style="width:220px;height:220px;right:96px;top:120px;transform:rotate(8deg);"></div>
+  <div class="deco" style="width:220px;height:220px;right:48px;top:230px;transform:rotate(8deg);"></div>
+  <div class="deco" style="width:120px;height:120px;right:230px;top:390px;transform:rotate(8deg);"></div>
+  <div class="inner">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="logo-chip"><img src="맑은_로고.png" alt="맑은소프트"></span>
+      <div class="mono" style="font-size:13px;letter-spacing:0.06em;color:var(--brand-soft);">malgn-agent · USAGE GUIDE</div>
+    </div>
+    <div style="margin:auto 0 0;">
+      <div class="eyebrow" style="color:var(--brand-soft);">신규 온보딩 · 에이전트·스킬 사용법</div>
+      <h1 style="font-size:50px;line-height:1.14;font-weight:800;margin:18px 0 0;letter-spacing:-0.035em;">
+        malgn-agent, <span style="color:#fff;">이렇게 쓰세요</span></h1>
+      <p style="font-size:19px;line-height:1.55;color:var(--brand-soft);margin:20px 0 0;font-weight:600;max-width:940px;">
+        설치는 끝났고, 이제부터가 진짜입니다. PM 위임 모델의 핵심 개념부터 자주 쓰는 에이전트 10종,
+        실전 요청 시나리오, 자주 하는 실수까지 — <b style="color:#fff;">처음 쓰는 직원이 15분 안에</b> 감을 잡도록 정리했습니다.</p>
+    </div>
+    <div style="margin-top:auto;padding-top:24px;display:flex;justify-content:space-between;align-items:flex-end;">
+      <div>
+        <div class="label" style="background:rgba(255,255,255,.12);color:var(--brand-soft);">이 자료로 알게 되는 것</div>
+        <div style="display:flex;gap:10px;">
+          <span class="badge" style="background:rgba(255,255,255,.10);color:#fff;">PM 위임 모델</span>
+          <span class="badge" style="background:rgba(255,255,255,.10);color:#fff;">자주 쓰는 에이전트 10종</span>
+          <span class="badge" style="background:rgba(255,255,255,.10);color:#fff;">실전 시나리오 4개</span>
+          <span class="badge" style="background:rgba(255,255,255,.10);color:#fff;">안티패턴</span>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--brand-soft);font-family:var(--mono);text-align:right;">맑은소프트 전 직원 배포<br>설치 방법은 employee-guide 참고 · 이 문서는 "설치 이후" 편</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 2 · 왜 이렇게 쓰나 (PM 위임 모델) ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">01 · 왜 이렇게 쓰나</div>
+      <h2 class="s-title">당신은 에이전트를 <span class="hl">지휘</span>하지 않습니다</h2>
+      <p class="s-lead">malgn-agent는 21개 전문 에이전트를 일일이 호출하는 도구모음이 아닙니다. 요청 하나를 PM에게 던지면, PM이 필요한 팀을 알아서 구성해 위임하고 검증까지 마친 뒤 결과만 돌려줍니다.</p>
+    </div>
+    <div class="num">02 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <span class="label">요청 하나가 처리되는 경로</span>
+    <div class="flow">
+      <div class="node"><div class="role">You</div><div class="nm">사용자 요청</div><div class="job">"로그인 기능 만들어줘"</div></div>
+      <div class="op">→</div>
+      <div class="node me"><div class="role">Entry Point</div><div class="nm">pm</div><div class="job">분석 · 팀 구성 · 위임</div></div>
+      <div class="op">→</div>
+      <div class="node"><div class="role">Team</div><div class="nm">전문 에이전트</div><div class="job">개별 산출물 작성</div></div>
+      <div class="op">→</div>
+      <div class="node"><div class="role">Result</div><div class="nm">검증·통합 보고</div><div class="job">PM이 대조 후 반환</div></div>
+    </div>
+
+    <div class="callout" style="margin-top:24px;">기본값은 언제나 <b>pm(malgn-agent:pm)</b>입니다. 다른 에이전트를 직접 지정하지 않는 한, 모든 요청은 PM이 먼저 받아 분석하고 팀을 꾸립니다 — 어떤 전문가가 필요한지 직원이 미리 알 필요가 없습니다.</div>
+
+    <div class="g4" style="margin-top:20px;">
+      <div class="stat"><div class="lab">등록된 전문 에이전트</div><div class="big tnum">21</div></div>
+      <div class="stat"><div class="lab">내부 참조 스킬</div><div class="big tnum">36</div></div>
+      <div class="stat"><div class="lab">작업 판정 등급</div><div class="big tnum">5</div></div>
+      <div class="stat hi"><div class="lab">직원이 외워야 할 것</div><div class="big tnum">0</div></div>
+    </div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 3 · 직접처리 vs 위임 판단기준 ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">01 · 왜 이렇게 쓰나</div>
+      <h2 class="s-title">직접 처리 vs 위임, <span class="hl">기준은 등급</span>입니다</h2>
+      <p class="s-lead">PM은 모든 요청을 5등급 중 하나로 판정합니다. Micro만 PM이 즉시 직접 처리하고, 나머지는 전문 에이전트에게 위임합니다 — 직원이 이 등급을 직접 매길 필요는 없습니다.</p>
+    </div>
+    <div class="num">03 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <table class="dtable">
+      <thead><tr><th style="width:14%;">등급</th><th style="width:38%;">기준</th><th>처리 방식</th></tr></thead>
+      <tbody>
+        <tr><td class="strong">Micro</td><td>오탈자·조회·문구/CSS 한 줄 수정</td><td>PM이 즉시 직접 처리 (승인 불요)</td></tr>
+        <tr><td class="strong">Standard</td><td>일반 기능 개발·문서 작성·버그 수정</td><td>전문 에이전트에게 위임 + PM 단독 승인</td></tr>
+        <tr><td class="strong">Sensitive</td><td>DB·권한·인증·배포·결제·개인정보</td><td>위임 + reviewer 풀패널 + <span class="kbd">사람 승인 필수</span></td></tr>
+        <tr><td class="strong">Exploration</td><td>원인 분석 중, 무엇을 고칠지 아직 모름</td><td>위임(시간·범위 제한) + 결론만 검증</td></tr>
+        <tr><td class="strong">Refactor</td><td>기능 변화 없는 구조 개선</td><td>위임 + reviewer 풀패널</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:18px;"><b>한 줄 요약</b> — 애매하면 PM은 항상 무거운 등급으로 기웁니다. 직원은 등급을 계산하지 않아도, "이거 중요한 건인데?" 싶으면 그냥 요청만 하면 PM이 알아서 신중하게 다룹니다.</div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 4 · PM 위임 5단계 ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">01 · 왜 이렇게 쓰나</div>
+      <h2 class="s-title">PM이 요청 하나를 처리하는 <span class="hl">5단계</span></h2>
+      <p class="s-lead">직원이 보는 것은 "요청 한 문장"과 "최종 보고" 둘뿐이지만, 그 사이에서 PM은 이 5단계를 거칩니다.</p>
+    </div>
+    <div class="num">04 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body" style="display:flex;flex-direction:column;gap:11px;">
+    <div class="step"><div class="n">1</div><div><h5>요청 분석</h5><p>요청을 5등급(Micro~Refactor) 중 하나로 판정하고, 어떤 전문 영역이 필요한지 식별합니다.</p></div></div>
+    <div class="step"><div class="n">2</div><div><h5>팀 구성</h5><p>업무 유형별 표준 패턴에 맞춰 에이전트 순서를 정합니다 (예: planner→architect→backend-dev→frontend-dev→qa-engineer).</p></div></div>
+    <div class="step"><div class="n">3</div><div><h5>위임</h5><p>각 에이전트에게 입력 산출물·기대 결과·저장 경로를 명확히 전달하며 순차로 맡깁니다 (산출물 의존성 때문에 병렬이 아니라 순차).</p></div></div>
+    <div class="step"><div class="n">4</div><div><h5>검증</h5><p>산출물이 실제로 존재하고 요구사항과 일치하는지 PM이 직접 대조합니다. 미흡하면 최대 2회 재작업을 지시합니다.</p></div></div>
+    <div class="step"><div class="n">5</div><div><h5>통합 보고</h5><p>여러 에이전트의 산출물을 하나로 묶어 2~3분 안에 읽을 수 있는 결과로 요약해 전달합니다.</p></div></div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 5 · 피벗 슬라이드 ==================== -->
+<section class="slide dark pivot">
+  <div class="inner" style="justify-content:center;">
+    <div class="eyebrow">핵심 통찰</div>
+    <h2 style="font-size:38px;font-weight:800;margin:16px 0 0;letter-spacing:-0.03em;max-width:1000px;">스킬 이름은 <span style="color:var(--brand-soft);">몰라도 됩니다</span></h2>
+    <p style="font-size:18px;line-height:1.65;color:var(--brand-soft);margin:16px 0 0;max-width:920px;">
+      common-*, domain-* 스킬 36개는 에이전트가 작업 중 스스로 꺼내 쓰는 <b style="color:#fff;">내부 매뉴얼</b>입니다.
+      직원이 할 일은 스킬명을 외우거나 지정하는 게 아니라, <b style="color:#fff;">무엇을 원하는지 한 문장으로 명확히 말하는 것</b>뿐입니다.</p>
+    <div style="margin-top:26px;background:rgba(255,255,255,.06);border:1px dashed rgba(201,217,255,.35);border-radius:12px;padding:16px 22px;max-width:760px;">
+      <p style="font-size:14px;line-height:1.6;color:#fff;">"이 문서 슬라이드로 만들어줘"라고만 말하면, presenter가 스타일가이드 토큰을 어떻게 적용할지는 presenter의 몫입니다 — 직원은 결과물만 확인하면 됩니다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 6 · 자주 쓰는 에이전트 1 (기획·설계) ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">02 · 자주 쓰는 에이전트</div>
+      <h2 class="s-title">기획 · 설계 — <span class="hl">planner · architect</span></h2>
+      <p class="s-lead">새로운 기능·서비스를 시작할 때 PM이 가장 먼저 배치하는 두 에이전트입니다.</p>
+    </div>
+    <div class="num">05 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="g3">
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge navy">pm <span class="mono" style="font-size:11px;font-weight:500;">· 항상 시작점</span></span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.5;">요청을 분석해 팀을 구성·위임하고, 결과를 검증해 통합 보고하는 프로젝트 매니저</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">언제:</b> 별도로 다른 에이전트를 지정하지 않은 모든 요청</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">호출 예시:</b> "로그인 기능 만들어줘" (그냥 이렇게만)</div>
+      </div>
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge navy">planner</span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.5;">고객 요구사항을 분석해 requirements.md·prd.md를 작성하는 기획 전문가</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">언제:</b> 신규 기능·서비스를 기획 단계부터 시작할 때</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">호출 예시:</b> "이 아이디어 기획서로 정리해줘"</div>
+      </div>
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge navy">architect</span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.5;">PRD 기반으로 시스템 아키텍처·기술스택·API 명세·데이터 모델을 설계하는 전문가</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">언제:</b> 새 아키텍처 결정이 필요한 개발 착수 시점</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">호출 예시:</b> "이 기획을 기술 설계로 만들어줘"</div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:20px;">셋 다 <b>단독 호출도 가능</b>합니다 — 기획서만 필요하면 "planner"를 직접 지정해도 되고, 그냥 PM에게 요청하면 필요할 때 PM이 알아서 넣어줍니다.</div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 7 · 자주 쓰는 에이전트 2 (구현·검증) ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">02 · 자주 쓰는 에이전트</div>
+      <h2 class="s-title">구현 · 검증 — <span class="hl">backend-dev · frontend-dev · qa-engineer</span></h2>
+      <p class="s-lead">설계가 끝난 뒤, 실제로 동작하는 코드를 만들고 테스트하는 3단계입니다.</p>
+    </div>
+    <div class="num">06 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="g3">
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge navy">backend-dev</span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.5;">아키텍처 문서를 기반으로 실제 동작하는 백엔드 코드를 구현하는 전문가</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">언제:</b> 설계 문서가 준비된 API·서버 로직 구현 단계</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">호출 예시:</b> "이 설계대로 API 만들어줘"</div>
+      </div>
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge navy">frontend-dev</span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.5;">설계 문서를 기반으로 웹/앱 프론트엔드 UI를 구현하는 전문가</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">언제:</b> 화면·UI 컴포넌트를 실제로 만들어야 할 때</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">호출 예시:</b> "로그인 화면 만들어줘"</div>
+      </div>
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge navy">qa-engineer</span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.5;">구현된 코드를 테스트하고 결과를 보고하는 QA 전문가</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">언제:</b> 백엔드·프론트 구현이 끝난 직후</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">호출 예시:</b> "이 기능 테스트해줘"</div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:20px;">세 에이전트는 <b>산출물 의존성이 있어 순차로만</b> 진행됩니다 — PM이 backend-dev 산출물을 frontend-dev에게 넘기고, 그 결과를 다시 qa-engineer에게 넘기는 식입니다.</div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 8 · 자주 쓰는 에이전트 3 (검토·문서·발표) ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">02 · 자주 쓰는 에이전트</div>
+      <h2 class="s-title">검토 · 문서 · 발표 — <span class="hl">reviewer · writer · presenter</span></h2>
+      <p class="s-lead">결과물을 다듬고, 정식 문서로 만들고, 사람 앞에 내놓을 형태로 바꾸는 3단계입니다.</p>
+    </div>
+    <div class="num">07 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="g3">
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge navy">reviewer</span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.5;">리뷰 페르소나 패널을 구성해 산출물을 다관점으로 검토하고 통합 보고하는 진행자</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">언제:</b> 중요 산출물을 최종 확정하기 전</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">호출 예시:</b> "이 제안서/코드 검토해줘"</div>
+      </div>
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge navy">writer</span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.5;">제안서·보고서·기술 문서 등 비즈니스 문서를 전문적으로 작성하는 전문가</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">언제:</b> 정식 문서로 산출해야 할 때</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">호출 예시:</b> "이 내용 보고서로 정리해줘"</div>
+      </div>
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge navy">presenter</span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.5;">문서 내용을 프레젠테이션 슬라이드로 구성해 PDF/HTML로 만드는 전문가</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">언제:</b> 발표 자료·슬라이드 매뉴얼이 필요할 때</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">호출 예시:</b> "이 보고서 슬라이드로 만들어줘" <span class="kbd">이 문서 자체가 예시</span></div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:20px;">지금 보고 있는 이 슬라이드 문서 자체가 <b>presenter</b>가 만든 산출물입니다 — writer/researcher가 만든 내용을 presenter가 재구성한 것이 아니라, 이번 경우는 실제 md/agent 파일을 직접 근거로 삼아 작성했습니다.</div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 9 · 자주 쓰는 에이전트 4 (trainer/evaluator) ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">02 · 자주 쓰는 에이전트</div>
+      <h2 class="s-title">에이전트 자체를 키우는 <span class="hl">trainer · evaluator</span></h2>
+      <p class="s-lead">지금까지의 8명과 결이 다릅니다 — 업무 결과물이 아니라 <b>malgn-agent 플러그인 자체</b>를 개선하는 특수 목적 에이전트입니다.</p>
+    </div>
+    <div class="num">08 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="g2">
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge navy">trainer <span class="mono" style="font-size:11px;font-weight:500;">· 에이전트 교관</span></span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.5;">다른 에이전트들의 스킬을 분석하고 학습 자료를 정리해 knowledge·MD 초안을 작성</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">언제:</b> 특정 에이전트를 더 잘 쓰게 만들고 싶을 때</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">호출 예시:</b> "backend-dev 스킬업 시켜줘"</div>
+      </div>
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge navy">evaluator <span class="mono" style="font-size:11px;font-weight:500;">· 판정·승격 전담</span></span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.5;">에이전트/스킬/knowledge 산출물을 rubric으로 채점·판정하고 게이트 통과 시 PR로 승격까지 실행</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">언제:</b> trainer 초안 완료 후, 또는 개선안을 실제 반영할 때</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;"><b style="color:var(--brand-deep);">호출 예시:</b> "이번 개선안 평가하고 승격해줘"</div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:22px;">일반 업무 요청("~ 만들어줘")과 <b>에이전트 개선 요청</b>("~ 학습시켜줘")은 다른 트랙입니다. PM이 trainer 초안 → evaluator 판정·승격의 흐름으로 이어받으며, 사람 승인이 필요한 변경은 evaluator가 반드시 그 시점을 표시합니다.</div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 10 · 스킬 체계 개념 ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">03 · 스킬 체계</div>
+      <h2 class="s-title">스킬 36개, <span class="hl">직원은 몰라도 됩니다</span></h2>
+      <p class="s-lead">스킬은 에이전트가 작업 중 스스로 참조하는 내부 노하우 문서입니다. 크게 세 갈래로 나뉩니다.</p>
+    </div>
+    <div class="num">09 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="g3">
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge solid">common-* <span class="mono" style="font-size:11px;font-weight:500;">· 9종</span></span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);">전 에이전트 공통 원칙</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.6;">산출물 품질, 경로 관리, 검증 깊이, 정직한 보고 등 — <b>모든 에이전트가 상시 참조</b>하는 기본기.</div>
+      </div>
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge solid">domain-* <span class="mono" style="font-size:11px;font-weight:500;">· 16종</span></span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);">특정 도메인 전문 지식</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.6;">백엔드 보안, 시스템 설계, 제안 방법론, 테스트 기법 등 — <b>관련 에이전트만 필요할 때</b> 꺼내 씀.</div>
+      </div>
+      <div class="box tint" style="display:flex;flex-direction:column;gap:10px;">
+        <span class="badge solid">그 외 <span class="mono" style="font-size:11px;font-weight:500;">· 11종</span></span>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);">운영 · 오케스트레이션</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.6;">project-orchestration, agent-upskill, reflect-lessons 등 — <b>PM·trainer·evaluator</b>가 팀 운영·에이전트 성장에 사용.</div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:22px;">직원이 할 일은 스킬명을 아는 게 아니라, <b>좋은 요청 문장</b>을 쓰는 것입니다 — "이거 검토해줘"라고만 해도 reviewer는 알아서 <span class="kbd">reviewer-persona-panel-standard</span>를 참조합니다.</div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 11 · 실전 시나리오 1 ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">04 · 실전 시나리오</div>
+      <h2 class="s-title">시나리오 1 · <span class="hl">신규 기능 개발</span> 요청</h2>
+      <p class="s-lead">"로그인 기능 만들어줘" — 이 한 문장이 어떻게 5명의 팀으로 확장되는지 보여드립니다.</p>
+    </div>
+    <div class="num">10 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="box edge">
+      <div class="mono" style="font-size:12px;color:var(--brand);letter-spacing:0.08em;text-transform:uppercase;">요청 문장</div>
+      <div style="font-size:19px;font-weight:700;color:var(--navy);margin-top:6px;">"로그인 기능 만들어줘"</div>
+      <div style="font-size:13px;color:var(--ink-2);margin-top:6px;">PM 판정: <b style="color:var(--brand-deep);">Standard 등급</b> — 여러 파일이 걸리지만 기능 범위가 명확 → 위임</div>
+    </div>
+
+    <span class="label" style="margin-top:20px;display:inline-block;">PM이 구성하는 팀</span>
+    <div class="flow">
+      <div class="node"><div class="role">Step 1</div><div class="nm">planner</div><div class="job">요구사항</div></div>
+      <div class="op">→</div>
+      <div class="node"><div class="role">Step 2</div><div class="nm">architect</div><div class="job">설계</div></div>
+      <div class="op">→</div>
+      <div class="node"><div class="role">Step 3</div><div class="nm">backend-dev</div><div class="job">API</div></div>
+      <div class="op">→</div>
+      <div class="node"><div class="role">Step 4</div><div class="nm">frontend-dev</div><div class="job">화면</div></div>
+      <div class="op">→</div>
+      <div class="node me"><div class="role">Step 5</div><div class="nm">qa-engineer</div><div class="job">테스트</div></div>
+    </div>
+    <div class="callout" style="margin-top:16px;">각 단계는 <b>순차 진행</b>됩니다 — planner의 requirements.md를 architect가 읽고, architect의 설계서를 backend-dev/frontend-dev가 읽는 식입니다. PM은 매 단계 산출물을 검증한 뒤에만 다음으로 넘깁니다.</div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 12 · 실전 시나리오 2 ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">04 · 실전 시나리오</div>
+      <h2 class="s-title">시나리오 2 · <span class="hl">산출물 검토</span> 요청</h2>
+      <p class="s-lead">"이 제안서 검토해줘" — reviewer는 혼자 읽고 의견을 내는 게 아니라, 관점이 다른 페르소나 패널을 직접 구성합니다.</p>
+    </div>
+    <div class="num">11 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="box edge">
+      <div class="mono" style="font-size:12px;color:var(--brand);letter-spacing:0.08em;text-transform:uppercase;">요청 문장</div>
+      <div style="font-size:19px;font-weight:700;color:var(--navy);margin-top:6px;">"이 제안서 검토해줘"</div>
+      <div style="font-size:13px;color:var(--ink-2);margin-top:6px;">PM 판정: 산출물 성격에 따라 <b style="color:var(--brand-deep);">Standard(약식)</b> 또는 <b style="color:var(--brand-deep);">Sensitive(풀패널)</b></div>
+    </div>
+
+    <span class="label" style="margin-top:20px;display:inline-block;">reviewer가 하는 일</span>
+    <div class="flow">
+      <div class="node"><div class="role">1</div><div class="nm">패널 구성</div><div class="job">프로젝트 성격에 맞는 페르소나 설계</div></div>
+      <div class="op">→</div>
+      <div class="node"><div class="role">2</div><div class="nm">다관점 리뷰</div><div class="job">페르소나별로 각각 검토</div></div>
+      <div class="op">→</div>
+      <div class="node me"><div class="role">3</div><div class="nm">통합 보고서</div><div class="job">심각도(RAG) 분류해 PM에 전달</div></div>
+    </div>
+    <div class="callout" style="margin-top:16px;">페르소나 패널에는 <b>발산형(비판적) 관점 최소 1명</b>이 항상 포함됩니다 — 좋은 말만 하는 패널이 아니라 진짜 결함을 찾는 것이 목적입니다.</div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 13 · 실전 시나리오 3 ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">04 · 실전 시나리오</div>
+      <h2 class="s-title">시나리오 3 · <span class="hl">복합 요청</span> (조사+제안서)</h2>
+      <p class="s-lead">"경쟁사 분석 후 제안서 써줘" — 요청 하나에 두 가지 업무 유형이 섞여 있으면, PM이 먼저 분해합니다.</p>
+    </div>
+    <div class="num">12 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="box edge">
+      <div class="mono" style="font-size:12px;color:var(--brand);letter-spacing:0.08em;text-transform:uppercase;">요청 문장</div>
+      <div style="font-size:19px;font-weight:700;color:var(--navy);margin-top:6px;">"경쟁사 분석 후 제안서 써줘"</div>
+      <div style="font-size:13px;color:var(--ink-2);margin-top:6px;">PM 판정: 하위 작업 2그룹으로 분해 → <b style="color:var(--brand-deep);">순차 배치</b></div>
+    </div>
+
+    <span class="label" style="margin-top:20px;display:inline-block;">그룹1 · 조사+기획 → 그룹2 · 문서화</span>
+    <div class="flow">
+      <div class="node"><div class="role">조사</div><div class="nm">researcher</div><div class="job">경쟁사·시장 데이터</div></div>
+      <div class="op">→</div>
+      <div class="node"><div class="role">기획</div><div class="nm">planner</div><div class="job">조사 기반 기획서</div></div>
+      <div class="op">→</div>
+      <div class="node"><div class="role">작성</div><div class="nm">writer</div><div class="job">제안서 형식화</div></div>
+      <div class="op">→</div>
+      <div class="node me"><div class="role">선택</div><div class="nm">presenter</div><div class="job">발표 자료 필요 시</div></div>
+    </div>
+    <div class="callout" style="margin-top:16px;">복합 요청도 원칙은 같습니다 — <b>의존성이 있는 작업은 순차로만</b> 진행되고, PM이 각 단계 산출물을 다음 에이전트에게 넘기기 전에 검증합니다.</div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 14 · 실전 시나리오 4 (메타) ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">04 · 실전 시나리오</div>
+      <h2 class="s-title">시나리오 4 · <span class="hl">발표 자료 제작</span> (지금 이 문서)</h2>
+      <p class="s-lead">"이 문서를 슬라이드로 만들어줘" — 지금 보고 계신 이 매뉴얼 자체가 이 시나리오의 실제 결과물입니다.</p>
+    </div>
+    <div class="num">13 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="box edge">
+      <div class="mono" style="font-size:12px;color:var(--brand);letter-spacing:0.08em;text-transform:uppercase;">이번 요청</div>
+      <div style="font-size:19px;font-weight:700;color:var(--navy);margin-top:6px;">"에이전트·스킬 사용법을 슬라이드 매뉴얼로 만들어줘"</div>
+      <div style="font-size:13px;color:var(--ink-2);margin-top:6px;">PM 판정: <b style="color:var(--brand-deep);">Standard 등급</b> — presenter 단독 위임</div>
+    </div>
+
+    <span class="label" style="margin-top:20px;display:inline-block;">presenter가 실제로 한 일</span>
+    <div class="blist">
+      <div class="it"><span class="dot"></span><div><div class="tt">agents/*.md · skills/*/SKILL.md 실물 확인</div><div class="dd">추측하지 않고 21개 에이전트, 36개 스킬 설명을 직접 grep해 근거로 삼음</div></div></div>
+      <div class="it"><span class="dot"></span><div><div class="tt">html-스타일가이드-가로형.html 정본 그대로 적용</div><div class="dd">CSS 토큰·클래스를 새로 만들지 않고 정본을 복사해 재사용</div></div></div>
+      <div class="it"><span class="dot"></span><div><div class="tt">실제 로고 PNG 삽입 + grep 자기검수</div><div class="dd">CSS 합성 로고 금지 규칙 준수, 토큰·클래스 드리프트 확인</div></div></div>
+    </div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 15 · 안티패턴 ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">05 · 안티패턴</div>
+      <h2 class="s-title">자주 하는 <span class="hl">실수 3가지</span></h2>
+      <p class="s-lead">위임 모델에 익숙해지는 과정에서 가장 흔히 나오는 패턴입니다.</p>
+    </div>
+    <div class="num">14 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <ul class="chk">
+      <li><span class="ic x">✕</span><div><div class="t">에이전트 순서를 직접 지정 (마이크로매니징)</div><div class="d">"backend-dev 불러서 API 만들고 frontend-dev로 화면 만들고 qa-engineer로 테스트해줘" — PM의 역할을 대신하려는 패턴</div></div></li>
+      <li><span class="ic o">✓</span><div><div class="t">"무엇을" 원하는지만 말하기</div><div class="d">"로그인 기능 만들어줘"만 요청하면 팀 구성은 PM이 알아서 합니다</div></div></li>
+      <li><span class="ic x">✕</span><div><div class="t">사소한 수정까지 거창하게 위임 요청</div><div class="d">오탈자 하나 고치는 데 "팀 꾸려서 검토까지 해줘" — Micro 등급은 PM이 즉시 처리하는 영역</div></div></li>
+      <li><span class="ic o">✓</span><div><div class="t">사소한 건 그냥 요청</div><div class="d">"이 문구 오타 고쳐줘"처럼 가볍게 요청하면 PM이 즉시 직접 처리합니다</div></div></li>
+      <li><span class="ic x">✕</span><div><div class="t">중요한 판단을 "급하니까" 직접 처리</div><div class="d">권한·결제·개인정보처럼 판단이 중요한 영역을 스스로 대충 고치는 경우 — Sensitive 등급은 반드시 위임+검증이 필요</div></div></li>
+      <li><span class="ic o">✓</span><div><div class="t">중요 영역은 급해도 PM을 통해 요청</div><div class="d">Sensitive 등급은 reviewer 풀패널 + 사람 승인까지 거치도록 설계돼 있습니다</div></div></li>
+    </ul>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 16 · 못 하는 것 (신뢰 구축) ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">05 · 안티패턴</div>
+      <h2 class="s-title">PM이 <span class="hl">못 하는 것</span>도 있습니다</h2>
+      <p class="s-lead">이 한계들은 버그가 아니라 설계입니다 — 중요한 결정에는 항상 사람 또는 전문 검증이 개입하도록 만든 안전장치입니다.</p>
+    </div>
+    <div class="num">15 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="blist">
+      <div class="it"><span class="dot"></span><div><div class="tt">Sensitive/Refactor 등급은 PM 단독 승인 불가</div><div class="dd">반드시 reviewer 풀패널을 거치고, 최종 승인은 사람(직원/대표)이 합니다</div></div></div>
+      <div class="it"><span class="dot"></span><div><div class="tt">개별 산출물을 직접 작성하지 않음</div><div class="dd">코드·설계·문서·디자인은 항상 전문 에이전트가 작성 — PM은 trivial 편집만 예외</div></div></div>
+      <div class="it"><span class="dot"></span><div><div class="tt">전역 에이전트/스킬/knowledge 승격은 PM 권한 밖</div><div class="dd">evaluator가 rubric으로 판정하고 git PR로 승격을 실행 — PM은 대상 선정만 담당</div></div></div>
+      <div class="it"><span class="dot"></span><div><div class="tt">위임 실패가 2회 반복되면 PM이 직접 완수하지 않음</div><div class="dd">담당 교체, 작업 재분해, 사람 에스컬레이션 중 하나를 택합니다 — 무한 재시도하지 않습니다</div></div></div>
+    </div>
+    <div class="callout" style="margin-top:20px;">궁금하면 언제든 "이거 지금 어느 등급이야?", "누가 승인해야 해?"라고 PM에게 그냥 물어보세요 — 판단 기준을 숨기지 않습니다.</div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 17 · 요약 ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">06 · 요약</div>
+      <h2 class="s-title">오늘 기억할 것 <span class="hl">3가지</span></h2>
+      <p class="s-lead">나머지는 다 잊어도 이 세 줄만 기억하면 됩니다.</p>
+    </div>
+    <div class="num">16 / 18</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="g3">
+      <div class="stat hi" style="padding:26px 24px;">
+        <div class="lab">01</div>
+        <div class="big" style="font-size:22px;margin-top:10px;line-height:1.35;">기본은 그냥 PM에게 요청 — 팀 구성은 알아서</div>
+      </div>
+      <div class="stat hi" style="padding:26px 24px;">
+        <div class="lab">02</div>
+        <div class="big" style="font-size:22px;margin-top:10px;line-height:1.35;">애매하면 무거운 등급 — Sensitive는 반드시 검증+승인</div>
+      </div>
+      <div class="stat hi" style="padding:26px 24px;">
+        <div class="lab">03</div>
+        <div class="big" style="font-size:22px;margin-top:10px;line-height:1.35;">스킬명은 몰라도 된다 — 좋은 한 문장이면 충분</div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:24px;">이 세 줄이 전부입니다. 21개 에이전트 이름, 36개 스킬명을 외울 필요는 처음부터 없었습니다.</div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>에이전트·스킬 효과적 사용법</div></div>
+</section>
+
+<!-- ==================== 18 · 마무리/문의처 ==================== -->
+<section class="slide dark">
+  <div class="grad"></div>
+  <div class="grid-tex"></div>
+  <div class="deco fill" style="width:200px;height:200px;right:90px;top:100px;transform:rotate(6deg);"></div>
+  <div class="deco" style="width:140px;height:140px;right:280px;top:340px;transform:rotate(6deg);"></div>
+  <div class="inner">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="logo-chip"><img src="맑은_로고.png" alt="맑은소프트"></span>
+      <div class="mono" style="font-size:13px;letter-spacing:0.06em;color:var(--brand-soft);">18 / 18 · CLOSING</div>
+    </div>
+    <div style="margin:auto 0 0;">
+      <div class="eyebrow" style="color:var(--brand-soft);">첫 행동</div>
+      <h2 style="font-size:38px;line-height:1.2;font-weight:800;margin:16px 0 0;letter-spacing:-0.03em;max-width:1000px;">
+        지금, 한 문장으로 <span style="color:#fff;">시작해보세요</span></h2>
+      <p style="font-size:17px;line-height:1.6;color:var(--brand-soft);margin:16px 0 0;max-width:880px;">
+        malgn-agent가 설치돼 있다면 별도 지정 없이 그냥 요청하세요 — pm이 받아서 등급을 판정하고 팀을 꾸립니다.</p>
+      <div style="margin-top:22px;background:rgba(255,255,255,.06);border:1px dashed rgba(201,217,255,.35);border-radius:12px;padding:18px 22px;max-width:820px;">
+        <div class="mono" style="font-size:11px;letter-spacing:0.14em;color:var(--brand-soft);text-transform:uppercase;font-weight:700;margin-bottom:8px;">가장 작은 첫 행동</div>
+        <div style="font-size:16px;color:#fff;font-weight:700;">"이번 주 정리한 자료, 슬라이드로 만들어줘" 처럼 지금 하고 있는 작업 하나를 그대로 던져보세요.</div>
+      </div>
+    </div>
+    <div style="margin-top:auto;padding-top:24px;display:flex;justify-content:space-between;align-items:flex-end;">
+      <div>
+        <div class="label" style="background:rgba(255,255,255,.12);color:var(--brand-soft);">문의</div>
+        <div style="font-size:14px;color:#fff;">설치 방법은 <span class="kbd" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.2);">employee-guide.html</span> 참고 · 궁금한 점은 <span class="kbd" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.2);">dev@malgnsoft.com</span></div>
+      </div>
+      <p style="font-size:13px;color:var(--brand-soft);font-family:var(--mono);text-align:right;">malgn-agent v1.5.0<br>맑은소프트 전 직원 배포</p>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
