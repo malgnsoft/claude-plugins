@@ -67,6 +67,7 @@ description: 테스트 완료된 애플리케이션의 배포 환경(Docker/서�
 - [ ] 파괴적 작업(스키마 변경·데이터 마이그레이션) 전 데이터 백업 프로세스가 있는가?
 - [ ] Sensitive 등급(배포·인프라 변경) 작업이면 롤백 리허설 여부까지 확인했는가? (기준: Skill `common-task-grading-and-verification-depth`)
 - [ ] 배포 전 로컬 검증 게이트 3가지(로컬 기동 무오류/핵심 플로우 독립 재현/.env 실존)를 근거와 함께 통과했는가 — 하나라도 근거 없이 "통과"라고 적지 않았는가?
+- [ ] `docs/security-report.md`가 존재하고 Critical/High 항목이 해결됐는가?
 - [ ] 설정파일(`wrangler.toml` 등) Edit 직후 `git diff` 라인수가 실제 변경량과 비례하는가? 안 맞으면(변경 안 한 라인까지 -/+로 보이면) CRLF 오염을 의심하고 `file <path>`로 라인엔딩을 확인, 오염 시 LF로 복원 후 재확인한다(lesson `e22ac951`).
 
 ## 산출물

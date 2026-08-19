@@ -150,7 +150,7 @@ node malgn-agent/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --cur
 | 독립 트랙 | researcher | - | `docs/research.md`(또는 PM 지정 파일명) |
 | 독립 트랙 | localizer | `docs/i18n-glossary.md`(있으면 재사용·갱신) | `docs/i18n-glossary.md`(없으면 감사/번역 중 확정한 용어로 신규 생성 제안) |
 
-**표에 없는 에이전트(writer/reviewer/finance/presenter/marketer/capture-strategist 등)**: 자체 산출물은 각자 도메인 폴더에 만든다. `docs/product-principles.md`를 조건부로만 참조한다 — 있으면 읽고 방향성에 맞춰 작성, 없으면 그냥 진행(파일이 없다고 오류 처리하거나 임의로 만들어내지 않는다).
+**표에 없는 에이전트(writer/reviewer/finance/presenter/marketer/rfp-analyst/capture-strategist 등)**: 자체 산출물은 각자 도메인 폴더에 만든다. `docs/product-principles.md`를 조건부로만 참조한다 — 있으면 읽고 방향성에 맞춰 작성, 없으면 그냥 진행(파일이 없다고 오류 처리하거나 임의로 만들어내지 않는다).
 
 ## 3.6 신규 자산 신설 판단
 

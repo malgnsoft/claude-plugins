@@ -4,18 +4,20 @@
 
 ### 1. 제안서/기획서 작성
 ```
-researcher → planner → writer → presenter
+researcher → planner → rfp-analyst → capture-strategist → writer → presenter
 ```
 - researcher: 시장/경쟁사 조사, 데이터 수집
 - planner: 조사 결과 기반 기획서 작성
-- writer: 기획 내용을 제안서 형식으로 작성
+- rfp-analyst: RFP 요구사항 분석·Compliance Matrix 작성 (제안서인 경우)
+- capture-strategist: Bid/No-Bid·Win Theme·Storyboard 수립 (제안서인 경우)
+- writer: 기획 내용을 제안서 형식으로 작성 (제안서면 rfp-analyst·capture-strategist 산출물을 필수 입력받음)
 - presenter: 발표 자료 제작 (필요 시)
 
 ### 2. 웹/앱 개발
 ```
-planner → architect → backend-dev → frontend-dev → qa-engineer → devops
+planner → architect → ux-designer → backend-dev → frontend-dev → qa-engineer → devops
 ```
-- 디자인 필요 시: planner 후 ux-designer → visual-designer 추가
+- ux-designer는 화면이 하나 신설되거나 기존 화면의 기능이 변경/추가되면 기본 투입(예외는 Micro 등급뿐). visual-designer는 ux-designer 산출물의 판단에 따라 조건부 투입.
 - 보안 중요 시: qa-engineer 후 security 추가
 
 ### 3. 디자인 프로젝트
