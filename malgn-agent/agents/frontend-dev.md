@@ -54,7 +54,7 @@ description: 설계 문서를 기반으로 웹/앱 프론트엔드 UI를 구현�
 **빌드 스텝 없는 Vue CDN 프로젝트의 완료 기준 = index.html 등록까지**: 빌드 스텝 없이 CDN으로 Vue를 로드하는 프로젝트에서 신규 composable/유틸 파일을 만드는 것만으로는 동작하지 않습니다 — `index.html`의 전역 `<script>` 태그로 등록해야 실제로 로드됩니다. 파일 생성을 "완료"로 보고하기 전에 등록까지 마쳤는지 확인하세요(lesson `3c632bee`).
 
 ### Nuxt/Next.js 프로젝트인 경우
-위 vue-zero 특유 규칙(Composables 금지, Blob URL 우회, `utils.js`+`window.*` 등록)은 적용하지 않습니다. 대신 각 프레임워크의 표준 관례를 따르세요: **Nuxt**는 `composables/`와 서버 라우트(`server/api/`)를 정상적으로 사용, **Next.js**는 App Router 구조와 API Routes(`app/api/`)를 정상적으로 사용합니다. 이 플러그인에는 아직 Nuxt/Next.js 전용 knowledge 문서가 없으므로, 세부 패턴은 프레임워크 공식 문서와 프로젝트 기존 컨벤션을 기준으로 판단하세요(과도한 신규 규칙 제정 금지 — 표준 관례를 따르는 것으로 충분).
+위 vue-zero 특유 규칙(Composables 금지, Blob URL 우회, `utils.js`+`window.*` 등록)은 적용하지 않습니다. 대신 각 프레임워크의 표준 관례를 따르세요: **Nuxt**는 `composables/`와 서버 라우트(`server/api/`)를 정상적으로 사용, **Next.js**는 App Router 구조와 API Routes(`app/api/`)를 정상적으로 사용합니다. 이 플러그인에는 아직 Nuxt/Next.js 전용 knowledge 문서가 없으므로, 세부 패턴은 프레임워크 공식 문서와 프로젝트 기존 컨벤션을 기준으로 판단하세요(과도한 신규 규칙 제정 금지 — 표준 관례를 따르는 것으로 충분). **UI 컴포넌트 라이브러리는 Nuxt UI를 기본 원칙으로 사용합니다**(조직 표준, 2026-08-19) — 프로젝트에 이미 다른 라이브러리(예: Vuetify)가 도입돼 있으면 기존 관례를 우선하고, 신규 프로젝트에서 임의로 다른 라이브러리를 고르지 않습니다.
 
 ### 공유 컴포넌트 추출 시 모드별 분기
 읽기전용/편집가능 등 서로 다른 모드에서 쓰이던 마크업을 하나의 prop 기반 컴포넌트로 합칠 때는 마크업 구조뿐 아니라 "빈 값 fallback/placeholder 표시", "인터랙션 유무" 같은 모드별 곁가지 로직까지 원본 두 곳을 나란히 대조해 각각 조건부로 분기하세요 — editable 전용이던 fallback 로직을 무조건 적용해버리면 read-only 공개 화면에 편집기 전용 placeholder가 새어나갑니다. 확장 규모가 크면(프리셋 여러 개 중 일부만 통합) 본격 확장 전에 "A전용/B전용/공통" 3열 대조표를 먼저 만드세요(lesson `c4f802a5`).
@@ -64,7 +64,7 @@ vendored/수정불가 런타임이 전역 동작(예: `document.title` 대입)�
 
 ### 반응형·상태 관리
 
-**(vue-zero 프로젝트인 경우)** ℹ️ 상세는 Skill: **frontend-vue-zero-patterns** 참조. **Bootstrap 5 그리드** + 모바일 표 깨짐은 `white-space:nowrap` + 스크롤. **상태 관리**: props/emit 단방향(`emit`은 Vue 고유 API). Nuxt/Next.js 등 다른 프레임워크는 해당 프레임워크의 상태 관리 관례를 따르세요(예: React/Next.js는 props+state 또는 선택한 상태관리 라이브러리).
+**(vue-zero 프로젝트인 경우)** ℹ️ 상세는 Skill: **frontend-vue-zero-patterns** 참조. UI 컴포넌트 라이브러리는 Bootstrap 5가 기본 원칙(조직 표준, 2026-08-19)이며, **Bootstrap 5 그리드** + 모바일 표 깨짐은 `white-space:nowrap` + 스크롤. **상태 관리**: props/emit 단방향(`emit`은 Vue 고유 API). Nuxt/Next.js 등 다른 프레임워크는 해당 프레임워크의 상태 관리 관례를 따르세요(예: React/Next.js는 props+state 또는 선택한 상태관리 라이브러리).
 
 **프레임워크 공통**: 고정 분류(권한·상태·단계)는 명시 등록, 데이터 변동 주도(팀·탭)는 group-by 도출. 로딩·빈 상태·에러·권한 상태도 설계에 포함.
 
