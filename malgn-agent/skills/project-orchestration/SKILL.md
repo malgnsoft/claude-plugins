@@ -125,7 +125,7 @@ node malgn-agent/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --cur
 ---
 
 ## 3. 팀 구성 원칙
-- **업무 유형 → 최소 팀 구성** (과다팀 금지). 웹개발: planner→architect→backend/frontend-dev→qa-engineer→devops (각 단계별 reviewer 검증). 단일 엔드포인트/필드 수준의 소규모 변경(설계 변경 없이 기존 아키텍처 내 필드 추가 등)은 architect/planner 단계를 생략하고 backend-dev→frontend-dev→qa-engineer로 축소한다. 신규 아키텍처 결정이 필요할 때만 architect를 포함한다.
+- **업무 유형 → 최소 팀 구성** (과다팀 금지). 웹개발: planner→architect→ux-designer→backend/frontend-dev→qa-engineer→devops (각 단계별 reviewer 검증). **ux-designer는 화면이 하나 신설되거나 기존 화면의 기능이 변경/추가되면 기본 투입**한다(예외는 Skill `common-task-grading-and-verification-depth`의 Micro 등급뿐 — 단순 문구·CSS·오타 수정 등). visual-designer는 ux-designer 산출물의 판단에 따라 조건부 투입된다(상세: §3.5). 단일 엔드포인트/필드 수준의 소규모 변경(설계 변경 없이 기존 아키텍처 내 필드 추가 등)은 architect/planner 단계를 생략하고 backend-dev→frontend-dev→qa-engineer로 축소한다. 신규 아키텍처 결정이 필요할 때만 architect를 포함한다.
 - **보안 단계 배치**: 개발·구현 중에는 security를 게이트로 돌리지 않는다 — 보안 리뷰가 게이트를 양산해 개발을 막는 것을 방지. security는 개발 중 "아주 심각한 Critical"만 즉시 올리고 나머지는 `docs/security-plan.md`에 적재만 한다. **정밀 보안 점검·보안계획 실행은 배포 직전 최종 운영 테스트 단계에서, 사용자 승인(Sensitive/Refactor급 상당 — malgnai-hub 연동판에서는 세션 내 `AskUserQuestion` 등으로 직접 확인) 후에만** 착수한다(security.md 운영 정책과 정합).
 - **권위자 매핑**: architecture=architect, requirements/prd=planner, src=backend/frontend-dev, 문서=writer, 발표=presenter, 리뷰=reviewer, 에이전트MD/knowledge 초안=trainer, 전역 자산(에이전트/스킬/knowledge) 채점·판정·승격=evaluator.
 - **공유 가정 주입**: 여러 에이전트가 같은 수치(마진율·CAC)를 쓸 때, 위임 전에 PM이 값을 고정해 동일하게 주입.
@@ -140,8 +140,8 @@ node malgn-agent/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --cur
 |------|----------|-----------|-------------|
 | STAGE 1 (기획) | planner | - | `docs/requirements.md`, `docs/prd.md`, `docs/product-principles.md`(선택 — 있으면 이후 전 에이전트가 참조) |
 | STAGE 2 (설계) | architect | requirements.md, prd.md, product-principles.md(있으면) | `docs/architecture.md`, `docs/tech-stack.md`, `docs/api-spec.md`, `docs/data-model.md` |
-| 디자인 트랙(설계와 병행) | ux-designer | prd.md, requirements.md | `design/ux-flow.md`(또는 docs/), `design/wireframes.md`, `design/ia.md` (참조: 플러그인 번들 `knowledge/design/ux-design-guide.md`) |
-| 디자인 트랙(조건부 투입: 상태값 enum 2개 이상 또는 화면 5개 초과) | visual-designer | - | `design/design-system.md`, `design/brand.md`(브랜딩 프로젝트인 경우만) |
+| 디자인 트랙(기본 투입 — Micro 등급 제외 항상, 화면 신설/기존 화면 기능변경 시) | ux-designer | prd.md, requirements.md | `design/ux-flow.md`(또는 docs/), `design/wireframes.md`, `design/ia.md`(참조: 플러그인 번들 `knowledge/design/ux-design-guide.md`) — wireframes.md에 "visual-designer 필요 여부 + 근거" 명시 필수 |
+| 디자인 트랙(ux-designer가 설계 산출물에서 필요 여부 판단: 신규 모듈 또는 비관리자 사용자단 페이지면 필요, 기존 스타일가이드 준수 관리자단 화면이면 생략 가능 — 기존 enum 2개 이상/화면 5개 초과 조건은 보조 신호로 유지) | visual-designer | - | `design/design-system.md`, `design/brand.md`(브랜딩 프로젝트인 경우만) |
 | STAGE 3 (구현) | backend-dev | architecture.md, api-spec.md, data-model.md | 코드 + `docs/security-plan.md`(누적 기록, security와 공유) |
 | STAGE 3 (구현) | frontend-dev | architecture.md, api-spec.md | `design/publishing-style-guide.md`(프로젝트에 없으면 플러그인 번들 `knowledge/design/publishing-style-guide-template.md`를 복사해 그 자리에서 생성 — 백지 작성 금지, 이후 전 화면이 이를 따름) |
 | STAGE 4 (검증) | qa-engineer | `docs/api-spec.md`(테스트 기준) | `tests/`(단위·통합 테스트) + `tests/test-report.md`(전체/통과/실패 수·커버리지·시나리오 표) |

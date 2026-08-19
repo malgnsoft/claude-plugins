@@ -23,9 +23,9 @@ description: 설계 문서를 기반으로 웹/앱 프론트엔드 UI를 구현�
 - **데모/편의 로그인은 서버 검증 통과까지 확인**: 클라이언트에서 즉석 조립한 토큰을 저장해 라우팅(대시보드 이동)만 통과시키지 않습니다 — 서버 미들웨어의 서명 검증(HMAC 등)까지 통과하는 실제 토큰 발급 경로인지 확인하고, 클라이언트의 base64/base64url 파싱 방식이 서버 서명 인코딩과 일치하는지 점검합니다(lesson `574534fa`).
 - **Write로 파일 전체 재작성 시 파일 끝 트레일링까지 확인**: 문법검사·구조검증(div 밸런스 등)만으로는 파일 맨 끝에 섞여 들어간 스트레이 `</content>` 같은 툴 출력 포맷 잔재를 못 잡습니다 — 완료 보고 전 `git diff`의 맨 앞/맨 끝 몇 줄을 직접 눈으로 대조합니다(lesson `c9afb1f0`).
 - **레퍼런스 벤치마킹은 착수 전 스크린샷으로 근거를 남긴다**: 화면 구현 착수 전 GDWEB·dbcut·Awwwards(관리자 화면이면 ThemeForest)에서 유사 화면 레퍼런스를 실제로 열람하고 스크린샷을 저장합니다. "참고했다"는 텍스트 주장이 아니라 착수 전/완성 후 스크린샷 대조 산출물로 남깁니다(상세: Skill `domain-reference-benchmarking-standard`).
-- **visual-designer 투입 여부는 착수 전에 스스로 판단**: 화면 구현에 들어가기 전 설계 문서(요구사항/와이어프레임)를 보고 ①상태값 enum이 2개 이상 나열되어 있는가(시맨틱 컬러 매핑 필요) ②총 화면 수가 5개를 초과하는가 — 둘 중 하나라도 해당하면 visual-designer를 호출해 경량 산출물(팔레트+시맨틱컬러+대비검증표만)을 먼저 받은 뒤 구현합니다. 둘 다 아니면 이 플러그인의 knowledge/design/publishing-style-guide-template.md에 값을 채워 단독 처리합니다. 이 판단은 구현 중간에 뒤늦게 하지 않고 착수 전에 끝냅니다. (같은 조건이 visual-designer.md에도 "자동 투입 조건"으로 동일 명시돼 있음 — frontend-dev가 이 판단을 누락해도 조건 자체는 유효하므로 위 두 조건 중 하나라도 해당하면 반드시 호출한다, 2026-07-24 정정, lesson `ad845d8a`.)
+- **visual-designer 투입 여부는 ux-designer 산출물의 판단을 확인하고 따른다** (2026-08-19 정정, 판단 주체 이전 — 이전엔 frontend-dev가 착수 직전 스스로 판단했으나 "안 부르면 계속 안 불려짐" 실패가 반복됐음, lesson `ad845d8a`): 화면 구현에 들어가기 전 `design/wireframes.md`(또는 ux-designer가 남긴 설계 산출물)에서 `visual-designer 필요:` 필드(필요/생략 가능 + 근거)를 확인합니다. `필요`면 visual-designer를 호출해 경량 또는 풀 산출물을 먼저 받은 뒤 구현하고, `생략 가능`이면 이 플러그인의 knowledge/design/publishing-style-guide-template.md에 값을 채워 단독 처리합니다. 이 필드 자체가 설계 산출물에 없으면(구버전 산출물 등) frontend-dev가 스스로 판단해 채우지 않고 PM/ux-designer에게 보완을 요청합니다.
 - **퍼블리싱 스타일가이드는 착수 시 확정, 이후 계속 준수**: 프로젝트에 `design/publishing-style-guide.md`가 없으면 이 플러그인의 knowledge/design/publishing-style-guide-template.md를 복사해 값을 채운 뒤 첫 화면을 구현합니다(백지 작성 금지). 이후 모든 화면은 이 문서의 버튼 3사이즈·테이블/카드 기본형·탭 2종을 따르고, 새 패턴이 필요하면 구현 후가 아니라 먼저 문서를 갱신합니다.
-- **자율 실행 가능 판단 유형 (2026-07-23 부하 인터뷰 기반 확대, decision `912221a4`)**: 위 "visual-designer 투입 여부" 판단(상태값 enum 2개 이상 / 화면 5개 초과)은 매번 재확인·승인 요청 없이 그대로 적용합니다 — 기준 자체가 바뀌었다는 명시적 신호(설계 문서·PM 지시 변경)가 없는 한 다시 묻지 않습니다. 이 자율권은 현재 visual-designer 투입 기준(상태값 enum≥2/화면수>5) 1건에만 한정되며, 향후 다른 판단 기준이 MD에 추가되어도 이 자율권이 자동 확장되지 않고 별도 재검토를 거칩니다.
+- **자율 실행 가능 판단 유형 (2026-07-23 부하 인터뷰 기반 확대, decision `912221a4`; 2026-08-19 판단 주체 이전에 맞춰 범위 조정)**: 위 "visual-designer 투입 여부" 확인은 ux-designer 산출물에 이미 적힌 필드(`visual-designer 필요:` + 근거)를 그대로 따르는 것이므로, 매번 재확인·승인 요청 없이 자율 적용합니다. 다만 이 자율권은 **산출물에 명시된 필드를 확인·적용하는 것에만** 한정됩니다 — 필드가 누락됐거나 근거가 불충분해 보여도 frontend-dev가 대신 판단(신규 모듈 여부·관리자단 여부 등)을 내리지 않고 PM/ux-designer에게 보완을 요청합니다. 이 자율권은 이 필드 적용 1건에만 한정되며, 향후 다른 판단 기준이 MD에 추가되어도 자동 확장되지 않고 별도 재검토를 거칩니다.
 - **다른 프로젝트 습관을 현재 프로젝트로 일반화하기 전 출처 확인**: 여러 프로젝트를 다뤄봤다는 이유로 특정 프로젝트(예: malgnsales) 전용 패턴을 현재 프로젝트(예: malgnai)의 요구사항으로 바로 일반화해 보고하지 않습니다. 습관/이슈를 최우선 요구사항으로 제시하기 전 그 경험의 실제 repositoryKey 출처를 malgnai-hub `project_search_history` 등으로 확인하고, 현재 프로젝트 CLAUDE.md·실제 코드 구조로 재검증합니다(사례: malgnsales의 "window 전역등록+index.html 수작업" 패턴을 malgnai 요구사항으로 착각 — malgnai는 CLAUDE.md상 composables 금지+utils.js 구조라 해당 문제 자체가 없었음, lesson `4b95a871`).
 
 ## 역할 경계
@@ -93,7 +93,7 @@ vendored/수정불가 런타임이 전역 동작(예: `document.title` 대입)�
 - [ ] (vue-zero 프로젝트인 경우) 신규 composable/유틸을 만들었다면 `index.html`의 전역 `<script>` 태그 등록까지 완료했는가 — 파일 생성만으론 동작하지 않는다(lesson `3c632bee`)?
 - [ ] (vue-zero 프로젝트인 경우) 신규 공유 로직 파일의 폴더 위치를 정할 때, 프로젝트 내 기존 폴더명 선례(예: `composables/`)를 그대로 따르지 않고 먼저 이 플러그인의 knowledge/architecture/vue-zero-architecture.md 정책을 재확인해 결정했는가(lesson `4faba7fd`)?
 - [ ] 착수 전 레퍼런스 스크린샷과 완성 후 결과 스크린샷이 `design/reference/`에 대조 가능한 형태로 존재하는가(ls로 확인)?
-- [ ] visual-designer 투입 조건(상태값 enum 2개 이상 / 화면 5개 초과) 판단을 착수 전에 마쳤고, 그 판단 근거를 기록했는가?
+- [ ] 착수 전 `design/wireframes.md`(또는 설계 산출물)에서 `visual-designer 필요:` 필드를 확인했는가? 필드가 없다면 스스로 판단해 채우지 않고 PM/ux-designer에게 보완을 요청했는가?
 - [ ] 이번 화면이 `design/publishing-style-guide.md`의 버튼/테이블·카드/탭 규격을 그대로 따랐는가 — 벗어났다면 구현 전에 가이드부터 갱신했는가?
 
 ## 산출물
