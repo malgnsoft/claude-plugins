@@ -16,8 +16,8 @@
 | persona-frontend-scope-consistency-auditor.md | 규칙을 조건부로 좁히는 리팩터링이 모든 절에 예외 없이 전부 반영됐는지(부분 조건화가 남아 새지 않는지) 감사하는 정합성 감사관 | 수렴 | 2026-08-10 | frontend-dev-vue-zero-scope / 1차 |
 | persona-vue-zero-regression-guardian.md | 다른 사용자/스택 배려를 명분으로 자신이 의존하는 기존 규칙이 실수로 깎이거나 도달 불가능해지지 않는지 보는 현직 사용자 관점의 회귀 파수꾼 | 수렴 | 2026-08-10 | frontend-dev-vue-zero-scope / 1차 |
 | persona-zero-based-md-restructurer.md | 조건부 태그를 문서 곳곳에 흩뿌리는 구조 자체가 대상(스택 등)이 늘어나도 유지보수 가능한지 의심하는 정보구조 설계자(발산형) | 발산 | 2026-08-10 | frontend-dev-vue-zero-scope / 1차 |
-| persona-privacy-leakage-auditor.md | 이 산출물이 회사 채널·중앙 저장소에 그대로 공유되면 무엇이 새는지 실제로 확인하는 개인정보·유출 감사관 | 수렴 | 2026-08-10 | token-usage-diagnosis-skill / 1차 |
-| persona-script-skill-consistency-auditor.md | 문서가 서술하는 약속(옵션·임계값·근거)과 코드 구현이 실제로 정확히 일치하는지 한 줄씩 대조하는 정합성 감사관 | 수렴 | 2026-08-10 | script-based-skills-batch-20260812 / 1차 (직전: token-usage-diagnosis-skill / 1차) |
+| persona-privacy-leakage-auditor.md | 이 산출물이 회사 채널·중앙 저장소에 그대로 공유되면 무엇이 새는지 실제로 확인하는 개인정보·유출 감사관 | 수렴 | 2026-08-10 | token-usage-collection-design-2026-08-19 / 3차 (직전: 2차, 1차, token-usage-diagnosis-skill / 1차) |
+| persona-script-skill-consistency-auditor.md | 문서가 서술하는 약속(옵션·임계값·근거)과 코드 구현이 실제로 정확히 일치하는지 한 줄씩 대조하는 정합성 감사관 | 수렴 | 2026-08-10 | token-usage-collection-design-2026-08-19 / 3차 (직전: 1차, script-based-skills-batch-20260812 / 1차) |
 | persona-self-service-scope-challenger.md | 조직 차원 문제로 시작한 조사가 개인용 셀프서비스 도구로 축소(scope reduction)된 것은 아닌지 의심하는 발산형 | 발산 | 2026-08-10 | token-usage-diagnosis-skill / 1차 |
 | persona-verifiable-claim-discipline-auditor.md | claimed(해석)와 verified(스크립트 산출)의 구분이 문서 전 지점에서 실제로 지켜지는지(계산하지 않은 숫자를 지어내지 않는지) 보는 검증가능성 감사관 | 수렴 | 2026-08-10 | token-usage-diagnosis-skill / 1차 |
 | persona-enforcement-gap-auditor.md | 원칙 문장이 체크리스트/영속 필드로 강제 가능한지, 아니면 자기판단에 맡겨진 서술인지 가르는 강제력 격차 감사관 | 수렴 | 2026-08-10 | reviewer-repeat-review-reduction / 1차 |
@@ -25,10 +25,12 @@
 | persona-process-mechanism-zero-based-challenger.md | 도입한 메커니즘 전체가 문제 크기에 비례하는지, 더 단순한 개입(링크 필수 포함 등)으로 같은 효과를 낼 수 있는지 의심하는 발산형 | 발산 | 2026-08-10 | reviewer-repeat-review-reduction / 1차 |
 | persona-mcp-oauth-security-auditor.md | OAuth/PKCE/DCR 설계가 토큰 탈취뿐 아니라 컨센트 피싱·영구 약한경로까지 실제로 막는지 공격자 시점으로 재시뮬레이션하는 보안 감사관 | 수렴 | 2026-08-11 | malgnai-hub-oauth-device-auth-design / 1차 |
 | persona-mcp-oauth-feasibility-realist.md | 설계 문서가 스스로 "미검증"이라 표시한 Claude Code 클라이언트 동작 전제가 실제로 맞는지, 검증 없이 구현에 넘어갈 수 있는 프로세스 허점이 있는지 보는 실현가능성 현실주의자 | 수렴 | 2026-08-11 | malgnai-hub-oauth-device-auth-design / 1차 |
-| persona-hub-schema-routing-consistency-auditor.md | "이 파일은 안 건드린다"는 설계 주장이 실제 라우팅 설정(run_worker_first)·스키마·DAO 코드로 성립하는지 실측 대조하는 정합성 감사관 | 수렴 | 2026-08-11 | malgnai-hub-oauth-device-auth-design / 1차 |
+| persona-hub-schema-routing-consistency-auditor.md | "이 파일은 안 건드린다"는 설계 주장이 실제 라우팅 설정(run_worker_first)·스키마·DAO 코드로 성립하는지 실측 대조하는 정합성 감사관 | 수렴 | 2026-08-11 | token-usage-collection-design-2026-08-19 / 3차 (직전: 2차, 1차, malgnai-hub-oauth-device-auth-design / 1차) |
 | persona-cross-repo-handoff-executability-auditor.md | 서로 다른 저장소로 이관되는 설계가 대상 저장소 자신의 부트스트랩 경로(STATUS.md 등)에서 실제로 발견 가능한지 시뮬레이션하는 이관 실행가능성 감사관 | 수렴 | 2026-08-11 | malgnai-hub-oauth-device-auth-design / 1차 |
 | persona-auth-flow-zero-based-challenger.md | 이 문제 크기(토큰 복붙 UX)에 이 구조 크기(OAuth 표준 풀스택+DCR)가 비례하는지, 이미 존재하는 디바이스 페어링 흐름과 대조해 최소 구조를 재검토하는 발산형 | 발산 | 2026-08-11 | malgnai-hub-oauth-device-auth-design / 1차 |
 | persona-doc-table-source-consistency-auditor.md | 요약 표가 정본(각 에이전트 MD) 산출물 경로를 정확히 압축했는지 원문과 대조하는 정합성 감사관 | 수렴 | 2026-08-12 | project-orchestration-skill-outputmap / 1차 |
+| persona-telemetry-collection-necessity-challenger.md | 수집 방식(스키마·인증)이 안전한가와 별개로, 애초에 이 정보를 자동·주기적으로 원격에 보내야 하는가(수동 옵트인 등 더 단순한 대안으로 같은 목적 달성 가능한가)를 묻는 발산형 | 발산 | 2026-08-19 | token-usage-collection-design-2026-08-19 / 3차 (직전: 2차, 1차) |
+| persona-unattended-agent-runtime-safety-auditor.md | OS 스케줄러(launchd/schtasks)가 구동하는 무인 백그라운드 프로세스가 크래시 복원력·진단 채널·자원 성장 관점에서 장기간 안전한지 보는 무인 실행 안전성 감사관 | 수렴 | 2026-08-19 | token-usage-collection-design-2026-08-19 / 3차 |
 
 > **알려진 중복 역할개념 (§4.2 적용 이력 예시로 처리됨, 병합·삭제는 이번 스코프 밖)**:
 > - `persona-ops-drift-realist.md` ≈ `persona-ops-maintainability-realist.md` — 둘 다 "6개월 후에도 살아있는가/사용자에게 감지 가능한가"를 묻는 운영 현실주의자.
@@ -39,6 +41,12 @@
 > **재사용 시도 실패 기록 (2026-08-10, reviewer-repeat-review-reduction 1차 리뷰)**: 위 표의 "역할개념(1줄)"만 보면 `persona-skeptical-verification-architect.md`/`persona-ops-maintainability-realist.md`/`persona-zero-based-redesigner.md`가 이번 리뷰(reviewer 자체 프로세스 설계 검토)와 개념적으로 겹쳐 보여 재사용을 시도했으나, 세 파일 모두 "정체성/관심사/평가기준/참고파일"(6대 요소 본문)이 이전 라운드 대상(`pm-main-agent-methodology.md`, "훅+스킬 조합" 등)에 구체적으로 고정돼 있어(§0 "역할개념 고정" 규칙이 소급 적용 안 됨) 문자 그대로 재사용하면 엉뚱한 대상을 리뷰하게 됨 — 그대로 재사용하지 않고 신규 페르소나로 처리함(상세 근거: `docs/reviewer/review-reviewer-repeat-review-reduction-2026-08-10.md` RV-002). **후속 필요**: 위 3개 파일의 6대 요소 본문을 역할개념 수준으로 일반화하는 소급 정리(trainer 후속 과제).
 
 > **2026-08-11 malgnai-hub-oauth-device-auth-design 리뷰**: 기존 발산형(`persona-zero-based-redesigner.md`/`persona-mechanism-zero-based-challenger.md` 등)은 모두 이전 라운드(PM 오케스트레이션 블록·frontend-dev 등)에 6대 요소가 구체적으로 고정돼 있어 이번 OAuth 설계 리뷰에 문자 그대로 재사용 불가 판정 → `persona-auth-flow-zero-based-challenger.md` 신규 생성. 나머지 4개(보안/실현가능성/스키마·라우팅/이관)도 도메인이 malgnai-hub 인증 체계로 완전히 달라 기존 페르소나 재사용 대상 없음 판정, 전원 신규 생성.
+
+> **2026-08-19 token-usage-collection-design-2026-08-19 리뷰**: `persona-privacy-leakage-auditor.md`(필드 단위 개인정보 재검증)·`persona-script-skill-consistency-auditor.md`(analyze-usage.mjs 리팩터링 계획 정합성)·`persona-hub-schema-routing-consistency-auditor.md`(device_tokens 재사용 주장 실측)는 역할개념이 이번 두 신규 설계 문서 검증과 정확히 겹쳐 6대 요소 본문 그대로 재사용(관심사·방법론에 이번 라운드 항목만 추가, 적용 이력 갱신). 발산형은 기존 5개 전부(`persona-auth-flow-zero-based-challenger.md` 포함) 이전 라운드(OAuth 표준흐름/훅체계/vue스코프 등)에 구체적으로 고정돼 있어 "자동 hourly 원격 전송 자체의 필요성"이라는 이번 라운드의 새 리스크 표면과 겹치지 않음 — `persona-telemetry-collection-necessity-challenger.md` 신규 생성.
+
+> **2026-08-19 token-usage-collection-design-2026-08-19 2차(증분 재검증)**: PM 위임에 명시된 동일 target_id 재검토 — `common-task-grading-and-verification-depth` 풀패널 강제 승격 조건에 해당하지 않고(스코프 확대 없음, 문서 보정 수준), §1.2 동일대상 4조건 충족(같은 문서·같은 승인권자·직전 라운드 판정 Amber·새 리스크 표면 없음) 확인 후 축소(C) 모드 적용 — 신규 페르소나 없이 1차의 4개 페르소나 중 이번 확인 항목(Major 3건+Rethink 1건)에 해당하는 `persona-privacy-leakage-auditor.md`·`persona-hub-schema-routing-consistency-auditor.md`·`persona-telemetry-collection-necessity-challenger.md` 3개만 재사용(각 파일 "적용 이력"에 2차 항목 추가). `persona-script-skill-consistency-auditor.md`는 이번 확인 4항목과 무관(analyze-usage.mjs 정합성은 1차에서 이미 통과, 이번 개정 대상 아님)해 재사용하지 않음.
+
+> **2026-08-19 token-usage-collection-design-2026-08-19 3차(코드 첫 검증, 배포 직전 최종 게이트)**: 이전 2개 라운드는 설계 문서만 검증했고, 이번이 실제 구현 코드(`bin/{usage-agent-lib,pair-usage-device,report-usage,install-usage-agent}.mjs`)를 대상으로 하는 첫 라운드다 — "코드 정확성 감사"라는 새 리스크 표면으로 판단해 축소 모드 대신 재확인 성격의 풀패널로 진행. `persona-hub-schema-routing-consistency-auditor.md`(API 계약을 실제 malgnai-public 배포 코드로 3번째 재검증)·`persona-privacy-leakage-auditor.md`(실제 코드의 PII 노출면 재검증, truncateSummary 서로게이트 경계 버그 신규 발견)·`persona-script-skill-consistency-auditor.md`(SKILL.md/knowledge vs 코드 실측 대조)는 6대 요소 그대로 재사용. 발산형은 `persona-telemetry-collection-necessity-challenger.md`를 재사용(근본 질문 여전히 미해소, 전체 재스캔 성장 비용이라는 신규 근거 추가). 신규 생성 1건: `persona-unattended-agent-runtime-safety-auditor.md` — OS 스케줄러 구동 무인 프로세스의 크래시 복원력·Windows 로깅 공백·PID 락 부재·전체 재스캔 성장이라는, 설계 문서 검증 라운드에는 없었던 코드 레벨 전용 리스크 표면(기존 `persona-hook-execution-safety-verifier.md`는 Claude Code 세션 내 훅 상태기계 전용이라 재사용 대상 아님으로 판정).
 
 ## 유지 책임
 

@@ -152,6 +152,7 @@ PM 자신은 통합 보고서만 산출합니다:
 - `knowledge/leadership/retrospective-framework.md` — 회고 프레임워크
 - Skill `domain-pre-deployment-verification-gate` — 배포 논의 전 로컬 검증 확인 게이트
 - Skill `token-usage-diagnosis` — "내 토큰 사용량 봐줘/왜 이렇게 많이 썼지" 요청 시 Micro 등급 직접 처리(위임 불요)
+- Skill `usage-agent-healthcheck` — "토큰 수집 에이전트 제대로 돌고 있어?/사용량 보고 왜 안 되지?" 요청 시 Micro 등급 직접 처리(위임 불요). `token-usage-diagnosis`와 달리 개인 사용 패턴이 아니라 백그라운드 수집 파이프라인 자체(등록·페어링·최근 전송)를 점검
 
 ### 학습 루프
 (malgnai-hub 연동판 해당 없음) `lesson_add`/`lesson_list`/`lesson_classify` 캡처·분류 파이프라인은 malgnai-hub v1에 없다. 작업 후 발견한 재사용 가능한 교훈은 사용자 요청 없이 즉시, 결정 관련이면 `decision_record`의 reason/impact에, 작업 관련이면 `work_record`의 result/nextAction에 녹여 남긴다. MD/knowledge 반영까지 필요한 굵직한 교훈은 trainer에게 별도로 직접 전달한다(trainer의 `/reflect-lessons`(모드4)가 전담하던 자동 분류·반영 경로는 이 파이프라인이 없어 현재는 없음).

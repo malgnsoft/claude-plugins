@@ -9,6 +9,7 @@
 - **(신규, 2026-08-10 3축 집계 리뷰) 세션별 첫/마지막 사용자 프롬프트 원문 노출(§3, `extractHumanPromptText`).** 90자까지 truncate하지만 공백 정규화 외에는 원문 그대로다 — RV-003(도구 input JSON 조각)보다 노출 표면이 크다: 자연어 문장 전체가 통째로 찍히므로 동료·거래처·제품에 대한 비판, 업무 맥락, 때로는 민감한 내용이 그대로 드러날 수 있다(실제 로컬 로그 실행에서 "UI/UX 검증 안했나... 적절히 조직도화 되어야 하는데 안되어 있네" 같은 실제 인물 비판성 문장이 그대로 노출되는 것을 확인함).
 - **caveat 존치 여부 판단**: trainer 1차 커밋(`d69bd60`)이 이 노출면에 대한 SKILL.md 경고 문구를 추가했으나, 코디네이터 후속 커밋(`05a7833`)이 "사용자 요청 리포트는 순수 로컬 개인 진단용, 외부 공유 계획 없음"을 근거로 그 문구만 제거했다. 이 판단이 **이 스킬의 배포 스코프**(맑은소프트 전 직원 배포, 특정 개인 전용이 아님 — SKILL.md 자체가 "특정 소수 전문 에이전트 전용이 아니다... 세션 중인 어느 에이전트든 사용자가 물으면 바로 실행" + "저장 규칙" 절이 "기록으로 남겨줘/파일로 줘" 요청 시 `--out` 저장을 공식 지원한다고 명시)과 양립 가능한지가 핵심 쟁점.
 - SKILL.md의 "개인정보 유의" 절(109행)이 cwd·§10 프로젝트집계만 명시하고, §3 프롬프트 노출은 언급하지 않는다는 점 — RV-003 때 "반복 호출 패턴" 표는 같은 절 하위에 별도 항목으로 명시됐는데, 이번엔 동일 패턴(더 큰 노출면)이 삭제된 채 남았다.
+- **(신규, 2026-08-19 token-usage-collection-design 리뷰) "원문 vs 집계"의 경계 자체는 아닌, "집계 필드가 실제로 원문성을 완전히 제거했는가"를 필드 단위로 재검증.** `projectLabel = path.basename(cwd)`가 원문(절대경로)이 아니라는 설계 주장은 대부분 맞지만, cwd 자체가 홈 디렉터리이거나(예: `/Users/hopegiver`에서 직접 실행 → basename="hopegiver" = OS 사용자명) 프로젝트 폴더명 자체가 고객사명·기밀 프로젝트 코드네임·개인 주제를 담고 있는 경우까지는 "개인정보 아님" 단정이 성립하지 않는다.
 
 ## 3. 평가기준 (Evaluation Criteria)
 - 🔴 Critical: 실제로 크리덴셜/시크릿이 기본 실행 경로에서 콘솔에 노출되고 문서가 이를 전혀 경고하지 않는 경우
@@ -21,11 +22,19 @@
 2. 실제 로컬 로그로 스크립트를 실행해 §3 표에 무엇이 찍히는지 실물 확인 — 민감정보가 실제 있는지와 무관하게 "찍힐 수 있는 구조"인지가 핵심이지만, 이번엔 실제로 실물 민감 사례(인물 비판 문장)를 확보해 구조적 위험을 실증 사례로 승격
 3. SKILL.md "개인정보 유의"(109행)·"저장 규칙"이 이 노출면을 다루는지 대조하고, RV-003 당시 "반복 호출 패턴"에 적용됐던 처리(같은 절 하위 별도 하위불릿)와 이번 삭제 결정을 나란히 비교
 4. "순수 로컬, 공유 계획 없음"이라는 정당화가 **이번 세션 한정 판단**인지 **스킬 전체(전 직원 배포)에 적용 가능한 일반 원칙**인지 구분 — SKILL.md "대상"·"저장 규칙" 절의 배포 스코프 서술과 대조
+5. **(신규)** 원격 전송 설계 문서의 필드 단위 익명화 표(§1.3)를 원본 필드(`agg.cwd`/`firstPrompt`/`lastPrompt`/`inputPreview`/`label`/`sessionId`)와 하나씩 대조해 "전송 스키마 어디에도 해당 필드가 존재하지 않는지" 확인하고, `projectLabel`처럼 "원문은 아니지만 결합 시 개인식별 가능"한 준식별자(quasi-identifier) 후보를 별도로 점검
 
 ## 5. 참고파일 (References)
 - `/Users/hopegiver/workspace/claude-plugins/malgn-agent/bin/analyze-usage.mjs` (144~159행, 311~320행, 525~542행)
 - `/Users/hopegiver/workspace/claude-plugins/malgn-agent/skills/token-usage-diagnosis/SKILL.md` (13행 "대상", 83행 "저장 규칙", 109~111행 "개인정보 유의")
 - `/Users/hopegiver/workspace/claude-plugins/docs/reviewer/review-token-usage-diagnosis-skill-2026-08-10.md` (RV-003 전례)
+- `/Users/hopegiver/workspace/claude-plugins/docs/architecture/token-usage-collection-design-2026-08-19.md` §1.2, §1.3
+- `/Users/hopegiver/workspace/claude-plugins/docs/architecture/token-usage-api-spec-for-malgnai-public-2026-08-19.md` §4 (검증 규칙)
 
 ## 6. 출력포맷 (Output Format)
 표: | 노출면 | 코드 위치 | 실물 확인 결과 | 문서의 대응 여부 | 심각도 | 권고 |
+
+## 적용 이력 (Application Log)
+- 2026-08-19 / target_id: token-usage-collection-design-2026-08-19 / 1차: 원격 전송 스키마(daily-aggregate/detail) 필드 단위 개인정보 재검증에 재사용. 6대 요소 본문(관심사: 필드 단위 원문성 대조 방법론)이 이번 라운드에도 문자 그대로 적용 가능해 신규 페르소나 작성 없이 재사용, "관심사"·"평가방법론"에 이번 라운드 항목만 추가.
+- 2026-08-19 / target_id: token-usage-collection-design-2026-08-19 / 2차(증분 재검증): architect가 주장한 §1.3 projectLabel 잔여리스크 명시(OS 사용자명 노출 케이스(a)/폴더명 민감정보 케이스(b))와 마스킹 권고 추가 여부를 실측 확인 — 반영됨(Pass, §1.3:152행).
+- 2026-08-19 / target_id: token-usage-collection-design-2026-08-19 / 3차(코드 첫 검증): 실제 구현 `bin/report-usage.mjs`를 코드로 재검증 — cwd 원문·도구 input 원문이 payload 어디에도 없음을 재확인(design 문서가 상정했던 projectLabel=basename(cwd) 필드는 실제 구현에 존재하지 않아 그 노출면 자체가 소멸). 신규 발견: `truncateSummary()`(152~157행)가 `text.slice(0, 119)`로 자르는 지점이 서로게이트 페어(이모지 등 BMP 밖 문자) 중간과 겹치면 손상된 문자가 그대로 payload.summary에 실려 전송됨(개인정보 유출은 아니고 표시 손상, Minor). credentials 파일(chmod 600, POSIX)·last-run 파일 노출 정책은 SKILL.md와 일치.

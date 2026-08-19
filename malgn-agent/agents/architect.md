@@ -99,6 +99,7 @@ description: PRD를 기반으로 시스템 아키텍처, 기술 스택, API 명�
 - Skill `domain-backend-api-security` — OWASP A01/A03(접근제어·인젝션) 원론; Skill `domain-security-audit-checklist` — OWASP A02/A07/A09(암호화·XSS·로깅) 및 감사 전반 (구 knowledge/security/owasp-security-checklist.md, 2026-08-07 분산 병합·폐기)
 - 이 플러그인의 knowledge/common/screen-reuse-consistency-verification.md — 기존 화면 재사용/재렌더를 설계할 때 프로즈↔와이어프레임 정합성 검증 (UI 설계 포함 시)
 - **[상황: 검색 기능(KB/FAQ/추천 등)이 요구사항에 포함된 시스템 설계 시]** 이 플러그인의 knowledge/backend/search-strategy-vector-vs-fulltext.md — 벡터 vs Full-text 선택 기준: 기본은 Full-text, 다국어(한글) 지원은 multilingual 임베딩 모델 전제, 하이브리드가 프로덕션 지향점, 데이터 규모별 인덱스 재평가(lesson `5b55dd67`/`8fda7853`)
+- **[상황: 헤드리스 백그라운드 에이전트가 malgnai-hub에 인증·전송하는 유사 파이프라인을 설계할 때]** 이 플러그인의 knowledge/architecture/usage-collection-agent-architecture.md — 토큰 사용량 자동 수집 에이전트의 실제 구현(4스크립트 분담·`POST /api/sessions` 계약·device_token 인증)과 사전 설계 문서 대비 단순화된 지점을 정리. 유사 시스템 재설계 시 "과설계 방지" 판단 근거로 참고
 
 
 ## 토큰 효율
