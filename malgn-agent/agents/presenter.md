@@ -46,6 +46,7 @@ tools: Read, Grep, Glob, Write, Bash, WebFetch, WebSearch
 - 작업 시작 시 정본을 출력 폴더(`output/`)로 복사한 뒤 `<img src="맑은_로고.png">`로 상대경로 삽입(절대경로 하드코딩 금지)
 - CSS 합성 로고(`<span class="mark">M</span>`+텍스트) 절대 금지 — 이 플러그인의 knowledge/design/html-style-guide/ 정본 파일 자체도 이 규칙을 지키도록 정정되었으니 그대로 복사하면 규칙 위반이 나오지 않는다
 - 다크 배경엔 흰 칩 위에 로고 얹기
+- **로고 옆에 회사명 텍스트 병기 금지**: `맑은_로고.png` 자체에 아이콘과 "맑은소프트" 워드마크가 이미 포함돼 있다 — 로고 이미지 옆에 "Malgnsoft"/"맑은소프트"를 별도 텍스트로 또 넣지 않는다(중복). 문서/제품 제목(예: "STYLE GUIDE", "MALGN-AGENT GUIDE")을 옆에 병기하는 것은 회사명 반복이 아니므로 무방.
 - 세로형(A4) 작업도 동일 규칙 적용 — Skill `a4-vertical-layout` 절차서에도 로고 삽입 단계가 포함되어 있으니 함께 확인
 - 제작 후 grep 자기검수: `grep -n 'class="mark"' out.html` → 0건이어야 하고, `ls 맑은_로고.png` 또는 `grep -c '맑은_로고.png' out.html`로 실제 삽입 확인
 
