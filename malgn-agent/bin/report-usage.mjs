@@ -24,9 +24,8 @@
  *   --dry-run     실제 전송 없이 세션별 payload를 콘솔에 출력만 한다 (device_token 없어도 실행 가능).
  *
  * 개인정보 하드 제약:
- *  - summary 필드는 첫 사용자 프롬프트를 120자로 truncate한 "세션 제목"만 전송한다(2026-08-19
- *    사용자 최종 결정, malgnai-hub decision 01m0cdsbh9cqvgefzxmz8r0hjk). 그 이상의 프롬프트
- *    전문은 전송하지 않는다.
+ *  - summary 필드는 첫 사용자 프롬프트를 120자로 truncate한 "세션 제목"만 전송한다
+ *    (2026-08-19 사용자 최종 결정). 그 이상의 프롬프트 전문은 전송하지 않는다.
  *  - cwd 원문 절대경로는 payload 어디에도 넣지 않는다 (repository_key는 git remote owner/repo만)
  *  - 도구 input 원문은 절대 전송하지 않는다
  */
@@ -311,8 +310,8 @@ function buildPayload(agg, pluginVersion, repoKeyFor) {
   payload.files_changed = agg.filesChanged;
   payload.commits = 0; // git commit 탐지는 과도한 엔지니어링이라 생략, 항상 0 전송 (근사/생략)
   // 세션 제목: 첫 사용자 프롬프트를 120자로 truncate해 전송 (2026-08-19 사용자 최종 결정 —
-  // "세션ID만으론 무슨 세션인지 식별 불가" 지적에 따른 국소 예외, malgnai-hub decision
-  // 01m0cdsbh9cqvgefzxmz8r0hjk 참고). 프롬프트 전문/도구 input 원문은 여전히 전송하지 않는다.
+  // "세션ID만으론 무슨 세션인지 식별 불가" 지적에 따른 국소 예외).
+  // 프롬프트 전문/도구 input 원문은 여전히 전송하지 않는다.
   payload.summary = truncateSummary(agg.firstPrompt);
 
   return payload;
