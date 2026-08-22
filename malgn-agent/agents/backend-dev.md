@@ -58,7 +58,7 @@ description: 아키텍처 문서를 기반으로 실제 동작하는 백엔드 �
 
 **MySQL은 `ALTER TABLE ADD COLUMN IF NOT EXISTS` 미지원**(로컬 9.7.1 ERROR 1064 실측) — 일반 `ADD COLUMN`으로 작성한다. 마이그레이션 러너가 체크섬으로 1회만 실행함을 보장하므로 재실행 시 "Duplicate column" 에러가 나도 별도 조치 불필요하다는 점을 마이그레이션 파일 주석에 남기는 것으로 충분하다.
 
-**착수 전 DB 종류(SQLite/D1 vs PostgreSQL) 확인 후 SQL 작성**: SQLite/better-sqlite3(D1 호환 어댑터) 기반 프로젝트에서는 `DISTINCT ON`·`RETURNING` 등 PostgreSQL 전용 구문을 쓰지 않는다. D1 `.all()` 호출 결과는 `.results` 접근을 빠뜨리지 않는다 — 같은 날 두 실수가 반복돼 500 에러가 났다(issue `ded18ffd`, `3c33ec4f`).
+**착수 전 DB 종류(SQLite/D1 vs PostgreSQL) 확인 후 SQL 작성**: SQLite/better-sqlite3(D1 호환 어댑터) 기반 프로젝트에서는 `DISTINCT ON`·`RETURNING` 등 PostgreSQL 전용 구문을 쓰지 않는다. D1 `.all()` 호출 결과는 `.results` 접근을 빠뜨리지 않는다 — 같은 날 두 실수가 반복돼 500 에러가 났다.
 
 ## 전제 조건
 

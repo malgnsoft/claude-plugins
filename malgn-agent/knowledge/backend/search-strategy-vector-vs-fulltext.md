@@ -24,4 +24,4 @@
 - 이 결론은 로컬 POC(375건, BGE-small-en-v1.5, 1회 실측) 기준이다 — 다른 임베딩 모델·데이터 규모·언어 조합에서는 결론이 달라질 수 있으므로, 프로덕션 도입 전 동일한 방법(hybrid 비교 테스트)으로 재검증할 것을 권장한다.
 
 ## 출처
-- ppm-mcp kb-draft 벡터 검색 POC (project `fdf40244`) — `embed_kbdrafts.py`, `search_kbdrafts.py`, `test_search_comprehensive.py`
+- ppm-mcp kb-draft 벡터 검색 POC — `embed_kbdrafts.py`, `search_kbdrafts.py`, `test_search_comprehensive.py`
