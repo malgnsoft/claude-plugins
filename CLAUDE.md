@@ -29,7 +29,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 - **도구명·파라미터를 기억이나 기존 문서에서 베끼지 말고 실제 스키마를 확인하라.** 세션에서 hub 도구 스키마를 직접 열어볼 수 있다.
 - hub에 대응이 **없는** 도구를 절차의 실행 단계로 쓰지 않는다: `lesson_add`/`lesson_list`/`lesson_classify` · `memory_add`/`memory_search` · `command_add`(웹 승인큐) · `project_autonomy_*` · `agent_learning_log_add`(→ `agent_learning_record`) · `decision_add`/`issue_add`(→ `decision_record`/`issue_record`). 확인: `git grep -nE 'lesson_add|lesson_list|lesson_classify|memory_add|memory_search|command_add|project_autonomy' -- malgn-agent/`
-- 제품 본문에 **8자리 hex id**(`lesson 5b55dd67` 류)를 새로 달지 않는다 — mcp 시절 발급분이라 조회가 불가능하다. 기존 207건은 잔존하며, 제거 시 **id가 범위 한정자로 쓰인 문장은 먼저 서술형으로 치환**해야 한다(기계적으로 밀면 규칙이 무한정 열린다). 교훈의 실질은 id가 아니라 문장으로 적는다.
+- 제품 본문에 **8자리 hex id**(`lesson 5b55dd67` 류)를 새로 달지 않는다 — mcp 시절 발급분이라 조회가 불가능하다. **2026-08-22에 제품 전량(220건/32파일)을 제거해 현재 0건이다**(명세 `docs/refactor/lesson-id-removal-spec.md`). 다시 유입되면 결함으로 다룬다 — 확인: `grep -rnE '(lesson|decision|issue|memory)[ `]*[0-9a-f]{8}' malgn-agent/`. 만약 제거해야 할 id가 새로 생기면, **id가 범위 한정자로 쓰인 문장은 먼저 서술형으로 치환**해야 한다(기계적으로 밀면 규칙이 무한정 열린다). 교훈의 실질은 id가 아니라 문장으로 적는다.
 
 ## 에이전트 업그레이드 원칙 (이 프로젝트의 중요원칙)
 **1순위는 성능, 2순위가 토큰 효율이다. 사이즈 축소는 목적이 아니라 수단일 뿐이다.**

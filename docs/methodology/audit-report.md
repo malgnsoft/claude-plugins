@@ -100,7 +100,7 @@
 | `agents/architect.md`의 §3.1 골격 + 트레이드오프 5슬롯 형식 | rubric §4.3이 직접 인용하는 모호성 제거 모범 사례. 오케스트레이션 트랙 재작성 시 이 슬롯 형식을 pm.md의 위임 패킷에도 이식할 것 |
 | `agents/backend-dev.md`·`agents/rfp-analyst.md`·`agents/capture-strategist.md`의 '역할 경계'에 인접 에이전트를 이름으로 명시하는 관행(§3.2③) | devops/finance는 이 관행이 빠져 있어 minor_revise 사유가 됨 — 21개 전체에 일관 적용 필요 |
 | `agents/frontend-dev.md`·`agents/qa-engineer.md`의 사실 확인형 자기검증 체크리스트(스크린샷 md5 비교, git diff 대조 등) | §3.2⑤ 모범 — 재작성 시 evaluator.md의 자기검증 절에도 이 수준의 구체성을 이식 |
-| `agents/qa-engineer.md`의 "자율 실행 가능 판단 유형을 정확히 2건의 lesson id로 한정, 자동 확장 금지" | §4.3 열린 수량어 제거 모범 사례 |
+| `agents/qa-engineer.md`의 "자율 실행 가능 판단 유형을 정확히 2개 유형으로 한정, 자동 확장 금지" | §4.3 열린 수량어 제거 모범 사례 |
 | `skills/system-design-principles`의 트레이드오프 5슬롯("선택/대안/선택 이유/포기한 것/감당 방안") | rubric §4.3 자체가 인용하는 원본 정본 — 재작성 전반에서 참조 표준으로 유지 |
 | `skills/common-beyond-mediocre-output` + `knowledge/common/beyond-mediocre-output.md` 쌍 | rubric 부록A가 "정답 예시(모범 사례)"로 명시 지정 — Skill/Knowledge 경계가 완벽히 유지된 유일한 완전체 사례. 다른 파일 이관 작업의 참조 템플릿으로 사용 |
 | `skills/malgn-project-standards` | 개인경로 0건, malgnai-hub 도구명 100% 정합, if-then 조건표 — 신규/재작성 스킬의 정본 템플릿으로 삼을 것 |
