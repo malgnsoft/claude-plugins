@@ -59,12 +59,13 @@ const BUDGET_SKILL_KB = 25;
 //
 // bytes = 그 사유서가 실측으로 "변호한다"고 명시한 크기. 이 숫자를 넘어서 자라면 면제가 아니라
 // 드리프트로 잡아 사유서 갱신을 요구한다(면제가 형식적 면죄부가 되지 않게 하는 장치).
-const BUDGET_RATIONALE = {
-  'agents/pm.md':           { doc: 'docs/refactor/v3-pm-budget-rationale.md',               bytes: 23016 },
-  'agents/trainer.md':      { doc: 'docs/refactor/v3-trainer-budget-rationale.md',          bytes: 22829 },
-  'agents/frontend-dev.md': { doc: 'docs/refactor/v3-03b-frontend-dev-budget-rationale.md', bytes: 16414 },
-  'agents/reviewer.md':     { doc: 'docs/refactor/v3-03b-reviewer-budget-rationale.md',     bytes: 15839 },
-};
+//
+// 2026-08-22 현재 등록 0건이다. 이전에 등록돼 있던 사유서 4건(pm·trainer·frontend-dev·reviewer)은
+// 슬리밍 라운드 폐기·배포본 원복 때 docs/refactor/에서 함께 삭제됐고, 그 문서들이 변호하던 크기는
+// 원복으로 사라진 슬림본의 실측치다(현 배포본은 pm +9.0KB · frontend-dev +4.4KB · reviewer +3.6KB로
+// 그 변호분을 이미 넘었다). 복구했다면 실재하지 않는 본문을 변호하는 문서가 되므로 등록을 지웠다 —
+// 해당 4개는 BUDGET_UNJUSTIFIED(근거 없는 초과)로 정직하게 남는다. 기제 자체는 유지한다.
+const BUDGET_RATIONALE = {};
 // 사유서가 변호하는 크기에서 이만큼까지는 드리프트로 보지 않는다(오탈자·1줄 규칙 수정 여유).
 const RATIONALE_DRIFT_TOLERANCE_B = 512;
 
