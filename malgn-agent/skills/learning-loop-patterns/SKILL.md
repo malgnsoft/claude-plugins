@@ -107,7 +107,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
   - malgnai-hub `issue_record`: "XXX 문제 발생, YYY로 우회 (근본 해결 필요)"
 - [ ] **외부 제약 대응:**
   - 권한 부족 → `common-permission-policy-compliance` 따르기 + 기록
-  - 정책 제약 → malgnai-hub 연동판에서는 해당 없음(웹 승인 재개 기능 없음) — 제약 사항을 `issue_record`로 남기고 사람에게 직접 확인
+  - 정책 제약 → 제약 사항을 `issue_record`로 남기고 `AskUserQuestion`으로 사람에게 직접 확인
 
 #### 5. Experiment & Validation
 - [ ] **테스트 + 기록:**
@@ -142,8 +142,8 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
   - 목차: Context → Problem → Solution → Prevention → Reference
 - [ ] **malgnai-hub 기록:**
   - 별도 메모리 등록 도구는 없음 — 교훈을 형태에 맞춰 기존 기록에 편입
-    - 결정형 교훈 → `decision_record(repositoryKey, title, decision, reason, ...)`의 `reason`/`impact`에 녹여 기록
-    - 작업형 교훈 → `work_record(repositoryKey, status, title, summary, ...)`의 `result`/`nextAction`에 녹여 기록
+    - 결정형 교훈 → `decision_record(projectId, title, decision, reason, ...)`의 `reason`/`impact`에 녹여 기록
+    - 작업형 교훈 → `work_record(projectId, status, title, summary, ...)`의 `result`/`nextAction`에 녹여 기록
 - [ ] **STATUS.md 갱신:**
   - "알려진 이슈" 섹션에 신규 발견 추가
   - "근본 원인 분석" 섹션에 새로운 통찰 기록

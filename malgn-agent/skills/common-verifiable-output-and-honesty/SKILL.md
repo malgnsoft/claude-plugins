@@ -170,4 +170,4 @@ description: 검증 가능한 증거 기반의 투명한 보고 기준. "주장(
 - **PR 리뷰:** 모든 finding에 코드 라인 링크 포함
 - **테스트 리포트:** CI 대시보드 링크, 실패 원인 분석
 - **버그 리포트:** 재현 단계, 환경, 스크린샷, 예상/실제 결과 명시
-- **학습 기록:** malgnai-hub v1에는 memory_add 같은 별도 지식 저장 도구가 없음 — 검증 과정에서 얻은 재사용 가능한 체크리스트는 `work_record`의 result/nextAction 필드에 녹여 기록
+- **학습 기록:** 검증 과정에서 얻은 재사용 가능한 체크리스트는 malgnai-hub `agent_learning_record`로 남긴다(작업 자체의 결과는 `work_record`의 result/nextAction)

@@ -61,12 +61,12 @@ description: 신규 브랜드·제품·서비스명을 문제정의→시장/경
 
 - [ ] 최종명 상표 정식 출원 절차 안내(법무 소관 — marketer/visual-designer는 안내까지, 실제 출원은 담당자 승인 후 진행)
 - [ ] 도메인/SNS 핸들 확보는 실제 결제·등록이 따르는 집행 행위이므로 **사람 승인 후 진행**(marketer.md의 "집행 승인 게이트"와 동일 원칙 — 계획까지만 산출, 집행은 승인 후)
-- [ ] 로고/워드마크 제작은 visual-designer가 이어받는다(`design/brand.md`)
+- [ ] 로고/워드마크 제작은 visual-designer가 이어받는다(`docs/design/brand.md`)
 - [ ] 탈락 후보 목록과 탈락 사유를 산출물에 남긴다(재검토 방지)
 
 ## 산출물
 
-- `design/brand-naming.md` — 1~7단계 전 과정(문제정의~최종선정) + 교차검증표 + 탈락 사유
+- `docs/design/brand-naming.md` — 1~7단계 전 과정(문제정의~최종선정) + 교차검증표 + 탈락 사유
 - marketer/visual-designer 공동 작성 시 각자 담당 관점 파트에 담당자를 표기한다.
 
 ## evaluator 판정 기준 (참고)

@@ -1,9 +1,8 @@
 # Skill과 Knowledge의 경계 정의
 
-> **지위 (2026-08-07)**: 이 문서의 판정 원칙은 `docs/methodology/agent-development-methodology.md` §1.1/§1.3/
-> §2.2가 실행 가능한 판정 기준(rubric)으로 그대로 채택했다. 실무 판정은 그 rubric을 정본으로 쓰고, 이 문서는
-> 배경·기원 자료로 유지한다. §4의 "Trainer 모드 10" 제안은 미채택 로드맵으로 확정됐다(`agents/trainer.md`
-> 로드맵 각주 참조) — 상세 설계는 `docs/roadmap/trainer-mode-10-curriculum-design.md`로 이관. 이 문서가 서술하는
+> **지위 (2026-08-07)**: 이 문서는 Skill/Knowledge 판정의 **배경·기원 자료**다. 실무 판정 기준은
+> `agents/evaluator.md`의 판정 체크리스트와 `agents/trainer.md`의 매체 판단 원칙을 정본으로 쓴다.
+> §4의 "Trainer 모드 10" 제안은 미채택 로드맵으로 확정됐다. 이 문서가 서술하는
 > "Trainer 모드 1~9" 번호 체계는 작성 당시 구상이며 현재 `agents/trainer.md`의 실제 모드 구성(1~6, 구 모드7은
 > evaluator로 이관)과 다르다 — 모드 번호는 참고하지 말고 `agents/trainer.md`를 정본으로 볼 것.
 
@@ -100,7 +99,7 @@
 
 **PM CLAUDE.md:**
 - Skill 참조: "위임 체크리스트", "승인 절차", "기록 규칙"
-- Knowledge 링크: "왜 트리플 검증이 필요한가"(decision_add 논증), "팀 역할 분배의 트레이드오프"
+- Knowledge 링크: "왜 트리플 검증이 필요한가"(결정 근거 논증), "팀 역할 분배의 트레이드오프"
 
 **Trainer 에이전트:**
 - Skill 참조: Prompt/Task/Code 등 7가지 모드
@@ -116,8 +115,7 @@
 
 이 문서를 작성하며 함께 제안됐던 아이디어(문서를 자동 분석해 Skill/Knowledge로 분류하고 학습 커리큘럼을
 생성하는 모드)는 `agents/trainer.md`에 "로드맵, 미구현 — 별도 신설 판정 필요"로만 남기고 실제 모드로는
-만들지 않기로 확정됐다(2026-08-07). 상세 설계는 `docs/roadmap/trainer-mode-10-curriculum-design.md`(이
-저장소 자신의 로드맵 메모, 배포판 미포함)에 원형 그대로 보존.
+만들지 않기로 확정됐다(2026-08-07).
 
 ---
 

@@ -47,7 +47,7 @@ description: malgn-agent 산출물(에이전트/스킬/knowledge)을 rubric 체�
 **공통(agent/skill/knowledge 전부)**
 - [ ] 경로 실재: 새/변경 문서가 인용하는 모든 파일 경로를 `test -f`로 확인. 미실재 도구·문서를 인용하면 "번들 안 됨" 각주가 있는가?
 - [ ] 이식성: `grep -n "/Users/\|~/\.claude" <파일>` 0건인가?
-- [ ] malgnai-hub 정합: malgnai-mcp 전용 도구명(decision_add/issue_add/activity_log/lesson_*/memory_add)이 제품 문서에 각주 없이 남아있지 않은가?
+- [ ] malgnai-hub 정합: hub에 없는 도구명(`lesson_*`/`memory_*`/`command_add`/`project_autonomy_*`/`decision_add`/`issue_add`/`agent_learning_log_add`/`activity_log`/`issue_list`/`decision_list`)이 **절차의 실행 단계로** 지시돼 있지 않은가(없다는 사실을 알리는 각주는 허용)? 파라미터도 실제 스키마와 일치하는가 — 기록·조회 도구는 `projectId`, `repositoryKey`는 `project_bootstrap` 전용이다.
 
 **Agent MD 대상**
 - [ ] 골격 순서: frontmatter→핵심원칙→역할경계→스킬상세→전제조건→자기검증→산출물→학습자료
@@ -66,7 +66,7 @@ description: malgn-agent 산출물(에이전트/스킬/knowledge)을 rubric 체�
 - [ ] Sensitive: 정상경로 1건 + 경계/오용경로 1건, 최소 1건은 실제 서브에이전트 위임으로 재현
 ```
 
-이 체크리스트는 `docs/methodology/agent-development-methodology.md`(§3 에이전트 작성표준, §4 스킬 작성표준, §5 knowledge 작성표준, §7 품질 게이트)의 압축이며 malgn-agent 자체에 번들되어 있으므로, 다른 조직이 malgn-agent만 설치해도(claude-plugins 소스클론 없이도) 이 체크리스트는 그대로 쓸 수 있습니다. 단, 아래 3) "승격 실행(git PR)"은 조직이 malgn-agent 소스를 git으로 관리할 때만 작동합니다(전제 조건 참조).
+이 체크리스트는 그 자체로 판정에 필요한 기준을 모두 담고 있으며 malgn-agent에 번들되어 있으므로, 다른 조직이 malgn-agent만 설치해도 그대로 쓸 수 있습니다. 단, 아래 3) "승격 실행(git PR)"은 조직이 malgn-agent 소스를 git으로 관리할 때만 작동합니다(전제 조건 참조).
 
 - **FAIL**: trainer에 구체적 반려 사유와 함께 반환합니다(파일:라인 지정).
 - **PASS**: 3) 승격 실행으로 진행합니다.
@@ -127,12 +127,9 @@ PR이 열리면(Standard) 또는 merge되면(Sensitive/Refactor) 요약 1건을 
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- `docs/methodology/agent-development-methodology.md` §3(에이전트 작성표준)·§4(스킬 작성표준)·§5(knowledge 작성표준)·§7(품질 게이트) — 위 판정 체크리스트의 근거 문서
 - Skill `domain-training-scorecard-eval` — Scorecard 채점 기준(배점표 전체 인라인)
 
 ### 참고 (해당 상황에서만 확인)
-- `docs/methodology/agent-development-methodology.md` §9(malgnai-hub 연동 정합) — malgnai-hub 도구명 판정 시
-- `docs/methodology/decisions-log.md` — 과거 판정 선례(D1~D15) 대조가 필요할 때
 - `knowledge/leadership/judgment-independence-patterns.md` — 판정 독립성 패턴(djkim 조직 `qg-audit` 유래, 선기대치자술/blind판정/합격전용서명) 상세
 
 ## 토큰 효율

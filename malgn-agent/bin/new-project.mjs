@@ -81,8 +81,8 @@ const pmBlockSection = pmBlock
 const files = {
   'STATUS.md': `---
 provider: malgnai-hub
-project_id: # 참고용 표시값 — 실제 도구 호출엔 repository_key만 사용됨(project_bootstrap 응답으로 채워짐)
-repository_key:
+project_id: # malgnai-hub 도구 호출의 projectId 입력값 (project_bootstrap 응답으로 채워짐)
+repository_key: # project_bootstrap 재호출 입력값 — project_id를 모를 때 이걸로 다시 발급받는다
 ---
 
 # STATUS — ${name}
@@ -212,7 +212,7 @@ console.log('   STATUS.md · CLAUDE.md · docs/README.md · .claude/doc-drift.js
 if (gitignoreTouched) console.log('   .gitignore에 STATUS.md 등록(git 추적 제외 — 개인 로컬 캐시)')
 console.log('\n다음 단계:')
 console.log(useHere ? '  1. pnpm install' : `  1. cd ${root} && pnpm install`)
-console.log('  2. malgnai-hub project_bootstrap 호출 → 응답 중 provider/project_id/repositoryKey 3개를 STATUS.md 상단 YAML frontmatter의 동일한 이름 필드에 채워 넣는다(repository_id/web_url은 응답에 포함되어도 저장하지 않는다).')
+console.log('  2. malgnai-hub project_bootstrap 호출 → 응답의 provider/project_id/repositoryKey를 STATUS.md frontmatter의 provider/project_id/repository_key에 채워 넣는다(repository_id/web_url은 응답에 포함되어도 저장하지 않는다).')
 console.log('  3. STATUS.md는 1000토큰 이내로 유지하고, 재작성은 6가지 트리거(중요 작업 완료/WBS 단계변경/중요 설계결정/blocker 발생·해결/세션종료/context compact 직전)로 제한한다 — 평범한 진행 중에는 건드리지 않는다.')
 console.log('  4. STATUS.md는 .gitignore에 등록되어 git에 커밋되지 않는다(개인 로컬 캐시) — 팀과 공유할 내용은 malgnai-hub(work_record/decision_record/issue_record)에 남긴다.')
 console.log('  5. PM 행동규율(@import)이 걸려 있다 — 다음 세션(또는 재시작) 시 외부 파일 승인 다이얼로그가 뜰 수 있다, 반드시 승인할 것. 나중에 마켓플레이스 별칭 변경 등으로 재확인이 필요하면 project-standards 스킬에 "PM 행동규율 다시 확인해줘"로 요청한다(매 세션 자동 점검 아님).')

@@ -26,4 +26,4 @@
 
 ## 5. 저장 위치·기록 — 왜 산출물과 판단을 흩어두면 안 되는가
 
-(2026-08-07 본문은 skills/common-output-storage-and-path-management, skills/common-learning-loop-knowledge-management로 이관 확인, 배경만 남음) malgnai-mcp/malgnai-hub는 검색용 이력 창고(pull)이지 진행 상태 자체의 단일 소스가 아니다 — 판단·이슈·교훈을 기록해두지 않으면 다음 세션이나 다른 에이전트가 같은 판단을 처음부터 다시 하게 된다. 작업 전 `docs/product-principles.md`를 먼저 확인하는 것도 같은 이유다: 방향성 판단 기준이 산출물마다 새로 발명되면 에이전트마다 다른 답을 낸다.
+(2026-08-07 본문은 skills/common-output-storage-and-path-management, skills/common-learning-loop-knowledge-management로 이관 확인, 배경만 남음) malgnai-hub는 검색용 이력 창고(pull)이지 진행 상태 자체의 단일 소스가 아니다 — 판단·이슈·교훈을 기록해두지 않으면 다음 세션이나 다른 에이전트가 같은 판단을 처음부터 다시 하게 된다. 작업 전 `docs/product-principles.md`를 먼저 확인하는 것도 같은 이유다: 방향성 판단 기준이 산출물마다 새로 발명되면 에이전트마다 다른 답을 낸다.

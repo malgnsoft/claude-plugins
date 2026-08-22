@@ -22,8 +22,6 @@ Step5 스코프 밖으로 명시 생략"), qa-engineer는 기능/회귀 테스�
 파이프라인 어디에도 없었다. 대표가 완료 후 3회에 걸쳐 직접 발견해 지적, 최종적으로는 별도
 라우트 자체를 폐기하고 `[id].vue`의 7번째 쿼리파라미터 탭으로 흡수 병합하기로 결정.
 
-(malgnai-mcp `lesson b51e576f`, decision `eff01de1`/`9cd5c644` 참고)
-
 ## 핵심 실패 패턴
 
 구현 에이전트가 프로즈보다 더 구체적인 아티팩트(와이어프레임/코드 스니펫)를 우선 따르는 것 자체는
@@ -56,6 +54,5 @@ Step5 스코프 밖으로 명시 생략"), qa-engineer는 기능/회귀 테스�
 됨"으로 유실되지 않도록).
 
 ## 참고
-- lesson `b51e576f` — 상세 원인 분석 (malgnai-mcp)
 - `docs/_archive/design/wbs-feature.md` §5.1-5.2 (malgnai)
 - `docs/reviewer/review-wbs-backend-2026-07-21.md` (malgnai)

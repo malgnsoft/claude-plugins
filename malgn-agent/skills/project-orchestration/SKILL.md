@@ -16,14 +16,14 @@ PM(`agents/pm.md`)이 작업을 위임한 **이후** 실행을 관리하는 절�
 ## 1. WBS 기반 프로젝트 관리
 
 **WBS 진행상황 추적**
-- **정기 현황 수집** (주 1회 이상): `wbs_list(repositoryKey)` 호출 → 전체 항목의 status/computed_progress/bucket 수집
+- **정기 현황 수집** (주 1회 이상): `wbs_list(projectId)` 호출 → 전체 항목의 status/computed_progress/bucket 수집
 - **부모 노드는 rollup 신호만 본다**: WBS 그룹(Step/Group)의 status는 직접 변경 불가 — 리프 항목들의 progress로 자동 계산되는 computed_progress와 bucket('planned'/'in_progress'/'done'/'delayed')이 진짜 신호
   - 예: 그룹 status='planned'인데 computed_progress=100·bucket='done' → 정상(리프 다 완료)
   - 예: 그룹 status='in_progress'인데 bucket='delayed' → 하위 항목 지연 상황 반영
 - **리프 항목만 실제 진행률**: progress는 리프 노드만 업데이트 가능(`wbs_update` 호출), 자식이 있는 노드에 progress를 주면 에러
 
 **병목·지연 항목 모니터링**
-- **지연 항목 식별**: `wbs_list(repositoryKey, status='delayed')` → 계획 종료일 경과 + progress < 100인 항목 필터
+- **지연 항목 식별**: `wbs_list(projectId, status='delayed')` → 계획 종료일 경과 + progress < 100인 항목 필터
 - **진행 정체 신호**:
   - status='in_progress'인데 progress=0 지속(3일 이상) → 실제 착수 미확인, 담당자 확인 필수
   - progress 무변화 기간이 deadline까지 남은 일수보다 길면 → 가속화 필요
@@ -31,13 +31,13 @@ PM(`agents/pm.md`)이 작업을 위임한 **이후** 실행을 관리하는 절�
 
 **동적 우선순위 재조정**
 - **병렬 작업 상위 영향**: WBS에서 진행 중인 항목 중 deadline이 가장 가까운 항목(크리티컬 패스) 식별
-- **상위 항목 지연 시**: parent_id 필터로 해당 그룹의 모든 자식 항목 조회 → 상위 완료 대기 중인 후속 작업 일정 재조정
+- **상위 항목 지연 시**: parentId 필터로 해당 그룹의 모든 자식 항목 조회 → 상위 완료 대기 중인 후속 작업 일정 재조정
 - **blocked 상태 추적**: 다른 팀/에이전트의 산출물 대기 중인 항목은 우선순위 맨 뒤로, 대기 해제 후 재상향
-  - malgnai issue와 연계: issue_list(repositoryKey)에서 해당 WBS 항목 참조 → issue 해결 시 자동 blocked 해제
+  - malgnai issue와 연계: `project_get_context(projectId, sections=['issues'])`의 열린 이슈에서 해당 WBS 항목 참조 → issue 해결 시 자동 blocked 해제
 
 **마일스톤·단계별 진행 관리**
 - **Phase별 게이트**: 각 phase 완료를 "모든 리프 항목 progress=100 && status='done'"으로 정의
-  - wbs_list(repositoryKey, parent_id=<phase_id>) → 해당 phase의 리프만 조회
+  - wbs_list(projectId, parentId=<phase_id>) → 해당 phase의 리프만 조회
   - 리프 중 하나라도 progress < 100이면 phase 미완료 선언
 - **Status 전이 추적**: 단계별 담당자가 wbs_update(status='done')할 때 completed_date 동시 기록
 - **STATUS.md와 동기**: 각 phase 완료 후 STATUS.md 완료섹션 갱신 + WBS 상태 일관성 확인
@@ -63,7 +63,7 @@ node malgn-agent/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --cur
 - **입력**: `wbs_list` 응답과 동일한 배열(또는 `{items:[...]}`) JSON. 필드가 일부 없는 항목은 해당 신호만 조용히 건너뛴다(전체 실행 중단 없음).
 - **이전 스냅샷 확보 방법**: 별도 이력 저장소가 없으므로, 정기 점검 시점마다 `wbs_list` 결과를 `wbs-YYYY-MM-DD.json` 형태로 파일에 남겨두는 습관이 필요하다 — 직전 파일을 `--previous`로 넘기면 된다.
 - **출력**: 항목별 신호·심각도·판정 근거(수치)·표준 대응 문구를 표로 출력(§ 아래 체크리스트와 1:1 대응). PM은 이 표를 받아 High부터 원인 조사에 들어간다.
-- 스크립트가 다루지 않는 것: 아래 "malgnai-hub Issue/Decision과 연계" 섹션(issue_list/decision_list 교차 확인)은 WBS 단일 소스가 아니라 별도 시스템 조회가 필요해 스크립트 범위 밖이다 — 이 부분은 계속 수동으로 확인한다.
+- 스크립트가 다루지 않는 것: 아래 "malgnai-hub Issue/Decision과 연계" 섹션(`project_get_context`의 issues/decisions 교차 확인)은 WBS 단일 소스가 아니라 별도 시스템 조회가 필요해 스크립트 범위 밖이다 — 이 부분은 계속 수동으로 확인한다.
 
 **WBS 신호 읽기 (조기 경고 패턴, 스크립트가 판정하는 근거 로직)**
 - **진행 정체**: progress=0 지속(3일 이상)
@@ -76,15 +76,15 @@ node malgn-agent/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --cur
 
 - **Computed_progress 추락**: 부모 노드의 computed_progress가 전일 대비 5% 이상 하락
   - 원인: 자식 항목 중 하나 이상이 완료→미완료로 되돌려지거나(버그 fix), 또는 새 자식 항목이 added with progress=0
-  - 대응: wbs_list(repositoryKey, parent_id=<부모_id>)로 자식들을 재조회해 변화 요인 식별
+  - 대응: wbs_list(projectId, parentId=<부모_id>)로 자식들을 재조회해 변화 요인 식별
 
 **병렬 작업 의존성 추적**
 - **Parent-Child 블로킹 리스크**:
-  - wbs_list(repositoryKey, status='delayed') → parent_id별로 그룹화
+  - wbs_list(projectId, status='delayed') → parentId별로 그룹화
   - 상위 항목(parent)이 delayed면 그 자식들도 실질적으로 시작 불가 → 의존성 블로킹
 
 - **크리티컬 패스 모니터링**:
-  - wbs_list(repositoryKey, include_done=false) → 모든 항목의 end_date 추출
+  - wbs_list(projectId, includeDone=false) → 모든 항목의 end_date 추출
   - 가장 가까운 deadline 항목들이 progress < 70% 이면 → critical path 리스크
   - 여러 항목의 deadline이 같은 주에 몰려 있으면 → 리소스 경합 리스크
 
@@ -93,11 +93,11 @@ node malgn-agent/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --cur
   - 프로젝트 회고 시 이 메타데이터가 실제 진행에 맞았는지 검증
 
 **malgnai-hub Issue/Decision과 연계**
-- **Issue 매핑**: malgnai-hub issue_list(repositoryKey)에서
+- **Issue 매핑**: malgnai-hub `project_get_context(projectId, sections=['issues'])`의 열린 이슈에서
   - 설명에 "[WBS:#<item_id>]" 태그가 있으면 해당 WBS 항목의 블로킹 리스크로 판정
   - issue status='open' + WBS status='delayed' → 복합 리스크(2배 에스컬레이션)
 
-- **의사결정 지연 추적**: decision_list에서
+- **의사결정 지연 추적**: `project_get_context(projectId, sections=['decisions'])`에서
   - 의사결정이 필요한 항목(description에 "의사결정 대기" 표기)인데 decision이 last 7일 동안 없으면 → 지연 위험
   - WBS start_date 경과 후에도 관련 decision이 없으면 → 착수 전 명확화 부족
 
@@ -120,7 +120,7 @@ node malgn-agent/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --cur
 **점검 주기**
 - **일일**: critical path 항목(deadline ≤ 1주) status/progress 단순 조회
 - **주 1회(월요 또는 금요)**: wbs_list 전체 조회 → 결과를 `wbs-YYYY-MM-DD.json`으로 저장 → `check-wbs-warnings.mjs --previous <직전 파일> --current <이번 파일>`로 심각도 High 신호 필터 + 보고
-- **월 1회**: 완료 항목까지 include_done=true로 조회 → 계획 대비 실제 소요시간 분석
+- **월 1회**: 완료 항목까지 includeDone=true로 조회 → 계획 대비 실제 소요시간 분석
 
 ---
 
@@ -140,10 +140,10 @@ node malgn-agent/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --cur
 |------|----------|-----------|-------------|
 | STAGE 1 (기획) | planner | - | `docs/requirements.md`, `docs/prd.md`, `docs/product-principles.md`(선택 — 있으면 이후 전 에이전트가 참조) |
 | STAGE 2 (설계) | architect | requirements.md, prd.md, product-principles.md(있으면) | `docs/architecture.md`, `docs/tech-stack.md`, `docs/api-spec.md`, `docs/data-model.md` |
-| 디자인 트랙(기본 투입 — Micro 등급 제외 항상, 화면 신설/기존 화면 기능변경 시) | ux-designer | prd.md, requirements.md | `design/ux-flow.md`(또는 docs/), `design/wireframes.md`, `design/ia.md`(참조: 플러그인 번들 `knowledge/design/ux-design-guide.md`) — wireframes.md에 "visual-designer 필요 여부 + 근거" 명시 필수 |
-| 디자인 트랙(ux-designer가 설계 산출물에서 필요 여부 판단: 신규 모듈 또는 비관리자 사용자단 페이지면 필요, 기존 스타일가이드 준수 관리자단 화면이면 생략 가능 — 기존 enum 2개 이상/화면 5개 초과 조건은 보조 신호로 유지) | visual-designer | - | `design/design-system.md`, `design/brand.md`(브랜딩 프로젝트인 경우만) |
+| 디자인 트랙(기본 투입 — Micro 등급 제외 항상, 화면 신설/기존 화면 기능변경 시) | ux-designer | prd.md, requirements.md | `docs/design/ux-flow.md`, `docs/design/wireframes.md`, `docs/design/ia.md`(참조: 플러그인 번들 `knowledge/design/ux-design-guide.md`) — wireframes.md에 "visual-designer 필요 여부 + 근거" 명시 필수 |
+| 디자인 트랙(ux-designer가 설계 산출물에서 필요 여부 판단: 신규 모듈 또는 비관리자 사용자단 페이지면 필요, 기존 스타일가이드 준수 관리자단 화면이면 생략 가능 — 기존 enum 2개 이상/화면 5개 초과 조건은 보조 신호로 유지) | visual-designer | - | `docs/design/design-system.md`, `docs/design/brand.md`(브랜딩 프로젝트인 경우만) |
 | STAGE 3 (구현) | backend-dev | architecture.md, api-spec.md, data-model.md | 코드 + `docs/security-plan.md`(누적 기록, security와 공유) |
-| STAGE 3 (구현) | frontend-dev | architecture.md, api-spec.md | `design/publishing-style-guide.md`(프로젝트에 없으면 플러그인 번들 `knowledge/design/publishing-style-guide-template.md`를 복사해 그 자리에서 생성 — 백지 작성 금지, 이후 전 화면이 이를 따름) |
+| STAGE 3 (구현) | frontend-dev | architecture.md, api-spec.md | `docs/design/publishing-style-guide.md`(프로젝트에 없으면 플러그인 번들 `knowledge/design/publishing-style-guide-template.md`를 복사해 그 자리에서 생성 — 백지 작성 금지, 이후 전 화면이 이를 따름) |
 | STAGE 4 (검증) | qa-engineer | `docs/api-spec.md`(테스트 기준) | `tests/`(단위·통합 테스트) + `tests/test-report.md`(전체/통과/실패 수·커버리지·시나리오 표) |
 | 보안(개발 전 구간 상시 병행) | security | api-spec.md, architecture.md(있으면) | 개발 단계: `docs/security-plan.md`(비차단, 발견 적재) / 최종 단계: `docs/security-report.md`(사용자 승인 후에만) |
 | STAGE 5 (배포) | devops | `docs/tech-stack.md` | `docs/deployment-runbook-YYYY-MM-DD.md` |
@@ -193,7 +193,6 @@ node malgn-agent/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --cur
 **자율 경계** (사용자 승인 불필요): 국소 보강·교훈 추가 (4부 구조 충족), 기존 원칙 부담 없는 변경, 올바른 스코프 (공용=knowledge/MD).
 **에스컬레이션** (사용자 승인 필수): 전칭 규칙 신설, 공용 구조 변경, 기존 원칙 충돌, 에이전트 역할 변경, 되돌리기 어려운 결정.
 **새 트랙 설계 시 게이트 강도 판단**: 새 전역 자산 트랙(hooks/policies 등)을 설계할 때는 "잘못되면 무엇이 깨지는가"(blast radius)부터 판단해 게이트 강도를 정한다 — 자동실행 코드·전역 정책처럼 모든 세션에 영향을 주면 리뷰승인+사람 승인의 이중 게이트, 문서형은 리뷰승인 1단계로 충분하다(lesson `e74c16e7`, 상세 설계 기준은 architect 참조).
-**(malgnai-hub 연동판 해당 없음) pending lesson 스코프 판정**: 이 규칙(lesson의 project_id가 관리 대상 프로젝트가 아니라는 이유만으로 스코프 밖 처리하지 않고 candidate_agents 이름 단위로 판정)은 `lesson_add`/`lesson_list`/`lesson_classify` 파이프라인 전제다. malgnai-hub v1에는 해당 파이프라인이 없어 이 malgnai-hub 연동판에서는 적용 대상이 아니다 — 원 파이프라인이 있는 환경(개인 로컬 malgnai-mcp 등)에서만 유효하며, 참고용으로만 남긴다.
 
 ---
 

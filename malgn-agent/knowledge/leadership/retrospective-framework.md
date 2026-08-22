@@ -18,7 +18,7 @@
 - **반복 실패는 가중 처리:** 같은 종류의 "안 한 걸 한 것처럼 보고"(유령 보고)가 **두 번째** 나타나면, 개별 결함이 아니라 **구조적 문제**로 다룬다. 1차 교육의 게이트가 왜 안 막았는지(보통 "존재만 검증, 적합성 미검증" 또는 "조건부·물렁한 문구")를 회고에 명시하고 trainer 연계로 게이트를 **그 빈틈 위주로** 격상시킨다 (과한 프로세스 추가가 아니라 기존 게이트의 구멍 메우기). (수령 검증 원칙: `common/verifiable-output-and-honesty.md`)
 
 ### 1단계: 데이터 수집
-- STATUS.md(진행 상태 단일 소스)에서 전체 타임라인과 이벤트 확인, 장기 이력은 malgnai-hub/malgnai-mcp 조회로 보완(구 `progress.md` 방식 아님, 2026-08-07 정정)
+- STATUS.md(진행 상태 단일 소스)에서 전체 타임라인과 이벤트 확인, 장기 이력은 malgnai-hub 조회로 보완(구 `progress.md` 방식 아님, 2026-08-07 정정)
 - 각 에이전트 산출물의 품질 기록 확인 (재작업 횟수, 피드백 내용)
 - 사용자 피드백 내용 정리
 
@@ -44,7 +44,7 @@
 
 ### 3단계: 교훈 문서화
 
-개인 로컬 경로(`~/.claude/knowledge/lessons/...` 등)가 아니라 malgnai-hub/malgnai-mcp의 교훈·기록 도구(`lesson_add`/`memory_add`, malgnai-hub v1은 `lesson_*` 미제공이므로 이 경우 `memory_add`로 대체)로 남긴다(2026-08-07 정정). 아래 구조를 그 호출의 본문 템플릿으로 사용:
+개인 로컬 경로(`~/.claude/knowledge/lessons/...` 등)가 아니라 malgnai-hub 기록 도구로 남긴다 — 결정·판단형 교훈은 `decision_record`(reason/impact에 실질을 적는다), 작업·절차형 교훈은 `work_record`(result/nextAction), 특정 에이전트의 역량으로 남길 것은 `agent_learning_record`. 아래 구조를 그 호출의 본문 템플릿으로 사용:
 
 ```markdown
 # [프로젝트명] 회고
@@ -80,7 +80,7 @@
   - 일반 교훈/실수 패턴 → **trainer 모드 4**(`/reflect-lessons`, pending 교훈 → 에이전트별 분류 → Knowledge/MD 반영)
   - **특정 에이전트의 산출물이 질적으로 약했으면**(평범함·천편일률·근거 부족 등) → **evaluator**(2026-07-16부로 산출물 진단·Scorecard 채점은 trainer에서 evaluator로 완전 이관됨, 구 trainer 모드7 폐기). "에이전트별 성과 추적" 표와 약한 산출물의 실제 경로를 evaluator에게 넘긴다. evaluator가 판정하면 trainer가 개선안을 MD/knowledge에 반영한다.
 - **반영 전 trainer의 "교훈 일반화 게이트" 통과**: 4부 구조(전제조건→권장 행동→반례→판별 질문), 전칭/과잉상대화 금지.
-- **자율 경계 판단** (PM 대원칙 기준): 단일 에이전트 국소 보강·malgnai-hub/malgnai-mcp 교훈 기록·게이트 통과한 교훈은 **자율 반영**. 전칭 규칙 신설·여러 에이전트 공통 자산 변경·기존 원칙 충돌·구조 변경은 **사용자 승인 후** 반영. 애매하면 멈추고 올린다.
+- **자율 경계 판단** (PM 대원칙 기준): 단일 에이전트 국소 보강·malgnai-hub 교훈 기록·게이트 통과한 교훈은 **자율 반영**. 전칭 규칙 신설·여러 에이전트 공통 자산 변경·기존 원칙 충돌·구조 변경은 **사용자 승인 후** 반영. 애매하면 멈추고 올린다.
 
 ### 5단계: 검증
 - 업데이트한 knowledge 파일이 정상적으로 읽히는지 확인
@@ -105,7 +105,7 @@
 프로젝트 시작
     │
     ▼
-malgnai-hub/malgnai-mcp memory_search로 유사 프로젝트 교훈 확인
+malgnai-hub project_search_history로 유사 프로젝트 교훈 확인
     │
     ▼
 팀 구성 시 과거 에이전트 성과 참조
@@ -116,5 +116,5 @@ malgnai-hub/malgnai-mcp memory_search로 유사 프로젝트 교훈 확인
     ▼
 프로젝트 완료 → 회고 실행 → knowledge 업데이트
     │
-    └──→ malgnai-hub/malgnai-mcp에 교훈 기록(`lesson_add`/`memory_add`)
+    └──→ malgnai-hub에 교훈 기록(decision_record / work_record / agent_learning_record)
 ```

@@ -4,7 +4,7 @@
 **작성일**: 2026-07-09  
 **기밀등급**: 내부용  
 **대상 독자**: PM, trainer 에이전트  
-**관련 파일**: `docs/methodology/agent-development-methodology.md` §3.1 (MD 골격 정본; `agent-md-format-standard.md`는 2026-08-07 폐기된 구버전 archive)
+**MD 골격 정본**: 아래 부록의 9단 골격(`agent-md-format-standard.md`는 2026-08-07 폐기된 구버전 archive)
 
 ---
 
@@ -217,7 +217,7 @@ MD 키워드를 스캔해 스킬별 level(1~5)을 자동 계산한다.
 **적립 절차**:
 1. 프로젝트 완료 후 PM이 trainer에게 "경험 점수 갱신" 지시
 2. Trainer가 해당 에이전트 MD의 경험 이력 섹션에 행 추가
-3. `malgnai-mcp agent_learning_log_add`로 이력 기록
+3. malgnai-hub `agent_learning_record`로 이력 기록
 
 ## 3.3 최종 점수 공식
 
@@ -330,7 +330,7 @@ knowledge/  (이 플러그인 기준 상대 경로)
 5. WebSearch로 최신 자료 수집
 6. knowledge 파일 보강
 7. 에이전트 MD 보강 (토큰 규율 점검 포함)
-8. `malgnai-mcp agent_learning_log_add` 기록
+8. malgnai-hub `agent_learning_record` 기록
 
 ### 모드 2: 전원 훈련
 
@@ -338,7 +338,7 @@ knowledge/  (이 플러그인 기준 상대 경로)
 2. 팀별 공통 취약 영역 식별
 3. `common/` knowledge 먼저 보강
 4. 팀별 → 개별 에이전트 순으로 보강
-5. 에이전트마다 malgnai-mcp 기록
+5. 에이전트마다 malgnai-hub 기록
 6. 전체 결과 보고
 
 ### 모드 7: 산출물 기반 진단 (가장 강력)
@@ -391,7 +391,7 @@ knowledge/  (이 플러그인 기준 상대 경로)
 - 2026-07-09 페르소나 발산형 구성법 학습 (reviewer) (+1점)
 ```
 
-`malgnai-mcp agent_learning_log_add`와 동시에 기록한다.
+malgnai-hub `agent_learning_record`와 동시에 기록한다.
 
 ## 6.2 프로젝트 경험 기록
 
@@ -403,17 +403,18 @@ knowledge/  (이 플러그인 기준 상대 경로)
 
 점수 계산: 완료(+5) + 재작업없음(+3) = +8점
 
-## 6.3 malgnai-mcp agent_learning_log_add 활용
+## 6.3 malgnai-hub agent_learning_record 활용
 
 학습 완료 시마다 에이전트별로 1회 호출:
 
 ```
-agent_name: "architect"
-type: "skill_training"
+agentName: "architect"
+type: "experience"        # experience | external | peer_feedback | discussion 중 하나만 허용
 title: "API 설계 스킬업 — 버전 표기 원칙 박제"
 content: "API 경로에 /v1/ 미포함 패턴 발견. MD 핵심 원칙에 버전 표기 의무화 추가.
           knowledge/architecture/api-design-guide.md에 버전 전략 섹션 신설."
-source: "knowledge/architecture/api-design-guide.md"  # 예시 경로
+source: "knowledge/architecture/api-design-guide.md"   # 예시 경로
+idempotencyKey: "upskill-architect-2026-07-09"         # 재호출해도 중복 행이 생기지 않게 하는 키
 ```
 
 ## 6.4 학습 보고서 구조
@@ -434,10 +435,10 @@ source: "knowledge/architecture/api-design-guide.md"  # 예시 경로
 - 약점 인용: "[실제 파일에서 발견한 약한 문장]"
 - 처방: [MD 또는 knowledge 어디에 무엇을 박제했나]
 
-malgnai-mcp 기록: 완료 / 미완료
+malgnai-hub 기록: 완료 / 미완료
 ```
 
-**핵심 요약**: "소소한 학습은 MD에, 프로젝트 경험은 테이블에, 둘 다 malgnai-mcp에."
+**핵심 요약**: "소소한 학습은 MD에, 프로젝트 경험은 테이블에, 둘 다 malgnai-hub에."
 
 ---
 
@@ -460,7 +461,7 @@ malgnai-mcp 기록: 완료 / 미완료
 ```
 [ ] 1. 백업 완료 확인
 [ ] 2. 기존 MD 읽기 → 교훈 목록 추출 (Before 목록 작성)
-[ ] 3. `docs/methodology/agent-development-methodology.md` §3.1 골격(frontmatter→핵심원칙→역할경계→스킬상세→전제조건→자기검증→산출물→학습자료→토큰효율) 참조해 재작성 (agent-md-format-standard.md의 구 7섹션 포맷은 폐기됨, 참조 금지)
+[ ] 3. 부록의 9단 골격(frontmatter→핵심원칙→역할경계→스킬상세→전제조건→자기검증→산출물→학습자료→토큰효율) 참조해 재작성 (agent-md-format-standard.md의 구 7섹션 포맷은 폐기됨, 참조 금지)
 [ ] 4. 교훈 목록 대조 — Before 개수 = After 개수 확인
 [ ] 5. skill-definitions.js EMPLOYEE_CARDS에서 금지/승인 동기화(미번들 — 없으면 각 에이전트 MD를 직접 대조)
 [ ] 6. 경험 이력 섹션에 기존 프로젝트 경험 이행
@@ -563,7 +564,7 @@ After:  [교훈A, 교훈B, 교훈C, ...]  ← 동일 개수, 동일 핵심 내�
 
 | 파일 | 용도 |
 |------|------|
-| `docs/methodology/agent-development-methodology.md` §3.1 | MD 골격 정본(frontmatter→핵심원칙→역할경계→스킬상세→전제조건→자기검증→산출물→학습자료→토큰효율) |
+| **MD 골격 정본(이 표가 정본)** | frontmatter→핵심원칙→역할경계→스킬상세→전제조건→자기검증→산출물→학습자료→토큰효율 |
 | `knowledge/leadership/agent-md-format-standard.md` (이 플러그인 번들) | [폐기된 구버전 archive] 구 7섹션 포맷 — 참조 금지, 연혁 추적용으로만 보존 |
 | `knowledge/common/beyond-mediocre-output.md` (이 플러그인 번들) | 산출물 진단 5가지 냄새 기준 |
 | `knowledge/common/token-efficient-collaboration.md` (이 플러그인 번들) | 토큰 효율 원칙 |

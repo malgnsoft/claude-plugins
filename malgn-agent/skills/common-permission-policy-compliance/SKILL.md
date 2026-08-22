@@ -40,7 +40,7 @@ description: 권한 정책 준수 및 우회 방지 프레임워크. 보안 경�
 - **조용한 실패 금지:** 권한 에러를 무시하거나 우회하지 말 것 (감지 실패 = 보안 위협)
 - **투명 보고:** 권한 거부 이유, 시도한 대안, 필요한 승인을 명확히 기록
 - **근거 제시:** 에러 메시지, 정책 문서, 대안의 제약사항을 인용
-- **기록:** malgnai-hub `issue_record` (권한 장애물). 승인 필요 작업은 AskUserQuestion으로 직접 확인 (malgnai-hub v1에는 command_add 같은 웹 승인 큐 도구가 없음)
+- **기록:** malgnai-hub `issue_record` (권한 장애물). 승인 필요 작업은 AskUserQuestion으로 세션 내 직접 확인(별도 웹 승인 큐는 없다)
 
 ### 5. 사전 계획과 검증
 - **사전 체크:** 작업 시작 전 필요한 권한 목록 작성
@@ -75,7 +75,7 @@ description: 권한 정책 준수 및 우회 방지 프레임워크. 보안 경�
 - [ ] "접근 불가 → 대안 시도" 의사결정 로깅
 - [ ] 대안 선택 이유 명시 (정책 준수, 보안, 표준성)
 - [ ] 건너뜬 단계 및 영향도 기록 (선택사항 부재 시 문제 없음 확인)
-- [ ] 승인 필요 작업 → AskUserQuestion으로 직접 확인 + 응답 대기 (malgnai-hub에는 해당 없음: 웹 승인 재개 기능 없음)
+- [ ] 승인 필요 작업 → AskUserQuestion으로 직접 확인 + 응답 대기
 
 ### Policy Violation Prevention
 - [ ] 권한 게이트 무시 없음 (test 스킵, CI 건너뛰기 금지)
@@ -92,7 +92,7 @@ description: 권한 정책 준수 및 우회 방지 프레임워크. 보안 경�
 ### Escalation Path
 - [ ] Tier 1: POSIX 표준 대안 존재 → 제시 + 진행
 - [ ] Tier 2: 대안 없고 선택사항 → 건너뜀 (영향도 확인)
-- [ ] Tier 3: 대안 없고 필수 → AskUserQuestion으로 직접 승인 요청 + 대기 (malgnai-hub에는 해당 없음: 웹 승인 재개 기능 없음)
+- [ ] Tier 3: 대안 없고 필수 → AskUserQuestion으로 직접 승인 요청 + 대기
 - [ ] Tier 4: 승인 거부 → 작업 중단 + 대체 계획 수립
 
 ## Example Scenarios
@@ -105,7 +105,7 @@ $ sudo systemctl restart nginx
 ❌ DO NOT: sudo 사용 계속, 우회 명령 찾기
 ✓ DO: 표준 대안 → 프로젝트 권한 검토, 또는 명시된 사용자에 요청
 
-→ AskUserQuestion: "시스템 서비스 재시작 권한 필요" (malgnai-hub에는 command_add 웹 승인 큐 없음, 세션 내 직접 확인)
+→ AskUserQuestion: "시스템 서비스 재시작 권한 필요" (세션 내 직접 확인)
 → 승인 받을 때까지 대기 또는 다른 테스트로 진행
 ```
 
@@ -148,4 +148,4 @@ CI=false npm start  # 빌드 검증 우회 시도
 - **pre-push 훅:** 강제 플래그 탐지 (git push 전 검증)
 - **CI 정책:** 스킵된 단계 감지 (빌드 불완전성 경고)
 - **감사 로그:** 모든 권한 거부 → malgnai-hub issue_record (추적 가능)
-- **승인 워크플로우:** malgnai-hub 연동판에서는 해당 없음 (웹 승인 큐/재개 기능 없음) — AskUserQuestion으로 세션 내 직접 확인·승인 후 issue_record에 결과 기록
+- **승인 워크플로우:** AskUserQuestion으로 세션 내 직접 확인·승인 후 `issue_record`에 결과 기록(별도 웹 승인 큐는 없다)

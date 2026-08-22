@@ -25,4 +25,3 @@
 
 ## 출처
 - ppm-mcp kb-draft 벡터 검색 POC (project `fdf40244`) — `embed_kbdrafts.py`, `search_kbdrafts.py`, `test_search_comprehensive.py`
-- malgnai-mcp lesson `5b55dd67`(벡터-Full-text 상호보완 효과), `8fda7853`(프로덕션 선택 기준·6가지 테스트 케이스)

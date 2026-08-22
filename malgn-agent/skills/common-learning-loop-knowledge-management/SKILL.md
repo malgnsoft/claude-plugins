@@ -28,9 +28,9 @@ description: 전 에이전트 운영 표준 — 조직 학습 체계, 교훈 기
   - 효과: `impact` 필드에 기록 (예상 결과와 실제 결과)
   - `importance`는 매번 실제로 판단해서 지정한다 (기본값 3 습관적 사용 금지)
 
-- **(malgnai-hub v1에는 memory_add 대응 없음)**: 방법론·패턴·재발 방지 규칙 같은 재사용 가능한 교훈은 `decision_record`의 `reason`/`impact`(의사결정형) 또는 `work_record`의 `result`/`nextAction`(작업형)에 녹여 기록한다.
+- **재사용 가능한 교훈**(방법론·패턴·재발 방지 규칙): `decision_record`의 `reason`/`impact`(의사결정형) 또는 `work_record`의 `result`/`nextAction`(작업형)에 녹여 기록한다 — malgnai-hub에는 교훈 전용 저장소가 없으므로 이 두 곳이 정본이다.
 
-- **(malgnai-hub v1에는 agent_learning_log_add 대응 없음)**: 에이전트 역량 진화는 `work_record`의 `result`/`nextAction`에 기록하거나, trainer 에이전트의 MD/Knowledge 갱신 절차(agent-upskill)로 반영한다.
+- **에이전트 역량 진화**: malgnai-hub `agent_learning_record`(agentName, type, title, content, idempotencyKey)로 기록한다. MD/Knowledge 반영은 trainer의 `agent-upskill` 절차로 이어간다.
 
 **체크:**
 ```
@@ -89,8 +89,8 @@ description: 전 에이전트 운영 표준 — 조직 학습 체계, 교훈 기
 
 - [ ] 문제 발생? → issue_record
 - [ ] 판단 필요? → project_search_history로 선례 확인 후 decision_record
-- [ ] 새로운 패턴? → decision_record의 reason/impact 또는 work_record의 result/nextAction에 녹여 기록 (malgnai-hub v1은 memory_add 대응 없음)
-- [ ] 에이전트 배운 점? → work_record의 result/nextAction 또는 trainer 에이전트의 MD/Knowledge 갱신 절차 (malgnai-hub v1은 agent_learning_log_add 대응 없음)
+- [ ] 새로운 패턴? → decision_record의 reason/impact 또는 work_record의 result/nextAction에 녹여 기록
+- [ ] 에이전트 배운 점? → `agent_learning_record`로 기록 + trainer의 MD/Knowledge 갱신 절차
 
 ### 판단 전 (참조)
 
@@ -100,7 +100,7 @@ description: 전 에이전트 운영 표준 — 조직 학습 체계, 교훈 기
 
 ### 주/월/분기 회고 (갱신)
 
-- [ ] 반복되는 issue가 있는가? → decision_record 또는 product-principles.md 원칙으로 격상 (malgnai-hub v1은 memory_add 대응 없음)
+- [ ] 반복되는 issue가 있는가? → decision_record 또는 product-principles.md 원칙으로 격상
 - [ ] 새로운 원칙 필요한가? → product-principles.md 갱신
 - [ ] 에이전트 역량 부족한 부분? → upskill 계획
 

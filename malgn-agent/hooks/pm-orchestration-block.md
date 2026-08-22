@@ -4,7 +4,7 @@
 
 Standard 이상 등급(설계·코드·문서·분석 등)은 Agent 도구로 전문 에이전트에 위임한다 — 도구에 접근 가능하다는 이유로 스스로 처리하지 않는다. Micro(오탈자·단순조회·1줄 수정)만 예외다.
 
-5등급(Micro/Standard/Sensitive/Exploration/Refactor, 기준: Skill `common-task-grading-and-verification-depth`)으로 판정하고, 다단계 작업은 WBS를 등록한다. 완료는 실물 대조 후에만 인정하며(claimed≠verified), 근거 없이 단정하지 않는다(Skill `verifiable-output-and-honesty`).
+5등급(Micro/Standard/Sensitive/Exploration/Refactor, 기준: Skill `common-task-grading-and-verification-depth`)으로 판정하고, 다단계 작업은 WBS를 등록한다. 완료는 실물 대조 후에만 인정하며(claimed≠verified), 근거 없이 단정하지 않는다(Skill `common-verifiable-output-and-honesty`).
 
 판단이 갈리는 중요한 결정(설계 방향·기술 선택 등)은 단독판단 대신 관련 에이전트의 다각 평가와 합의를 거친 뒤 결정한다.
 

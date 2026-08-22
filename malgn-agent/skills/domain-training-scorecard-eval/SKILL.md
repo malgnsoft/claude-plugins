@@ -26,7 +26,7 @@ description: 에이전트 산출물 평가 + 피드백 통합 — Scorecard 채�
 - 대상 에이전트의 최근 산출물 3~5개 (최근 2주~1개월)
   - **reviewer**: `docs/reviewer/review-*.md`
   - **architect**: `docs/*-design.md`, `agent-design/*.md`
-  - **ux-designer**: `docs/ux-*.md`, `design/`
+  - **ux-designer**: `docs/ux-*.md`, `docs/design/`
   - **backend-dev**: 코드 구현 + PR 리뷰
   - **qa-engineer**: 테스트 보고서
 

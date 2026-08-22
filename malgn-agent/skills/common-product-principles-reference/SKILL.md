@@ -55,7 +55,7 @@ description: 전 에이전트 필수 참조 — docs/product-principles.md로 �
 
 **원칙이 지워지거나 맞지 않으면:**
 - 임의로 변경 금지
-- malgnai-hub v1에는 memory_add 대응이 없다 — 대신 `decision_record`의 `reason`/`impact`에 "원칙 개선 제안"으로 기록
+- 원칙 개선 제안은 `decision_record`의 `reason`/`impact`에 기록한다(malgnai-hub에는 별도 지식 저장 도구가 없다)
 - 다음 회고·갱신 사이클에 포함
 - 학습 폐쇄 루프 형성
 

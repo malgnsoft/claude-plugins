@@ -6,8 +6,8 @@
 
 1. **실시간 갱신**: 단계 시작/완료 시 즉시 `STATUS.md` 업데이트
 2. **산출물 기록**: 생성된 파일 경로를 반드시 기록
-3. **결정사항 기록**: 자율 판단한 내용은 malgnai-hub/malgnai-mcp의 decision 기록 도구(`decision_record`/`decision_add`)로 남기고, `STATUS.md`에는 요약만 유지
-4. **완료 항목 정리**: 완료 섹션은 1줄 요약(+기록 id)으로 축약하고 최근 5~7개만 유지(`skills/project-standards` §3과 동일 규칙 — 오래된 이력은 STATUS.md가 아니라 malgnai-hub/malgnai-mcp 조회로 확인)
+3. **결정사항 기록**: 자율 판단한 내용은 malgnai-hub `decision_record`로 남기고, `STATUS.md`에는 요약만 유지
+4. **완료 항목 정리**: 완료 섹션은 1줄 요약(+기록 id)으로 축약하고 최근 5~7개만 유지(`skills/project-standards` §3과 동일 규칙 — 오래된 이력은 STATUS.md가 아니라 malgnai-hub 조회로 확인)
 5. **재작업 이력**: 피드백으로 인한 수정은 별도 기록
 
 ## 품질 검토 체크리스트
