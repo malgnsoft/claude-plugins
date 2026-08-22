@@ -2,7 +2,7 @@
 
 > owner: trainer · 최종검토일: 2026-08-19
 
-> 출처: 설계 문서 `docs/architecture/token-usage-collection-design-2026-08-19.md`·`docs/architecture/token-usage-api-spec-for-malgnai-public-2026-08-19.md`(둘 다 claude-plugins 소스 저장소 루트 `docs/`에만 있고 **malgn-agent 플러그인에 번들되지 않는다** — 재현 불가 시에도 이 knowledge 문서만으로 개념 이해에 지장 없음). malgnai-hub decision `01m0c9ck8ytw1psj0y6wh9w91f`(최종 설계 승인) · `01m0cdsbh9cqvgefzxmz8r0hjk`(summary 정책, 프롬프트 첫 120자 truncate 예외 확정). 실제 구현체는 `malgn-agent/bin/{usage-agent-lib,pair-usage-device,report-usage,install-usage-agent}.mjs`(2026-08-19 구현 완료).
+> 출처: 설계 문서 `docs/architecture/token-usage-collection-design-2026-08-19.md`·`docs/architecture/token-usage-api-spec-for-malgnai-public-2026-08-19.md`(둘 다 claude-plugins 소스 저장소 루트 `docs/`에만 있고 **malgn-agent 플러그인에 번들되지 않는다** — 재현 불가 시에도 이 knowledge 문서만으로 개념 이해에 지장 없음). malgnai-hub 결정 기록: 최종 설계 승인 · summary 정책(프롬프트 첫 120자 truncate 예외 확정). 실제 구현체는 `malgn-agent/bin/{usage-agent-lib,pair-usage-device,report-usage,install-usage-agent}.mjs`(2026-08-19 구현 완료).
 
 이 문서는 나중에 이 기능을 유지보수하거나 비슷한 백그라운드 텔레메트리 파이프라인을 또 만들 사람이 "왜 이렇게 돼 있지"를 빠르게 파악하도록 돕는다. **설계 문서와 실제 구현이 상당히 다르다** — 아래에서 그 차이를 명시한다. 유지보수 시 설계 문서를 정본으로 오인하지 않도록, 필드명·엔드포인트·동작은 실제 코드(`bin/*.mjs`)를 항상 우선한다.
 
@@ -48,7 +48,7 @@ payload 필드(실제 코드 `buildPayload()` 기준):
 ## 3. 핵심 결정 요약 — 왜 이렇게 설계됐나
 
 - **집계 수치만 전송한다**: 프롬프트 원문, cwd 절대경로 원문, 도구 input 원문은 payload 어디에도 없다. `repository_key`도 절대경로가 아니라 git remote의 `owner/repo`만 추출.
-- **`summary`는 유일한 예외**: 첫 사용자 프롬프트를 120자로 truncate해 전송한다(2026-08-19 사용자 최종 결정, malgnai-hub decision `01m0cdsbh9cqvgefzxmz8r0hjk`). "세션ID만으론 무슨 세션인지 식별 불가"하다는 지적에 따른 국소 예외이며, 프롬프트 전문이나 도구 input 원문은 이 예외를 확장하지 않는다.
+- **`summary`는 유일한 예외**: 첫 사용자 프롬프트를 120자로 truncate해 전송한다(2026-08-19 사용자 최종 결정). "세션ID만으론 무슨 세션인지 식별 불가"하다는 지적에 따른 국소 예외이며, 프롬프트 전문이나 도구 input 원문은 이 예외를 확장하지 않는다.
 - **에이전트/도구별 상세분해는 서버로 가지 않는다**: `analyze-usage.mjs`(로컬 콘솔 진단, `token-usage-diagnosis` 스킬 전담)는 도구별·서브에이전트별·프로젝트별 표를 만들지만, `report-usage.mjs`는 그런 분해를 만들지 않고 세션 단위 총합만 보낸다. "반복 호출 패턴"처럼 도구 input 일부를 노출하는 표는 애초에 원격 전송 스키마에 존재하지 않는다.
 - **`turns`/`api_calls`는 malgnai-public migration 0012로 추가됐다**: 이 두 필드는 처음부터 스키마에 있던 것이 아니라, 서버 쪽 `sessions`/`usage_daily` 테이블에 컬럼이 추가되면서 전송 바디에 채워 넣게 됐다(둘 다 optional, NOT NULL DEFAULT 0, 음수는 서버가 0으로 clamp).
 
