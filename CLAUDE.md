@@ -29,7 +29,15 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 - **도구명·파라미터를 기억이나 기존 문서에서 베끼지 말고 실제 스키마를 확인하라.** 세션에서 hub 도구 스키마를 직접 열어볼 수 있다.
 - hub에 대응이 **없는** 도구를 절차의 실행 단계로 쓰지 않는다: `lesson_add`/`lesson_list`/`lesson_classify` · `memory_add`/`memory_search` · `command_add`(웹 승인큐) · `project_autonomy_*` · `agent_learning_log_add`(→ `agent_learning_record`) · `decision_add`/`issue_add`(→ `decision_record`/`issue_record`). 확인: `git grep -nE 'lesson_add|lesson_list|lesson_classify|memory_add|memory_search|command_add|project_autonomy' -- malgn-agent/`
-- 제품 본문에 **8자리 hex id**(`lesson 5b55dd67` 류)를 새로 달지 않는다 — mcp 시절 발급분이라 조회가 불가능하다. **2026-08-22에 제품 전량(220건/32파일)을 제거해 현재 0건이다**(명세 `docs/refactor/lesson-id-removal-spec.md`). 다시 유입되면 결함으로 다룬다 — 확인: `grep -rnE '(lesson|decision|issue|memory)[ `]*[0-9a-f]{8}' malgn-agent/`. 만약 제거해야 할 id가 새로 생기면, **id가 범위 한정자로 쓰인 문장은 먼저 서술형으로 치환**해야 한다(기계적으로 밀면 규칙이 무한정 열린다). 교훈의 실질은 id가 아니라 문장으로 적는다.
+- **제품 본문에 식별자를 근거로 달지 않는다 (2026-08-22 사용자 지시, 항구 규칙).** 8자리 hex id(`lesson 5b55dd67` 류, mcp 발급분)든 26자 ULID(`01m0c9ck8y…`, hub 발급분)든 로컬 auto-memory 키든 실재하지 않는 커밋 해시든 마찬가지다 — 설치 직원은 어느 것도 열어볼 수 없다. **교훈의 실질은 id가 아니라 문장으로 적는다.** 날짜·경위·사유는 남기되 id는 붙이지 않는다.
+  - 2026-08-22에 제품 전량 227건을 제거해 현재 **0건**이다(v1.7.3·v1.7.4, 명세 `docs/refactor/lesson-id-removal-spec.md`). 다시 유입되면 결함으로 다룬다.
+  - 확인은 **백틱 앵커 없이** 한다 — 백틱을 앵커로 잡으면 코드 주석 안의 맨몸 id가 그대로 통과한다(2026-08-22 실증: `.md`를 다 지운 뒤에도 `bin/report-usage.mjs` 주석에 같은 ULID 2건이 살아 있었다):
+    ```
+    grep -rnoE '\b[0-9a-f]{8}\b|\b01[0-9a-hjkmnp-tv-z]{24}\b' malgn-agent/   # 형태 무관 — 오탐(날짜·상수)은 눈으로 걸러낸다
+    grep -rnE 'commit `[0-9a-f]{7,12}`|memory `[^`]+`' malgn-agent/
+    ```
+  - 스코프는 **형태가 아니라 목적**으로 잡는다 — "설치 직원이 조회할 수 있는가". 형태(hex·백틱·확장자)는 검색어일 뿐이다. 무언가를 스코프에서 **제외할 때야말로** 근거를 실물로 확인한다(제외 항목은 "괜찮다"는 도장을 받고 아무도 다시 안 본다 — 실제로 `commit 13bcd60`이 그렇게 살아남았다).
+  - 만약 id가 **범위 한정자**로 쓰인 문장을 지우게 되면 먼저 서술형으로 치환한다(기계적으로 밀면 규칙이 무한정 열린다).
 
 ## 에이전트 업그레이드 원칙 (이 프로젝트의 중요원칙)
 **1순위는 성능, 2순위가 토큰 효율이다. 사이즈 축소는 목적이 아니라 수단일 뿐이다.**
