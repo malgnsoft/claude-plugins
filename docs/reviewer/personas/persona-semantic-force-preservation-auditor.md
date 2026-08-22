@@ -35,3 +35,4 @@
 
 ## 적용 이력
 - 2026-08-22 / target_id `lesson-id-removal` / 1차 — `418b2a0..05e0273` 32파일 195줄. D 19줄 전건 원문 대조. Critical 0.
+- 2026-08-22 / target_id `knowledge-dead-skill-refs` / 1차 — `knowledge/` 죽은 스킬명 4파일 15줄 1:1 치환. §5 참고파일은 직전 라운드 고정이라 역할개념 수준으로만 적용. 방법론 2를 `sed 's/domain-//g'` 정규화 후 전문 diff로 대체해 "치환 순도 100%"를 기계 증명(사람 판단분 0건). Critical~Nit 전부 0.

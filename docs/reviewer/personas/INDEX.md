@@ -31,8 +31,8 @@
 | persona-doc-table-source-consistency-auditor.md | 요약 표가 정본(각 에이전트 MD) 산출물 경로를 정확히 압축했는지 원문과 대조하는 정합성 감사관 | 수렴 | 2026-08-12 | project-orchestration-skill-outputmap / 1차 |
 | persona-telemetry-collection-necessity-challenger.md | 수집 방식(스키마·인증)이 안전한가와 별개로, 애초에 이 정보를 자동·주기적으로 원격에 보내야 하는가(수동 옵트인 등 더 단순한 대안으로 같은 목적 달성 가능한가)를 묻는 발산형 | 발산 | 2026-08-19 | token-usage-collection-design-2026-08-19 / 3차 (직전: 2차, 1차) |
 | persona-unattended-agent-runtime-safety-auditor.md | OS 스케줄러(launchd/schtasks)가 구동하는 무인 백그라운드 프로세스가 크래시 복원력·진단 채널·자원 성장 관점에서 장기간 안전한지 보는 무인 실행 안전성 감사관 | 수렴 | 2026-08-19 | token-usage-collection-design-2026-08-19 / 3차 |
-| persona-semantic-force-preservation-auditor.md | 삭제·치환 리팩터링 후 규칙의 경계·강제력이 조용히 약해지지 않았는지 원문과 한 줄씩 대조하는 의미강도 감사관 | 수렴 | 2026-08-22 | lesson-id-removal / 1차 |
-| persona-dead-reference-scope-challenger.md | 문제 스코프를 "형태"로 정의한 것이 실제 판정 기준(조회 가능성)과 어긋나지 않는지, 제외 조항의 단정을 실측으로 반증하는 발산형 | 발산 | 2026-08-22 | lesson-id-removal / 1차 |
+| persona-semantic-force-preservation-auditor.md | 삭제·치환 리팩터링 후 규칙의 경계·강제력이 조용히 약해지지 않았는지 원문과 한 줄씩 대조하는 의미강도 감사관 | 수렴 | 2026-08-22 | knowledge-dead-skill-refs / 1차 (직전: lesson-id-removal / 1차) |
+| persona-dead-reference-scope-challenger.md | 문제 스코프를 "형태"로 정의한 것이 실제 판정 기준(조회 가능성)과 어긋나지 않는지, 제외 조항의 단정을 실측으로 반증하는 발산형 | 발산 | 2026-08-22 | knowledge-dead-skill-refs / 1차 (직전: lesson-id-removal / 1차) |
 
 > **알려진 중복 역할개념 (§4.2 적용 이력 예시로 처리됨, 병합·삭제는 이번 스코프 밖)**:
 > - `persona-ops-drift-realist.md` ≈ `persona-ops-maintainability-realist.md` — 둘 다 "6개월 후에도 살아있는가/사용자에게 감지 가능한가"를 묻는 운영 현실주의자.
@@ -51,6 +51,8 @@
 > **2026-08-19 token-usage-collection-design-2026-08-19 3차(코드 첫 검증, 배포 직전 최종 게이트)**: 이전 2개 라운드는 설계 문서만 검증했고, 이번이 실제 구현 코드(`bin/{usage-agent-lib,pair-usage-device,report-usage,install-usage-agent}.mjs`)를 대상으로 하는 첫 라운드다 — "코드 정확성 감사"라는 새 리스크 표면으로 판단해 축소 모드 대신 재확인 성격의 풀패널로 진행. `persona-hub-schema-routing-consistency-auditor.md`(API 계약을 실제 malgnai-public 배포 코드로 3번째 재검증)·`persona-privacy-leakage-auditor.md`(실제 코드의 PII 노출면 재검증, truncateSummary 서로게이트 경계 버그 신규 발견)·`persona-script-skill-consistency-auditor.md`(SKILL.md/knowledge vs 코드 실측 대조)는 6대 요소 그대로 재사용. 발산형은 `persona-telemetry-collection-necessity-challenger.md`를 재사용(근본 질문 여전히 미해소, 전체 재스캔 성장 비용이라는 신규 근거 추가). 신규 생성 1건: `persona-unattended-agent-runtime-safety-auditor.md` — OS 스케줄러 구동 무인 프로세스의 크래시 복원력·Windows 로깅 공백·PID 락 부재·전체 재스캔 성장이라는, 설계 문서 검증 라운드에는 없었던 코드 레벨 전용 리스크 표면(기존 `persona-hook-execution-safety-verifier.md`는 Claude Code 세션 내 훅 상태기계 전용이라 재사용 대상 아님으로 판정).
 
 > **2026-08-22 lesson-id-removal 리뷰**: 신규 target_id(최초 리뷰)이나 착수 전 이 INDEX를 스크리닝함. `persona-spec-implementation-conformance-auditor.md`는 역할개념("명세를 계약서, 커밋을 납품물로 놓고 조항 1:1 대조")이 이번 라운드 수렴형 1번과 정확히 겹쳐 **재사용**(6대 요소 본문 무수정, "적용 이력"만 append — 단 §1·§2·§5가 이전 라운드 대상 파일에 고정돼 있어 역할개념 수준으로만 적용, INDEX 2026-08-10 RV-002 선례와 동일). 신규 2건: `persona-semantic-force-preservation-auditor.md`(기존 `persona-frontend-scope-consistency-auditor.md`·`persona-vue-zero-regression-guardian.md`가 "규칙 약화 감시"로 근접하나 둘 다 vue-zero/frontend 스코프 라운드에 6대 요소가 고정돼 있고, 이번의 새 리스크 표면은 "id 삭제로 한정자가 지시 대상을 잃는 것"이라 겹치지 않음), `persona-dead-reference-scope-challenger.md`(발산형 9종 중 `persona-self-service-scope-challenger.md`가 "스코프 축소 의심"으로 근접하나 토큰진단 도구 라운드에 고정, 이번의 새 표면은 "탐지 조건의 형태 기준 vs 목적 기준 괴리"). **INDEX 정합 이슈(이번 스코프 밖, 보고만)**: 표에 없는 페르소나 파일 7개(`persona-spec-implementation-conformance-auditor.md` 포함) 존재 — 표 갱신이 몇 라운드 누락됨.
+
+> **2026-08-22 knowledge-dead-skill-refs 리뷰**: 신규 target_id(최초 리뷰)이나 착수 전 이 INDEX를 스크리닝함. **신규 페르소나 0건 — 2개 전부 재사용.** `persona-semantic-force-preservation-auditor.md`는 역할개념("치환 후에도 문장이 같은 뜻인가")이 이번 위임 합격선("참조 실재가 아니라 문장이 여전히 참인가")과 정확히 동형, `persona-dead-reference-scope-challenger.md`는 "스코프를 형태로 정의한 것과 목적 기준의 간극"이 이번 항목3(누락·과잉)과 동형이라 6대 요소 본문 무수정 재사용(적용 이력만 append). 둘 다 §5 참고파일이 직전 라운드(lesson-id-removal) 대상에 고정돼 있어 **역할개념 수준으로만** 적용(2026-08-10 RV-002 선례와 동일 처리). 등급 Standard(4파일 15줄)이나 발산형을 생략하지 않고 포함. 상세: `docs/reviewer/review-knowledge-dead-skill-refs-2026-08-22.md`.
 
 ## 유지 책임
 
