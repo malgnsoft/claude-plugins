@@ -82,7 +82,7 @@
 - `usage-collection-agent-architecture.md` — 토큰 사용량 자동 수집 에이전트(`bin/{usage-agent-lib,pair-usage-device,report-usage,install-usage-agent}.mjs`) 아키텍처 요약: 4개 스크립트 역할분담, malgnai-hub `POST /api/sessions` 계약, 핵심 설계결정(집계 수치만 전송·summary 120자 예외·turns/api_calls는 migration 0012), **설계 문서 대비 실제 구현이 단순화된 지점**(daily-aggregate 엔드포인트 없음/scope 없는 범용 device_token/세션ID 비해시 등) 명시. `skills/usage-agent-healthcheck`와 짝(2026-08-19 신설)
 
 ### backend/
-- `search-strategy-vector-vs-fulltext.md` — 벡터 검색 vs Full-text 검색 선택 기준(한글/다국어 쿼리 시 임베딩 모델 언어지원 전제조건, 하이브리드 지향, 데이터규모별 인덱스 재평가), kb-draft 375건 POC 실측 근거 (2026-07-27 신설, lesson `5b55dd67`/`8fda7853`)
+- `search-strategy-vector-vs-fulltext.md` — 벡터 검색 vs Full-text 검색 선택 기준(한글/다국어 쿼리 시 임베딩 모델 언어지원 전제조건, 하이브리드 지향, 데이터규모별 인덱스 재평가), kb-draft 375건 POC 실측 근거 (2026-07-27 신설)
 
 ### frontend/
 - `vue-zero-patterns.md` — (2026-08-07 규칙 정본은 `architecture/vue-zero-architecture.md`로 확정, 이 문서는 패턴 상세만) Options API 컴포넌트 예시, API 연동, Bootstrap 5, 모달, 접근성, 범용 UX 교훈, malgnuniv/malgnsales/malgnhrd 실전 패턴

@@ -161,7 +161,7 @@ API_KEY=               # 외부 API 키
 - **`database_id`가 placeholder인지 확인.** `"local"`/`"xxx"` 같은 값이면 `wrangler dev`는 되지만 `wrangler deploy`해도 **원격 D1에 안 붙는다**. 최초 1회 `wrangler d1 create <db>` → 출력 UUID로 교체.
 - **빌드 산출물 생성 단계(scan/build)가 배포에 선행하는지.** 제로빌드(vue-zero 등)는 레지스트리 갱신 스크립트(`pnpm run scan`)가 라우트/컴포넌트 인덱스를 만든다. 누락하면 라우트 빠진 채 배포됨. CI에도 이 단계를 넣을 것.
 - **ASSETS 바인딩 + SPA fallback 경로.** `assets = { directory, binding }` + 마지막 핸들러의 404→index.html 폴백을 확인. 정적자산 깨짐의 원인.
-- **Workers Builds(GitHub 연동 CI)가 활성화돼 있는지.** 활성화된 프로젝트는 `git push`(대상 브랜치)가 곧 배포 트리거다 — "로컬/브랜치 작업이라 안전"이라고 가정하지 말고, push 전 대시보드에서 어느 브랜치가 Builds에 연결돼 있는지 확인한다(lesson `4976a6f0`).
+- **Workers Builds(GitHub 연동 CI)가 활성화돼 있는지.** 활성화된 프로젝트는 `git push`(대상 브랜치)가 곧 배포 트리거다 — "로컬/브랜치 작업이라 안전"이라고 가정하지 말고, push 전 대시보드에서 어느 브랜치가 Builds에 연결돼 있는지 확인한다.
 
 ### 2. D1 스키마 적용 — 두 가지 패턴과 트레이드오프
 | 패턴 | 방식 | 장점 | 함정 |
@@ -185,7 +185,7 @@ wrangler d1 execute <db> --remote --command "PRAGMA table_info(<table>)"   # 마
 - 코드 경로: 직전 정상 커밋 체크아웃 → scan → deploy.
 - **데이터 롤백(느림·위험)**: 런타임 스키마는 자동 롤백 안 됨(잘못 ADD된 컬럼은 남음). 절차 = ① 즉시 코드 롤백으로 출혈 정지 → ② `init.js`의 문제 마이그 제거/수정 후 재배포 → ③ 데이터 오염 시 `wrangler d1 export`(사전 백업)에서 복원. **파괴적 D1 변경 전엔 무조건 `d1 export` 백업.**
 - **장애 분류표**: `/`만 깨짐→ASSETS/scan, `/api/*` 전부 500→ensureSchema/database_id, 일부만→특정 DAO, 첫 요청만 느림→콜드스타트+batch(정상).
-- **롤백 후 시크릿 조작 금지(롤백 무효화 함정).** 코드 롤백(대시보드 Rollback 또는 `wrangler rollback`)으로 이전 배포를 되돌린 뒤 `wrangler secret put` 등 시크릿을 변경하면, 플랫폼이 롤백된 배포가 아니라 **로컬(최신) 소스로 재빌드해 재배포**한다 — 방금 롤백으로 치운 버그 있는 코드가 그대로 다시 나간다. 롤백 직후 시크릿 변경이 필요하면 먼저 코드를 롤백 대상 커밋으로 되돌린 뒤 시크릿을 만진다(lesson `ca447b82`).
+- **롤백 후 시크릿 조작 금지(롤백 무효화 함정).** 코드 롤백(대시보드 Rollback 또는 `wrangler rollback`)으로 이전 배포를 되돌린 뒤 `wrangler secret put` 등 시크릿을 변경하면, 플랫폼이 롤백된 배포가 아니라 **로컬(최신) 소스로 재빌드해 재배포**한다 — 방금 롤백으로 치운 버그 있는 코드가 그대로 다시 나간다. 롤백 직후 시크릿 변경이 필요하면 먼저 코드를 롤백 대상 커밋으로 되돌린 뒤 시크릿을 만진다.
 
 ### 5. 시크릿/CI
 - 시크릿은 `wrangler secret put`(프롬프트 입력 → 터미널 히스토리 안 남음), 코드에서 `c.env.X`. **`wrangler.toml`/`[vars]`엔 평문 금지**(git 커밋됨). 비밀 아닌 값만 `[vars]`.
