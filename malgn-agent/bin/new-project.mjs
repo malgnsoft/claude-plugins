@@ -14,6 +14,8 @@
  * 사용:
  *   node ${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs <project-name> ["한 줄 설명"]
  *     → ~/workspace/<project-name>/ 을 새로 만들어 스탬프한다 (이미 있으면 중단).
+ *   node ${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs --help
+ *     → 사용법만 인쇄하고 아무것도 만들지 않는다(-h 동일).
  *   node ${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs --here ["한 줄 설명"]
  *     → 사용자가 이미 만들어 둔 현재 디렉토리(cwd)에 스탬프한다.
  *       STATUS.md가 이미 있으면 "이미 초기화됨"으로 보고 중단한다(동기화는 malgnai-hub project_bootstrap 사용).
@@ -28,6 +30,7 @@ import { join, basename, dirname } from 'node:path'
 import { homedir } from 'node:os'
 import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { MARKETPLACES_DIR_SEGMENTS, PLUGIN_DIR_NAME } from '../hooks/lib/find-pm-block-path.mjs'
 
 /**
  * PM 행동규율(@import) 참조 로드 — 스캐폴딩 시점 1회(docs/decision/malgnai-hub-project-bootstrap-redesign.md §4-2).
@@ -48,13 +51,40 @@ if (!pmBlock) {
   console.warn('⚠️  pm-orchestration-block.md를 찾을 수 없어 PM 행동규율 @import를 스캐폴딩에 포함하지 못했습니다(배포 누락 가능성) — 스캐폴딩은 계속 진행합니다.')
 }
 
-const useHere = process.argv[2] === '--here'
-const rawName = useHere ? undefined : process.argv[2]
+function printUsage(emit = console.error) {
+  const SELF = `node "${process.argv[1]}"`
+  emit(
+    `사용법: ${SELF} <project-name> ["한 줄 설명"]\n` +
+    `       ${SELF} --here ["한 줄 설명"]\n` +
+    `       ${SELF} --help\n\n` +
+    `  <project-name>  ~/workspace/<project-name>/ 을 새로 만들어 표준 뼈대를 스탬프한다(이미 있으면 중단).\n` +
+    `  --here          현재 디렉토리에 스탬프한다(STATUS.md가 이미 있으면 중단, 기존 파일은 덮어쓰지 않음).\n` +
+    `  --help, -h      이 도움말만 인쇄하고 아무것도 만들지 않는다.`
+  )
+}
+
+const arg1 = process.argv[2]
+
+// --help/-h 는 아무것도 만들지 않고 종료한다. 이 분기가 없으면 도움말 플래그가 프로젝트명으로 해석돼
+// ~/workspace/--help/ 같은 디렉토리가 실제로 만들어진다(2026-08-23 재현).
+if (arg1 === '--help' || arg1 === '-h') {
+  printUsage(console.log)
+  process.exit(0)
+}
+
+const useHere = arg1 === '--here'
+const rawName = useHere ? undefined : arg1
 const desc = process.argv[3] || '<한 줄 설명>'
 
+// '-'로 시작하는 인자는 프로젝트명이 될 수 없다 — 플래그 오타(--her, --hree 등)가 조용히 디렉토리로
+// 만들어지는 것을 막는다. 실재하는 플래그(--here/--help/-h)는 위에서 이미 처리됐다.
+if (!useHere && rawName && rawName.startsWith('-')) {
+  console.error(`알 수 없는 옵션: ${rawName}`)
+  printUsage()
+  process.exit(1)
+}
 if (!useHere && (!rawName || /[\/\\]/.test(rawName))) {
-  const SELF = `node "${process.argv[1]}"`
-  console.error(`사용법: ${SELF} <project-name> ["한 줄 설명"]\n       ${SELF} --here ["한 줄 설명"]`)
+  printUsage()
   process.exit(1)
 }
 
@@ -81,6 +111,36 @@ mkdirSync(join(root, '.claude'), { recursive: true })
 const pmBlockSection = pmBlock
   ? `\n<!-- malgn-agent:pm-orchestration:installed:v${pmBlock.version} -->\n@${pmBlock.path}\n`
   : ''
+
+/**
+ * 스캐폴딩되는 프로젝트의 `pnpm run check-docs` 스크립트.
+ *
+ * 생성물은 플러그인 컴포넌트가 아니라 ${CLAUDE_PLUGIN_ROOT} 치환이 일어나지 않고, 플러그인 모듈을
+ * import 할 수도 없다. 그래서 런타임 경로 탐색을 쓰는 것이 정상이다
+ * (Skill common-output-storage-and-path-management §1-1 의 명시적 예외).
+ *
+ * 다만 탐색 **경로 규칙**은 여기서 복제하지 않는다 — hooks/lib/find-pm-block-path.mjs 가 소유한
+ * 상수를 그대로 박아 넣어 생성하므로, 레이아웃이 바뀌어도 두 곳이 어긋나지 않는다.
+ * (상수는 따옴표·역슬래시 없는 평범한 경로 조각이라 아래 인용이 안전하다 — 그 전제를 검사한다.)
+ */
+const quoteSegment = (seg) => {
+  if (!/^[A-Za-z0-9._-]+$/.test(seg)) {
+    throw new Error(`경로 세그먼트에 인용 불가 문자가 있습니다(생성 코드 손상 위험): ${seg}`)
+  }
+  return `'${seg}'`
+}
+const MP_SEGMENTS = MARKETPLACES_DIR_SEGMENTS.map(quoteSegment).join(',')
+const PLUGIN_SEGMENT = quoteSegment(PLUGIN_DIR_NAME)
+const checkDocsScript =
+  `node -e "const fs=require('fs'),os=require('os'),path=require('path');` +
+  `const home=os.homedir();let found=null;` +
+  `const mp=path.join(home,${MP_SEGMENTS});` +
+  `if(fs.existsSync(mp)){for(const d of fs.readdirSync(mp)){` +
+  `const c=path.join(mp,d,${PLUGIN_SEGMENT},'hooks','doc-drift.mjs');` +
+  `if(fs.existsSync(c)){found=c;break}}}` +
+  `if(!found){const legacy=path.join(home,'.claude','hooks','doc-drift.mjs');if(fs.existsSync(legacy))found=legacy}` +
+  `if(found){require('child_process').execSync('node '+JSON.stringify(found),{stdio:'inherit'})}` +
+  `else{console.log('doc-drift.mjs를 찾지 못했습니다. malgn-agent 플러그인의 SessionStart 훅이 세션 시작 시 이미 자동으로 드리프트를 검사하니, 수동 확인이 필요하면 그 세션에서 요청하세요.')}"`
 
 const files = {
   'STATUS.md': `---
@@ -179,7 +239,7 @@ pnpm run check-docs    # 구조 서술 ↔ 코드 실측 드리프트 대조
     private: true,
     type: 'module',
     scripts: {
-      'check-docs': "node -e \"const fs=require('fs'),os=require('os'),path=require('path');const home=os.homedir();let found=null;const mp=path.join(home,'.claude','plugins','marketplaces');if(fs.existsSync(mp)){for(const d of fs.readdirSync(mp)){const c=path.join(mp,d,'plugins','malgn-agent','hooks','doc-drift.mjs');if(fs.existsSync(c)){found=c;break}}}if(!found){const legacy=path.join(home,'.claude','hooks','doc-drift.mjs');if(fs.existsSync(legacy))found=legacy}if(found){require('child_process').execSync('node '+JSON.stringify(found),{stdio:'inherit'})}else{console.log('doc-drift.mjs를 찾지 못했습니다. malgn-agent 플러그인의 SessionStart 훅이 세션 시작 시 이미 자동으로 드리프트를 검사하니, 수동 확인이 필요하면 그 세션에서 요청하세요.')}\"",
+      'check-docs': checkDocsScript,
     },
   }, null, 2) + '\n',
 }

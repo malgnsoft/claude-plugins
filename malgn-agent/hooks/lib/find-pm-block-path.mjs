@@ -34,6 +34,19 @@ export const IMPORT_LINE_RE = /^@(.+pm-orchestration-block\.md)\s*$/m
 // 센티널. 어떤 실제 경로 문자열과도 절대 같을 수 없으므로 안전하게 구분된다(파일에 쓰이거나 직렬화되지 않음).
 export const AMBIGUOUS = Symbol('ambiguous-malgn-agent-marketplace-match')
 
+/**
+ * 마켓플레이스 설치 레이아웃(실측): ~/.claude/plugins/marketplaces/<별칭>/malgn-agent/...
+ * 별칭 디렉토리 **바로 아래**에 플러그인 디렉토리가 온다 — 중간에 plugins/ 세그먼트가 없다.
+ * (다른 마켓플레이스는 plugins/ 를 한 단계 더 두기도 하므로 눈대중으로 유추하지 말 것.)
+ *
+ * 이 두 상수가 그 레이아웃 규칙의 **단일 소유자**다. bin/new-project.mjs가 스캐폴딩하는 프로젝트의
+ * check-docs 스크립트는 플러그인 밖에서 도는 독립 코드라 이 모듈을 import할 수 없지만, 사본을 따로
+ * 관리하지는 않는다 — new-project.mjs가 스캐폴딩 시점에 이 상수들로 그 코드를 생성하므로 값을
+ * 바꾸면 생성물도 같이 바뀐다. 생성 코드의 JS 리터럴에 그대로 박히므로 따옴표·역슬래시를 넣지 말 것.
+ */
+export const MARKETPLACES_DIR_SEGMENTS = ['.claude', 'plugins', 'marketplaces']
+export const PLUGIN_DIR_NAME = 'malgn-agent'
+
 export function readBlockFile() {
   const raw = readFileSync(
     join(dirname(fileURLToPath(import.meta.url)), '..', 'pm-orchestration-block.md'),
@@ -55,7 +68,7 @@ export function readBlockFile() {
  * 그래도 모호하면 AMBIGUOUS.
  */
 export function findMalgnAgentBlockPath() {
-  const marketplacesDir = join(homedir(), '.claude', 'plugins', 'marketplaces')
+  const marketplacesDir = join(homedir(), ...MARKETPLACES_DIR_SEGMENTS)
   let entries = []
   try {
     entries = readdirSync(marketplacesDir, { withFileTypes: true })
@@ -67,7 +80,7 @@ export function findMalgnAgentBlockPath() {
 
   const matches = []
   for (const alias of entries) {
-    const candidate = join(marketplacesDir, alias, 'malgn-agent', 'hooks', 'pm-orchestration-block.md')
+    const candidate = join(marketplacesDir, alias, PLUGIN_DIR_NAME, 'hooks', 'pm-orchestration-block.md')
     if (existsSync(candidate)) matches.push({ alias, path: candidate })
   }
 
