@@ -24,10 +24,10 @@
 2. `auth.setup.js`를 프로젝트의 E2E 테스트 디렉터리로 복사:
    ```bash
    mkdir -p e2e
-   cp ${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/auth.setup.js e2e/auth.setup.js
+   cp "${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/auth.setup.js" e2e/auth.setup.js
    ```
 
-   > `${CLAUDE_PLUGIN_ROOT}`는 스킬·에이전트 본문에서만 플러그인 절대경로로 치환된다 — 셸 변수가 아니다.
+   > 위 `${CLAUDE_PLUGIN_ROOT}` 토큰은 **이 파일에서는 절대 풀리지 않는다.** 치환은 하네스가 파일을 플러그인 컴포넌트(스킬 본문·에이전트 본문·훅 커맨드)로 로드할 때만 일어나는데, 이 README는 그렇게 로드되지 않기 때문이다(셸 변수도 아니다).
    > 이 README를 Read로 열면 문자 그대로 보이므로, 실행할 때는 Skill
    > `common-screen-verification-and-capture`에 채워져 나오는 절대경로를 쓴다.
 

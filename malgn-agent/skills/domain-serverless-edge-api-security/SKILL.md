@@ -79,7 +79,7 @@ Hono `cors()`를 인자 없이 쓰면 `Access-Control-Allow-Origin`을 요청 Or
 ### 7-1. 스크립트 실행
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/bin/check-edge-api-security.mjs [projectRoot]
+node "${CLAUDE_PLUGIN_ROOT}/bin/check-edge-api-security.mjs" [projectRoot]
 ```
 
 - 인자 없으면 `process.cwd()`를 점검 대상으로 삼는다. 다른 프로젝트를 점검하려면 그 루트 경로를 인자로 넘긴다.

@@ -13,7 +13,7 @@ description: 직원 PC에 설치된 토큰 사용량 자동 수집 에이전트(
 - **역할 경계**: 이 스킬은 **수집 파이프라인 자체**(등록 여부·페어링 여부·최근 전송 성공 여부)를 점검한다. 수집된 데이터를 바탕으로 "내가 토큰을 왜 이렇게 많이 썼는지" 분석하는 것은 `token-usage-diagnosis`의 역할이다 — 둘은 서로 다른 질문에 답한다.
 - **하지 않는 것**: 자동 재설치·재시도·알림 트리거를 만들지 않는다. 확인하고 원인을 안내하는 데서 끝난다 — 실제 설치/재설치/제거 명령 실행은 사용자 승인 하에 아래 안내된 명령을 그대로 실행하는 것뿐이다.
 
-## 대상 파일 (모두 `${CLAUDE_PLUGIN_ROOT}/bin/`)
+## 대상 파일 (모두 플러그인 `bin/` 안에 있다)
 
 | 파일 | 역할 |
 |---|---|
@@ -30,11 +30,11 @@ description: 직원 PC에 설치된 토큰 사용량 자동 수집 에이전트(
 
 | 사용자 표현 예시 | 명령 |
 |---|---|
-| "아직 설치 안 했는데", "이거 어떻게 켜?" | `node ${CLAUDE_PLUGIN_ROOT}/bin/install-usage-agent.mjs` |
+| "아직 설치 안 했는데", "이거 어떻게 켜?" | `node "${CLAUDE_PLUGIN_ROOT}/bin/install-usage-agent.mjs"` |
 | "제대로 돌고 있어?", "잘 되고 있나 확인해줘" | 아래 "헬스체크 절차" 순서대로 실행 |
-| "그만 보내고 싶어", "꺼줘" | `node ${CLAUDE_PLUGIN_ROOT}/bin/install-usage-agent.mjs --uninstall` |
-| "새 PC로 옮겼어", "페어링부터 다시" | `node ${CLAUDE_PLUGIN_ROOT}/bin/pair-usage-device.mjs --force` 실행 후 `install-usage-agent.mjs` 재실행 |
-| "전송 없이 확인만 해줘" | `node ${CLAUDE_PLUGIN_ROOT}/bin/report-usage.mjs --dry-run` |
+| "그만 보내고 싶어", "꺼줘" | `node "${CLAUDE_PLUGIN_ROOT}/bin/install-usage-agent.mjs" --uninstall` |
+| "새 PC로 옮겼어", "페어링부터 다시" | `node "${CLAUDE_PLUGIN_ROOT}/bin/pair-usage-device.mjs" --force` 실행 후 `install-usage-agent.mjs` 재실행 |
+| "전송 없이 확인만 해줘" | `node "${CLAUDE_PLUGIN_ROOT}/bin/report-usage.mjs" --dry-run` |
 
 `install-usage-agent.mjs`는 옵션 없이 실행하면 **페어링이 안 되어 있을 때 자동으로 `pair-usage-device.mjs`부터 실행**한다(브라우저가 열리고 사람의 승인 클릭이 필요하므로, 반드시 사람이 있는 터미널에서 실행해야 한다 — TTY 없는 자동화 파이프라인에서 실행하지 않는다). 이미 페어링되어 있으면 그 단계는 건너뛰고 스케줄러 등록만 진행한다.
 
@@ -100,7 +100,7 @@ Get-Content "$env:USERPROFILE\.claude\malgnai-hub\usage-agent.err.log" -Tail 30
 ### 5. 수동 재현 (필요시)
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/bin/report-usage.mjs --dry-run
+node "${CLAUDE_PLUGIN_ROOT}/bin/report-usage.mjs" --dry-run
 ```
 
 `--dry-run`은 **실제 전송 없이** 대상 세션별 payload를 콘솔에 그대로 출력한다. `device_token`이 없어도 실행할 수 있다(페어링 여부와 무관하게 집계 로직 자체가 도는지 확인 가능) — 네트워크 전송이 일어나지 않으므로 안전하게 여러 번 실행해도 된다.
@@ -109,11 +109,11 @@ node ${CLAUDE_PLUGIN_ROOT}/bin/report-usage.mjs --dry-run
 
 | 증상 | 원인 확인 | 조치 |
 |---|---|---|
-| 1번 단계에서 등록 자체가 없음 | 미설치 | `node ${CLAUDE_PLUGIN_ROOT}/bin/install-usage-agent.mjs` 실행(사람 있는 터미널에서, 브라우저 승인 필요할 수 있음) |
-| 2번 단계에서 credentials 파일 없음, 또는 3번의 `last_error`가 `"not_paired"` | 페어링 안 됨(등록만 되고 페어링 전 상태이거나, credentials 파일이 삭제됨) | `node ${CLAUDE_PLUGIN_ROOT}/bin/pair-usage-device.mjs` 실행 |
-| 등록은 있는데(1번 정상) `last_run_at`이 아주 오래됨 | PC가 꺼져 있었거나 launchd/스케줄러가 죽었을 가능성 | 우선 PC가 최근 켜져 있었는지 확인. 켜져 있었는데도 오래됐다면 재설치로 등록을 다시 건다: `node ${CLAUDE_PLUGIN_ROOT}/bin/install-usage-agent.mjs`(아래 "재설치 안전성" 참고). PC가 꺼져 있었던 것뿐이라면 **자동 복구된다** — `report-usage.mjs`는 마지막 성공 시점 이후를 최대 30일까지 catch-up 하도록 `since` 커트오프를 계산하므로, 다음 정상 실행이 밀린 기간을 알아서 채운다 |
+| 1번 단계에서 등록 자체가 없음 | 미설치 | `node "${CLAUDE_PLUGIN_ROOT}/bin/install-usage-agent.mjs"` 실행(사람 있는 터미널에서, 브라우저 승인 필요할 수 있음) |
+| 2번 단계에서 credentials 파일 없음, 또는 3번의 `last_error`가 `"not_paired"` | 페어링 안 됨(등록만 되고 페어링 전 상태이거나, credentials 파일이 삭제됨) | `node "${CLAUDE_PLUGIN_ROOT}/bin/pair-usage-device.mjs"` 실행 |
+| 등록은 있는데(1번 정상) `last_run_at`이 아주 오래됨 | PC가 꺼져 있었거나 launchd/스케줄러가 죽었을 가능성 | 우선 PC가 최근 켜져 있었는지 확인. 켜져 있었는데도 오래됐다면 재설치로 등록을 다시 건다: `node "${CLAUDE_PLUGIN_ROOT}/bin/install-usage-agent.mjs"`(아래 "재설치 안전성" 참고). PC가 꺼져 있었던 것뿐이라면 **자동 복구된다** — `report-usage.mjs`는 마지막 성공 시점 이후를 최대 30일까지 catch-up 하도록 `since` 커트오프를 계산하므로, 다음 정상 실행이 밀린 기간을 알아서 채운다 |
 | `sent_fail > 0`, `last_error`에 네트워크/상태코드 에러 | malgnai-hub 서버 문제 또는 네트워크 단절 | 그 자체로는 별도 조치 불필요 — 실패한 세션은 `last_success_at`이 갱신되지 않으므로 **다음 실행이 자동으로 같은 지점부터 재시도**한다(재시도 로직이 코드에 내장돼 있음, 사람이 개입할 필요 없음). 반복적으로 실패하면 5번 단계로 원인을 더 들여다본다 |
-| 페어링됐는데도 계속 `not_paired` 뜸 | credentials 파일은 있는데 `device_token` 필드가 비어있거나 손상 | credentials 파일을 지우고 `node ${CLAUDE_PLUGIN_ROOT}/bin/pair-usage-device.mjs`로 재페어링 |
+| 페어링됐는데도 계속 `not_paired` 뜸 | credentials 파일은 있는데 `device_token` 필드가 비어있거나 손상 | credentials 파일을 지우고 `node "${CLAUDE_PLUGIN_ROOT}/bin/pair-usage-device.mjs"`로 재페어링 |
 
 ### 재설치 안전성
 

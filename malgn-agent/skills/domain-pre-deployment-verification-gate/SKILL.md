@@ -13,7 +13,7 @@ description: 배포 착수/논의 전 로컬 검증 게이트(devops+pm 공유).
 2. **핵심 플로우 1개 독립 재현**: QA 시나리오 표(`tests/test-report.md`)에서 **심각도(critical/blocker)가 가장 높은 시나리오를 지정해** devops 자신이 직접 클릭 또는 curl로 재현한다 — QA 결과를 그대로 재인용(재탕)하지 않고, 쉬운 시나리오를 임의로 골라 형식만 채우지도 않는다. 증거: 실행 커맨드+응답 또는 스크린샷 + 어느 시나리오를 골랐는지 명시.
 3. **환경변수 실존 확인**: `.env.example`(류)에 나열된 모든 키가 실제 로컬 `.env`에 값과 함께 존재하는지 대조. 이건 순수 key diff라 눈으로 목록을 대조하지 말고 스크립트로 확인한다(`bin/analyze-usage.mjs`·`bin/capture.mjs`와 같은 무의존성 플러그인 번들 스크립트 패턴):
    ```
-   node ${CLAUDE_PLUGIN_ROOT}/bin/diff-env-keys.mjs [프로젝트 루트]
+   node "${CLAUDE_PLUGIN_ROOT}/bin/diff-env-keys.mjs" [프로젝트 루트]
    ```
    프로젝트 루트를 재귀 탐색해(`node_modules`/`.git`/`dist`/`build` 등 제외) `.env.example`·`.env.sample`·`.env.template`류를 모두 찾고, 각 디렉터리의 실제 `.env`와 짝지어 키를 대조한다 — 모노레포/멀티서비스 구조(여러 위치의 `.env.example`)도 자동으로 커버한다. 종료 코드 0=이상 없음, 1=누락/빈값/파일없음 발견. 증거: 스크립트 실행 결과(출력 전문 또는 핵심 요약) 첨부 — "누락 없음"이라고 적으려면 스크립트가 실제로 exit 0을 반환했어야 한다(직접 목록을 눈으로 세어 "누락 없음"이라 적지 않는다).
 
@@ -28,5 +28,5 @@ description: 배포 착수/논의 전 로컬 검증 게이트(devops+pm 공유).
 [게이트 통과 예시]
 1. 로컬 서버: `pnpm run dev` 기동, 콘솔 에러 0건 (스크린샷: docs/shots/local-dev-ok.png)
 2. 핵심 플로우: tests/test-report.md 중 severity=critical인 "결제→주문완료" 시나리오를 로그인→결제 curl로 재현, 200 OK 확인 (커밋 hash: a1b2c3d)
-3. .env: `node ${CLAUDE_PLUGIN_ROOT}/bin/diff-env-keys.mjs` 실행, exit 0 — service-a/.env.example 7개 키 모두 로컬 .env에 값 존재, 누락 없음
+3. .env: `node "${CLAUDE_PLUGIN_ROOT}/bin/diff-env-keys.mjs"` 실행, exit 0 — service-a/.env.example 7개 키 모두 로컬 .env에 값 존재, 누락 없음
 ```

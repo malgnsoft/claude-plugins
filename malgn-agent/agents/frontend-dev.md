@@ -79,7 +79,7 @@ vendored/수정불가 런타임이 전역 동작(예: `document.title` 대입)�
 ## 자기 검증
 
 보고 전 다음을 화면 검사로 확인합니다:
-- [ ] `pnpm run dev`를 띄우고 `node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs --responsive`로 데스크톱+모바일 렌더링을 캡처했는가?
+- [ ] `pnpm run dev`를 띄우고 `node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" --responsive`로 데스크톱+모바일 렌더링을 캡처했는가?
 - [ ] 모든 API가 정상 응답·에러·로딩 상태에서 화면에 올바르게 표시되는가?
 - [ ] 탭·드로어·메뉴가 있으면 `--click` 옵션으로 인터랙션까지 캡처했는가? 같은 URL에서 여러 장 캡처했다면 파일들이 실제로 서로 다른 화면인지(md5 비교 또는 육안 대조) 확인했는가 — `--click`이 적용 안 되면 동일 이미지가 반복 저장될 수 있다?
 - [ ] 반응형이 mobile/tablet/desktop에서 깨지지 않는가?

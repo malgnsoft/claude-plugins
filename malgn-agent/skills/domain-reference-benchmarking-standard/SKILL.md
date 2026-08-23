@@ -19,7 +19,7 @@ description: 레퍼런스 벤치마킹 착수전/완성후 스크린샷 대조 �
 
 ## 산출물 형식 (evaluator 판정 대상)
 
-1. **착수 전**: 참고할 레퍼런스 화면 스크린샷 1~3장을 `docs/design/reference/<화면명>-before-ref.png` 등으로 저장. 캡처 도구(`bin/capture.mjs`)는 로컬 렌더링 전용이 아니라 외부 URL도 그대로 지원한다(예: `node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs https://gdweb.co.kr/... docs/design/reference/xxx-before-ref.png`) — 별도 도구가 필요하다고 오인하지 않는다(상세: Skill `common-screen-verification-and-capture`).
+1. **착수 전**: 참고할 레퍼런스 화면 스크린샷 1~3장을 `docs/design/reference/<화면명>-before-ref.png` 등으로 저장. 캡처 도구(`bin/capture.mjs`)는 로컬 렌더링 전용이 아니라 외부 URL도 그대로 지원한다(예: `node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" https://gdweb.co.kr/... docs/design/reference/xxx-before-ref.png`) — 별도 도구가 필요하다고 오인하지 않는다(상세: Skill `common-screen-verification-and-capture`).
 2. **완성 후**: 구현/설계 결과 스크린샷을 `docs/design/reference/<화면명>-after.png`로 저장.
 3. 두 이미지를 나란히 배치한 대조 문서(`docs/design/reference/<화면명>-benchmark.md`)에 `![before](...)  ![after](...)` 형태로 삽입. evaluator는 이 파일을 열어 실제로 참고 흔적이 결과물에 반영됐는지 눈으로 판정한다 — 텍스트 주장만으로는 통과되지 않는다.
 

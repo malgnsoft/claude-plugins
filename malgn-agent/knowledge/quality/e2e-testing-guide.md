@@ -15,7 +15,7 @@ E2E 테스트는 **각 프로젝트 repo 안**에 둔다(코드와 함께 버전
 
 재사용 스캐폴드: **`${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/`** (담긴 파일: `auth.setup.js`, `README.md`)
 
-> `${CLAUDE_PLUGIN_ROOT}`는 스킬·에이전트 본문에서만 플러그인 절대경로로 치환된다 — 셸 변수가 아니고, 이 knowledge 문서를 Read로 열면 문자 그대로 보인다. 실제로 실행할 때는 Skill `common-screen-verification-and-capture`(또는 `common-output-storage-and-path-management`의 "번들 스크립트 실행 규약")를 열어 거기 채워져 나오는 절대경로를 쓴다.
+> 위 `${CLAUDE_PLUGIN_ROOT}` 토큰은 **이 문서에서는 절대 풀리지 않는다.** 치환은 하네스가 파일을 플러그인 컴포넌트(스킬 본문·에이전트 본문·훅 커맨드)로 로드할 때만 일어나는데, knowledge 파일은 그렇게 로드되지 않고 Read로 읽히기 때문이다(셸 변수도 아니다). 실제로 실행할 때는 Skill `common-screen-verification-and-capture`(또는 `common-output-storage-and-path-management` §1-1)를 열어 거기 채워져 도착하는 절대경로를 쓴다.
 
 ```bash
 # 1) 프로젝트 루트에서 러너 설치 (1회, 이 프로젝트 전용)
@@ -24,7 +24,7 @@ pnpm exec playwright install chromium
 
 # 2) 인증 setup 스크립트를 프로젝트 e2e 디렉터리로 복사
 mkdir -p e2e
-cp ${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/auth.setup.js e2e/auth.setup.js
+cp "${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/auth.setup.js" e2e/auth.setup.js
 ```
 
 `e2e/auth.setup.js` 안의 "프로젝트에 맞게 고칠 곳"(로그인 폼 셀렉터, 로그인 성공 판정 조건)을 실제 값으로 교체한다. `BASE_URL`/`E2E_USER`/`E2E_PASS`는 환경변수로 주입한다(코드에 자격증명 하드코딩 금지).

@@ -11,8 +11,8 @@
  * 위치(malgn-agent 플러그인 안)에는 playwright를 두지 않는다.
  *
  * 사용:
- *   node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs <url> [output.png] [옵션...]
- *   (이 변수는 스킬·에이전트 본문에서만 절대경로로 치환된다. 셸에서는 빈 문자열이므로
+ *   node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" <url> [output.png] [옵션...]
+ *   (이 변수는 스킬·에이전트 본문과 훅 커맨드에서 치환되고, 이 파일을 Read로 열면 문자 그대로다. 셸에서는 빈 문자열이므로
  *    그대로 타이핑하지 말고 Skill common-screen-verification-and-capture 본문의 커맨드를 쓴다.)
  *
  * 옵션:

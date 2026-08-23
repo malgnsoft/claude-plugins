@@ -18,7 +18,7 @@ Claude Code는 각 PC에 `~/.claude/projects/**/*.jsonl`로 세션 원본을 남
 **사전 조건 없음** — 순수 Node.js 내장 모듈만 사용하므로 설치 없이 바로 실행된다.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/bin/analyze-usage.mjs [--days N] [--project <cwd 부분일치>] [--top N]
+node "${CLAUDE_PLUGIN_ROOT}/bin/analyze-usage.mjs" [--days N] [--project <cwd 부분일치>] [--top N]
 ```
 
 - `--days N` 기본 1(오늘, 로컬 타임존 기준). 최근 N일(오늘 포함) 집계.
@@ -49,7 +49,7 @@ node ${CLAUDE_PLUGIN_ROOT}/bin/analyze-usage.mjs [--days N] [--project <cwd 부�
 
 예:
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/bin/analyze-usage.mjs --days 7 --project claude-plugins --top 10
+node "${CLAUDE_PLUGIN_ROOT}/bin/analyze-usage.mjs" --days 7 --project claude-plugins --top 10
 ```
 
 ## 결과 해석 원칙 (가장 중요한 제약)
@@ -93,7 +93,7 @@ node ${CLAUDE_PLUGIN_ROOT}/bin/analyze-usage.mjs --days 7 --project claude-plugi
 ```
 사용자: "요즘 토큰 왜 이렇게 많이 나가지? 이번 주 것 좀 봐줘"
 
-→ node ${CLAUDE_PLUGIN_ROOT}/bin/analyze-usage.mjs --days 7 실행
+→ node "${CLAUDE_PLUGIN_ROOT}/bin/analyze-usage.mjs" --days 7 실행
 
 → 보고 (스크립트 출력 그대로 인용 + 해석 얹기):
 "이번 주 집계 결과(2026-08-04~08-10, 세션 12개, 총 1.2억 토큰 — verified):
