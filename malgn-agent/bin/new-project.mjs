@@ -127,6 +127,15 @@ const pmBlockSection = pmBlock
  * 드리프트 발견은 정상 동작(비0 종료)이라 그때마다 Node 스택 트레이스가 쏟아져 정작 읽어야 할
  * 드리프트 보고를 덮어버렸다. spawnSync는 던지지 않으므로 자식 출력만 남고, 종료코드는 아래에서
  * 그대로 전파한다(CI에서 실패로 잡히는 동작은 유지).
+ *
+ * 옛 검사기(~/.claude/hooks/doc-drift.mjs)로 **자동 폴백하지 않는다.** 그 경로는 플러그인 이전
+ * 시대에 손으로 놓인 파일이고 이 제품의 어떤 코드도 그것을 만들지 않는다 — 새로 설치한 PC에는
+ * 아예 없고, 남아 있는 PC에서도 최신 점검 항목(PM 행동규율 @import)이 빠져 있어 초록불이 초록불이
+ * 아니다. 게다가 이 폴백이 조용히 받아버리는 바람에, 주 탐색 경로가 틀렸던 직전 릴리스의 결함이
+ * 개발 PC에서는 증상을 한 번도 드러내지 않고 신규 직원 PC에서만 터졌다.
+ * 그래서 지금은 주 경로를 못 찾으면 ⑴실제로 탐색한 경로를 그대로 인쇄하고(경로 규칙이 또 틀리면
+ * 즉시 눈에 띄도록) ⑵옛 검사기가 남아 있으면 "있지만 실행하지 않는다"는 사실과 이유를 밝힌 뒤
+ * 수동 실행 명령만 알려준다. 실행자가 무엇이 돌았고 무엇이 안 돌았는지 모르는 상태로 두지 않는다.
  */
 const quoteSegment = (seg) => {
   if (!/^[A-Za-z0-9._-]+$/.test(seg)) {
@@ -143,11 +152,20 @@ const checkDocsScript =
   `if(fs.existsSync(mp)){for(const d of fs.readdirSync(mp)){` +
   `const c=path.join(mp,d,${PLUGIN_SEGMENT},'hooks','doc-drift.mjs');` +
   `if(fs.existsSync(c)){found=c;break}}}` +
-  `if(!found){const legacy=path.join(home,'.claude','hooks','doc-drift.mjs');if(fs.existsSync(legacy))found=legacy}` +
   `if(found){const r=require('child_process').spawnSync(process.execPath,[found],{stdio:'inherit'});` +
   `if(r.error){console.error('doc-drift.mjs 실행에 실패했습니다: '+r.error.message)}` +
   `process.exit(r.status===null?1:r.status)}` +
-  `else{console.log('doc-drift.mjs를 찾지 못했습니다. malgn-agent 플러그인의 SessionStart 훅이 세션 시작 시 이미 자동으로 드리프트를 검사하니, 수동 확인이 필요하면 그 세션에서 요청하세요.')}"`
+  `else{` +
+  `console.log('⚠️ malgn-agent 플러그인의 doc-drift.mjs를 찾지 못해 문서 드리프트를 점검하지 못했습니다.');` +
+  `console.log('   탐색한 곳: '+mp+'/(마켓플레이스 별칭)/'+${PLUGIN_SEGMENT}+'/hooks/doc-drift.mjs');` +
+  `console.log('   플러그인이 설치·활성화되어 있고 최신인지 확인하세요 (클로드코드에서 /plugin update).');` +
+  `const legacy=path.join(home,'.claude','hooks','doc-drift.mjs');` +
+  `if(fs.existsSync(legacy)){` +
+  `console.log('');` +
+  `console.log('   참고: 플러그인 이전 시대의 옛 검사기가 '+legacy+' 에 남아 있습니다.');` +
+  `console.log('   이 스크립트는 그것을 자동으로 실행하지 않습니다 — 최신 점검 항목(PM 행동규율 @import)이 빠져 있어 통과해도 통과가 아닙니다.');` +
+  `console.log('   그래도 직접 돌려보려면: node '+legacy);` +
+  `}}"`
 
 const files = {
   'STATUS.md': `---

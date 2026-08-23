@@ -83,7 +83,7 @@ planner ──→ architect ──→ backend-dev ──→ qa-engineer
 ### 에이전트 역량 기반 동적 조정
 - 특정 에이전트가 이전 프로젝트에서 저평가 → 산출물 검토를 더 엄격하게
 - 에이전트 산출물이 2회 연속 재작업 → 해당 영역을 다른 에이전트에 분담 검토
-- lessons/ 폴더의 과거 회고에서 에이전트별 강/약점 참조
+- 에이전트별 강/약점은 malgnai-hub `agent_get_context`(agentName)로 최근 학습 이력·점수 추이를 조회해 참조
 
 ## 위임 모델 (Supervisor-Worker)
 

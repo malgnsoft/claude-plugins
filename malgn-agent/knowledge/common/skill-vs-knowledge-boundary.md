@@ -63,6 +63,9 @@
 - **경계선:** 만약 "이건 프로젝트 A에만 적용되지 않나?"라고 묻는다면 → 프로젝트별 MEMORY 또는 프로젝트 CLAUDE.md로 가야 함
 
 ### 규칙 5: Trainer 모드와의 매핑
+
+> ⚠️ 아래 모드 번호(1~10)는 **작성 당시의 구상이며 실행 지시가 아니다.** 실제 모드는 1~6뿐이고 구 모드 7은 evaluator로 이관됐다(파일 상단 "지위" 참조). 아래는 당시 분류 논리를 남겨둔 것이므로, 모드 번호가 아니라 **Skill/Knowledge 구분 논리**만 읽는다.
+
 - **Skill:** Trainer 모드 1~7 (Prompt/Task/Code/Git/Security/Test/Deploy) — 각 모드는 해야 할 것과 하면 안 되는 것의 체크리스트
 - **Knowledge:** Trainer 모드 8~9 (Lessons, Stories) — 사고사례, 트레이드오프, 역사적 배경
 - **향후 모드 10 (Knowledge와 Skill 자동 분리 커리큘럼 생성):** Trainer가 문서를 읽고 자동으로 Skill과 Knowledge로 파싱해 학습 경로 생성

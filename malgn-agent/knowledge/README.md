@@ -16,7 +16,6 @@
 | `quality/` | qa-engineer | 테스트 설계, Vitest 패턴 |
 | `review/` | reviewer | 페르소나 6대 요소, 패널 운영, 재사용 페르소나 자산 |
 | `proposal/` | rfp-analyst, capture-strategist, writer, reviewer | 제안/입찰 방법론(Shipley), 공공조달 실무, Compliance Matrix, 제안 집필 원칙 |
-| `security/` | security | OWASP Top 10, 보안 체크리스트 |
 | `devops/` | devops | Docker, Cloudflare, CI/CD |
 | `writing/` | writer | 문서 작성 가이드 |
 | `presentation/` | presenter | Marp, 슬라이드 설계 |
@@ -92,7 +91,7 @@
 - `e2e-testing-guide.md` — E2E 테스트(Playwright Test) vs 즉석 화면 검증(`bin/capture.mjs`) 역할 구분, `templates/e2e-template/` 스캐폴드 복사 절차, 프로젝트별 브라우저 설치·인증 setup 가이드
 - `intent-fit-vs-correctness-split.md` — "기획의도 부합성 vs 동작정확성" 축 분리 개념 노트. qa-engineer/reviewer가 검수 체크리스트를 짤 때 참고 (2026-08-13 djkim 노하우 접목)
 
-### security/
+### security/ — 폴더 없음 (2026-08-07 전량 skill로 이관)
 - (OWASP Top 10 체크리스트는 knowledge가 아니라 skill로 분산 이관됨, 2026-08-07 — A01/A03→`skills/domain-backend-api-security` §1/§4, A02/A07/A09→`skills/domain-security-audit-checklist` §4/§5/§6, 인프라(Docker/환경변수)→`skills/domain-devops-deployment-patterns` §1, 심각도 CVSS 매핑→`agents/security.md` "핵심 원칙")
 - (서버리스/엣지(Cloudflare Workers·Hono·D1·MCP) 스택 특화 점검 절차는 knowledge가 아니라 skill로 이관됨 — `skills/domain-serverless-edge-api-security/SKILL.md`, 2026-07-23. backend-dev/security 공용)
 
@@ -120,26 +119,27 @@
 ### localization/
 - `i18n-terminology-audit-guide.md` — 직역 금지·관용구 우선 판단법, 레퍼런스 제품 대조법, 로케일별 관용 차이, 용어 감사 절차, 용어집 관리 (localizer.md 본문 원칙을 압축·구조화, 2026-07-24 신설)
 
-### lessons/
-- 프로젝트 완료 후 회고 교훈이 축적되는 폴더
-- PM이 프로젝트 완료 시 자동 생성
-- 형식: `[프로젝트명].md` — 잘 된 점, 개선할 점, 새로 배운 것
+### lessons/ — 폴더 없음 (회고·교훈은 malgnai-hub에 기록한다)
+- 이 저장소에 `lessons/` 폴더는 **존재하지 않는다.** 과거에는 프로젝트 회고를 `knowledge/lessons/[프로젝트명].md` 파일로 쌓는 모델이었고, 아래 "학습 루프"도 그 전제로 쓰여 있었다.
+- 현재 회고·교훈의 기록처는 malgnai-hub다. 절차와 본문 템플릿 정본은 `leadership/retrospective-framework.md`의 "3단계: 교훈 문서화".
 
 ## 학습 루프
 
+원시 교훈·회고는 이 저장소의 파일이 아니라 **malgnai-hub**에 쌓인다. `knowledge/`는 여러 프로젝트에서 반복 확인돼 정제된 학습 자료만 놓이는 곳이다.
+
 ```
-프로젝트 시작 → lessons/ 확인 → 작업 수행 → 완료 → 회고 → knowledge 업데이트
-                  ↑                                              │
-                  └──────────────────────────────────────────────┘
+프로젝트 시작 → hub에서 과거 이력 조회 → 작업 → 완료 → 회고를 hub에 기록
+                     ↑                                        │
+                     └──── 반복되는 교훈만 knowledge로 승격 ────┘
 ```
 
 모든 에이전트는:
-- **작업 전**: `lessons/` 폴더에서 관련 프로젝트 교훈을 확인
-- **작업 후**: 새로 배운 패턴이나 실수를 knowledge에 기록
+- **작업 전**: malgnai-hub `project_search_history`(projectId + 검색어, `types`로 decision/issue/work 선별)로 같은 프로젝트의 과거 결정·이슈·작업 이력을 확인한다. 특정 에이전트의 과거 학습 이력·점수 추이가 필요하면 `agent_get_context`(agentName).
+- **작업 후**: 새로 배운 패턴·실수를 hub에 남긴다 — 결정·판단형은 `decision_record`, 작업·절차형은 `work_record`, 특정 에이전트의 역량이면 `agent_learning_record`.
 
 PM은 프로젝트 완료 시:
-- `lessons/[프로젝트명].md`에 회고 기록
-- 기존 knowledge 파일 보강이 필요하면 업데이트
+- 회고를 hub에 기록한다(절차·본문 템플릿 정본: `leadership/retrospective-framework.md` "3단계: 교훈 문서화").
+- 여러 프로젝트에 걸쳐 반복되는 교훈이면 knowledge 파일 보강을 trainer에 위임한다.
 
 ## 학습 자료 추가 방법
 
