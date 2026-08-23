@@ -4,7 +4,8 @@
  *
  * 검사 대상: <plugin>/agents/*.md 의 YAML frontmatter, <plugin>/skills/<name>/SKILL.md 의 YAML frontmatter,
  * 그리고 agents·skills·knowledge **세 영역 본문 모두**가 참조하는 Skill/Knowledge/Agent/bin 경로.
- * 여기에 더해 제품 전 영역(bin·hooks 포함)의 조회 불가 식별자 인용을 잡는다.
+ * 여기에 더해 제품 전 영역(bin·hooks 포함)의 조회 불가 식별자 인용과,
+ * 번들 스크립트 도달 경로(추측형 플레이스홀더·맨 명령어 실행 지시)를 잡는다.
  *
  * 사용법:
  *   node scripts/validate-agent-assets.mjs [--plugin malgn-agent] [--format text|json] [--strict]
@@ -401,6 +402,70 @@ function checkUnresolvableIds(relPath, body) {
   }
 }
 
+// ── 번들 스크립트 도달 경로 (2026-08-23 신설) ────────────────────────
+// 번들 `bin/` 스크립트를 실행하라는 지시는 정본이 하나뿐이다:
+//   node ${CLAUDE_PLUGIN_ROOT}/bin/<스크립트>.mjs
+// 이 변수는 **스킬·에이전트 본문이 모델에 도달하기 전에** 플러그인 절대경로로 치환된다(실측 확인).
+// 셸은 이 변수를 모른다 — Bash 툴 세션에서는 빈 문자열이므로 직접 타이핑하면 MODULE_NOT_FOUND다.
+// 규약 전문은 skills/common-output-storage-and-path-management/SKILL.md §1-1이 정본이다.
+//
+// 여기서 잡는 두 가지 파손 형태:
+//  (A) 추측형 플레이스홀더 — `<malgn-agent 플러그인 경로>` 류. 에이전트가 절대경로를 스스로
+//      지어내야 하는데 그 방법을 알려주는 서술이 제품 어디에도 없었다(31곳 실재했다).
+//  (B) 맨 명령어 실행 지시 — `capture.mjs --responsive` 류. 플러그인 bin/ 이 PATH에 등재되긴
+//      하지만 번들 스크립트 일부에 실행 비트가 없어 permission denied 로 끝난다.
+//
+// **단순 지칭은 잡지 않는다.** "`bin/capture.mjs`로 캡처해 확인한다" 같은 산문이나 비교표의
+// 파일 이름은 명령이 아니다. 실행 지시로 판정하는 자리는 둘뿐이다:
+//   - `node` 바로 뒤에 온 경우          → 복사하면 그대로 실행된다
+//   - 스크립트 이름 뒤에 플래그가 붙은 경우 → 완성된 커맨드 라인이다
+// 이 경계를 넓히면 산문까지 걸려 오탐이 실탐을 덮고, 그러면 이 검사는 통째로 무시당한다.
+const PLUGIN_WORD = /malgn-agent|플러그인|plugin/i;
+const PATH_WORD = /경로|path|dir/i;
+const ANGLE_TOKEN = /<[^<>\n]{1,60}>/g;
+
+const INVOCATION_REMEDY =
+  '정본은 `node ${CLAUDE_PLUGIN_ROOT}/bin/<스크립트>.mjs` 하나다 — 이 변수는 스킬·에이전트 ' +
+  '본문에서 플러그인 절대경로로 치환된다(셸 변수가 아니다). 규약은 Skill ' +
+  '`common-output-storage-and-path-management` §1-1 참조.';
+
+function checkBundledScriptInvocation(relPath, body, bundledScripts, isRoutingDoc) {
+  // 플레이스홀더는 코드펜스 안에도 있다(사용 예시가 바로 그 자리다) — stripFencedCode를 쓰지 않는다.
+  for (const m of body.matchAll(ANGLE_TOKEN)) {
+    const inner = m[0].slice(1, -1);
+    if (PLUGIN_WORD.test(inner) && PATH_WORD.test(inner)) {
+      error('PLUGIN_PATH_PLACEHOLDER', relPath,
+        `추측을 요구하는 플러그인 경로 플레이스홀더 '${m[0]}' — 에이전트가 절대경로를 지어낼 방법이 없다. ` +
+        INVOCATION_REMEDY);
+    }
+  }
+
+  // 맨 명령어 검사는 '에이전트를 번들 스크립트로 안내하는 문서'에만 적용한다.
+  // 스크립트 자신의 헤더 주석과 --help 출력은 그 스크립트의 CLI 인터페이스 문서다 —
+  // 셸에서 읽히는 자리라 ${CLAUDE_PLUGIN_ROOT}가 애초에 해소되지 않는다. 여기까지 규칙을
+  // 밀면 오탐 43건이 실탐 8건을 덮는다(2026-08-23 실측: 정확히 그 비율로 나왔다).
+  if (!isRoutingDoc) return;
+
+  for (const name of bundledScripts) {
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // (B-1) `node` 바로 뒤 — 경로 없이(또는 설치 시점에 해소되지 않는 repo 상대경로로) 호출
+    const afterNode = new RegExp('\\bnode\\s+`?(?:\\./)?(?:bin/|malgn-agent/bin/)?' + esc + '\\b', 'g');
+    for (const m of body.matchAll(afterNode)) {
+      if (/CLAUDE_PLUGIN_ROOT/.test(m[0])) continue;
+      error('BARE_SCRIPT_COMMAND', relPath,
+        `번들 스크립트를 경로 없이 실행하라고 지시한다: '${m[0].trim()}'. ` + INVOCATION_REMEDY);
+    }
+    // (B-2) 스크립트 이름 + 플래그 — 완성된 커맨드 라인인데 앞에 정본 경로가 없다
+    const withFlag = new RegExp('(\\S*)' + esc + '(\\s+-{1,2}[A-Za-z])', 'g');
+    for (const m of body.matchAll(withFlag)) {
+      const prefix = m[1] || '';
+      if (prefix.includes('CLAUDE_PLUGIN_ROOT')) continue;
+      error('BARE_SCRIPT_COMMAND', relPath,
+        `번들 스크립트 커맨드에 정본 경로가 없다: '${(prefix + name + m[2]).trim()}'. ` + INVOCATION_REMEDY);
+    }
+  }
+}
+
 function typeMatches(value, spec) {
   return spec.split('|').some((t) => {
     if (t === 'array') return Array.isArray(value);
@@ -648,6 +713,45 @@ function main() {
       }
     };
     walk(dir);
+  }
+
+  // ── 번들 스크립트 도달 경로 (제품 전 트리) ────────────────────────
+  // 순회 범위를 .md로 좁히지 않는다 — 플레이스홀더 31건 중 5건이 .mjs 헤더 주석에 있었고,
+  // 코드 주석도 에이전트가 Read로 열어 그대로 따라 하는 문안이다.
+  // 검사 대상 스크립트 이름은 실제 파일에서 뽑는다(하드코딩하면 새 스크립트가 검사망 밖에 남는다).
+  const bundledScripts = new Set();
+  {
+    const collect = (d) => {
+      if (!fs.existsSync(d)) return;
+      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+        const p = path.join(d, e.name);
+        if (e.isDirectory()) { collect(p); continue; }
+        if (/\.(mjs|cjs|js)$/.test(e.name)) bundledScripts.add(e.name);
+      }
+    };
+    collect(path.join(pluginRoot, 'bin'));
+    for (const dir of skillDirNames) collect(path.join(skillsDir, dir, 'scripts'));
+  }
+
+  {
+    const walk = (d) => {
+      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+        const p = path.join(d, e.name);
+        if (e.isDirectory()) {
+          if (e.name === 'node_modules' || e.name === '.git') continue;
+          walk(p);
+          continue;
+        }
+        if (!/\.(md|mjs|cjs|js)$/.test(e.name)) continue;
+        const rel = path.relative(pluginRoot, p).replace(/\\/g, '/');
+        // 라우팅 문서 = 에이전트가 읽고 그대로 따라 하는 문서. 스크립트 소스는 제외한다.
+        const isRoutingDoc = /\.md$/.test(e.name)
+          && !rel.startsWith('bin/') && !rel.startsWith('hooks/');
+        checkBundledScriptInvocation(
+          path.relative(REPO_ROOT, p), fs.readFileSync(p, 'utf8'), bundledScripts, isRoutingDoc);
+      }
+    };
+    walk(pluginRoot);
   }
 
   // orphan Skill: 어떤 agent/skill/knowledge도(frontmatter/본문 어디서도) 참조하지 않는 Skill.
