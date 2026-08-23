@@ -11,7 +11,9 @@
  * 위치(malgn-agent 플러그인 안)에는 playwright를 두지 않는다.
  *
  * 사용:
- *   node <malgn-agent 플러그인 경로>/bin/capture.mjs <url> [output.png] [옵션...]
+ *   node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs <url> [output.png] [옵션...]
+ *   (이 변수는 스킬·에이전트 본문에서만 절대경로로 치환된다. 셸에서는 빈 문자열이므로
+ *    그대로 타이핑하지 말고 Skill common-screen-verification-and-capture 본문의 커맨드를 쓴다.)
  *
  * 옵션:
  *   --full              전체 페이지 캡처(스크롤 영역 포함). 미지정 시 뷰포트 영역만.
@@ -30,12 +32,12 @@
  * output을 생략하면 URL과 타임스탬프로 파일명을 자동 생성해 cwd에 저장한다.
  *
  * 예시:
- *   node bin/capture.mjs http://localhost:3000
- *   node bin/capture.mjs http://localhost:3000 out.png --full
- *   node bin/capture.mjs http://localhost:3000 out.png --vp 1440x900 --dark
- *   node bin/capture.mjs http://localhost:3000 out.png --wait 1000 --click "#open-modal" --sel ".modal"
- *   node bin/capture.mjs http://localhost:3000 out.png --responsive
- *   node bin/capture.mjs http://localhost:3000 out.png --responsive 360x800,1024x768
+ *   node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs http://localhost:3000
+ *   node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs http://localhost:3000 out.png --full
+ *   node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs http://localhost:3000 out.png --vp 1440x900 --dark
+ *   node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs http://localhost:3000 out.png --wait 1000 --click "#open-modal" --sel ".modal"
+ *   node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs http://localhost:3000 out.png --responsive
+ *   node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs http://localhost:3000 out.png --responsive 360x800,1024x768
  */
 import { mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'

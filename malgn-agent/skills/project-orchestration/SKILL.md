@@ -46,15 +46,15 @@ PM(`agents/pm.md`)이 작업을 위임한 **이후** 실행을 관리하는 절�
 
 ## 2. 리스크 판단 (WBS 신호 기반)
 
-**신호 판정은 스크립트, 원인 조사·대응은 PM.** 아래 8개 조기경고 신호는 전부 `wbs_list` 응답(JSON)에 대한 임계값 비교라, 매번 표를 눈으로 대조하면 놓치기 쉽다. `malgn-agent/bin/check-wbs-warnings.mjs`(의존성 없는 Node 내장 모듈만 사용, `bin/analyze-usage.mjs`와 동일 스타일)가 이 판정을 대신한다 — PM은 스크립트 출력에서 걸린 항목만 골라 원인 조사·담당자 확인·재계획 같은 판단을 한다.
+**신호 판정은 스크립트, 원인 조사·대응은 PM.** 아래 8개 조기경고 신호는 전부 `wbs_list` 응답(JSON)에 대한 임계값 비교라, 매번 표를 눈으로 대조하면 놓치기 쉽다. `${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs`(의존성 없는 Node 내장 모듈만 사용, `bin/analyze-usage.mjs`와 동일 스타일)가 이 판정을 대신한다 — PM은 스크립트 출력에서 걸린 항목만 골라 원인 조사·담당자 확인·재계획 같은 판단을 한다.
 
 ```bash
 # wbs_list 결과를 JSON 파일로 저장(도구 응답을 그대로 파일로 떨어뜨리거나 붙여넣기)한 뒤:
-node malgn-agent/bin/check-wbs-warnings.mjs --current wbs-snapshot.json
+node ${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs --current wbs-snapshot.json
 
 # "롤업 추락"(computed_progress 5%p 하락) 신호는 이전 시점 스냅샷이 있어야 판정된다.
 # 정기 점검(§1 "주 1회 이상") 때마다 wbs_list 결과를 날짜별 파일로 남겨두고 직전 스냅샷과 비교:
-node malgn-agent/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --current wbs-2026-08-12.json
+node ${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --current wbs-2026-08-12.json
 
 # stdin으로도 받는다 + --format json으로 후속 자동화(issue_record 등)에 그대로 넘길 수 있다.
 # 종료 코드: High 신호 있으면 2, Medium/Low만 있으면 1, 신호 없으면 0 (CI/스크립트 분기용).
@@ -119,7 +119,7 @@ node malgn-agent/bin/check-wbs-warnings.mjs --previous wbs-2026-08-05.json --cur
 
 **점검 주기**
 - **일일**: critical path 항목(deadline ≤ 1주) status/progress 단순 조회
-- **주 1회(월요 또는 금요)**: wbs_list 전체 조회 → 결과를 `wbs-YYYY-MM-DD.json`으로 저장 → `check-wbs-warnings.mjs --previous <직전 파일> --current <이번 파일>`로 심각도 High 신호 필터 + 보고
+- **주 1회(월요 또는 금요)**: wbs_list 전체 조회 → 결과를 `wbs-YYYY-MM-DD.json`으로 저장 → `node ${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs --previous <직전 파일> --current <이번 파일>`로 심각도 High 신호 필터 + 보고
 - **월 1회**: 완료 항목까지 includeDone=true로 조회 → 계획 대비 실제 소요시간 분석
 
 ---

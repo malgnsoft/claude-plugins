@@ -66,9 +66,9 @@ description: 에이전트 산출물 평가 + 피드백 통합 — Scorecard 채�
 집계·가중합·threshold 비교는 전부 결정론적 산식이다. 위 a)~d)에서 낸 정성 점수(0~100 하위점수, Pass/Partial/Fail 판정, 감점 사유 건수)만 LLM이 판단하고, 그 값을 `bin/calc-training-scorecard.mjs`(의존성 없는 Node 내장 스크립트, `bin/analyze-usage.mjs`와 동일 패턴)에 JSON으로 넘겨 최종 점수·성공률·전월 대비 판정을 계산한다 — **암산으로 가중합을 다시 계산하지 않는다.**
 
 ```bash
-node bin/calc-training-scorecard.mjs --input scorecard.json
+node ${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs --input scorecard.json
 # 또는
-echo '{ ...JSON... }' | node bin/calc-training-scorecard.mjs
+echo '{ ...JSON... }' | node ${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs
 ```
 
 입력 JSON에 채워 넣는 값 (전부 이 단계에서 LLM이 채점/관찰한 정성 판단 결과):
@@ -100,7 +100,7 @@ echo '{ ...JSON... }' | node bin/calc-training-scorecard.mjs
 - 최종 점수 = 기본수행×0.6 + EvalSet×0.25 + 성공률×0.1 + 비용×0.05
 - 전월 대비 diff와 상승(+threshold 이상)/정체(±threshold 이내)/하락(-threshold 이하) 판정(기본 threshold=5점, `--threshold N`으로 조정 가능)
 
-여러 에이전트를 한 번에 계산하려면 입력을 배열(또는 `{"agents":[...]}`)로 감싸면 스크립트가 각 에이전트 리포트 + 요약표(에이전트|지난회|이번회|변화|상태)까지 함께 출력한다. 상세 입력 스키마·옵션은 `node bin/calc-training-scorecard.mjs --help` 또는 스크립트 상단 주석 참고.
+여러 에이전트를 한 번에 계산하려면 입력을 배열(또는 `{"agents":[...]}`)로 감싸면 스크립트가 각 에이전트 리포트 + 요약표(에이전트|지난회|이번회|변화|상태)까지 함께 출력한다. 상세 입력 스키마·옵션은 `node ${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs --help` 또는 스크립트 상단 주석 참고.
 
 배점표(a~d)와 산식 자체의 정본은 이 SKILL.md이고, 스크립트는 그 산식을 그대로 코드로 고정한 것일 뿐이다 — 산식을 바꾸려면 SKILL.md와 스크립트 상수(`WEIGHTS`/`BASIC_ITEMS`/`EVAL_SCORE_MAP`/`COST_PENALTY`/`DEFAULT_THRESHOLD`)를 함께 갱신한다.
 

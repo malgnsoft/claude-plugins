@@ -17,7 +17,7 @@ description: 화면 검증·캡처 표준 — UI 산출물을 실제 렌더링�
 **사전 조건(캡처 대상 프로젝트 루트에서 1회)**: `pnpm add -D playwright && pnpm exec playwright install chromium`. `capture.mjs` 자신은 malgn-agent 플러그인 안에 있고 playwright는 대상 프로젝트에 설치되므로, 반드시 그 프로젝트 루트(cwd)에서 실행한다.
 
 ```bash
-node <malgn-agent 플러그인 경로>/bin/capture.mjs <url> [output.png] [옵션...]
+node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs <url> [output.png] [옵션...]
 ```
 - `--full` 전체 페이지 캡처(스크롤 영역 포함) / `--vp WxH` 뷰포트 지정(기본 1280x800)
 - `--responsive [목록]` 여러 뷰포트를 순회 캡처(목록 생략 시 기본 `375x667,768x1024,1440x900` = 모바일/태블릿/데스크톱), 파일명에 `-WxH` 접미사 자동 부여
@@ -30,17 +30,17 @@ output을 생략하면 URL+타임스탬프로 파일명을 자동 생성해 cwd�
 
 예:
 ```bash
-node <malgn-agent 플러그인 경로>/bin/capture.mjs http://localhost:9000 docs/shots/dashboard.png --full
-node <malgn-agent 플러그인 경로>/bin/capture.mjs http://localhost:9000/projects out.png --wait ".project-card" --responsive
-node <malgn-agent 플러그인 경로>/bin/capture.mjs http://localhost:9000 sidebar.png --sel "#sidebar"   # 요소 단위 before/after
+node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs http://localhost:9000 docs/shots/dashboard.png --full
+node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs http://localhost:9000/projects out.png --wait ".project-card" --responsive
+node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs http://localhost:9000 sidebar.png --sel "#sidebar"   # 요소 단위 before/after
 ```
 
 **capture.mjs가 지원하지 않는 것(정직하게 명시 — 과거 `shot` 서술을 그대로 옮기지 않는다)**: `-o` 출력 플래그(대신 두 번째 위치 인자가 output), `--console`(콘솔·페이지 에러 출력), `--header`(커스텀 헤더/토큰 API), 로그인 세션의 자동 저장·재사용. 이런 것이 필요하면 억지로 capture.mjs를 확장하지 않고, 프로젝트 안에 별도 Playwright 스크립트를 짜거나 아래 "인증이 필요한 화면" 절의 E2E 표준을 쓴다.
 
 ### 인증이 필요한 화면
-`capture.mjs`는 로그인 세션을 자동으로 저장·재사용하지 않는다(전역 레시피·전역 인증 캐시 없음). 인증이 필요한 화면은 `templates/e2e-template/`의 Playwright 표준 `storageState` 방식을 그 프로젝트의 인증 재사용 표준으로 채택한다:
+`capture.mjs`는 로그인 세션을 자동으로 저장·재사용하지 않는다(전역 레시피·전역 인증 캐시 없음). 인증이 필요한 화면은 `${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/`의 Playwright 표준 `storageState` 방식을 그 프로젝트의 인증 재사용 표준으로 채택한다:
 
-1. `templates/e2e-template/auth.setup.js`를 프로젝트의 `e2e/` 디렉터리로 복사하고 실제 로그인 폼 셀렉터·성공 판정 조건으로 고친다(`templates/e2e-template/README.md`의 6단계 참조).
+1. `${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/auth.setup.js`를 프로젝트의 `e2e/` 디렉터리로 복사하고 실제 로그인 폼 셀렉터·성공 판정 조건으로 고친다(`templates/e2e-template/README.md`의 6단계 참조).
 2. 로그인을 1회만 수행해 세션을 프로젝트 로컬 `e2e/.auth/user.json`에 저장한다(전역 경로 아님 — 프로젝트끼리 세션이 섞이지 않는다).
 3. 인증이 필요한 화면을 검증할 때는 그 화면을 이 storageState 기반 E2E 테스트 안에서 `page.screenshot()`으로 함께 캡처하거나, 별도 스크립트에서 `browser.newContext({ storageState: 'e2e/.auth/user.json' })`으로 그 세션을 직접 로드해 재사용한다. `capture.mjs` 자신은 이 옵션을 플래그로 내장하지 않는다 — 향후 확장 시 이 표준 포맷을 그대로 소비하면 된다(지금은 없음, 과장 금지).
 
@@ -51,7 +51,7 @@ node <malgn-agent 플러그인 경로>/bin/capture.mjs http://localhost:9000 sid
 ### 1. 뷰포트 표준화
 - **데스크톱:** 1920×1080 (또는 프로젝트 명시 기본값)
 - **모바일:** 375×667 (iPhone SE) + 추가 필요 시 태블릿 768×1024
-- `capture.mjs --responsive`로 3종 동시 캡처 → 일관된 해상도
+- `node ${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs --responsive`로 3종 동시 캡처 → 일관된 해상도
 - 장비/브라우저 간 렌더링 편차 문서화 (유연성·표준)
 
 ### 2. 캡처 상태 분류

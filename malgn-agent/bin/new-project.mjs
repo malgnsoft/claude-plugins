@@ -12,13 +12,16 @@
  * 그리고 git init.
  *
  * 사용:
- *   node <malgn-agent 플러그인 경로>/bin/new-project.mjs <project-name> ["한 줄 설명"]
+ *   node ${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs <project-name> ["한 줄 설명"]
  *     → ~/workspace/<project-name>/ 을 새로 만들어 스탬프한다 (이미 있으면 중단).
- *   node <malgn-agent 플러그인 경로>/bin/new-project.mjs --here ["한 줄 설명"]
+ *   node ${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs --here ["한 줄 설명"]
  *     → 사용자가 이미 만들어 둔 현재 디렉토리(cwd)에 스탬프한다.
  *       STATUS.md가 이미 있으면 "이미 초기화됨"으로 보고 중단한다(동기화는 malgnai-hub project_bootstrap 사용).
  *       그 외 기존 파일(package.json 등)은 덮어쓰지 않고 건너뛴다.
- *   (참고: bin/ 은 PATH에 자동 등록되지 않는다 — 항상 위처럼 node로 전체 경로를 지정해 호출한다)
+ *   (${CLAUDE_PLUGIN_ROOT}는 스킬·에이전트 본문에서만 절대경로로 치환된다 — 셸 변수가 아니다.
+ *    맨 명령어 `new-project.mjs ...`로도 부르지 않는다: 플러그인 bin/ 이 Bash 툴의 PATH에
+ *    등재되긴 하지만 실행 비트가 없는 번들 스크립트가 있어 permission denied 로 실패한다.
+ *    커맨드 정본은 Skill project-standards §7 참조.)
  */
 import { mkdirSync, writeFileSync, existsSync, readFileSync, appendFileSync } from 'node:fs'
 import { join, basename, dirname } from 'node:path'

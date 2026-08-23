@@ -24,8 +24,12 @@
 2. `auth.setup.js`를 프로젝트의 E2E 테스트 디렉터리로 복사:
    ```bash
    mkdir -p e2e
-   cp <malgn-agent 플러그인 경로>/templates/e2e-template/auth.setup.js e2e/auth.setup.js
+   cp ${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/auth.setup.js e2e/auth.setup.js
    ```
+
+   > `${CLAUDE_PLUGIN_ROOT}`는 스킬·에이전트 본문에서만 플러그인 절대경로로 치환된다 — 셸 변수가 아니다.
+   > 이 README를 Read로 열면 문자 그대로 보이므로, 실행할 때는 Skill
+   > `common-screen-verification-and-capture`에 채워져 나오는 절대경로를 쓴다.
 
 3. `e2e/auth.setup.js` 안의 "프로젝트에 맞게 고칠 곳"을 실제 로그인 폼 셀렉터·성공 판정
    조건으로 교체한다. `BASE_URL`/`E2E_USER`/`E2E_PASS`는 환경변수로 주입한다(코드에 자격증명

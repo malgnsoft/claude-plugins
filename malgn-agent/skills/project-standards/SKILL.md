@@ -70,7 +70,7 @@ description: 맑은소프트 프로젝트 운영 표준 — 패키지 매니저(
 새 프로젝트는 임의로 디렉토리를 만들지 말고, 이 플러그인이 제공하는 스캐폴더를 사용한다:
 
 ```bash
-node <이 플러그인 경로>/bin/new-project.mjs <프로젝트명> ["한 줄 설명"]
+node ${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs <프로젝트명> ["한 줄 설명"]
 ```
 
 `~/workspace/<이름>/`에 다음을 스탬프하고 git init까지 수행한다:
@@ -91,7 +91,7 @@ node <이 플러그인 경로>/bin/new-project.mjs <프로젝트명> ["한 줄 �
    - **없으면 → 아래 신규 초기화로 진행.**
 2. **신규 초기화(in-place)**:
    ```bash
-   node <이 플러그인 경로>/bin/new-project.mjs --here ["한 줄 설명"]
+   node ${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs --here ["한 줄 설명"]
    ```
    - cwd에 STATUS.md/CLAUDE.md/docs/README.md/.claude/doc-drift.json/package.json 중 **없는 파일만** 스탬프한다. 이미 코드가 있는 폴더(기존 `package.json` 등)라도 기존 파일은 덮어쓰지 않고 건너뛴다 — 실행 후 출력의 "건너뜀" 목록을 사용자에게 보고한다.
    - `.git`이 없으면 `git init`까지 수행한다.
@@ -111,7 +111,7 @@ node <이 플러그인 경로>/bin/new-project.mjs <프로젝트명> ["한 줄 �
 절차:
 
 ```bash
-node <이 플러그인 경로>/skills/project-standards/scripts/check-pm-orchestration-block.mjs [cwd]
+node ${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestration-block.mjs [cwd]
 ```
 
 이 스크립트는 파일을 쓰지 않는다 — cwd의 CLAUDE.md를 읽어 현재 상태를 JSON으로 출력할 뿐이다. 실제 CLAUDE.md 수정은 이 결과를 읽은 세션이 아래 절차대로 Edit로 수행한다:

@@ -19,7 +19,9 @@
  * 호출한 Claude 세션이 SKILL.md §9 절차를 따라 직접 수행한다("훅/스크립트는 파일을 쓰지 않는다"
  * 불변식, 구 훅과 동일).
  *
- * 사용: node <malgn-agent 플러그인 경로>/skills/project-standards/scripts/check-pm-orchestration-block.mjs [cwd]
+ * 사용: node ${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestration-block.mjs [cwd]
+ *       (이 변수는 스킬·에이전트 본문에서만 절대경로로 치환된다 — 셸 변수가 아니다.
+ *        커맨드 정본은 Skill project-standards §9 참조)
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
