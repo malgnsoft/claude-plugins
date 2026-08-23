@@ -36,3 +36,4 @@
 ## 적용 이력
 - 2026-08-22 / target_id `lesson-id-removal` / 1차 — `418b2a0..05e0273` 32파일 195줄. D 19줄 전건 원문 대조. Critical 0.
 - 2026-08-22 / target_id `knowledge-dead-skill-refs` / 1차 — `knowledge/` 죽은 스킬명 4파일 15줄 1:1 치환. §5 참고파일은 직전 라운드 고정이라 역할개념 수준으로만 적용. 방법론 2를 `sed 's/domain-//g'` 정규화 후 전문 diff로 대체해 "치환 순도 100%"를 기계 증명(사람 판단분 0건). Critical~Nit 전부 0.
+- 2026-08-23 / target_id `bin-script-reach-path` / 1차(최초) — 역할개념 수준 재사용. 31건 치환의 "치환 후에도 같은 행동인가" 판정. 치환 순도 자체는 문제없으나 **치환되지 않는 파일(`knowledge/`·`templates/`·`bin/`)에 치환 토큰을 심은 4곳**에서 의미가 나빠졌다고 판정(RV-005, Major) — 이전 `<...플러그인 경로>`는 "채워야 할 자리"가 자명했으나 `${CLAUDE_PLUGIN_ROOT}`는 완성 커맨드로 보인다. 같은 커밋이 `ux-design-guide.md:129`·`screenshot-capture-guide.md:3`에서 정반대(우수) 패턴을 채택한 것을 반례로 제시. 추가: 단순 지칭 자리에 절대경로가 붙어 산문이 나빠진 2곳(RV-010).

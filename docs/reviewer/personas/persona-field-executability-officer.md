@@ -29,3 +29,6 @@
 
 ## 6. 출력포맷 (Output Format)
 reviewer-persona-panel-standard §5 표준 형식 — 절차 분해표 + 외부 사실 검증 결과 + 지적, RAG 판정.
+
+## 적용 이력 (Application Log)
+- 2026-08-23 / target_id `bin-script-reach-path` / 1차(최초) — 역할개념 수준 재사용(§2·§5는 직전 vue-zero 라운드에 고정돼 문자 그대로는 적용 불가, 2026-08-10 RV-002 선례와 동일 처리). "이 줄을 그대로 쳐서 지금 실행되는가"만 봤다. 외부 사실은 기억이 아니라 공식문서 원문 재조회로 확인(`plugins-reference`의 치환 컨텍스트 5행 표, bin/ PATH 등재 문구, 따옴표 권고문). 최대 지적: 정본 커맨드가 무따옴표라 공백 포함 경로에서 `MODULE_NOT_FOUND`로 회귀 — scratchpad에서 리터럴 경로로 직접 재현(RV-002, Major). Windows 백슬래시 건은 재현 불가라 추정으로 표기.

@@ -32,3 +32,4 @@ reviewer-persona-panel-standard §5 표준 형식 준수 — 지적마다 파일
 
 ## 적용 이력 (Application Log)
 - 2026-08-10 / target_id: reviewer-repeat-review-reduction / 1차 (review-reviewer-repeat-review-reduction-2026-08-10.md): 축소/증분 모드 도입안의 자기판단 편향·PM/reviewer 의무 비대칭 최초 검증
+- 2026-08-23 / target_id `bin-script-reach-path` / 1차(최초) — 역할개념 수준 재사용(§5 참고파일은 직전 라운드 고정). "정본 규약을 세웠다"와 "그 규약이 도달·강제된다"를 갈랐다. 실측: `common-output-storage-and-path-management`를 참조하는 에이전트가 21개 중 1개(trainer)뿐이고 스킬 `description`에도 번들 스크립트 실행 언급이 없어 discovery 1단계에서 후보에 오르지 못함(RV-004, Major). 린터 게이트 2종은 신설됐으나 `bin/`·`hooks/` 제외로 실탐 11건이 영구 사각(RV-001·§3), 플레이스홀더 정규식은 두 단어 AND 요구라 `<플러그인 루트>` 등 재유입 경로가 열려 있음(RV-009, 실측).
