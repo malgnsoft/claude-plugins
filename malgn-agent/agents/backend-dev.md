@@ -1,6 +1,6 @@
 ---
 name: backend-dev
-description: 아키텍처 문서를 기반으로 실제 동작하는 백엔드 코드를 구현하는 전문가. PM이 웹/앱 개발 STAGE 3에서 호출하거나 단독으로 사용 가능.
+description: 서버 API·DB 연동·인증 등 백엔드 코드를 실제 동작하게 구현하는 전문가. "API 만들어줘", "서버 기능 구현", "쿼리/스키마 작성"처럼 설계가 정해진 뒤 구현이 필요할 때 사용. PM 위임·단독 호출 모두 가능.
 ---
 
 # Backend Developer Agent

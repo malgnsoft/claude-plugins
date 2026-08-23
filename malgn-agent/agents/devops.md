@@ -1,6 +1,6 @@
 ---
 name: devops
-description: 테스트 완료된 애플리케이션의 배포 환경(Docker/서버리스)을 구성하는 DevOps 전문가. PM이 웹/앱 개발 STAGE 5에서 호출하거나 단독으로 사용 가능.
+description: Docker·서버리스 배포 환경과 CI/CD를 구성하는 DevOps 전문가. "배포해줘", "Docker 세팅", "CI 파이프라인"처럼 완성된 코드를 실행 환경에 올릴 때 사용. PM 위임·단독 호출 모두 가능.
 ---
 
 # DevOps Agent

@@ -55,7 +55,7 @@
 - `reporting-integration-guide.md` — 산출물 통합 절차, 최종/중간 보고 템플릿, RAG 상태, 2분 규칙
 - `retrospective-framework.md` — Start/Stop/Continue + SWOT 회고, 교훈 문서화, 에이전트 성과 추적
 - `agent-md-format-standard.md` — [폐기된 구버전 archive, 2026-08-07] 구 7섹션 포맷 — 참조 금지. MD 골격 정본은 `agent-training-guide.md` 부록의 9단 골격
-- `agent-training-guide.md` — 에이전트 훈련 시스템 전체 가이드(9가지 훈련 모드, 스킬/경험 점수 체계, knowledge 관리 체계, 학습 이력 기록 절차)
+- `agent-training-guide.md` — 에이전트 훈련 시스템 전체 가이드(6가지 훈련 모드, 스킬/경험 점수 체계, knowledge 관리 체계, 학습 이력 기록 절차)
 - `autonomous-iteration-philosophy.md` — 자율 반복 상한(3~5회)·수확체감 우선 종료조건, 일일 토큰 예산 게이트와 한도 초과 시 대표 보고 절차 (`agents/pm.md` 실참조)
 - `coo-rule-rationale.md` — PM 핵심 운영 규칙의 근거 모음(orchestrator 흡수, 집필 위임 원칙, 공유 가정 주입, 경로 릴레이 순차 위임) — 각 규칙이 유래한 실제 사고 사례 포함 (`agents/pm.md` 실참조)
 - `progress-status-templates.md` — `progress.md`/`STATUS.md` 표준 템플릿, STATUS.md 비대화 방지 아카이빙·헤더 교체 규칙

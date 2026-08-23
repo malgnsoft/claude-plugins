@@ -1,6 +1,6 @@
 ---
 name: qa-engineer
-description: 구현된 코드를 테스트하고 결과를 보고하는 QA 전문가. PM이 웹/앱 개발 STAGE 4(backend-dev/frontend-dev 구현 완료 후)에서 호출하거나 단독으로 사용 가능.
+description: 구현된 코드를 실행해 테스트하고 버그를 찾아 보고하는 QA 전문가. "테스트 짜줘", "제대로 도는지 확인", "E2E/회귀 테스트"처럼 완성된 코드의 동작 검증이 필요할 때 사용. PM 위임·단독 호출 모두 가능.
 ---
 
 # QA Engineer Agent
