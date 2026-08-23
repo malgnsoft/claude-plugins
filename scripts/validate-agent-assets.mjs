@@ -425,11 +425,20 @@ const PATH_WORD = /경로|path|dir/i;
 const ANGLE_TOKEN = /<[^<>\n]{1,60}>/g;
 
 const INVOCATION_REMEDY =
-  '정본은 `node ${CLAUDE_PLUGIN_ROOT}/bin/<스크립트>.mjs` 하나다 — 이 변수는 스킬·에이전트 ' +
-  '본문에서 플러그인 절대경로로 치환된다(셸 변수가 아니다). 규약은 Skill ' +
+  '정본은 `node "${CLAUDE_PLUGIN_ROOT}/bin/<스크립트>.mjs"` 하나다(따옴표 포함 — 공백이 든 ' +
+  '홈 경로에서 무따옴표는 MODULE_NOT_FOUND로 실패한다). 이 변수는 스킬 본문·에이전트 본문·훅 ' +
+  '커맨드에서 플러그인 절대경로로 치환된다(셸 변수가 아니다). 규약은 Skill ' +
   '`common-output-storage-and-path-management` §1-1 참조.';
 
-function checkBundledScriptInvocation(relPath, body, bundledScripts, isRoutingDoc) {
+// 스크립트 소스의 '선두 헤더 주석'(shebang 다음의 첫 블록 주석)만 떼어낸다.
+// 그 자리는 셸에서 읽히는 CLI 인터페이스 문서라 플러그인 루트 변수가 해소되지 않아
+// 맨 명령어 검사에서 제외한다. 나머지 본문(런타임에 인쇄되는 사용법 문자열 포함)은 검사한다.
+function stripLeadingHeaderComment(body) {
+  const m = /^(#![^\n]*\n)?\s*\/\*[\s\S]*?\*\//.exec(body);
+  return m ? body.slice(m[0].length) : body;
+}
+
+function checkBundledScriptInvocation(relPath, body, bundledScripts, bareScanBody) {
   // 플레이스홀더는 코드펜스 안에도 있다(사용 예시가 바로 그 자리다) — stripFencedCode를 쓰지 않는다.
   for (const m of body.matchAll(ANGLE_TOKEN)) {
     const inner = m[0].slice(1, -1);
@@ -440,11 +449,26 @@ function checkBundledScriptInvocation(relPath, body, bundledScripts, isRoutingDo
     }
   }
 
-  // 맨 명령어 검사는 '에이전트를 번들 스크립트로 안내하는 문서'에만 적용한다.
-  // 스크립트 자신의 헤더 주석과 --help 출력은 그 스크립트의 CLI 인터페이스 문서다 —
-  // 셸에서 읽히는 자리라 ${CLAUDE_PLUGIN_ROOT}가 애초에 해소되지 않는다. 여기까지 규칙을
-  // 밀면 오탐 43건이 실탐 8건을 덮는다(2026-08-23 실측: 정확히 그 비율로 나왔다).
-  if (!isRoutingDoc) return;
+  // 맨 명령어 검사 범위 — 2026-08-23 재측정으로 근거를 고쳤다.
+  //
+  // 처음엔 스크립트 소스(bin/·hooks/)를 통째로 제외하면서 그 이유를 "오탐 43건이 실탐 8건을
+  // 덮는다"고 적었다. **그 근거는 틀렸다.** 제외 구역을 실제로 훑어보니 히트는 오탐 덩어리가
+  // 아니라 두 종류였다: 스크립트 헤더 주석과 printUsage()가 인쇄하는 사용법 문자열.
+  // 뒤엣것은 오탐이 아니라 실탐이다 — 에이전트가 --help로 실제로 읽고 그대로 따라 하는
+  // 런타임 표면이라, 문서만 고치면 영영 사각에 남는다(43이라는 수 자체도 라인당 중복
+  // 매치를 센 값이었다).
+  //
+  // 그래서 사용법 문자열 11건을 process.argv[1] 기반으로 먼저 고치고(스크립트가 자기
+  // 절대경로를 런타임에 스스로 인쇄한다), 제외 범위를 **선두 헤더 주석 하나로** 좁혔다.
+  // 이제 스크립트의 런타임 출력도 검사 대상이라, 사용법 문자열에 맨 명령어가 다시 들어오면
+  // 게이트가 잡는다. 재측정 결과 남는 히트는 헤더 주석 26건(중복 포함, 고유 20줄)뿐이고
+  // 전부 bin/*.mjs 선두 주석이다.
+  //
+  // 헤더 주석을 아직 제외하는 이유: 그 자리는 셸에서 읽히는 CLI 인터페이스 문서라
+  // ${CLAUDE_PLUGIN_ROOT}가 해소되지 않는다. 지금 켜면 ERROR 20건이 한꺼번에 떠서
+  // 게이트가 통째로 무시당한다. 헤더 12개 표기 통일은 별도 백로그 항목이다.
+  if (!bareScanBody) return;
+  body = bareScanBody;
 
   for (const name of bundledScripts) {
     const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -743,12 +767,13 @@ function main() {
           continue;
         }
         if (!/\.(md|mjs|cjs|js)$/.test(e.name)) continue;
-        const rel = path.relative(pluginRoot, p).replace(/\\/g, '/');
-        // 라우팅 문서 = 에이전트가 읽고 그대로 따라 하는 문서. 스크립트 소스는 제외한다.
-        const isRoutingDoc = /\.md$/.test(e.name)
-          && !rel.startsWith('bin/') && !rel.startsWith('hooks/');
+        const raw = fs.readFileSync(p, 'utf8');
+        // 맨 명령어 검사 대상 본문:
+        //  - .md(에이전트가 읽고 그대로 따라 하는 문서) → 전문
+        //  - 스크립트 소스 → 선두 헤더 주석만 떼고 나머지 전부(= printUsage() 등 런타임 출력 포함)
+        const bareScanBody = /\.md$/.test(e.name) ? raw : stripLeadingHeaderComment(raw);
         checkBundledScriptInvocation(
-          path.relative(REPO_ROOT, p), fs.readFileSync(p, 'utf8'), bundledScripts, isRoutingDoc);
+          path.relative(REPO_ROOT, p), raw, bundledScripts, bareScanBody);
       }
     };
     walk(pluginRoot);
