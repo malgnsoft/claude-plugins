@@ -3,7 +3,8 @@
  * validate-agent-assets.mjs — malgn-agent Agent/Skill 자산 정적 검증기
  *
  * 검사 대상: <plugin>/agents/*.md 의 YAML frontmatter, <plugin>/skills/<name>/SKILL.md 의 YAML frontmatter,
- * 그리고 그 본문이 참조하는 Skill/Knowledge 경로.
+ * 그리고 agents·skills·knowledge **세 영역 본문 모두**가 참조하는 Skill/Knowledge/Agent/bin 경로.
+ * 여기에 더해 제품 전 영역(bin·hooks 포함)의 조회 불가 식별자 인용을 잡는다.
  *
  * 사용법:
  *   node scripts/validate-agent-assets.mjs [--plugin malgn-agent] [--format text|json] [--strict]
@@ -152,14 +153,49 @@ function stripFencedCode(body) {
   return body.replace(/^```[\s\S]*?^```/gm, '');
 }
 
-// "구 X …폐기/이관/병합/retire" 형태의 과거 이력 서술은 살아있는 포인터가 아니다.
-const RETIREMENT_NOTE = /(폐기|이관|retire|deprecat|흡수|분산 병합|삭제됨|없어졌|더 이상)/i;
+// 살아있는 포인터가 아닌 줄은 참조 검사에서 건너뛴다. 다만 "건너뛸 것"과 "확인해야 할 것"을
+// 가르는 기준은 **그 문장이 대상의 실재를 주장하는가**이지, 과거형이라는 사실이 아니다.
+//
+//   (a) "구 X는 폐기됐다 / 삭제됨 / 더 이상 없다"  → 대상이 없다고 문장이 말한다        → 건너뛴다
+//   (b) "이 플러그인에 미번들 / 미포함"            → 없는 게 정상이라고 문장이 말한다    → 건너뛴다
+//   (c) "본문은 skills/X로 이관/흡수/병합됐다"     → **X가 있다고 문장이 주장한다**      → 확인한다
+//
+// (c)를 (a)와 같이 묶어 건너뛴 것이 실제 사고의 원인이었다: 스킬 개명 라운드 뒤 knowledge의
+// 죽은 스킬 참조 16건 중 대부분이 "…로 이관됨" 줄에 있었고, 그 줄을 통째로 건너뛰는 바람에
+// 약 2주간 ERROR 0 초록불 아래에서 생존했다. 이사 간 곳을 적은 안내판이야말로 유효해야 한다.
+const RETIREMENT_NOTE = /(폐기|retire|deprecat|삭제됨|없어졌|더 이상|미번들|미포함|번들되지 않)/i;
+
+// 이사 안내판 줄. 한 줄 안에 **떠난 곳(없어도 되는 것)**과 **이사 간 곳(있어야 하는 것)**이
+// 함께 적히므로, 줄을 통째로 건너뛰거나 통째로 검사하는 것 둘 다 틀린다.
+//   "구 `knowledge/a.md`에서 흡수" → a.md는 없는 게 정상  (떠난 곳)
+//   "본문은 `skills/b/SKILL.md`로 이관" → b는 있어야 한다  (이사 간 곳)
+// 가르는 방향은 "이사 간 곳을 알아보기"가 아니라 **"떠난 곳을 알아보기"**다. 목적지 표기는
+// 형태가 여러 갈래라("…로 이관", "… → X", "…skill로 이관됨 — X, 2026-07-23") 목적지만
+// 화이트리스트로 잡으면 그때마다 새 형태가 검사망을 빠져나간다. 반면 떠난 곳은 한국어에서
+// 표지가 좁다 — 앞의 "구", 뒤의 "에서/는/의 본문". 좁은 쪽을 제외 목록으로 삼는다.
+const RELOCATION_NOTE = /(이관|흡수|병합|통합)/;
+const RELOCATION_SRC_BEFORE = /(?:^|[\s(])구\s*`?$/;                     // "구 `knowledge/a.md`에서 흡수"
+const RELOCATION_SRC_AFTER = /^`?\s*(?:에서|는|은|의\s*(?:본문|내용))/;    // "…`a.md`는 이 skill로 이관"
 
 // 줄 단위로 참조를 뽑되, 이력 서술 줄은 건너뛴다.
+// 주석은 다음 줄로 접히는 일이 흔하므로(인용문·표 밖 서술) 바로 다음 줄까지 함께 본다 —
+// 실제로 "…이 스크립트는 이 플러그인에 / 번들되지 않음" 형태로 접혀 있었다.
 function* liveReferences(body, re) {
-  for (const line of stripFencedCode(body).split(/\r?\n/)) {
+  const lines = stripFencedCode(body).split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     if (RETIREMENT_NOTE.test(line)) continue;
-    for (const m of line.matchAll(re)) yield m;
+    const next = lines[i + 1];
+    if (next !== undefined && next.trim() !== '' && RETIREMENT_NOTE.test(next)) continue;
+    const relocation = RELOCATION_NOTE.test(line);
+    for (const m of line.matchAll(re)) {
+      if (relocation) {
+        const before = line.slice(0, m.index);
+        const after = line.slice(m.index + m[0].length);
+        if (RELOCATION_SRC_BEFORE.test(before) || RELOCATION_SRC_AFTER.test(after)) continue;
+      }
+      yield m;
+    }
   }
 }
 
@@ -239,7 +275,10 @@ function checkCanonicalClaims(relPath, body, disclaiming, skillDirNames) {
 // 없으면 못 찾았다고 인지하지만, 있으면 읽고 정답인 줄 안다.
 
 // "`knowledge/x/y.md` §7" / "Skill `x` §3.5" 형태에서 (대상, 절번호)를 뽑는다.
-const ANCHOR_REF = /(?:`((?:knowledge|agents|skills)\/[A-Za-z0-9_\-/.]+\.md)`|Skill\s+`([a-z0-9:\-]+)`)[^\n`]{0,20}?§\s*([0-9]+(?:\.[0-9]+)?)/g;
+// 참조와 § 사이는 공백(또는 "의"·쉼표)만 허용한다. 간격을 넓게 잡으면 한 문장 안의 무관한
+// 절번호가 앞의 파일명과 잘못 짝지어진다 — 실제로 "`…/SKILL.md`로 이관) 배경만 남음 — §1.3"에서
+// 방법론 rubric의 §1.3이 그 SKILL.md의 절로 오인돼 없는 절 ERROR가 났다.
+const ANCHOR_REF = /(?:`((?:knowledge|agents|skills)\/[A-Za-z0-9_\-/.]+\.md)`|Skill\s+`([a-z0-9:\-]+)`)[ \t]{0,3}(?:의|,)?[ \t]{0,3}§\s*([0-9]+(?:\.[0-9]+)?)/g;
 
 function sectionNumbers(absPath) {
   const nums = new Set();
@@ -269,6 +308,95 @@ function checkAnchors(relPath, body, pluginRoot, skillDirNames, sectionCache) {
     if (!hit) {
       error('REF_ANCHOR_MISSING', relPath,
         `${targetRel} §${want}을 인용하나 그 문서에 해당 절이 없다 (있는 절: ${[...nums].sort().join(', ') || '없음'})`);
+    }
+  }
+}
+
+// ── 본문 참조 검증 (agents·skills·knowledge 공통) ──────────────────────
+// 세 영역은 같은 문법으로 서로를 가리키므로 검사도 하나여야 한다.
+// knowledge를 참조 "원천"으로 돌리지 않았던 동안(인벤토리로만 수집하고 본문은 읽지 않았다),
+// 스킬 개명 라운드 뒤 죽은 스킬 참조 16건이 ERROR 0 초록불 아래에서 약 2주간 생존했다.
+// 참조 대상이면서 동시에 참조 원천인 영역을 한쪽으로만 다룬 것이 그 구멍이었다.
+function checkBodyReferences(relPath, body, ctx) {
+  const { skillNames, knowledgeFiles, pluginRoot, referencedSkills } = ctx;
+
+  // 스킬을 가리키는 표기형은 두 가지다: ``Skill `name` `` 호출형과 `skills/name/SKILL.md` 경로형.
+  // 개명 라운드에서 죽은 참조가 두 형태에 섞여 남았으므로 둘 다 본다.
+  // (산문 속 맨몸 이름 — 백틱도 경로도 없는 형태 — 는 이 검사가 잡지 못한다. 개명 시에는
+  //  표기형이 아니라 **이름**으로 grep해 재수집하는 절차가 여전히 필요하다.)
+  const SKILL_REFS = [
+    /Skill\s+`([a-z0-9:\-]+)`/g,
+    /\bskills\/([a-z0-9\-]+)\/SKILL\.md/g,
+  ];
+  for (const re of SKILL_REFS) {
+    for (const m of liveReferences(body, re)) {
+      const bare = m[1].includes(':') ? m[1].split(':').pop() : m[1];
+      if (referencedSkills) referencedSkills.add(bare);
+      if (!skillNames.has(bare)) {
+        error('REF_SKILL_MISSING', relPath, `본문이 참조하는 Skill '${m[1]}'이 존재하지 않는다`);
+      }
+    }
+  }
+  for (const m of liveReferences(body, /\bknowledge\/[A-Za-z0-9_\-/]+\.md/g)) {
+    const target = m[0].replace(/^.*?knowledge\//, 'knowledge/');
+    if (!knowledgeFiles.has(target)) {
+      error('REF_KNOWLEDGE_MISSING', relPath, `본문이 참조하는 knowledge 파일이 없다: ${target}`);
+    }
+  }
+  for (const m of liveReferences(body, /`(agents\/[a-z0-9\-]+\.md)`/g)) {
+    if (!fs.existsSync(path.join(pluginRoot, m[1]))) {
+      error('REF_AGENT_MISSING', relPath, `본문이 참조하는 agent 파일이 없다: ${m[1]}`);
+    }
+  }
+  for (const m of liveReferences(body, /`(?:malgn-agent\/)?(bin\/[a-z0-9\-.]+\.(?:mjs|cjs|js))`/g)) {
+    if (!fs.existsSync(path.join(pluginRoot, m[1]))) {
+      error('REF_BIN_MISSING', relPath, `본문이 참조하는 스크립트가 없다: ${m[1]}`);
+    }
+  }
+}
+
+// ── 조회 불가 식별자 검사 ────────────────────────────────────────────
+// CLAUDE.md 항구 규칙: 제품 본문에 식별자를 근거로 달지 않는다. 설치 직원은 이 저장소의
+// lesson/decision id도, hub ULID도, 커밋 해시도 열어볼 수 없다 — 근거 구실을 못 하는 각주다.
+// 2026-08-22에 제품 전량 227건을 제거해 0건으로 만들었고, 이 검사는 그 0을 지키는 게이트다.
+// (게이트 없이 지운 것은 다시 들어온다 — 224건이 실제로 그렇게 쌓였다.)
+//
+// **형태가 아니라 "인용으로 쓰였는가"를 잡는다.** 맨몸 8-hex를 전부 잡으면 날짜(20250210)·
+// 상수(86400000)가 같이 걸려 오탐이 실탐을 덮고, 그러면 이 검사는 통째로 무시당한다.
+// 아래 세 갈래로 좁힌 뒤 제거 직전 트리(224건 시점)를 양성 대조군으로 돌려 미포착 0건을 확인했다.
+const ID_HEX = '[0-9a-f]{7,12}';
+const ID_ULID = '01[0-9a-hjkmnp-tv-z]{24}';
+const ID_CITE_KEYWORD = '(?:lesson|decision|issue|memory|commit|커밋|교훈|전례|사유서|기록)';
+const ID_CITATION_PATTERNS = [
+  // (A) 인용 키워드 + id — "lesson `5b55dd67`", "decision 912221a4", "커밋: `9ec5183`"
+  new RegExp(`${ID_CITE_KEYWORD}s?\\s*[:#]?\\s*\`?(${ID_HEX}|${ID_ULID})\`?(?![0-9a-z])`, 'gi'),
+  // (B) hub ULID는 키워드 없이 맨몸으로 나와도 조회 불가다 — 26자 base32는 오탐 여지가 사실상 없다
+  new RegExp(`\\b(${ID_ULID})\\b`, 'g'),
+  // (C) 백틱에 싸인 hex — "lesson `a`/`b`" 연쇄의 뒷항처럼 키워드가 앞에 없는 형태를 잡는다
+  new RegExp('`(' + ID_HEX + ')`', 'g'),
+];
+// 독자가 "자기 프로젝트의 값"을 채워 넣도록 둔 템플릿 예시값은 조회 불가 인용이 아니다.
+// (예: learning-loop 체크리스트의 `#123`(PR)과 나란히 있는 커밋 자리 표시자)
+const ID_PLACEHOLDERS = new Set([
+  'abc1234', 'abcd123', 'abc12345', 'a1b2c3d4', 'deadbeef', 'cafebabe', '1234567', '0123456',
+]);
+
+function checkUnresolvableIds(relPath, body) {
+  // liveReferences를 쓰지 않는다 — "구 X는 폐기됨(lesson `…`)" 같은 이력 서술에도 id는 못 붙인다.
+  // 날짜·경위·사유는 남기되 id만 뺀다는 것이 규칙이다.
+  const seen = new Set();
+  for (const line of stripFencedCode(body).split(/\r?\n/)) {
+    for (const re of ID_CITATION_PATTERNS) {
+      re.lastIndex = 0;
+      for (const m of line.matchAll(re)) {
+        const id = (m[1] || m[0]).toLowerCase();
+        if (ID_PLACEHOLDERS.has(id) || seen.has(id)) continue;
+        seen.add(id);
+        error('UNRESOLVABLE_ID', relPath,
+          `조회 불가 식별자 '${id}'를 근거로 인용한다 — 설치 직원은 열어볼 수 없다. ` +
+          '교훈의 실질을 문장으로 쓰고 id만 뺀다(날짜·경위·사유는 남긴다). ' +
+          '독자가 채워 넣는 템플릿 예시값이라면 ID_PLACEHOLDERS에 등록한다.');
+      }
     }
   }
 }
@@ -366,14 +494,20 @@ function main() {
   }
 
   // ── Knowledge 인벤토리 ────────────────────────────────────────────
+  // 인벤토리(참조 "대상")와 본문(참조 "원천")을 한 번에 모은다. knowledge는 둘 다이므로
+  // 한쪽으로만 다루면 knowledge → 죽은 Skill 참조가 통째로 검사망 밖에 남는다.
   const knowledgeDir = path.join(pluginRoot, 'knowledge');
   const knowledgeFiles = new Set();
+  const knowledgeBodies = [];
   if (fs.existsSync(knowledgeDir)) {
     const walk = (d) => {
       for (const e of fs.readdirSync(d, { withFileTypes: true })) {
         const p = path.join(d, e.name);
         if (e.isDirectory()) walk(p);
-        else if (e.name.endsWith('.md')) knowledgeFiles.add(path.relative(pluginRoot, p).replace(/\\/g, '/'));
+        else if (e.name.endsWith('.md')) {
+          knowledgeFiles.add(path.relative(pluginRoot, p).replace(/\\/g, '/'));
+          knowledgeBodies.push({ rel: path.relative(REPO_ROOT, p), body: fs.readFileSync(p, 'utf8') });
+        }
       }
     };
     walk(knowledgeDir);
@@ -391,6 +525,7 @@ function main() {
     : [];
   const referencedSkills = new Set();
   const sizes = [];
+  const refCtx = { skillNames, knowledgeFiles, pluginRoot, referencedSkills };
 
   for (const file of agentFiles) {
     const abs = path.join(agentsDir, file);
@@ -468,75 +603,65 @@ function main() {
     }
 
     // 본문 참조 검증: Skill `name` / knowledge/... 경로
-    for (const m of liveReferences(body, /Skill\s+`([a-z0-9:\-]+)`/g)) {
-      const bare = m[1].includes(':') ? m[1].split(':').pop() : m[1];
-      referencedSkills.add(bare);
-      if (!skillNames.has(bare)) {
-        error('REF_SKILL_MISSING', rel, `본문이 참조하는 Skill '${m[1]}'이 존재하지 않는다`);
-      }
-    }
-    for (const m of liveReferences(body, /\bknowledge\/[A-Za-z0-9_\-/]+\.md/g)) {
-      const target = m[0].replace(/^.*?knowledge\//, 'knowledge/');
-      if (!knowledgeFiles.has(target)) {
-        error('REF_KNOWLEDGE_MISSING', rel, `본문이 참조하는 knowledge 파일이 없다: ${target}`);
-      }
-    }
-    for (const m of liveReferences(body, /`(agents\/[a-z0-9\-]+\.md)`/g)) {
-      if (!fs.existsSync(path.join(pluginRoot, m[1]))) {
-        error('REF_AGENT_MISSING', rel, `본문이 참조하는 agent 파일이 없다: ${m[1]}`);
-      }
-    }
-    for (const m of liveReferences(body, /`(?:malgn-agent\/)?(bin\/[a-z0-9\-.]+\.(?:mjs|cjs|js))`/g)) {
-      if (!fs.existsSync(path.join(pluginRoot, m[1]))) {
-        error('REF_BIN_MISSING', rel, `본문이 참조하는 스크립트가 없다: ${m[1]}`);
-      }
-    }
-
+    checkBodyReferences(rel, body, refCtx);
     checkCanonicalClaims(rel, body, disclaiming, skillDirNames);
     checkAnchors(rel, body, pluginRoot, skillDirNames, sectionCache);
+    checkUnresolvableIds(rel, body);
 
     // 컨텍스트 예산 (상시 비용)
     checkContextBudget(rel, `agents/${base}.md`, bytes, META_AGENTS.has(base) ? BUDGET_META_KB : BUDGET_SPECIALIST_KB, AGENT_BUDGET_REMEDY);
     scanAbsolutePaths(rel, body);
   }
 
-  // ── Skill 본문의 참조 검증 + orphan 탐지 ──────────────────────────
+  // ── Skill 본문의 참조 검증 ────────────────────────────────────────
   for (const { rel, body } of skillFiles) {
     if (!body) continue;
-    for (const m of liveReferences(body, /Skill\s+`([a-z0-9:\-]+)`/g)) {
-      const bare = m[1].includes(':') ? m[1].split(':').pop() : m[1];
-      if (!skillNames.has(bare)) {
-        error('REF_SKILL_MISSING', rel, `본문이 참조하는 Skill '${m[1]}'이 존재하지 않는다`);
-      }
-    }
-    for (const m of liveReferences(body, /\bknowledge\/[A-Za-z0-9_\-/]+\.md/g)) {
-      const target = m[0].replace(/^.*?knowledge\//, 'knowledge/');
-      if (!knowledgeFiles.has(target)) {
-        error('REF_KNOWLEDGE_MISSING', rel, `본문이 참조하는 knowledge 파일이 없다: ${target}`);
-      }
-    }
-    for (const m of liveReferences(body, /`(?:malgn-agent\/)?(bin\/[a-z0-9\-.]+\.(?:mjs|cjs|js))`/g)) {
-      if (!fs.existsSync(path.join(pluginRoot, m[1]))) {
-        error('REF_BIN_MISSING', rel, `본문이 참조하는 스크립트가 없다: ${m[1]}`);
-      }
-    }
-  }
-
-  for (const { rel, body } of skillFiles) {
-    if (!body) continue;
+    checkBodyReferences(rel, body, refCtx);
     checkCanonicalClaims(rel, body, disclaiming, skillDirNames);
     checkAnchors(rel, body, pluginRoot, skillDirNames, sectionCache);
+    checkUnresolvableIds(rel, body);
   }
 
-  // orphan Skill: 어떤 agent도(frontmatter/본문 어디서도) 참조하지 않는 Skill
+  // ── Knowledge 본문의 참조 검증 ────────────────────────────────────
+  // knowledge는 frontmatter 규약 대상이 아니므로 형식 검사는 하지 않는다. 그러나 참조는 한다 —
+  // agents·skills와 똑같은 문법으로 Skill/knowledge/agent/bin을 가리키고, 그 포인터도 똑같이 썩는다.
+  for (const { rel, body } of knowledgeBodies) {
+    checkBodyReferences(rel, body, refCtx);
+    checkCanonicalClaims(rel, body, disclaiming, skillDirNames);
+    checkAnchors(rel, body, pluginRoot, skillDirNames, sectionCache);
+    checkUnresolvableIds(rel, body);
+  }
+
+  // ── bin·hooks 소스의 조회 불가 식별자 ─────────────────────────────
+  // 본문(.md)만 훑으면 코드 주석에 남은 id가 그대로 통과한다 — 실제로 .md 224건을 다 지운 뒤에도
+  // bin/report-usage.mjs 주석에 hub ULID 2건이 살아 있었다. 검사 범위는 형태가 아니라
+  // "설치 직원이 조회할 수 있는가"로 잡는다.
+  for (const sub of ['bin', 'hooks']) {
+    const dir = path.join(pluginRoot, sub);
+    if (!fs.existsSync(dir)) continue;
+    const walk = (d) => {
+      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+        const p = path.join(d, e.name);
+        if (e.isDirectory()) { walk(p); continue; }
+        if (!/\.(mjs|cjs|js|md|json)$/.test(e.name)) continue;
+        checkUnresolvableIds(path.relative(REPO_ROOT, p), fs.readFileSync(p, 'utf8'));
+      }
+    };
+    walk(dir);
+  }
+
+  // orphan Skill: 어떤 agent/skill/knowledge도(frontmatter/본문 어디서도) 참조하지 않는 Skill.
+  // knowledge 본문도 건초더미에 넣는다 — knowledge에서만 불리는 Skill은 고아가 아니라
+  // knowledge를 읽는 에이전트의 실제 진입 경로다.
   // 슬래시 커맨드로 직접 쓰는 Skill도 있으므로 WARN.
   const allAgentBodies = agentFiles.map((f) => fs.readFileSync(path.join(agentsDir, f), 'utf8')).join('\n');
   const allSkillBodies = skillFiles.map((s) => s.body).join('\n');
-  const haystack = allAgentBodies + allSkillBodies;
+  const allKnowledgeBodies = knowledgeBodies.map((k) => k.body).join('\n');
+  const haystack = allAgentBodies + allSkillBodies + allKnowledgeBodies;
   for (const dir of skillDirNames) {
     if (referencedSkills.has(dir)) continue;
     if (haystack.includes(dir)) continue;
-    warn('SKILL_ORPHAN', `${opts.plugin}/skills/${dir}/SKILL.md`, '어떤 Agent/Skill도 이 Skill을 참조하지 않는다 (사용자 직접 호출 전용이면 무시)');
+    warn('SKILL_ORPHAN', `${opts.plugin}/skills/${dir}/SKILL.md`, '어떤 Agent/Skill/Knowledge도 이 Skill을 참조하지 않는다 (사용자 직접 호출 전용이면 무시)');
   }
 
   // ── 리포트 ────────────────────────────────────────────────────────
