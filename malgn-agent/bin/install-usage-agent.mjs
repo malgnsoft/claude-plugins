@@ -37,7 +37,8 @@ const WIN_TASK_NAME = 'MalgnsoftUsageAgent';
 const HUB_LOG_DIR = path.join(os.homedir(), '.claude', 'malgnai-hub');
 
 function printHelp() {
-  console.log(`사용법: node install-usage-agent.mjs [--uninstall]
+  const SELF = `node "${process.argv[1]}"`
+  console.log(`사용법: ${SELF} [--uninstall]
 
 옵션 없이 실행: report-usage.mjs 를 매시간 자동 실행하도록 OS 스케줄러에 등록합니다.
               디바이스 페어링이 안 되어 있으면 먼저 pair-usage-device.mjs 를 실행합니다

@@ -53,7 +53,8 @@ const rawName = useHere ? undefined : process.argv[2]
 const desc = process.argv[3] || '<한 줄 설명>'
 
 if (!useHere && (!rawName || /[\/\\]/.test(rawName))) {
-  console.error('사용법: new-project.mjs <project-name> ["한 줄 설명"]  |  new-project.mjs --here ["한 줄 설명"] (malgn-agent 플러그인의 bin/new-project.mjs)')
+  const SELF = `node "${process.argv[1]}"`
+  console.error(`사용법: ${SELF} <project-name> ["한 줄 설명"]\n       ${SELF} --here ["한 줄 설명"]`)
   process.exit(1)
 }
 

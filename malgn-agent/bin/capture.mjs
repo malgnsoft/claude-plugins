@@ -48,9 +48,10 @@ const DEFAULT_VIEWPORT = { width: 1280, height: 800 }
 const DEFAULT_RESPONSIVE = '375x667,768x1024,1440x900'
 
 function printUsage() {
+  const SELF = `node "${process.argv[1]}"`
   console.error(
     [
-      '사용법: capture.mjs <url> [output.png] [옵션...]',
+      `사용법: ${SELF} <url> [output.png] [옵션...]`,
       '',
       '옵션:',
       '  --full                전체 페이지 캡처',

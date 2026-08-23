@@ -59,7 +59,8 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`사용법: node check-output-conventions.mjs [targetDir] [--root <path>] [--strict]
+  const SELF = `node "${process.argv[1]}"`
+  console.log(`사용법: ${SELF} [targetDir] [--root <path>] [--strict]
 
   targetDir    스캔할 디렉터리 (프로젝트 루트 기준 상대경로, 기본값 "docs")
   --root PATH  프로젝트 루트 경로 (기본값: 현재 작업 디렉터리)

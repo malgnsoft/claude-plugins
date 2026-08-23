@@ -73,7 +73,8 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`사용법: node check-wbs-warnings.mjs [--current FILE] [--previous FILE] [--today YYYY-MM-DD] [--format text|json]
+  const SELF = `node "${process.argv[1]}"`
+  console.log(`사용법: ${SELF} [--current FILE] [--previous FILE] [--today YYYY-MM-DD] [--format text|json]
 
   --current FILE   현재 WBS 스냅샷 JSON(wbs_list 응답 배열). 생략 시 stdin에서 읽음.
   --previous FILE  이전 스냅샷 JSON. "롤업 추락"(5%p 하락) 신호 판정에만 필요.

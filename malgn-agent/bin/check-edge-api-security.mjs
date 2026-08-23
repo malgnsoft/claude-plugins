@@ -43,7 +43,8 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`사용법: node check-edge-api-security.mjs [projectRoot]
+  const SELF = `node "${process.argv[1]}"`
+  console.log(`사용법: ${SELF} [projectRoot]
 
   projectRoot   점검 대상 프로젝트 루트 (생략 시 현재 디렉터리)
 

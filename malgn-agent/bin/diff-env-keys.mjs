@@ -50,7 +50,8 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`사용법: node diff-env-keys.mjs [projectRoot] [--help]
+  const SELF = `node "${process.argv[1]}"`
+  console.log(`사용법: ${SELF} [projectRoot] [--help]
 
   projectRoot  탐색을 시작할 프로젝트 루트 경로 (생략 시 현재 디렉터리)
 

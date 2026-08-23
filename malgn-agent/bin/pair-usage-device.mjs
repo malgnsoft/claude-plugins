@@ -31,7 +31,8 @@ import {
 } from './usage-agent-lib.mjs';
 
 function printHelp() {
-  console.log(`사용법: node pair-usage-device.mjs [--force]
+  const SELF = `node "${process.argv[1]}"`
+  console.log(`사용법: ${SELF} [--force]
 
 malgnai-hub 디바이스 페어링을 진행해 device_token을 발급받아
 ~/.claude/malgnai-hub/usage-agent-credentials.json 에 저장합니다.

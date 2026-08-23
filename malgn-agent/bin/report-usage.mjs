@@ -75,7 +75,8 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`사용법: node report-usage.mjs [--since <ISO시각|일수>] [--dry-run]
+  const SELF = `node "${process.argv[1]}"`
+  console.log(`사용법: ${SELF} [--since <ISO시각|일수>] [--dry-run]
 
   --since <값>  이 시각(ISO 8601) 또는 N일 전 이후 활동이 있었던 세션만 대상으로 함.
                 생략 시 마지막 성공 전송 이후(없으면 오늘 0시)부터 자동 계산, 최대 30일 catch-up.

@@ -138,7 +138,8 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`사용법: node calc-training-scorecard.mjs [--input FILE] [--format text|json] [--threshold N]
+  const SELF = `node "${process.argv[1]}"`
+  console.log(`사용법: ${SELF} [--input FILE] [--format text|json] [--threshold N]
 
   --input FILE   입력 JSON 파일 경로 (생략 시 stdin에서 읽음)
   --format F     text(기본, 사람이 읽는 리포트) | json(원시 계산 결과)

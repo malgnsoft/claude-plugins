@@ -62,7 +62,8 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`사용법: node analyze-usage.mjs [--days N] [--project <cwd 부분일치>] [--top N]
+  const SELF = `node "${process.argv[1]}"`
+  console.log(`사용법: ${SELF} [--days N] [--project <cwd 부분일치>] [--top N]
 
   --days N     최근 N일 집계 (기본 1 = 오늘, 로컬 타임존 기준)
   --project S  cwd에 S가 포함된 세션만 집계
