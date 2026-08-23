@@ -36,6 +36,9 @@ description: 직원 PC에 설치된 토큰 사용량 자동 수집 에이전트(
 | "새 PC로 옮겼어", "페어링부터 다시" | `node "${CLAUDE_PLUGIN_ROOT}/bin/pair-usage-device.mjs" --force` 실행 후 `install-usage-agent.mjs` 재실행 |
 | "전송 없이 확인만 해줘" | `node "${CLAUDE_PLUGIN_ROOT}/bin/report-usage.mjs" --dry-run` |
 
+> 이 커맨드가 실패하거나(특히 `MODULE_NOT_FOUND`) 새 실행 지시를 쓸 때의 규약 — 따옴표, 이 변수가 치환되는 자리와 안 되는 자리, 맨 명령어를 쓰지 않는 이유 — 은 Skill `common-output-storage-and-path-management` §1-1이 정본이다.
+
+
 `install-usage-agent.mjs`는 옵션 없이 실행하면 **페어링이 안 되어 있을 때 자동으로 `pair-usage-device.mjs`부터 실행**한다(브라우저가 열리고 사람의 승인 클릭이 필요하므로, 반드시 사람이 있는 터미널에서 실행해야 한다 — TTY 없는 자동화 파이프라인에서 실행하지 않는다). 이미 페어링되어 있으면 그 단계는 건너뛰고 스케줄러 등록만 진행한다.
 
 ## 헬스체크 절차

@@ -73,6 +73,8 @@ description: 맑은소프트 프로젝트 운영 표준 — 패키지 매니저(
 node "${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs" <프로젝트명> ["한 줄 설명"]
 ```
 
+> 이 커맨드가 실패하거나(특히 `MODULE_NOT_FOUND`) 새 실행 지시를 쓸 때의 규약 — 따옴표, 이 변수가 치환되는 자리와 안 되는 자리, 맨 명령어를 쓰지 않는 이유 — 은 Skill `common-output-storage-and-path-management` §1-1이 정본이다.
+
 `~/workspace/<이름>/`에 다음을 스탬프하고 git init까지 수행한다:
 - `STATUS.md` — 부트스트랩 포인터를 포함한 라이브 상태 단일 소스
 - `CLAUDE.md` — 부트스트랩 3층 계약 + 구조(빈 뼈대) + 드리프트 안내

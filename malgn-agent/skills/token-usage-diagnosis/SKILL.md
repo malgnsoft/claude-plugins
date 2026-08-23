@@ -21,6 +21,8 @@ Claude Code는 각 PC에 `~/.claude/projects/**/*.jsonl`로 세션 원본을 남
 node "${CLAUDE_PLUGIN_ROOT}/bin/analyze-usage.mjs" [--days N] [--project <cwd 부분일치>] [--top N]
 ```
 
+> 이 커맨드가 실패하거나(특히 `MODULE_NOT_FOUND`) 새 실행 지시를 쓸 때의 규약 — 따옴표, 이 변수가 치환되는 자리와 안 되는 자리, 맨 명령어를 쓰지 않는 이유 — 은 Skill `common-output-storage-and-path-management` §1-1이 정본이다.
+
 - `--days N` 기본 1(오늘, 로컬 타임존 기준). 최근 N일(오늘 포함) 집계.
 - `--project S` cwd에 S가 부분 포함된 세션만 집계(필터 없으면 전체 프로젝트).
 - `--top N` 세션/API호출/도구별/서브에이전트별/프로젝트별 순위 상위 개수. 기본 5(API 호출 Top만 자동으로 그 2배, 기본 10).

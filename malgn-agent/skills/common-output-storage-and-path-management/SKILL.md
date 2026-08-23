@@ -1,6 +1,6 @@
 ---
 name: common-output-storage-and-path-management
-description: 전 에이전트 인프라 규칙 — 산출물 추적성 확보, 경로 명시·저장 위계로 회수 불가 손실 방지. 파일 저장 위치·경로 관리 시 사용.
+description: 전 에이전트 인프라 규칙 — 산출물 추적성 확보, 경로 명시·저장 위계로 회수 불가 손실 방지. 파일 저장 위치·경로 관리 시, 그리고 플러그인 번들 `bin/` 스크립트를 실행하는 커맨드 규약(§1-1 정본)이 필요하거나 그 실행이 실패했을 때 사용.
 ---
 
 # Output Storage and Path Management

@@ -19,6 +19,9 @@ description: 화면 검증·캡처 표준 — UI 산출물을 실제 렌더링�
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" <url> [output.png] [옵션...]
 ```
+
+> 이 커맨드가 실패하거나(특히 `MODULE_NOT_FOUND`) 새 실행 지시를 쓸 때의 규약 — 따옴표, 이 변수가 치환되는 자리와 안 되는 자리, 맨 명령어를 쓰지 않는 이유 — 은 Skill `common-output-storage-and-path-management` §1-1이 정본이다.
+
 - `--full` 전체 페이지 캡처(스크롤 영역 포함) / `--vp WxH` 뷰포트 지정(기본 1280x800)
 - `--responsive [목록]` 여러 뷰포트를 순회 캡처(목록 생략 시 기본 `375x667,768x1024,1440x900` = 모바일/태블릿/데스크톱), 파일명에 `-WxH` 접미사 자동 부여
 - `--wait <ms|셀렉터>` 캡처 전 대기(숫자면 ms, 문자열이면 그 셀렉터가 보일 때까지)

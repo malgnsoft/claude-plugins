@@ -14,8 +14,11 @@ description: 배포 착수/논의 전 로컬 검증 게이트(devops+pm 공유).
 3. **환경변수 실존 확인**: `.env.example`(류)에 나열된 모든 키가 실제 로컬 `.env`에 값과 함께 존재하는지 대조. 이건 순수 key diff라 눈으로 목록을 대조하지 말고 스크립트로 확인한다(`bin/analyze-usage.mjs`·`bin/capture.mjs`와 같은 무의존성 플러그인 번들 스크립트 패턴):
    ```
    node "${CLAUDE_PLUGIN_ROOT}/bin/diff-env-keys.mjs" [프로젝트 루트]
+
    ```
    프로젝트 루트를 재귀 탐색해(`node_modules`/`.git`/`dist`/`build` 등 제외) `.env.example`·`.env.sample`·`.env.template`류를 모두 찾고, 각 디렉터리의 실제 `.env`와 짝지어 키를 대조한다 — 모노레포/멀티서비스 구조(여러 위치의 `.env.example`)도 자동으로 커버한다. 종료 코드 0=이상 없음, 1=누락/빈값/파일없음 발견. 증거: 스크립트 실행 결과(출력 전문 또는 핵심 요약) 첨부 — "누락 없음"이라고 적으려면 스크립트가 실제로 exit 0을 반환했어야 한다(직접 목록을 눈으로 세어 "누락 없음"이라 적지 않는다).
+
+> 이 커맨드가 실패하거나(특히 `MODULE_NOT_FOUND`) 새 실행 지시를 쓸 때의 규약 — 따옴표, 이 변수가 치환되는 자리와 안 되는 자리, 맨 명령어를 쓰지 않는 이유 — 은 Skill `common-output-storage-and-path-management` §1-1이 정본이다.
 
 ## 게이트 미통과 시 행동
 

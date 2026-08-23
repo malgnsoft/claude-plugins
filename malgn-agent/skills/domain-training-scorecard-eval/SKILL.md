@@ -71,6 +71,8 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs" --input scorecard.j
 echo '{ ...JSON... }' | node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs"
 ```
 
+> 이 커맨드가 실패하거나(특히 `MODULE_NOT_FOUND`) 새 실행 지시를 쓸 때의 규약 — 따옴표, 이 변수가 치환되는 자리와 안 되는 자리, 맨 명령어를 쓰지 않는 이유 — 은 Skill `common-output-storage-and-path-management` §1-1이 정본이다.
+
 입력 JSON에 채워 넣는 값 (전부 이 단계에서 LLM이 채점/관찰한 정성 판단 결과):
 ```json
 {

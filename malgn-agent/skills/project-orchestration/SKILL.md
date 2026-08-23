@@ -60,6 +60,8 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-0
 # 종료 코드: High 신호 있으면 2, Medium/Low만 있으면 1, 신호 없으면 0 (CI/스크립트 분기용).
 ```
 
+> 이 커맨드가 실패하거나(특히 `MODULE_NOT_FOUND`) 새 실행 지시를 쓸 때의 규약 — 따옴표, 이 변수가 치환되는 자리와 안 되는 자리, 맨 명령어를 쓰지 않는 이유 — 은 Skill `common-output-storage-and-path-management` §1-1이 정본이다.
+
 - **입력**: `wbs_list` 응답과 동일한 배열(또는 `{items:[...]}`) JSON. 필드가 일부 없는 항목은 해당 신호만 조용히 건너뛴다(전체 실행 중단 없음).
 - **이전 스냅샷 확보 방법**: 별도 이력 저장소가 없으므로, 정기 점검 시점마다 `wbs_list` 결과를 `wbs-YYYY-MM-DD.json` 형태로 파일에 남겨두는 습관이 필요하다 — 직전 파일을 `--previous`로 넘기면 된다.
 - **출력**: 항목별 신호·심각도·판정 근거(수치)·표준 대응 문구를 표로 출력(§ 아래 체크리스트와 1:1 대응). PM은 이 표를 받아 High부터 원인 조사에 들어간다.

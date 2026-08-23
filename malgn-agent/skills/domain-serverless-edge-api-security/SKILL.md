@@ -82,6 +82,8 @@ Hono `cors()`를 인자 없이 쓰면 `Access-Control-Allow-Origin`을 요청 Or
 node "${CLAUDE_PLUGIN_ROOT}/bin/check-edge-api-security.mjs" [projectRoot]
 ```
 
+> 이 커맨드가 실패하거나(특히 `MODULE_NOT_FOUND`) 새 실행 지시를 쓸 때의 규약 — 따옴표, 이 변수가 치환되는 자리와 안 되는 자리, 맨 명령어를 쓰지 않는 이유 — 은 Skill `common-output-storage-and-path-management` §1-1이 정본이다.
+
 - 인자 없으면 `process.cwd()`를 점검 대상으로 삼는다. 다른 프로젝트를 점검하려면 그 루트 경로를 인자로 넘긴다.
 - **사전 조건 없음** — `bin/analyze-usage.mjs`와 동일하게 순수 Node.js 내장 모듈만 사용해 설치 없이 바로 실행된다.
 - 콘솔 출력만 지원한다(파일 저장 옵션 없음).
