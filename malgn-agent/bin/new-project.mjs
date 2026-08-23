@@ -122,6 +122,11 @@ const pmBlockSection = pmBlock
  * 다만 탐색 **경로 규칙**은 여기서 복제하지 않는다 — hooks/lib/find-pm-block-path.mjs 가 소유한
  * 상수를 그대로 박아 넣어 생성하므로, 레이아웃이 바뀌어도 두 곳이 어긋나지 않는다.
  * (상수는 따옴표·역슬래시 없는 평범한 경로 조각이라 아래 인용이 안전하다 — 그 전제를 검사한다.)
+ *
+ * 실행은 execSync가 아니라 spawnSync다. execSync는 자식이 0이 아닌 코드로 끝나면 예외를 던지는데,
+ * 드리프트 발견은 정상 동작(비0 종료)이라 그때마다 Node 스택 트레이스가 쏟아져 정작 읽어야 할
+ * 드리프트 보고를 덮어버렸다. spawnSync는 던지지 않으므로 자식 출력만 남고, 종료코드는 아래에서
+ * 그대로 전파한다(CI에서 실패로 잡히는 동작은 유지).
  */
 const quoteSegment = (seg) => {
   if (!/^[A-Za-z0-9._-]+$/.test(seg)) {
@@ -139,7 +144,9 @@ const checkDocsScript =
   `const c=path.join(mp,d,${PLUGIN_SEGMENT},'hooks','doc-drift.mjs');` +
   `if(fs.existsSync(c)){found=c;break}}}` +
   `if(!found){const legacy=path.join(home,'.claude','hooks','doc-drift.mjs');if(fs.existsSync(legacy))found=legacy}` +
-  `if(found){require('child_process').execSync('node '+JSON.stringify(found),{stdio:'inherit'})}` +
+  `if(found){const r=require('child_process').spawnSync(process.execPath,[found],{stdio:'inherit'});` +
+  `if(r.error){console.error('doc-drift.mjs 실행에 실패했습니다: '+r.error.message)}` +
+  `process.exit(r.status===null?1:r.status)}` +
   `else{console.log('doc-drift.mjs를 찾지 못했습니다. malgn-agent 플러그인의 SessionStart 훅이 세션 시작 시 이미 자동으로 드리프트를 검사하니, 수동 확인이 필요하면 그 세션에서 요청하세요.')}"`
 
 const files = {
