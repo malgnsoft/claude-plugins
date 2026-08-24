@@ -581,3 +581,56 @@ trainer 위임. 대상 4곳: `skills/project-standards/SKILL.md` 41·133행, `bi
 백로그의 그 항목이 열거한 5건 중 **"검사기가 knowledge 본문 미스캔"**과 **"식별자 재유입 린터 게이트"**는 2026-08-23 린터 게이트 신설로 해소됐다(`validate-agent-assets.mjs:736`에 knowledge 본문 순회 루프 실재, `checkUnresolvableIds` 실재). 남은 것은 `pm.md`의 조회 불가 memory 키 · 커맨드 단일 소유 구조 · 표기/패턴 통일 **3건**이다.
 
 **처분 (2026-08-24 사용자 판정)**: ②(a) 린터 `hooks/` 구멍은 같은 파일 동시 편집을 피하려고 병행 세션이 가져가 **수리 완료**(`8e173c9` — 부재 검사를 `hooks/`·`bin/`까지, 형태 검사는 산문에만). 이 세션이 양성 대조군으로 독립 재현해 확인했다: `hooks/pm-orchestration-block.md`에 없는 스킬 참조를 심으면 `REF_SKILL_MISSING`, 원복하면 기준선 ERROR 0·WARN 18 복귀. 그 확장으로 드러난 기존 죽은 참조는 0건. ②(b) `Trivial`→`Micro` 정정은 **백로그**로 미뤘다(결함이지만 지금 착수하지 않음). ②(c)는 개선이라 그대로 백로그. ③의 남은 판단(미병합 브랜치 문서 3종을 main으로 가져올지)은 미결.
+
+## v1.8.0 배포 후 스모크 테스트 — ① 실패 확정, ②③ 검증 차단 (2026-08-24)
+
+**진단**: 저장소·마켓플레이스 클론은 1.8.0인데 **실제로 로드되는 플러그인은 1.7.6**이다.
+- `~/.claude/plugins/installed_plugins.json` → `installPath: cache/malgnsoft-plugins/malgn-agent/1.7.6`, `version: 1.7.6`, `gitCommitSha: 9a27336`(=v1.7.6 커밋), `lastUpdated: 2026-08-23`.
+- `known_marketplaces.json`의 `malgnsoft-plugins.lastUpdated`는 2026-08-24T05:22Z로 갱신됐고 클론 HEAD는 `85d23ba`(=origin/main, 1.8.0)이지만, `cache/…/malgn-agent/` 아래에 **1.8.0 디렉토리가 없다** → 마켓플레이스 카탈로그만 새로고침됐고 플러그인 재설치(`/plugin update`)는 일어나지 않았다.
+- 세션 컨텍스트로 교차확인: 주입된 에이전트 목록의 architect description이 구문("PRD를 기반으로 … STAGE 2")이고, 1.8.0에서 제거된 스킬 `domain-backend-security-audit`이 목록에 살아 있으며 스킬 수가 38(1.8.0은 37)이다. 활성본 1.7.6 실물과 정확히 일치한다.
+
+**②③이 차단된 이유**: 1.7.6 `agents/`에는 `${CLAUDE_PLUGIN_ROOT}`가 **0곳**이고(1.8.0은 99곳, 그중 knowledge 참조 97곳) `tools:` frontmatter 줄 자체가 없다(그래서 세션 목록에 "Tools: All tools"로 보인다). 즉 검증 대상 코드가 런타임에 존재하지 않아, 지금 세션에서 테스트하면 1.8.0이 아닌 다른 빌드를 재는 것이 된다. `/plugin update malgn-agent` + 재시작 이후로 미룬다.
+
+**부수 확인(정적, 워킹트리 1.8.0 기준)**: `pnpm run check-assets` = ERROR 0 · WARN 18(전부 `BUDGET_UNJUSTIFIED` 예산 사유서 미작성). hub 도구는 20/21에 부여. 본문이 `AskUserQuestion`을 언급하는 11종 중 `tools:`에 없는 2종(marketer·reviewer)은 실물 대조 결과 **오탐** — 두 문장 모두 "승인 요청은 **PM이** `AskUserQuestion`으로 진행"이라 해당 에이전트에 그 도구가 없는 것이 맞다.
+
+**이관**: 「리뷰 보고서에만 남고 미등록인 3건」 백로그 항목은 STATUS에서 내렸다 — 내용이 위 「열린 이슈 3건 재확인」 절에 이미 남아 있다(`pm.md` 조회 불가 memory 키 · 커맨드 단일 소유 구조 · 표기/패턴 통일).
+
+## v1.8.0 스모크 테스트 마무리 — ②③ 통과, C는 하니스 제약 확정 (2026-08-24)
+
+**전제 확인(활성본이 1.8.0인지)**: `installed_plugins.json` → `installPath: cache/…/malgn-agent/1.8.0`, `version: 1.8.0`, `gitCommitSha: 85d23ba`(=origin/main). 설치본과 저장소 정본은 `diff -rq` 무차이(`.in_use` 마커만 추가). 세션 컨텍스트 교차확인도 1.8.0과 일치 — 스킬 38→**37**, 에이전트 목록에 `tools:`가 반영돼 "Tools: Read, Grep, …"로 표시(1.7.6은 "All tools"), architect description이 신문안. 즉 직전 라운드에서 ②③을 막았던 조건이 해소됐다.
+
+**② `${CLAUDE_PLUGIN_ROOT}` 런타임 치환 — 통과.** qa-engineer를 서브에이전트로 기동해 관측했다. 소스 원문 `agents/qa-engineer.md:42`의 `` `${CLAUDE_PLUGIN_ROOT}/knowledge/quality/e2e-testing-guide.md` ``가 서브에이전트 프롬프트에서는 `/Users/hopegiver/.claude/plugins/cache/malgnsoft-plugins/malgn-agent/1.8.0/knowledge/quality/e2e-testing-guide.md`로 치환돼 보였고, 그 경로 `cat`이 성공했다(첫 줄 `# E2E 테스트 가이드 (Playwright Test)`). 나머지 2곳(88·102행)도 치환·읽기 성공. 3/3.
+
+**③-1 서브에이전트 hub MCP 호출 — 통과.** qa-engineer가 `mcp__plugin_malgn-agent_malgnai-hub__project_get_context`를 `projectId`로 실제 호출해 응답을 받았고, 응답의 `state.currentWork`가 이 프로젝트의 현재 작업과 일치했다. 즉 `tools:`의 `mcp__plugin_malgn-agent_malgnai-hub__*` 와일드카드가 서브에이전트 런타임에서 실제로 해석된다.
+
+**③-2 서브에이전트 `AskUserQuestion` — 시험 불성립(제품 결함 아님).** 서브에이전트에 도구 자체가 없어 호출을 시도할 수 없었다. 원인은 공식 문서 원문(`code.claude.com/docs/en/sub-agents`)으로 확정 — `AskUserQuestion`은 `Agent`(깊이 한계 시)·`EndConversation`·`EnterPlanMode`·`ExitPlanMode`·`ScheduleWakeup`·`TaskOutput`·`WaitForMcpServers`·`Workflow`와 함께 **`tools:`에 적혀 있어도 모든 서브에이전트에서 제거**된다. 양성 대조군: 같은 `tools:` 줄의 WebSearch 등은 deferred로 정상 노출됐으므로 frontmatter 파싱 실패가 아니다. 메인 세션(PM)에서는 정상 동작한다 — 이 라운드의 백로그 판단을 실제로 `AskUserQuestion`으로 받아 실증했다.
+
+**파생 결함(신규 발견, 백로그)**: 서브에이전트로만 기동되는 에이전트가 **자기 자신**에게 `AskUserQuestion` 호출을 지시하는 줄이 실행 불가 지시로 남아 있다 — `agents/security.md` 19·21·113행, `agents/evaluator.md:102`, `skills/common-permission-policy-compliance/SKILL.md` 8곳(35·43·72·78·90·95·108·151 — 사용 주체는 backend-dev·qa-engineer·frontend-dev·security·devops·trainer 6종), `skills/learning-loop-patterns/SKILL.md:110`, `skills/common-token-efficient-collaboration/SKILL.md:46`. 합계 14줄.
+- **주체가 PM인 서술은 결함이 아니다** — `pm.md` 74·83·94·97·98행, `reviewer.md:34`, `marketer.md:28`, `frontend-dev.md:38`, `devops.md:38`, `evaluator.md` 28·96행, `security.md:40`, `skills/project-orchestration/SKILL.md:131`은 전부 "PM이 `AskUserQuestion`으로"라 메인 세션에서 실행 가능하다. `skills/project-standards`(어느 `agents/*.md`도 참조하지 않음 = PM 전용)도 유효.
+- `tools:`에 `AskUserQuestion`이 적힌 9종(backend-dev·devops·evaluator·qa-engineer·capture-strategist·security·trainer·pm·frontend-dev)의 그 항목은 무시될 뿐 기동을 막지는 않는다(문서: 목록의 **전부**가 해석 불가일 때만 기동 거부 — 실제로 qa-engineer는 정상 기동했다).
+
+## 백로그 6건 일괄 처리 — `bl/integrate`(로컬, main 병합 대기)
+
+사용자가 위 백로그 전체 + grading `Trivial`/`Micro` 1줄 결함, 총 6건을 한 라운드로 지시했다. 각 항목을 별도 워크트리(`cp-wt/*`)에 격리해 trainer/backend-dev에 위임하고, PM이 실물 대조·독립 재현으로 검증한 뒤 `bl/integrate` 브랜치(base `main 46c0d02`)에 순차 병합했다. 전 구간 `node scripts/validate-agent-assets.mjs` 기준선 **ERROR 0 · WARN 18**을 유지.
+
+**① `AskUserQuestion` 14→15줄**: 위 파생결함 14줄에 더해 `pm.md:97`("`gh` 부재 시 evaluator가 사람에게 직접 요청")을 trainer가 스스로 찾아 보고, PM이 원문 대조로 채택해 15번째로 정정(같은 폴백을 말하는 `evaluator.md:102`와 모순이 생기는 것을 봉합). 전부 "승인은 여전히 필요하다 + 주체는 PM + 서브에이전트는 반환 후 대기"로 재작성. 상시비용 agents +532B·common-* skills +279B.
+
+**② STATUS.md 상한 1000토큰→3,000바이트**: `skills/project-standards/SKILL.md`(41·133행) + `bin/new-project.mjs`(204·305행, 스캐폴딩 실행으로 렌더링 확인) 4곳. "토큰은 셀 수 없다 → `wc -c`로 확인" 근거 문장 포함.
+
+**③ grading 등급명**: `common-task-grading-and-verification-depth/SKILL.md:3` frontmatter `Trivial`→`Micro`. 제품 전역 `Trivial` 0건.
+
+**④ 참조 검사기 확장**: `validate-agent-assets.mjs`에 `REF_SKILL_SCRIPT_MISSING`·`REF_TEMPLATE_MISSING` 신설(펜스 안까지 검사). PM이 독립 뮤테이션(README.md 템플릿 참조 파일 리네임)으로 ERROR 2 포착→원복 후 ERROR 0 재현 확인.
+
+**⑤ agent description**: 21종 중 20종의 "PM 호출/단독 사용" 잉여문구 제거. 부수 발견 — 검사기 트리거 정규식(`사용|호출`)이 그 잉여문구 자체에 걸려 9종이 무트리거로 통과하고 있었다(자동검사도 속고 있었음); trainer가 각 에이전트 `호출자` 서술에서 트리거를 뽑아 보강. description 합계 5,841B→5,387B.
+
+**⑥ 제품 본문 이력 표기 걷어내기**: agents(41줄)·skills(39줄)·knowledge(139줄) 전량. 날짜 도장·합의주체·이관경위·라운드/버전 언급 제거, 규칙의 실패양상은 현재형으로 보존, 형식 예시 날짜(2025-* 14줄)·실재 파일 포인터(날짜 포함 파일명)는 전량 보존. `knowledge/leadership/agent-training-guide.md` 8장(자체 선언 "지나간 기록") 삭제, 죽은 참조 0건. PM이 병합 후 전체 재검색으로 잔존 21건이 전부 형식예시·실재포인터·규칙사유 서술임을 확인.
+
+**중간 장애**: opus 계열 API 529 과부하로 5개 서브태스크가 반복 중단(커밋 전 종료라 손실 없음) — sonnet으로 재위임해 완주. 이후 재발 시 같은 패턴 적용.
+
+**신규 백로그 후보(이번 라운드에서 발견, 미착수)**:
+- `agents/*.md`의 `tools:` 중 `AskUserQuestion` 9곳(backend-dev·capture-strategist·devops·evaluator·frontend-dev·pm·qa-engineer·security·trainer) — 무시될 뿐 기동엔 무해함을 병행 세션이 2차 필터 전수 대조로 재확인. 제거해도 동작 차이 없어 결함 아님, 문서 정합성 개선.
+- `skills/project-standards/SKILL.md:42` "완료 항목은 1줄 요약(**+MCP id**)" — provider 전환 전 어휘 잔재 + 3,000B 예산과 상충(id 자체가 상시비용). 식별자 금지 위반은 아님(구체 id 아닌 양식 지시).
+- `skills/project-standards`가 어느 `agents/*.md`에서도 참조되지 않아(PM 전용 경로), `SKILL.md:122`의 `AskUserQuestion` 실행 주체를 문서로 확정하지 못함 — 서브에이전트가 이 스킬을 여는 경로가 생기면 같은 결함 재발 가능.
+
+병합·push는 사용자 승인 후 진행.
+- **처분 (2026-08-24 사용자 판정)**: 대상이 에이전트 2종+스킬 3종이라 trainer 위임 라운드가 필요하다 → **백로그**. 변경 동결 하에서 별도 승인 시 착수.
