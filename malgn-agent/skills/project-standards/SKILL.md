@@ -119,7 +119,7 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestrat
 이 스크립트는 파일을 쓰지 않는다 — cwd의 CLAUDE.md를 읽어 현재 상태를 JSON으로 출력할 뿐이다. 실제 CLAUDE.md 수정은 이 결과를 읽은 세션이 아래 절차대로 Edit로 수행한다:
 
 1. cwd의 CLAUDE.md에서 `<!-- malgn-agent:pm-orchestration:(installed|declined)?:?vN -->` 마커와 `@...pm-orchestration-block.md` import 줄 존재 여부를 확인한다(위 스크립트 `status` 필드로 판정: `no-marker`/`declined`/`legacy-no-import`/`ambiguous`/`plugin-missing`/`drift`/`ok`).
-2. `no-marker`(마커 자체가 없음): AskUserQuestion으로 설치 여부를 묻는다.
+2. `no-marker`(마커 자체가 없음): 설치 여부를 사용자에게 확인해야 한다 — 이 절차를 PM이 직접 실행했다면 AskUserQuestion으로 묻고, 서브에이전트가 실행했다면(서브에이전트에는 AskUserQuestion 도구가 없다) 이 결과를 PM에게 반환해 PM이 묻게 한다.
 3. `legacy-no-import`(installed인데 import 줄이 없음, 구버전) 또는 `drift`(경로가 실제 설치 위치와 다름): 스크립트가 제시한 `resolvedPath`로 Edit해 교정한다(사용자 재동의 불필요 — 콘텐츠 변경이 아니라 전달 방식/경로 교정일 뿐).
 4. `declined`인데 사용자가 이번에 설치를 요청했다면 마커+import를 installed로 교체한다.
 5. `ambiguous`/`plugin-missing`이면 CLAUDE.md를 건드리지 않고 그 사실을 사용자에게 알린다.

@@ -79,7 +79,7 @@ if (!stateMatch) {
     blockVersion: block ? block.version : null,
     resolvedPath: resolvedPathLabel,
     nextAction: block
-      ? 'AskUserQuestion으로 설치 여부를 물을 것. "예": ' + REMOVE_OLD_MARKERS_STEP +
+      ? '사용자 확인이 필요하다 — 이 스크립트를 PM이 직접 실행했다면 AskUserQuestion으로 설치 여부를 묻고, 서브에이전트가 실행했다면(AskUserQuestion 도구가 없다) 이 결과를 PM에게 반환해 PM이 묻게 한다. "예": ' + REMOVE_OLD_MARKERS_STEP +
         ` 그 자리(또는 파일 끝)에 \`${installMarkerFor(block.version)}\` 줄과 그다음 줄에 ` +
         `\`@${resolvedPathLabel}\` 줄을 삽입한다(resolvedPath가 AMBIGUOUS/null이면 경로 확정 전까지 삽입하지 말고 사용자에게 알린다). ` +
         `"아니오": ${REMOVE_OLD_MARKERS_STEP} 그 자리에 \`${declinedMarkerFor(block.version)}\` 마커만 삽입한다(import 줄 없이).`
@@ -102,7 +102,7 @@ if (state === 'declined') {
     revisedSinceDecline,
     resolvedPath: resolvedPathLabel,
     nextAction: revisedSinceDecline
-      ? `블록 내용이 v${markedVersion} → v${block.version}으로 개정되었다 — 재확인이 필요하다. 아직 이번 세션에 묻지 않았다면 AskUserQuestion으로 재설치 여부를 물을 것.`
+      ? `블록 내용이 v${markedVersion} → v${block.version}으로 개정되었다 — 재확인이 필요하다. 아직 이번 세션에 묻지 않았다면, PM이 직접 실행했을 때만 AskUserQuestion으로 재설치 여부를 묻는다. 서브에이전트가 실행했다면(AskUserQuestion 도구가 없다) 이 결과를 PM에게 반환해 PM이 묻게 한다.`
       : '사용자가 이번에 설치를 요청하면(§9 트리거) declined 마커를 installed 마커+@import 줄로 교체한다. 요청이 없으면 그대로 둔다.',
   })
   process.exit(0)
