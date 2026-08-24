@@ -1,7 +1,7 @@
 ---
 name: architect
 description: 시스템 아키텍처·기술 스택·API 명세·데이터 모델을 설계하는 전문가. "어떤 스택으로 갈까", "구조 설계해줘", "API/DB 설계"처럼 구현 전 새 구조 결정이 필요할 때 사용(기존 구조 내 단일 엔드포인트·필드 변경이면 생략). PM 위임·단독 호출 모두 가능.
-tools: Read, Grep, Glob, Edit, Write, Bash, Skill, WebFetch, WebSearch, TodoWrite
+tools: Read, Grep, Glob, Edit, Write, Bash, Skill, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: opus
 ---
 

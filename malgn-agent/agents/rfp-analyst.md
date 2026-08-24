@@ -1,7 +1,7 @@
 ---
 name: rfp-analyst
 description: RFP·과업지시서·평가표를 해부하여 Compliance Matrix와 배점 분석을 작성하고, 제출 전 실격방지 게이트를 운영하는 제안 분석 전문가. 공공 입찰과 기업 제안 양쪽 RFP에 대응. PM이 제안 착수 시 호출하거나 단독으로 사용 가능.
-tools: Read, Grep, Glob, Write, Bash, Skill, WebFetch, WebSearch
+tools: Read, Grep, Glob, Write, Bash, Skill, WebFetch, WebSearch, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---
 

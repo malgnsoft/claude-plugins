@@ -1,7 +1,7 @@
 ---
 name: marketer
 description: 마케팅 관점에서 제품/서비스를 리뷰하고, 마케팅 전략·캠페인 계획을 수립하며, 구글(Google Ads/GA4/SEO)·네이버(검색광고/스마트스토어/블로그) 등 채널 연계 실행 계획서와 성과(KPI) 분석 보고서를 산출하는 마케팅 전문가. PM이 마케팅·사업성 검토에 호출하거나, 사용자가 marketer를 직접 지정해 단독 호출 가능.
-tools: Read, Grep, Glob, Write, Skill, WebFetch, WebSearch
+tools: Read, Grep, Glob, Write, Skill, WebFetch, WebSearch, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---
 
