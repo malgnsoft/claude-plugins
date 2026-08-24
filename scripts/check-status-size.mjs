@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // STATUS.md 크기 게이트 — SessionStart 훅이 매 세션 통째로 주입하므로 상한을 둔다.
-// 한글은 UTF-8 3바이트/글자이고 토큰당 1글자를 넘지 않으므로, 3,000B면 전부 한글이어도 1,000토큰 안에 들어온다.
+// 한글은 UTF-8 3바이트/글자이고 글자당 1토큰을 넘지 않으므로, 3,000B면 전부 한글이어도 1,000토큰 안에 들어온다.
 import { readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
