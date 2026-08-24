@@ -644,3 +644,17 @@ trainer 위임. 대상 4곳: `skills/project-standards/SKILL.md` 41·133행, `bi
 
 병행 세션(claude-plugins-d7)의 `docs/anthropic/` 미러 복원 2커밋(`46c0d02`, `7088e9e`)이 로컬 main 기반에 이미 포함돼 있어 이번 push에 함께 나갔다. push 직전 알리려 했으나 해당 세션이 이미 종료돼 확인받지 못함(내용은 사전에 서로 확인·합의된 상태였음).
 - **처분 (2026-08-24 사용자 판정)**: 대상이 에이전트 2종+스킬 3종이라 trainer 위임 라운드가 필요하다 → **백로그**. 변경 동결 하에서 별도 승인 시 착수.
+
+## v1.8.2 배포 (2026-08-24, origin/main `839f707`) — 백로그 2건
+
+**① STATUS.md 3,000B 체크 자동화**: `malgn-agent/bin/check-status-size.mjs` 신설(무의존성, exit 0/1/2 계약) + `project-standards/SKILL.md`·`new-project.mjs` 연결. trainer 초안 → reviewer 풀패널(Amber, Major 4건: `--require`가 SKIP처럼 표시됨·체크리스트가 `--require` 없이 검사해 게이트가 열려있었음·new-project.mjs 미연결·환경변수명이 훅 변수와 충돌) → 반영 → reviewer/evaluator 재검증 Green/PASS(Scorecard 88.9). 새 프로젝트 스캐폴딩 실물 생성까지 확인.
+
+**② PM 서브에이전트 승인게이트 무음실효 방지**: `malgn-agent:pm`이 Agent 도구로 스폰 가능한 서브에이전트 타입으로 실재하는데, 서브에이전트 실행에서는 `AskUserQuestion`을 쓸 수 없다(PM을 실제로 서브에이전트 스폰해 재현 — 오류: "not available inside subagents"). 기존 pm.md는 이 도구로만 사람 승인을 규정해 그 경로에서 게이트가 조용히 실효될 위험이 있었다. trainer 초안 → evaluator FAIL(발동조건이 frontmatter `tools:` 선언과 자기모순) → PM 재현 반영 → reviewer 풀패널 Amber(자기모순 재지적 + hub 기록 소실 위험 등 5건) → 반영 → reviewer/evaluator 재검증 Green/PASS. PM 실제 서브에이전트 스폰으로 정상경로(승인대기 반환)·경계경로(호출자의 거짓 승인 회신 거부) 재현 확인.
+
+버전: plugin.json + marketplace.json 1.8.1→1.8.2(동기화). `check-assets` ERROR 0·WARN 18 유지.
+
+**검증 중 발견한 비차단 Minor 4건(다음 라운드 백로그)**:
+- `agents/pm.md:140`에 리뷰 지적 id `RV-002`가 그대로 남아 있다 — 이번 diff가 만든 게 아니라 기존 결함이며, 제품본문 식별자금지 규칙 위반이다.
+- `bin/new-project.mjs:204`가 생성하는 CLAUDE.md의 "세션에 'STATUS.md 크기 확인해줘'라고 요청하면 그 스킬이 실행한다" 문구가 `project-standards` 스킬 description의 트리거 목록에 등록돼 있지 않다.
+- `skills/project-standards/SKILL.md:42`의 정본 예시 커맨드에 아직 `--require`가 빠져 있다(체크리스트는 고쳤지만 문서 경로 사용자는 여전히 SKIP으로 통과 가능).
+- `agents/pm.md:94`의 `issue_record` 백업 기록 지시가, hub MCP 자체를 쓸 수 없는 실행에서는 분기가 없다.
