@@ -660,6 +660,72 @@ function checkToolReachability(relPath, selfName, data, body, subjects) {
   }
 }
 
+// ── 이름 없이 서술로만 지시된 기동 ───────────────────────────────────
+// 위 AGENT_TOOL_UNREACHABLE은 **도구 이름**을 앵커로 쓴다. 그래서 도구가 이름 없이 행위
+// 서술로만 지시되는 자리를 통째로 못 본다. 이번 라운드에 그 유형이 세 곳 났고 전부 사람이
+// 눈으로 찾았다 — "visual-designer를 호출해", "요청은 evaluator를 호출한다",
+// "실제 서브에이전트 위임으로 재현". 셋 다 Agent 도구가 필요한데 그 에이전트엔 없었다.
+// 누락 검사는 "무엇이 적혀 있나"가 아니라 "이 문장을 실행하려면 어떤 도구가 필요한가"로
+// 물어야 한다.
+//
+// **WARN으로 둔다.** 의미 판정이라 오탐이 나올 수밖에 없고, 이 규칙의 값은 사람이
+// check-assets를 돌릴 때 눈에 띄는 것이지 CI 차단이 아니다.
+const SPAWN_GENERIC = ['하위 에이전트', '서브에이전트', '서브 에이전트', '전문 에이전트', '페르소나', '팀원', '풀패널', '풀 패널'];
+const SPAWN_VERB = '(?:호출|소집|소환|투입|위임|기동|불러|띄우|spawn|invoke|subagent_type)';
+// 억제 ① 금지문("재위임하지 않고", "직접 호출하지 않습니다") — 기동하지 말라는 문장이다.
+const SPAWN_NEG = /(?:않고|않는다|않습니다|않으며|않은|말고|말라|금지|못한다|못하고|없이|불가|아니라|대신)/;
+// 억제 ② 주어가 PM("evaluator 호출은 PM이 한다") — 그 에이전트에 대한 지시가 아니다.
+const SPAWN_PM_SUBJ = /(?:^|[^A-Za-z가-힣])(?:PM|pm)(?:이|가|은|는|에게|에|의)(?![A-Za-z가-힣])/;
+// 억제 ③ 기동이 아닌 것 — 보고·반환·라우팅.
+const SPAWN_NONSPAWN = /(?:보고|돌려보|반환|넘긴|넘겨|이관|회신|전달|라우팅|요청한다|요청합니다|요청해|요청은)/;
+// 억제 ④ 명사형·"…여부 판단" — 기동이 아니라 "누가 부르는가/부를 필요가 있는가"를 논하는 자리.
+const SPAWN_NOUNFORM = /(?:호출자|호출 가능|위임받|위임은|투입 여부|필요 여부|여부 판단|판단 책임|여부는)/;
+// 억제 ⑤ `**호출자**:` 라벨 줄 — 이 에이전트를 **누가 부르는지** 적는 자리라 기동 지시가 아니다.
+//        (실측: 정상 트리 오탐 2건이 전부 이 형태였다 — qa-engineer·writer)
+const SPAWN_CALLER_LABEL = /^\s*[-*]?\s*\**호출자\**/;
+
+function checkSpawnWithoutAgentTool(relPath, selfName, data, body, agentNames) {
+  if (typeof data.tools !== 'string' && !Array.isArray(data.tools)) return;
+  const listed = (Array.isArray(data.tools) ? data.tools : data.tools.split(','))
+    .map((s) => String(s).trim()).filter(Boolean);
+  if (listed.includes('Agent') || listed.includes('*')) return;
+
+  // 'pm'은 기동 대상에서 뺀다 — PM은 오케스트레이터라 남이 띄우지 않고, 본문 도처의
+  // `pm.md` 참조가 낱말경계로도 걸러지지 않아 오탐만 만든다.
+  const targets = [...agentNames.filter((n) => n !== 'pm' && n !== selfName), ...SPAWN_GENERIC];
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const lines = stripFencedCode(body).split(/\r?\n/);
+  const reported = new Set();
+
+  for (const line of lines) {
+    if (SPAWN_CALLER_LABEL.test(line)) continue;
+    for (const t of targets) {
+      // 낱말 경계 — 이게 없으면 `pnpm`의 pm처럼 부분일치가 쏟아진다(실측).
+      const re = new RegExp('(?:^|[^A-Za-z0-9가-힣_-])' + esc(t) + '(?![A-Za-z0-9_-])', 'g');
+      let m;
+      while ((m = re.exec(line)) !== null) {
+        const idx = m.index + m[0].length - t.length;
+        const vm = new RegExp(SPAWN_VERB).exec(line.slice(idx + t.length, idx + t.length + 25));
+        if (!vm) continue;
+        const vAbs = idx + t.length + vm.index;
+        // 금지 표지는 30자 밖에 있는 일이 흔해 문장 단위로 본다.
+        const sentStart = Math.max(0, line.lastIndexOf('.', idx), line.lastIndexOf('—', idx));
+        const sentence = line.slice(sentStart, Math.min(line.length, vAbs + 60));
+        if (SPAWN_NOUNFORM.test(line.slice(Math.max(0, idx - 25), vAbs + 15))) continue;
+        if (SPAWN_NEG.test(sentence)) continue;
+        if (SPAWN_PM_SUBJ.test(line.slice(Math.max(0, vAbs - 45), vAbs + 25))) continue;
+        if (SPAWN_NONSPAWN.test(line.slice(vAbs, vAbs + 40))) continue;
+        if (reported.has(t)) continue;
+        reported.add(t);
+        warn('AGENT_SPAWN_WITHOUT_AGENT_TOOL', relPath,
+          `'${t}'을(를) 직접 기동하라는 서술("…${t} ${vm[0]}…")인데 tools에 'Agent'가 없다 — 실행 불가다. ` +
+          'PM 경유로 문장을 고치거나(권장), 정말 직접 띄워야 하면 tools에 Agent를 넣는다. ' +
+          `(예: ${line.trim().slice(0, 90)})`);
+      }
+    }
+  }
+}
+
 function main() {
   const opts = parseArgs(process.argv.slice(2));
   const pluginRoot = path.join(REPO_ROOT, opts.plugin);
@@ -745,7 +811,8 @@ function main() {
     : [];
   const referencedSkills = new Set();
   // 제3자 주어 후보: 다른 에이전트 이름 + 사람/PM 호칭. 도구 지시의 행위자를 가르는 데 쓴다.
-  const TOOL_SUBJECTS = [...agentFiles.map((f) => f.replace(/\.md$/, '')), 'PM', '사용자', '사람'];
+  const AGENT_BASENAMES = agentFiles.map((f) => f.replace(/\.md$/, ''));
+  const TOOL_SUBJECTS = [...AGENT_BASENAMES, 'PM', '사용자', '사람'];
   const sizes = [];
   const refCtx = { skillNames, knowledgeFiles, pluginRoot, referencedSkills };
 
@@ -826,6 +893,7 @@ function main() {
 
     // 본문이 시키는 도구가 tools 허용목록에 있는가(역방향 검사)
     checkToolReachability(rel, base, data, body, TOOL_SUBJECTS);
+    checkSpawnWithoutAgentTool(rel, base, data, body, AGENT_BASENAMES);
 
     // 본문 참조 검증: Skill `name` / knowledge/... 경로
     checkBodyReferences(rel, body, refCtx);
