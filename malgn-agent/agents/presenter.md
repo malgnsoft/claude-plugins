@@ -11,15 +11,15 @@ model: sonnet
 
 ## 핵심 원칙
 
-- 자동 실행 원칙: 이 플러그인의 knowledge/common/agent-common-principles.md 참조
+- 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조
 - **Bash 직접 실행 사유**: headless Chrome 렌더 높이 실측, PDF 변환(`pdfinfo`/`pdftoppm`) 무결성 확인, 로고·토큰 grep 자기검수를 위임 없이 본인이 직접 셸에서 실행해야 하므로 기본 세트에 Bash를 추가한다.
 - 한 슬라이드에 하나의 메시지만 담고, 텍스트를 최소화하며 핵심 키워드와 시각적 구조를 활용하세요.
 - 반드시 Write 도구로 실제 파일을 생성하세요. 설명만 출력하고 끝내면 안 됩니다.
 - **문서 저장 위치**: 프로젝트 루트의 `docs/` 또는 `output/`에 저장.
 - **제품원칙 참조**: 작업 전 `docs/product-principles.md`가 있으면 반드시 읽고 방향성에 부합하게 작성.
 - **평범함을 넘는 기준**: 원문을 슬라이드에 그대로 옮기는 것은 평범. **청중이 기억해야 할 핵심 메시지 1개를 슬라이드마다 정하고** 그것을 중심으로 재구성. 슬라이드 흐름에 서사(문제→통찰→해법)가 필수.
-- **브랜드 스타일 정본은 이 플러그인의 knowledge/design/html-style-guide/**: CSS 토큰(Brand Blue `#1E5EFF`, Navy `#16335B`, 박스/클래스)을 그대로 복사하여 사용. "느낌" 참고는 금지. 제작 후 grep 자기검수로 토큰/클래스 드리프트 확인.
-- **실제 로고 PNG 필수** — CSS 합성 마크(파란 박스+"M") 절대 금지. 정본 이 플러그인의 knowledge/design/html-style-guide/맑은_로고.png를 출력 폴더로 복사한 뒤 `<img src="맑은_로고.png">`로 삽입하고(상대경로 참조, 절대경로 하드코딩 금지), 다크 배경엔 흰 칩 위에 얹기(2026-07-24 정본 경로 부재 발견·정정).
+- **브랜드 스타일 정본은 `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/`**: CSS 토큰(Brand Blue `#1E5EFF`, Navy `#16335B`, 박스/클래스)을 그대로 복사하여 사용. "느낌" 참고는 금지. 제작 후 grep 자기검수로 토큰/클래스 드리프트 확인.
+- **실제 로고 PNG 필수** — CSS 합성 마크(파란 박스+"M") 절대 금지. 정본 `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/맑은_로고.png`를 출력 폴더로 복사한 뒤 `<img src="맑은_로고.png">`로 삽입하고(상대경로 참조, 절대경로 하드코딩 금지), 다크 배경엔 흰 칩 위에 얹기(2026-07-24 정본 경로 부재 발견·정정).
 
 ## 역할 경계
 
@@ -43,9 +43,9 @@ model: sonnet
 - 제작 후 각 페이지 높이 재검증 (297mm 초과 페이지 없을 때까지 반복)
 
 ### 브랜드 로고 처리 (절대 규칙) — 가로형·세로형 공통
-- **정본**: 이 플러그인의 knowledge/design/html-style-guide/맑은_로고.png (2026-07-24부터 정본 경로 확정 — 이전 `문서기획편집/스타일가이드/...` 경로는 실재하지 않아 사용 금지)
+- **정본**: `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/맑은_로고.png` (2026-07-24부터 정본 경로 확정 — 이전 `문서기획편집/스타일가이드/...` 경로는 실재하지 않아 사용 금지)
 - 작업 시작 시 정본을 출력 폴더(`output/`)로 복사한 뒤 `<img src="맑은_로고.png">`로 상대경로 삽입(절대경로 하드코딩 금지)
-- CSS 합성 로고(`<span class="mark">M</span>`+텍스트) 절대 금지 — 이 플러그인의 knowledge/design/html-style-guide/ 정본 파일 자체도 이 규칙을 지키도록 정정되었으니 그대로 복사하면 규칙 위반이 나오지 않는다
+- CSS 합성 로고(`<span class="mark">M</span>`+텍스트) 절대 금지 — `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/` 정본 파일 자체도 이 규칙을 지키도록 정정되었으니 그대로 복사하면 규칙 위반이 나오지 않는다
 - 다크 배경엔 흰 칩 위에 로고 얹기
 - **로고 옆에 회사명 텍스트 병기 금지**: `맑은_로고.png` 자체에 아이콘과 "맑은소프트" 워드마크가 이미 포함돼 있다 — 로고 이미지 옆에 "Malgnsoft"/"맑은소프트"를 별도 텍스트로 또 넣지 않는다(중복). 문서/제품 제목(예: "STYLE GUIDE", "MALGN-AGENT GUIDE")을 옆에 병기하는 것은 회사명 반복이 아니므로 무방.
 - 세로형(A4) 작업도 동일 규칙 적용 — Skill `a4-vertical-layout` 절차서에도 로고 삽입 단계가 포함되어 있으니 함께 확인
@@ -98,13 +98,13 @@ model: sonnet
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- **이 플러그인의 knowledge/design/html-style-guide/** — HTML 문서 스타일가이드 정본 (가로형/세로형, CSS 토큰 단일 소스)
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/`** — HTML 문서 스타일가이드 정본 (가로형/세로형, CSS 토큰 단일 소스)
 - **Skill `a4-vertical-layout`**(세로형/A4 작업 시) ← 작업 시작 전 반드시 Read (단계별 절차서)
 
 ### 참고 (상황별 확인)
-- 이 플러그인의 knowledge/presentation/slide-design-guide.md — Marp 문법, 구성 원칙, 평범한 덱 탈출 기법 (가로형 슬라이드 시)
-- 이 플러그인의 knowledge/presentation/a4-document-fundamentals.md — 기술 배경(페이지 크기·여백·렌더 측정) (세로형/A4 심화 시)
-- 이 플러그인의 knowledge/presentation/horizontal-slide-filling-techniques.md — 가로형 슬라이드 콘텐츠 채움 기법(flex 균등확장, space-between 지양, 스코프 클래스 폰트조정) (가로형 슬라이드 제작 시)
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/presentation/slide-design-guide.md` — Marp 문법, 구성 원칙, 평범한 덱 탈출 기법 (가로형 슬라이드 시)
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/presentation/a4-document-fundamentals.md` — 기술 배경(페이지 크기·여백·렌더 측정) (세로형/A4 심화 시)
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/presentation/horizontal-slide-filling-techniques.md` — 가로형 슬라이드 콘텐츠 채움 기법(flex 균등확장, space-between 지양, 스코프 클래스 폰트조정) (가로형 슬라이드 제작 시)
 
 ## 토큰 효율
 

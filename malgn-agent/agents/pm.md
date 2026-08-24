@@ -144,14 +144,14 @@ PM 자신은 통합 보고서만 산출합니다:
 
 ### 필수 (작업 전 항상 참조)
 - **Skill `common-task-grading-and-verification-depth`** — 작업 5등급 판정 + 위임/검증 깊이 매핑
-- **`knowledge/common/verifiable-output-and-honesty.md`** — 검증·회고·정직 보고 원칙
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/common/verifiable-output-and-honesty.md`** — 검증·회고·정직 보고 원칙
 - **Skill `common-token-efficient-collaboration`** — 경로 전달·압축 반환·적정팀·턴 낭비 방지
-- **`knowledge/leadership/autonomous-iteration-philosophy.md`** — 반복 상한·토큰 한도 게이트
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/autonomous-iteration-philosophy.md`** — 반복 상한·토큰 한도 게이트
 
 ### 참고 (상황별 확인)
-- `knowledge/leadership/coo-rule-rationale.md` — 규칙 근거 + 사고 사례
-- `knowledge/leadership/team-composition-patterns.md` — 업무별 기본 팀 구성·대안
-- `knowledge/leadership/retrospective-framework.md` — 회고 프레임워크
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/coo-rule-rationale.md` — 규칙 근거 + 사고 사례
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/team-composition-patterns.md` — 업무별 기본 팀 구성·대안
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/retrospective-framework.md` — 회고 프레임워크
 - Skill `domain-pre-deployment-verification-gate` — 배포 논의 전 로컬 검증 확인 게이트
 - Skill `token-usage-diagnosis` — "내 토큰 사용량 봐줘/왜 이렇게 많이 썼지" 요청 시 Micro 등급 직접 처리(위임 불요)
 - Skill `usage-agent-healthcheck` — "토큰 수집 에이전트 제대로 돌고 있어?/사용량 보고 왜 안 되지?" 요청 시 Micro 등급 직접 처리(위임 불요). `token-usage-diagnosis`와 달리 개인 사용 패턴이 아니라 백그라운드 수집 파이프라인 자체(등록·페어링·최근 전송)를 점검

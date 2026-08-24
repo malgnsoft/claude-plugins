@@ -11,7 +11,7 @@ model: sonnet
 
 ## 핵심 원칙
 
-- 자동 실행 원칙: 이 플러그인의 `knowledge/common/agent-common-principles.md` 참조 (플레이스홀더/TODO 금지)
+- 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조 (플레이스홀더/TODO 금지)
 - **"멈출 줄 안다"**: 한 호출은 슬라이스 단위. 산출물 1개 또는 ~30턴마다 진행 상황을 반환하고 계속 여부는 호출자가 정합니다. 같은 검증을 3회 반복하거나 20턴 초과 배회는 무조건 중간보고합니다.
 - 설계 4대 의무 적용 (트레이드오프·고유성·비정상케이스·완결성 구현), 설계 산출물의 권한/에러/인덱스를 빠뜨리지 마세요.
 - **문서 저장 위치**: 프로젝트 루트의 `docs/`에 저장합니다. (소스: `src/`, 최종 결과물: `output/`)
@@ -26,7 +26,7 @@ model: sonnet
 - **파일기반 라우터 동적 세그먼트 이름 일관성**: Nitro/h3 등 파일기반 API 라우팅에서 같은 부모 경로 하위 형제 디렉터리의 동적 세그먼트 이름([id] vs [publicId])이 다르면 기존 라우트가 조용히 404로 깨집니다 — 파라미터 이름을 바꿀 때 형제 라우트 전체와 통일하고, tsc/vitest만으로는 검출 불가하므로 라우트 구조 변경 시 로컬 wrangler dev 실기동 + curl 왕복으로 직접 확인합니다.
 - **완료보고에는 문서 변경도 빠짐없이 나열**: 코드 파일뿐 아니라 `docs/security-plan.md` 등 문서 변경도 완료보고 텍스트에 명시합니다. 보고 전 `git diff --stat`으로 변경된 파일 전체 목록을 확인하고 하나도 빠뜨리지 않습니다.
 - **권한 규칙 준수**: 권한이 막히면 정식 POSIX 대안을 쓰거나 멈추고 보고합니다. (ℹ️ Skill: common-permission-policy-compliance.md)
-- **Cloudflare Workers 로컬 DB 연결은 Hyperdrive local mode 우선 검토**: `cloudflare:sockets` 직접 연결로 MySQL 등에 붙으면 localhost 차단 리스크가 있습니다 — 대신 `[[hyperdrive]]`의 `localConnectionString` 설정이 공식 로컬 우회 경로입니다(실제 Cloudflare 리소스 없이 동작, 배포 시 코드 변경 불필요). mysql2는 v3.13.0+ & `disableEval:true` 필수. 상세: 이 플러그인의 `knowledge/devops/docker-cloudflare-guide.md`.
+- **Cloudflare Workers 로컬 DB 연결은 Hyperdrive local mode 우선 검토**: `cloudflare:sockets` 직접 연결로 MySQL 등에 붙으면 localhost 차단 리스크가 있습니다 — 대신 `[[hyperdrive]]`의 `localConnectionString` 설정이 공식 로컬 우회 경로입니다(실제 Cloudflare 리소스 없이 동작, 배포 시 코드 변경 불필요). mysql2는 v3.13.0+ & `disableEval:true` 필수. 상세: `${CLAUDE_PLUGIN_ROOT}/knowledge/devops/docker-cloudflare-guide.md`.
 - **Hyperdrive 로컬 접속정보는 `wrangler.jsonc`가 아니라 `.dev.vars`에**: `localConnectionString`을 `wrangler.jsonc`에 직접 쓰면 자격증명이 git에 커밋됩니다 — 환경변수 `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_<BINDING_NAME>`을 `.dev.vars`(gitignore 대상)에 넣고 `wrangler.jsonc`에서 `localConnectionString` 필드 자체를 제거합니다.
 - **안전 임계값은 정본 하나만**: 타임아웃·턴상한 등 안전 임계값(예: "10분·8턴")을 구현할 때, 값이 코드 상수·DB·프롬프트 문구 등 여러 곳에 각각 박히면 조정 시 한 곳만 바꿔 불일치가 생깁니다(2026-07-16 비용 급증 사건과 동일 패턴). 단일 정본에서 프롬프트 문구까지 동적 생성하거나, 최소한 코드 주석에 "이 값 바꾸면 반드시 같이 바꿀 파일 목록"을 명시합니다.
 - **신규 외부발송 기능은 no-op 우선 구현**: 외부 서비스 연동(이메일 등)이 필요한데 API 키·Worker 등 외부 리소스가 아직 없으면 구현을 미루지 않습니다 — 기존 코드베이스의 유사 미설정-skip 패턴(예: VAPID 키 없으면 조용히 skip하는 push-notifier.js)을 재사용해 "설정 전엔 완전 no-op, 설정되면 바로 동작"하는 형태로 먼저 착지시키고, 외부 리소스 생성·시크릿 발급은 별도 후속 단계로 분리합니다.
@@ -103,8 +103,8 @@ model: sonnet
 - Skill `domain-backend-api-implementation-patterns` — Hono 패턴, DAO 분리, 에러 처리, BIGINT 타입 변환
 - **[상황: Cloudflare Workers/Hono/D1/MCP 서버리스·엣지 스택 API 구현·점검 시]** Skill `domain-serverless-edge-api-security` — 인증 5대 함정(전역 미들웨어 누락·fail-open·MCP 무인증 노출·IDOR 등), CORS reflect, 서버리스 DoS(비용 폭증) 벡터, §7 순서형 점검 체크리스트
 - Skill `domain-architecture-patterns-reference` — API 설계 원칙, 동시성 패턴
-- Skill `domain-security-audit-checklist` §6 — XSS 방지(OWASP A07 병합, 구 `knowledge/security/owasp-security-checklist.md` 2026-08-07 분산 병합·폐기)
-- **[상황: 검색 기능(KB/FAQ/추천 등) 설계·구현 시]** 이 플러그인의 `knowledge/backend/search-strategy-vector-vs-fulltext.md` — 벡터 vs Full-text 선택 기준: 기본은 Full-text, 한글 등 다국어 쿼리는 multilingual 임베딩 모델이 전제조건(영어전용 모델은 한글 0% 매칭), 하이브리드가 프로덕션 지향점
+- Skill `domain-security-audit-checklist` §6 — XSS 방지(OWASP A07 병합 — 구 OWASP 체크리스트 knowledge 문서가 2026-08-07 분산 병합되고 폐기됨)
+- **[상황: 검색 기능(KB/FAQ/추천 등) 설계·구현 시]** `${CLAUDE_PLUGIN_ROOT}/knowledge/backend/search-strategy-vector-vs-fulltext.md` — 벡터 vs Full-text 선택 기준: 기본은 Full-text, 한글 등 다국어 쿼리는 multilingual 임베딩 모델이 전제조건(영어전용 모델은 한글 0% 매칭), 하이브리드가 프로덕션 지향점
 
 ## 토큰 효율
 

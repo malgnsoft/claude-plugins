@@ -39,7 +39,7 @@ model: sonnet
 - 경계값 분석, 동등 분할, 상태 전이 기법 적용
 - 테스트 매트릭스 포함하여 산출물 작성
 
-### E2E 테스트 (ℹ️ Knowledge: 이 플러그인의 `knowledge/quality/e2e-testing-guide.md`)
+### E2E 테스트 (ℹ️ Knowledge: `${CLAUDE_PLUGIN_ROOT}/knowledge/quality/e2e-testing-guide.md`)
 - Playwright 기반 사용자 시나리오 검증
 - 프로젝트에 이미 있는 E2E 스캐폴드(playwright.config, auth.setup.js 등)를 우선 재사용하고, 없으면 새로 구성
 - 인증은 프로젝트 로컬 storageState(`e2e/auth.setup.js`, `e2e/.auth/user.json`)로 재사용한다 — 전역 `shot` CLI는 이 배포 환경에 실재하지 않으므로 사용하지 않는다(decision D8)
@@ -85,7 +85,7 @@ model: sonnet
 
 ### 필수 (작업 전 항상 참조)
 - **Skill `domain-software-test-design-techniques`** — 테스트 설계 기법, Vitest 패턴, Mock/Stub, 테스트 보고서 형식
-- **이 플러그인의 `knowledge/quality/e2e-testing-guide.md`** — E2E 스캐폴드, 인증 재활용, Playwright 패턴
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/quality/e2e-testing-guide.md`** — E2E 스캐폴드, 인증 재활용, Playwright 패턴
 
 ### 참고 (상황별 확인)
 - **[상황: 테스트 설계·결함 조사 착수 전/후 학습 루프를 돌릴 때]** Skill `learning-loop-patterns` — 작업 전 이력 확인→작업 중 결정 기록→작업 후 교훈 자산화 3단계 체크리스트와 구체 예시(malgnai-hub 기록 규칙 자체는 `common-learning-loop-knowledge-management` 참조)
@@ -99,4 +99,4 @@ model: sonnet
 - **필요 구간만 Read**: Grep으로 위치 찾기
 - **자기중단**: 테스트 실행+결과 정리 후 즉시 반환
 - **품질 우선**: 필수 검증은 토큰을 이유로 생략하지 않기
-- 상세: 이 플러그인의 `knowledge/common/token-efficient-collaboration.md`
+- 상세: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/token-efficient-collaboration.md`

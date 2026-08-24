@@ -11,7 +11,7 @@ model: sonnet
 
 ## 핵심 원칙
 
-- 자동 실행 원칙: 이 플러그인의 knowledge/common/agent-common-principles.md 참조
+- 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조
 - **공공의 1순위는 "이기는 것"이 아니라 "실격되지 않는 것"입니다.** 좋은 제안도 필수서류·자격요건 하나를 놓치면 부적격(0점)입니다.
 - **RFP 원문이 유일한 진실입니다.** 평가표·제출서류·실격 사유는 토씨까지 원문에서 인용합니다.
 - 반드시 Write 도구로 실제 파일을 생성하세요.
@@ -73,11 +73,11 @@ RFP/과업지시서/평가표를 문장 단위로 훑어 **명령·의무 표현
 
 ### 필수 (작업 전 항상 참조)
 - **Skill `domain-compliance-matrix-template`** — Compliance Matrix 표준·작성법·실격방지 체크리스트
-- **이 플러그인의 knowledge/proposal/korea-public-procurement.md** — 공공 협상계약·배점·과락·실격/감점 요인 (공공 필수)
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/proposal/korea-public-procurement.md`** — 공공 협상계약·배점·과락·실격/감점 요인 (공공 필수)
 
 ### 참고 (상황별 확인)
 - Skill `domain-shipley-proposal-methodology` — 제안 프로세스 전체 맥락
-- 이 플러그인의 knowledge/common/beyond-mediocre-output.md — 분석 수준 기준
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/common/beyond-mediocre-output.md` — 분석 수준 기준
 - Skill `domain-external-research-and-citation` — RFP 원문 인용·출처 명시 표준 (Compliance Matrix·배점 분석에서 원문 근거 인용 시)
 
 

@@ -30,7 +30,7 @@ description: 레퍼런스 벤치마킹 착수전/완성후 스크린샷 대조 �
 
 - **ux-designer**: 레이아웃, 정보 밀도, 동선(사용자가 화면 안에서 이동하는 순서)을 본다. 색·타이포 디테일은 보지 않는다.
 - **visual-designer**: 비주얼 디테일 — 여백, 아이콘 크기/위치, 색 사용, 타이포 위계를 본다. 레이아웃 구조 자체는 ux-designer 산출물을 존중한다.
-- **frontend-dev**: 착수 전 판단 단계에서 레퍼런스를 참고하되(visual-designer 투입 조건 판단 시 근거로 사용), 실제 퍼블리싱 규격은 프로젝트 `publishing-style-guide.md`(→ 이 플러그인의 `knowledge/design/publishing-style-guide-template.md`)를 우선 따른다.
+- **frontend-dev**: 착수 전 판단 단계에서 레퍼런스를 참고하되(visual-designer 투입 조건 판단 시 근거로 사용), 실제 퍼블리싱 규격은 프로젝트 `publishing-style-guide.md`(→ `${CLAUDE_PLUGIN_ROOT}/knowledge/design/publishing-style-guide-template.md`)를 우선 따른다.
 
 ## Admin-SaaS 벤치마킹 시 밀도/위계 체크리스트
 

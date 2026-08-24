@@ -22,7 +22,7 @@ model: opus
 - **OWASP Top 10을 기본 점검 기준**으로 사용하되, 핵심 원칙의 게이트 최소화 정책에 따라 개발 단계에서는 Critical만 게이트, 나머지는 계획으로 적재합니다.
 - 취약점 발견 시 심각도(Critical/High/Medium/Low)를 명시하고, **개발을 멈추는 Critical인지 / 계획으로 미룰 나머지인지**를 항상 구분해 표기합니다.
 
-**심각도 판정 기준 (CVSS 매핑 — 구 `knowledge/security/owasp-security-checklist.md`에서 흡수, 2026-08-07)**:
+**심각도 판정 기준 (CVSS 매핑 — 구 OWASP 체크리스트 knowledge 문서에서 2026-08-07 흡수)**:
 
 | 심각도 | CVSS | 기준 |
 |--------|------|------|
@@ -67,7 +67,7 @@ model: opus
 - **평문 시크릿은 한 곳만이 아니다**: 설정 파일(wrangler.toml 등) 외에 문서(lessons-learned·리뷰 보고서)·테스트 코드·서브에이전트가 만든 산출물에도 같은 평문이 흩어져 있을 수 있습니다. 자격증명 분리 시 `grep -rn '<값>'`로 전 추적 파일 전수 검색이 필수입니다.
 
 ### 서버리스/엣지 API 보안 (Cloudflare Workers · Hono · D1 · MCP) ★
-ℹ️ 상세: Skill `domain-serverless-edge-api-security` (구 knowledge/security/serverless-edge-api-security.md에서 이관)
+ℹ️ 상세: Skill `domain-serverless-edge-api-security` (구 서버리스·엣지 API 보안 knowledge 문서에서 이관)
 
 malgnai 같은 우리 스택 전용 절차:
 1. **데이터 민감도** (스키마 먼저 읽기)
@@ -119,11 +119,11 @@ malgnai 같은 우리 스택 전용 절차:
 
 - **Skill `domain-backend-api-security`** — 라우트 한 건을 점검할 때. 인증/인가 게이트·IDOR·CORS·4계층 입력검증·인젝션·테넌시·외부 호출 (OWASP A01/A03 원론)
 - **Skill `domain-serverless-edge-api-security`** — 대상이 Cloudflare Workers·Hono·D1·MCP 코드베이스일 때. 인증 5대 함정, MCP 무인증 노출, `cors()` reflect, 요청당 과금 DoS
-- **Skill `domain-security-audit-checklist`** — 프로젝트 전체 태세를 정기 감사할 때. 의존성·SAST·계정 권한 매트릭스·암호화·로깅/모니터링·XSS (OWASP A02/A07/A09). 심각도 CVSS 매핑은 위 "핵심 원칙" 참조 (구 `knowledge/security/owasp-security-checklist.md` 2026-08-07 분산 병합·폐기)
+- **Skill `domain-security-audit-checklist`** — 프로젝트 전체 태세를 정기 감사할 때. 의존성·SAST·계정 권한 매트릭스·암호화·로깅/모니터링·XSS (OWASP A02/A07/A09). 심각도 CVSS 매핑은 위 "핵심 원칙" 참조 (구 OWASP 체크리스트 knowledge 문서가 2026-08-07 분산 병합되고 폐기됨)
 
 ### 참고 (상황별 확인)
-- 이 플러그인의 `knowledge/devops/docker-cloudflare-guide.md` — Docker/인프라 보안
-- 이 플러그인의 `knowledge/design/personal-data-masking-standards.md` — 화면(UI) 단위 개인정보 마스킹 기준(필드별 노출 자릿수 수치), 저장/전송 계층 보안과는 별개 (화면 설계·구현 감사 시)
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/devops/docker-cloudflare-guide.md` — Docker/인프라 보안
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/design/personal-data-masking-standards.md` — 화면(UI) 단위 개인정보 마스킹 기준(필드별 노출 자릿수 수치), 저장/전송 계층 보안과는 별개 (화면 설계·구현 감사 시)
 
 
 ## 토큰 효율

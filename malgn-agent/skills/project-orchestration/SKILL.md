@@ -142,10 +142,10 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-0
 |------|----------|-----------|-------------|
 | STAGE 1 (기획) | planner | - | `docs/requirements.md`, `docs/prd.md`, `docs/product-principles.md`(선택 — 있으면 이후 전 에이전트가 참조) |
 | STAGE 2 (설계) | architect | requirements.md, prd.md, product-principles.md(있으면) | `docs/architecture.md`, `docs/tech-stack.md`, `docs/api-spec.md`, `docs/data-model.md` |
-| 디자인 트랙(기본 투입 — Micro 등급 제외 항상, 화면 신설/기존 화면 기능변경 시) | ux-designer | prd.md, requirements.md | `docs/design/ux-flow.md`, `docs/design/wireframes.md`, `docs/design/ia.md`(참조: 플러그인 번들 `knowledge/design/ux-design-guide.md`) — wireframes.md에 "visual-designer 필요 여부 + 근거" 명시 필수 |
+| 디자인 트랙(기본 투입 — Micro 등급 제외 항상, 화면 신설/기존 화면 기능변경 시) | ux-designer | prd.md, requirements.md | `docs/design/ux-flow.md`, `docs/design/wireframes.md`, `docs/design/ia.md`(참조: `${CLAUDE_PLUGIN_ROOT}/knowledge/design/ux-design-guide.md`) — wireframes.md에 "visual-designer 필요 여부 + 근거" 명시 필수 |
 | 디자인 트랙(ux-designer가 설계 산출물에서 필요 여부 판단: 신규 모듈 또는 비관리자 사용자단 페이지면 필요, 기존 스타일가이드 준수 관리자단 화면이면 생략 가능 — 기존 enum 2개 이상/화면 5개 초과 조건은 보조 신호로 유지) | visual-designer | - | `docs/design/design-system.md`, `docs/design/brand.md`(브랜딩 프로젝트인 경우만) |
 | STAGE 3 (구현) | backend-dev | architecture.md, api-spec.md, data-model.md | 코드 + `docs/security-plan.md`(누적 기록, security와 공유) |
-| STAGE 3 (구현) | frontend-dev | architecture.md, api-spec.md | `docs/design/publishing-style-guide.md`(프로젝트에 없으면 플러그인 번들 `knowledge/design/publishing-style-guide-template.md`를 복사해 그 자리에서 생성 — 백지 작성 금지, 이후 전 화면이 이를 따름) |
+| STAGE 3 (구현) | frontend-dev | architecture.md, api-spec.md | `docs/design/publishing-style-guide.md`(프로젝트에 없으면 `${CLAUDE_PLUGIN_ROOT}/knowledge/design/publishing-style-guide-template.md`를 복사해 그 자리에서 생성 — 백지 작성 금지, 이후 전 화면이 이를 따름) |
 | STAGE 4 (검증) | qa-engineer | `docs/api-spec.md`(테스트 기준) | `tests/`(단위·통합 테스트) + `tests/test-report.md`(전체/통과/실패 수·커버리지·시나리오 표) |
 | 보안(개발 전 구간 상시 병행) | security | api-spec.md, architecture.md(있으면) | 개발 단계: `docs/security-plan.md`(비차단, 발견 적재) / 최종 단계: `docs/security-report.md`(사용자 승인 후에만) |
 | STAGE 5 (배포) | devops | `docs/tech-stack.md` | `docs/deployment-runbook-YYYY-MM-DD.md` |

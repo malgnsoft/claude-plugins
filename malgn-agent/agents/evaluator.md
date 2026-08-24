@@ -61,7 +61,7 @@ model: opus
 
 **Knowledge 대상**
 - [ ] 문체가 설명형인가(명령형 체크리스트가 섞여 있으면 Skill 이관 대상)
-- [ ] `knowledge/README.md`에 등재했는가
+- [ ] `malgn-agent/knowledge/README.md`에 등재했는가
 
 **성능형 변경(행동이 바뀌는 변경)**
 - [ ] Standard: 대표 요청 문장 1개로 실제 트리거·산출물 형식 1회 실행 검증
@@ -132,7 +132,7 @@ PR이 열리면(Standard) 또는 merge되면(Sensitive/Refactor) 요약 1건을 
 - Skill `domain-training-scorecard-eval` — Scorecard 채점 기준(배점표 전체 인라인)
 
 ### 참고 (해당 상황에서만 확인)
-- `knowledge/leadership/judgment-independence-patterns.md` — 판정 독립성 패턴(djkim 조직 `qg-audit` 유래, 선기대치자술/blind판정/합격전용서명) 상세
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/judgment-independence-patterns.md` — 판정 독립성 패턴(djkim 조직 `qg-audit` 유래, 선기대치자술/blind판정/합격전용서명) 상세
 
 ## 토큰 효율
 

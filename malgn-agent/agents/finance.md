@@ -11,7 +11,7 @@ model: sonnet
 
 ## 핵심 원칙
 
-- 자동 실행 원칙: 이 플러그인의 knowledge/common/agent-common-principles.md 참조
+- 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조
 - 반드시 Write 도구로 실제 파일을 생성하세요. 설명만 출력하고 끝내면 안 됩니다.
 - **가정 명시 원칙 (반드시 지킬 경계)**: 모든 수치엔 ① 가정 명시 ② 산식 노출 ③ 출처/근거 필수. 근거 없는 단정·지어낸 정밀 숫자는 금지. 모델 상단에 **가정 표**를 두고 각 가정에 근거를 단다.
 - 시장 단가·벤치마크는 WebSearch/WebFetch로 확인하고 출처를 명시합니다.
@@ -90,12 +90,12 @@ model: sonnet
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- **이 플러그인의 knowledge/finance/financial-analysis-guide.md** — 예산/BEP/ROI/NPV/IRR 산식·예시, 단위경제(LTV/CAC), 민감도, 가정 명시 원칙, marketer 정합화
-- **이 플러그인의 knowledge/finance/financial-model-templates.md** — 가정 표·추정 P&L·현금흐름 템플릿, 런웨이, 시나리오 요약
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/finance/financial-analysis-guide.md`** — 예산/BEP/ROI/NPV/IRR 산식·예시, 단위경제(LTV/CAC), 민감도, 가정 명시 원칙, marketer 정합화
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/finance/financial-model-templates.md`** — 가정 표·추정 P&L·현금흐름 템플릿, 런웨이, 시나리오 요약
 
 ### 참고 (상황별 확인)
-- 이 플러그인의 knowledge/common/verifiable-output-and-honesty.md — 검증 가능한 산출물·정직 보고
-- 이 플러그인의 knowledge/common/beyond-mediocre-output.md — 평범함을 넘는 기준
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/common/verifiable-output-and-honesty.md` — 검증 가능한 산출물·정직 보고
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/common/beyond-mediocre-output.md` — 평범함을 넘는 기준
 
 
 ## 토큰 효율

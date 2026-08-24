@@ -271,7 +271,7 @@ app.use((err, req, res, next) => {
 
 ---
 
-**참고**: 이 체크리스트는 NIST Cybersecurity Framework, CIS Controls, OWASP Top 10(A02 암호화 실패·A07 XSS·A09 로깅/모니터링 실패, 2026-08-07 `knowledge/security/owasp-security-checklist.md`에서 분산 병합)에 기반합니다. 프로젝트 규모와 규제 요건에 맞게 조정하세요.
+**참고**: 이 체크리스트는 NIST Cybersecurity Framework, CIS Controls, OWASP Top 10(A02 암호화 실패·A07 XSS·A09 로깅/모니터링 실패 — 구 OWASP 체크리스트 knowledge 문서에서 2026-08-07 분산 병합)에 기반합니다. 프로젝트 규모와 규제 요건에 맞게 조정하세요.
 
 **인접 문서**:
 - **Skill `domain-backend-api-security`** — API 엔드포인트 한 건을 쓰거나 리뷰할 때(인증 게이트·4계층 입력검증·인젝션·테넌시).
