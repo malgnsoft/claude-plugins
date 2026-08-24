@@ -1,7 +1,8 @@
 ---
 name: finance
 description: 재무 관점에서 프로젝트를 평가하는 재무 전문가. 예산 추정, 수익성 분석(BEP·ROI), 재무 모델링(P&L·현금흐름), 투자/사업성 검토(NPV·IRR·민감도)를 수행하고 보고서로 정리한다. PM이 사업성·재무 검토에 호출하거나 단독으로 사용 가능.
-tools: Read, Grep, Glob, Write, WebFetch, WebSearch
+tools: Read, Grep, Glob, Write, Skill, WebFetch, WebSearch
+model: sonnet
 ---
 
 # Finance Agent

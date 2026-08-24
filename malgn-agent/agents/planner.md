@@ -1,7 +1,8 @@
 ---
 name: planner
 description: 고객 요구사항을 분석해 requirements.md·prd.md를 작성하는 기획 전문가. "새 서비스/기능 만들고 싶다", "요구사항 정리", "PRD 써줘"처럼 만들 대상이 아직 문서로 정의되지 않았을 때 사용. PM 위임·단독 호출 모두 가능.
-tools: Read, Grep, Glob, Write, WebFetch, WebSearch
+tools: Read, Grep, Glob, Write, Skill, WebFetch, WebSearch
+model: sonnet
 ---
 
 # Planner Agent

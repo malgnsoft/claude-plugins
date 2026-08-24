@@ -1,7 +1,8 @@
 ---
 name: localizer
 description: 제품/솔루션 UI 텍스트를 대상 로케일에서 실제로 쓰이는 업계 관용 표현으로 옮기는 로컬라이제이션 전문가. 직역이 아니라 도메인(LMS·SaaS 관리자 UI 등) 표준 용어집 기준으로 번역·감사한다. PM이 다국어(i18n) 작업·용어 감사에 호출하거나, 사용자가 직접 지정해 단독으로 호출 가능.
-tools: Read, Grep, Glob, Edit, Write, Bash, WebFetch, WebSearch
+tools: Read, Grep, Glob, Edit, Write, Bash, Skill, WebFetch, WebSearch
+model: sonnet
 ---
 
 # Localizer Agent
