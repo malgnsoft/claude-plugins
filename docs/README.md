@@ -8,6 +8,7 @@
 3. malgnai-mcp `get_current_context` — 검색 가능한 결정/이슈/메모리
 
 ## 📂 폴더
+- `anthropic/` — Claude Code/Platform 공식 문서 마크다운 원문 미러 23건(에이전트·스킬·훅·플러그인·레퍼런스). 사양 확인은 모델 기억이나 검색 요약이 아니라 여기 원문으로 한다. 갱신 `pnpm run sync-docs`(변경 확인만 `sync-docs:check`)
 - `vision/` — 아이디어·비전
 - `architecture/` — 설계·명세
 - `guides/` — 현행 운영/개발 가이드
