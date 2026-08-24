@@ -1,11 +1,13 @@
 ---
 name: domain-security-audit-checklist
-description: 보안 감사 체크리스트 — 의존성 취약점, SAST, 접근제어, 암호화, 로깅/모니터링, XSS 방지 규약(OWASP Top 10 A02/A07/A09 흡수). 보안 감사·의존성 점검·취약점 진단 시 사용. Cloudflare Workers·Hono·D1·MCP 서버리스/엣지 스택 특유의 인증 함정·CORS reflect·서버리스 DoS는 domain-serverless-edge-api-security를 따로 참조 — 이 스킬은 스택 비특정 일반론만 다루며 그와 중복되지 않는다.
+description: 라우트 한 건이 아니라 프로젝트 전체의 보안 태세를 주기적으로(월·분기·연간) 훑을 때 여는 감사 체크리스트 — 의존성 취약점 스캔, SAST·하드코딩 시크릿 스캔, 계정·권한 매트릭스 정리, 전송/저장 암호화, 로깅·모니터링·에러 노출, XSS 방지(OWASP A02/A07/A09 흡수). security가 정기 감사·릴리스 전 태세 점검을 할 때 사용한다.
 ---
 
 # Security Audit Checklist
 
-프로젝트 전체의 보안 태세를 평가하는 체크리스트입니다. 정기적으로 실시하며, 신규 기능이나 의존성 추가 시에도 확인하세요.
+**언제 이 문서를 여는가**: 개별 엔드포인트가 아니라 **프로젝트 전체**를 대상으로 정기 감사를 돌릴 때, 또는 릴리스 전 태세를 한 번 훑을 때. 신규 기능이나 의존성 추가 시에도 확인하세요.
+
+라우트 한 건의 인증·입력검증·테넌시는 Skill `domain-backend-api-security`가 다룹니다.
 
 ## 핵심 감사 항목
 
@@ -271,6 +273,7 @@ app.use((err, req, res, next) => {
 
 **참고**: 이 체크리스트는 NIST Cybersecurity Framework, CIS Controls, OWASP Top 10(A02 암호화 실패·A07 XSS·A09 로깅/모니터링 실패, 2026-08-07 `knowledge/security/owasp-security-checklist.md`에서 분산 병합)에 기반합니다. 프로젝트 규모와 규제 요건에 맞게 조정하세요.
 
-**관련 스킬 경계**:
-- Cloudflare Workers·Hono·D1·MCP 서버리스/엣지 스택 특화 보안 점검(인증 5대 함정·CORS reflect·서버리스 DoS)은 `domain-serverless-edge-api-security`를 참조 — 이 스킬과 중복 없이 스택 특유 함정만 다룬다(역방향 배타 문구, description 참조).
-- devops 연관성 판단: §1(의존성 취약점)·§2(SAST)의 CI/CD 파이프라인 통합 항목은 devops의 배포 파이프라인 구성과 맞닿아 있으나, Docker 이미지·환경변수 등 인프라 하드닝 자체는 `domain-devops-deployment-patterns` §1이 전담한다(D13 분산 병합 결정). 따라서 `agents/devops.md` 학습자료에 이 스킬을 신규 참조로 추가할지는 이 스킬 쪽에서 강제하지 않으며, devops 보유자 확인 후 별도 결정 대상으로 남긴다(D6 실행항목 미확정 사항).
+**인접 문서**:
+- **Skill `domain-backend-api-security`** — API 엔드포인트 한 건을 쓰거나 리뷰할 때(인증 게이트·4계층 입력검증·인젝션·테넌시).
+- **Skill `domain-serverless-edge-api-security`** — Cloudflare Workers·Hono·D1·MCP 코드베이스를 점검할 때(인증 5대 함정·`cors()` reflect·요청당 과금 DoS).
+- **Skill `domain-devops-deployment-patterns` §1** — Docker 이미지·환경변수 등 인프라 하드닝 자체는 이 스킬이 아니라 그쪽이 전담한다. 다만 위 §1(의존성 취약점)·§2(SAST)를 CI/CD 파이프라인에 붙이는 일은 devops와 맞닿는다.

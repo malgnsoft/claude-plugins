@@ -1,6 +1,6 @@
 ---
 name: domain-backend-api-implementation-patterns
-description: 'Hono 라우트/D1 쿼리/에러 처리/JWT·RBAC/N+1 방지/페이징 등 기본 구현 패턴 + Route→Service→DAO 계층 분리, DAO 도입 판단 기준, 인증 게이트·역할 가드·응답봉투 일원화 등 실서비스 검증 패턴(coaching/malgnai/performance 역추출). backend-dev/qa-engineer가 Hono API를 구현·검토할 때 사용한다. 보안 전용 체크리스트는 Skill `backend-security-audit`(재명명됨: `domain-backend-security-audit`)을 별도 참조.'
+description: 'Hono 라우트/D1 쿼리/에러 처리/JWT·RBAC/N+1 방지/페이징 등 기본 구현 패턴 + Route→Service→DAO 계층 분리, DAO 도입 판단 기준, 인증 게이트·역할 가드·응답봉투 일원화 등 실서비스 검증 패턴(coaching/malgnai/performance 역추출). backend-dev/qa-engineer가 Hono API를 구현·검토할 때 사용한다. 보안 요구사항 체크리스트 자체는 Skill `domain-backend-api-security`를 별도 참조 — 이 스킬은 그 요구사항을 코드로 옮기는 방법을 다룬다.'
 ---
 
 # 백엔드 API 구현 패턴

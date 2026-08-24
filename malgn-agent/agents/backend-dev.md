@@ -45,7 +45,7 @@ model: sonnet
 ## 스킬 상세
 
 ### 보안 규약 구현 (전제)
-ℹ️ 상세는 Skill: **domain-backend-security-audit** 참조.
+ℹ️ 무엇을 만족해야 하는가는 Skill: **domain-backend-api-security**, 그것을 이 스택에서 어떻게 코딩하는가는 Skill: **domain-backend-api-implementation-patterns** 참조.
 
 **3대 규약**: (① 인증 화이트리스트 게이트 ② 역할 기반 인가 미들웨어 ③ 테넌트 필터 + 파라미터화 쿼리). 모든 API 구현 시 이 3가지를 구조적으로 적용합니다.
 
@@ -95,7 +95,7 @@ model: sonnet
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- **Skill `domain-backend-security-audit`** — 3대 보안 규약 + 4가지 입력검증 위치 (매번 적용)
+- **Skill `domain-backend-api-security`** — 3대 보안 규약 + 4계층 입력검증(라우트·서비스·DB제약·에러, §2) + 외부 호출 안전성(§6) (매번 적용)
 - **Skill `domain-system-design-principles`** — 4대 설계 의무(③비정상케이스 ④완결성)를 구현에서 충족하는지 검증
 
 ### 참고 (상황별 확인)
@@ -103,7 +103,7 @@ model: sonnet
 - Skill `domain-backend-api-implementation-patterns` — Hono 패턴, DAO 분리, 에러 처리, BIGINT 타입 변환
 - **[상황: Cloudflare Workers/Hono/D1/MCP 서버리스·엣지 스택 API 구현·점검 시]** Skill `domain-serverless-edge-api-security` — 인증 5대 함정(전역 미들웨어 누락·fail-open·MCP 무인증 노출·IDOR 등), CORS reflect, 서버리스 DoS(비용 폭증) 벡터, §7 순서형 점검 체크리스트
 - Skill `domain-architecture-patterns-reference` — API 설계 원칙, 동시성 패턴
-- Skill `domain-backend-api-security` §4 — SQL/NoSQL 주입 방지 원론; Skill `domain-security-audit-checklist` §6 — XSS 방지(OWASP A07 병합, 구 `knowledge/security/owasp-security-checklist.md` 2026-08-07 분산 병합·폐기)
+- Skill `domain-security-audit-checklist` §6 — XSS 방지(OWASP A07 병합, 구 `knowledge/security/owasp-security-checklist.md` 2026-08-07 분산 병합·폐기)
 - **[상황: 검색 기능(KB/FAQ/추천 등) 설계·구현 시]** 이 플러그인의 `knowledge/backend/search-strategy-vector-vs-fulltext.md` — 벡터 vs Full-text 선택 기준: 기본은 Full-text, 한글 등 다국어 쿼리는 multilingual 임베딩 모델이 전제조건(영어전용 모델은 한글 0% 매칭), 하이브리드가 프로덕션 지향점
 
 ## 토큰 효율

@@ -1,15 +1,14 @@
 ---
 name: domain-serverless-edge-api-security
-description: Cloudflare Workers·Hono·D1·MCP 서버리스/엣지 스택 전용 API 보안 점검 절차 — 인증 5대 함정(전역 미들웨어 누락·개별부착 구조적 누락·fail-open·MCP 무인증 노출·IDOR), CORS reflect, 서버리스 DoS(비용 폭증) 벡터. §7 체크리스트(스키마→미들웨어→Grep→fail-open→mcp/tools.js→bind→cors)는 무의존성 Node 스크립트 `bin/check-edge-api-security.mjs`로 자동 실행해 후보를 뽑고, 그 후보를 사람/에이전트가 실제 코드로 확인하는 순서로 진행한다(스크립트는 후보 탐지만, 최종 위험도 판단은 하지 않음). backend-dev·security가 이 스택의 API를 구현·점검할 때 사용한다. OWASP 일반론은 domain-security-audit-checklist를 따로 참조 — 이 스킬은 그와 중복 없이 이 스택 특유의 함정만 다룬다.
+description: Cloudflare Workers·Hono·D1·MCP 코드베이스를 점검할 때 여는 스택 전용 보안 절차 — 인증 5대 함정(전역 미들웨어 누락·라우트별 개별부착 누락·fail-open·MCP 무인증 노출·소유권 컬럼 부재), `cors()` 무인자 reflect, 요청당 과금이라 DoS가 곧 비용 폭증인 서버리스 벡터, D1 파라미터화 확인. 번들 스크립트 `bin/check-edge-api-security.mjs`가 후보를 뽑고 최종 위험도 판단은 사람이 한다. backend-dev·security가 이 스택의 API를 구현·점검할 때 사용한다.
 ---
 
 # 서버리스/엣지 API 보안 점검 (Cloudflare Workers · Hono · D1 · MCP)
 
-## 범위 — domain-security-audit-checklist와의 관계 (상호 배제)
+**언제 이 문서를 여는가**: 점검 대상 코드베이스가 Cloudflare Workers·Hono·D1·MCP 스택일 때. 이 스택 특유의 함정만 다루며, 스택 불문 공통 항목은 아래 인접 문서가 맡는다.
 
-이 스킬과 `domain-security-audit-checklist`는 중복 없이 상호 배타적인 범위를 다룬다.
-- **OWASP 일반론**(의존성 취약점·SAST·일반 접근제어·암호화·로깅/모니터링 규약 등 스택 불문 공통 체크리스트)은 `domain-security-audit-checklist`를 따른다 — 이 스킬에서는 다루지 않는다.
-- **이 스택(Cloudflare Workers·Hono·D1·MCP) 특유의 함정**(인증 5대 함정, CORS reflect, 서버리스 DoS 비용 폭증, MCP 무인증 노출 등)은 이 스킬이 전담한다 — `domain-security-audit-checklist`에는 없는 내용이다.
+- 라우트 한 건의 일반 보안 요구사항(인증 게이트·4계층 입력검증·인젝션·테넌시) → Skill `domain-backend-api-security`
+- 프로젝트 전체 태세 정기 감사(의존성·SAST·계정 권한·암호화·로깅) → Skill `domain-security-audit-checklist`
 
 ## 강한 보안 산출물의 조건
 
