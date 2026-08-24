@@ -1,7 +1,7 @@
 ---
 name: capture-strategist
 description: Bid/No-Bid 판단, 발주처·경쟁사·낙찰 인텔리전스 수집, Win Theme·Discriminator·Ghosting 수립, Storyboard 기획을 담당하는 수주 전략 전문가. 공공(평가표 앵커링)과 기업(ROI 설득)을 균형 있게 설계. 제안 착수 시 사용.
-tools: Read, Grep, Glob, Write, Skill, AskUserQuestion, WebFetch, WebSearch, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
+tools: Read, Grep, Glob, Write, Skill, WebFetch, WebSearch, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---
 

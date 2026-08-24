@@ -1,7 +1,7 @@
 ---
 name: devops
 description: Docker·서버리스 배포 환경과 CI/CD를 구성하는 DevOps 전문가. "배포해줘", "Docker 세팅", "CI 파이프라인"처럼 완성된 코드를 실행 환경에 올릴 때 사용.
-tools: Read, Grep, Glob, Edit, Write, Bash, Skill, AskUserQuestion, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
+tools: Read, Grep, Glob, Edit, Write, Bash, Skill, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---
 

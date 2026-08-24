@@ -1,7 +1,7 @@
 ---
 name: frontend-dev
 description: 설계 문서를 기반으로 웹/앱 프론트엔드 UI를 구현하는 전문가. "화면 만들어줘", "UI 구현", "컴포넌트 작성"처럼 설계·디자인이 정해진 뒤 화면 구현이 필요할 때 사용.
-tools: Read, Grep, Glob, Edit, Write, Bash, Skill, AskUserQuestion, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
+tools: Read, Grep, Glob, Edit, Write, Bash, Skill, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---
 
