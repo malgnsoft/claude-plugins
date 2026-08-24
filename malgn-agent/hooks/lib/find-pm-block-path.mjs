@@ -16,7 +16,7 @@
  * 않으면 아무 일도 하지 않는다(§4-1 "자동 없음, 온디맨드만" 원칙).
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
-import { join, dirname } from 'node:path'
+import { join, dirname, sep } from 'node:path'
 import { homedir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 
@@ -46,6 +46,32 @@ export const AMBIGUOUS = Symbol('ambiguous-malgn-agent-marketplace-match')
  */
 export const MARKETPLACES_DIR_SEGMENTS = ['.claude', 'plugins', 'marketplaces']
 export const PLUGIN_DIR_NAME = 'malgn-agent'
+
+/**
+ * 절대경로를 홈 디렉토리 상대(`~/...`) 형태로 바꾼다. 마켓플레이스 clone은 항상
+ * `<홈>/.claude/plugins/marketplaces/...` 아래에 있으므로, 스캐폴딩 시점에 절대경로를 그대로
+ * 박으면 그 경로에 박힌 홈 디렉토리가 스캐폴딩한 사람 것으로 고정된다 — 프로젝트가 다른 PC로
+ * 옮겨지면 존재하지 않는 남의 홈 디렉토리를 가리키게 된다. Claude Code의 `@import` 문법은
+ * `@~/...` 형태를 공식 지원하므로(현재 PC의 홈으로 매번 다시 해석된다), 홈 디렉토리 밑의 경로는
+ * `~/...`로 바꿔 심는다. 홈 디렉토리 밖에 있는 비정상 설치 위치는 변환할 수 없으므로 그대로 둔다
+ * (그 경우는 애초에 이식성을 보장할 수 없는 상황이다).
+ */
+export function toHomeRelative(absPath) {
+  const home = homedir()
+  if (absPath === home) return '~'
+  const prefix = home.endsWith(sep) ? home : home + sep
+  if (!absPath.startsWith(prefix)) return absPath
+  return '~/' + absPath.slice(prefix.length).split(sep).join('/')
+}
+
+/** toHomeRelative()의 역변환. `~` 또는 `~/...`로 시작하는 경로를 현재 PC의 절대경로로 편다.
+ * 그 외(이미 절대경로 등)는 그대로 반환한다 — 옛 방식(절대경로 하드코딩)으로 설치된 CLAUDE.md와도
+ * 호환되어야 드리프트 비교가 두 형식 모두에서 올바르게 동작한다. */
+export function expandHome(p) {
+  if (p === '~') return homedir()
+  if (p.startsWith('~/')) return join(homedir(), ...p.slice(2).split('/'))
+  return p
+}
 
 export function readBlockFile() {
   const raw = readFileSync(

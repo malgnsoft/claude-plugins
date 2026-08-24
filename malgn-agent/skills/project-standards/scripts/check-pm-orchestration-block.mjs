@@ -31,6 +31,8 @@ import {
   AMBIGUOUS,
   readBlockFile,
   findMalgnAgentBlockPath,
+  toHomeRelative,
+  expandHome,
 } from '../../../hooks/lib/find-pm-block-path.mjs'
 
 function installMarkerFor(version) {
@@ -65,6 +67,10 @@ try {
 let resolvedPath = null
 try { resolvedPath = findMalgnAgentBlockPath() } catch { resolvedPath = null }
 const resolvedPathLabel = resolvedPath === AMBIGUOUS ? 'AMBIGUOUS' : resolvedPath
+// @import 줄에 실제로 심을 형태. 절대경로를 그대로 심으면 이 프로젝트가 다른 PC로 옮겨졌을 때
+// 존재하지 않는 남의 홈 디렉토리를 가리키게 된다 — `~/...`(홈 상대, Claude Code 공식 지원)로 바꿔
+// 심어야 어느 PC에서 열어도 그 PC의 홈 기준으로 다시 해석된다.
+const resolvedImportPath = (resolvedPath && resolvedPath !== AMBIGUOUS) ? toHomeRelative(resolvedPath) : resolvedPathLabel
 
 let block = null
 try { block = readBlockFile() } catch {}
@@ -81,7 +87,7 @@ if (!stateMatch) {
     nextAction: block
       ? '사용자 확인이 필요하다 — 이 스크립트를 PM이 직접 실행했다면 AskUserQuestion으로 설치 여부를 묻고, 서브에이전트가 실행했다면(AskUserQuestion 도구가 없다) 이 결과를 PM에게 반환해 PM이 묻게 한다. "예": ' + REMOVE_OLD_MARKERS_STEP +
         ` 그 자리(또는 파일 끝)에 \`${installMarkerFor(block.version)}\` 줄과 그다음 줄에 ` +
-        `\`@${resolvedPathLabel}\` 줄을 삽입한다(resolvedPath가 AMBIGUOUS/null이면 경로 확정 전까지 삽입하지 말고 사용자에게 알린다). ` +
+        `\`@${resolvedImportPath}\` 줄을 삽입한다(resolvedPath가 AMBIGUOUS/null이면 경로 확정 전까지 삽입하지 말고 사용자에게 알린다). ` +
         `"아니오": ${REMOVE_OLD_MARKERS_STEP} 그 자리에 \`${declinedMarkerFor(block.version)}\` 마커만 삽입한다(import 줄 없이).`
       : 'pm-orchestration-block.md를 읽지 못했다(배포 누락 가능성) — 이번에는 설치를 진행하지 말고 사용자에게 이 사실만 알린다.',
   })
@@ -119,7 +125,7 @@ if (!importLine) {
     resolvedPath: resolvedPathLabel,
     nextAction: resolvedPath && resolvedPath !== AMBIGUOUS
       ? `사용자 재동의 불필요(콘텐츠 변경 아님, 전달 방식만 바뀜) — findMalgnAgentBlockPath() 결과(${resolvedPath})로 마커 다음 줄에 ` +
-        `\`@${resolvedPath}\` 를 추가한다.`
+        `\`@${resolvedImportPath}\` 를 추가한다.`
       : '경로를 확정할 수 없다(파일 없음 또는 ambiguous) — CLAUDE.md를 건드리지 말고 사용자에게 알린다.',
   })
 } else if (resolvedPath === AMBIGUOUS) {
@@ -136,11 +142,14 @@ if (!importLine) {
     importLine,
     nextAction: 'CLAUDE.md를 건드리지 말고 사용자에게 마켓플레이스 재등록이 필요할 수 있음을 알린다.',
   })
-} else if (importLine !== resolvedPath) {
+} else if (expandHome(importLine) !== resolvedPath) {
+  // importLine은 `~/...`(홈 상대, 이식 가능한 형태) 또는 옛 방식의 절대경로 둘 다일 수 있다.
+  // expandHome()으로 현재 PC 기준 절대경로로 편 뒤 비교해야 `~/...`로 정상 설치된 경우를
+  // 드리프트로 오판하지 않는다.
   print({
     status: 'drift',
     message: `import 경로(${importLine}) != 현재 설치 경로(${resolvedPath}).`,
-    nextAction: `Edit로 CLAUDE.md의 기존 @import 줄만 `+`\`@${resolvedPath}\`` + `로 교체한다(마커 줄은 그대로 둔다, 사용자 재동의 불필요 — 경로 교정일 뿐).`,
+    nextAction: `Edit로 CLAUDE.md의 기존 @import 줄만 `+`\`@${resolvedImportPath}\`` + `로 교체한다(마커 줄은 그대로 둔다, 사용자 재동의 불필요 — 경로 교정일 뿐).`,
   })
 } else {
   print({
