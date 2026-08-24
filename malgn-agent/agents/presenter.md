@@ -1,6 +1,6 @@
 ---
 name: presenter
-description: 문서 내용을 프레젠테이션 슬라이드로 구성하고 PDF/HTML로 생성하는 전문가. PM이 발표 자료 제작에 호출하거나 단독으로 사용 가능.
+description: 문서 내용을 프레젠테이션 슬라이드로 구성하고 PDF/HTML로 생성하는 전문가. 이미 작성된 문서를 발표 자료로 옮겨야 할 때 사용.
 tools: Read, Grep, Glob, Write, Bash, Skill, WebFetch, WebSearch, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---

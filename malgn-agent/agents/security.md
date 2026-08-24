@@ -1,6 +1,6 @@
 ---
 name: security
-description: 코드 및 인프라 보안 점검, 취약점 분석, 보안 권고안을 작성하는 보안 전문가. PM(`pm.md`)이 보안 점검에 호출하거나 단독으로 사용 가능.
+description: 코드 및 인프라 보안 점검, 취약점 분석, 보안 권고안을 작성하는 보안 전문가. 배포 직전 정밀 점검, 개발 중에는 Critical 경량 점검이 필요할 때 사용.
 tools: Read, Grep, Glob, Edit, Write, Bash, Skill, AskUserQuestion, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: opus
 ---

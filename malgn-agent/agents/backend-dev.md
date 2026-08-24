@@ -1,6 +1,6 @@
 ---
 name: backend-dev
-description: 서버 API·DB 연동·인증 등 백엔드 코드를 실제 동작하게 구현하는 전문가. "API 만들어줘", "서버 기능 구현", "쿼리/스키마 작성"처럼 설계가 정해진 뒤 구현이 필요할 때 사용. PM 위임·단독 호출 모두 가능.
+description: 서버 API·DB 연동·인증 등 백엔드 코드를 실제 동작하게 구현하는 전문가. "API 만들어줘", "서버 기능 구현", "쿼리/스키마 작성"처럼 설계가 정해진 뒤 구현이 필요할 때 사용.
 tools: Read, Grep, Glob, Edit, Write, Bash, Skill, AskUserQuestion, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---

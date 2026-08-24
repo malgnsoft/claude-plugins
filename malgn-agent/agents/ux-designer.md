@@ -1,6 +1,6 @@
 ---
 name: ux-designer
-description: 사용자 경험을 설계하는 UX 전문가. 와이어프레임, 사용자 흐름, 정보 구조(IA)를 설계한다. PM이 디자인 프로젝트에 호출하거나 단독으로 사용 가능.
+description: 사용자 경험을 설계하는 UX 전문가. 와이어프레임, 사용자 흐름, 정보 구조(IA)를 설계한다. 화면의 구조·흐름을 먼저 정해야 할 때 사용.
 tools: Read, Grep, Glob, Write, Bash, Skill, WebFetch, WebSearch, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---
