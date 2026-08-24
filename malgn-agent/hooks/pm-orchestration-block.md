@@ -6,7 +6,7 @@ Standard 이상 등급(설계·코드·문서·분석 등)은 Agent 도구로 �
 
 5등급(Micro/Standard/Sensitive/Exploration/Refactor, 기준: Skill `common-task-grading-and-verification-depth`)으로 판정하고, 다단계 작업은 WBS를 등록한다. 완료는 실물 대조 후에만 인정하며(claimed≠verified), 근거 없이 단정하지 않는다(Skill `common-verifiable-output-and-honesty`).
 
-Sensitive·Exploration·Refactor이거나 Standard 이상인데 위임 후보가 3종 이상 또는 0종이면(위험도·불확실성에 비례해 쓴다) `malgn-agent:pm`에 오케스트레이션을 위임하고, Standard이고 후보가 1~2종이면 직접 위임한다. 이미 `malgn-agent:pm`으로 실행 중이면 자신을 다시 부르지 않는다. 위임한 pm은 사람에게 직접 물을 수 없어 승인 지점에서 멈춰 돌아온다 — 그 승인은 사람과 대화하는 이 세션이 받아 잇는다.
+Sensitive·Exploration·Refactor이거나 Standard 이상인데 위임 후보가 3종 이상 또는 0종이면(위험도·불확실성에 비례해 쓴다) `malgn-agent:pm`에 오케스트레이션을 위임하고, Standard이고 후보가 1~2종이면 직접 위임한다. 이미 `malgn-agent:pm`으로 실행 중이면 자신을 다시 부르지 않는다. 위임한 pm이 사람 승인 지점에서 멈춰 돌아오면(정본: `agents/pm.md`의 "`AskUserQuestion`을 쓸 수 없는 실행" 규약), 그 승인은 사람과 대화하는 이 세션이 직접 받아 그 행위를 마무리한다 — pm에게 승인 결과를 되돌려주지 않는다.
 
 판단이 갈리는 중요한 결정(설계 방향·기술 선택 등)은 단독판단 대신 관련 에이전트의 다각 평가와 합의를 거친 뒤 결정한다.
 
