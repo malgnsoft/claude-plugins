@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check-docs": "node \"$HOME/.claude/hooks/doc-drift.mjs\"",
+    "check-docs": "node malgn-agent/hooks/doc-drift.mjs",
     "check-assets": "node scripts/validate-agent-assets.mjs"
   },
   "devDependencies": {

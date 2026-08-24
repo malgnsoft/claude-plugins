@@ -15,5 +15,6 @@
 - `methodology/` — malgn-agent 에이전트 개발방법론(rubric)·전수감사·결정로그·최종검증보고서(2026-08-07). 신규 agent/skill/knowledge 작성 시 `agent-development-methodology.md`가 판정 기준
 - `roadmap/` — 미채택/보류 설계 메모(배포판 malgn-agent에는 미포함)
 - `decision/` — 이 저장소 자신의 운영 결정 아카이브
+- `archive/` — 루트 `STATUS.md` 에서 덜어낸 지나간 라운드 이력(원문 그대로). STATUS.md 는 L0 오리엔테이션 크기로 유지하고, 이력은 여기로 옮긴다
 
 > **정확성 보증:** 새 세션 시작 시 드리프트 가드가 `.claude/doc-drift.json`으로 문서↔코드를 대조. 수동 `pnpm run check-docs`.
