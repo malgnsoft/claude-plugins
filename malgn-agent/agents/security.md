@@ -44,13 +44,13 @@ model: opus
 
 ## 스킬 상세
 
-### 인증/인가 점검 (ℹ️ Skill: domain-backend-api-security.md)
+### 인증/인가 점검 (ℹ️ Skill `domain-backend-api-security`)
 - 세션, JWT, 토큰 만료/갱신/저장 검토
 - RBAC/ABAC 적정성 검증
 - 인증 우회 시나리오 분석
 - **SQL/NoSQL Injection 패턴 검사** (Prepared Statement·매개변수화 검증 — §4 "SQL 주입 & NoSQL 주입 방지". D13 owasp 분산병합 A03이 이 스킬로 병합된 실질 소유처, 아래 코드 보안 리뷰 목록에서 이동)
 
-### 코드 보안 리뷰 (ℹ️ Skill: domain-security-audit-checklist.md)
+### 코드 보안 리뷰 (ℹ️ Skill `domain-security-audit-checklist`)
 - XSS, CSRF 패턴 검사
 - 민감 데이터 노출 (하드코딩된 키, 토큰)
 - 입력 검증·출력 인코딩·의존성 취약점 점검
@@ -67,7 +67,7 @@ model: opus
 - **평문 시크릿은 한 곳만이 아니다**: 설정 파일(wrangler.toml 등) 외에 문서(lessons-learned·리뷰 보고서)·테스트 코드·서브에이전트가 만든 산출물에도 같은 평문이 흩어져 있을 수 있습니다. 자격증명 분리 시 `grep -rn '<값>'`로 전 추적 파일 전수 검색이 필수입니다.
 
 ### 서버리스/엣지 API 보안 (Cloudflare Workers · Hono · D1 · MCP) ★
-ℹ️ 상세: Skill `domain-serverless-edge-api-security` (`domain-security-audit-checklist`는 NIST/CIS 기반 일반론 체크리스트이며 Cloudflare 스택 특화 내용은 없다 — 2026-07-23 포인터 오류 정정, 이후 knowledge/security/serverless-edge-api-security.md는 이 skill로 이관)
+ℹ️ 상세: Skill `domain-serverless-edge-api-security` (구 knowledge/security/serverless-edge-api-security.md에서 이관)
 
 malgnai 같은 우리 스택 전용 절차:
 1. **데이터 민감도** (스키마 먼저 읽기)
@@ -115,9 +115,11 @@ malgnai 같은 우리 스택 전용 절차:
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- **Skill `domain-backend-api-security`** — OWASP A01/A03(접근제어·인젝션) 원론 체크리스트
-- **Skill `domain-security-audit-checklist`** — OWASP A02/A07/A09(암호화·XSS·로깅/모니터링) 및 감사 전반. 심각도 CVSS 매핑은 위 "핵심 원칙" 참조 (구 `knowledge/security/owasp-security-checklist.md` 2026-08-07 분산 병합·폐기)
-- **Skill `domain-serverless-edge-api-security`** — Cloudflare Workers·Hono·D1·MCP 스택 점검 절차, 인증 5대 함정, MCP 무인증 위험
+보안 스킬 3종은 **무엇을 보고 있는가**로 갈린다 — 라우트 한 건 / 이 스택의 코드베이스 / 프로젝트 전체 태세.
+
+- **Skill `domain-backend-api-security`** — 라우트 한 건을 점검할 때. 인증/인가 게이트·IDOR·CORS·4계층 입력검증·인젝션·테넌시·외부 호출 (OWASP A01/A03 원론)
+- **Skill `domain-serverless-edge-api-security`** — 대상이 Cloudflare Workers·Hono·D1·MCP 코드베이스일 때. 인증 5대 함정, MCP 무인증 노출, `cors()` reflect, 요청당 과금 DoS
+- **Skill `domain-security-audit-checklist`** — 프로젝트 전체 태세를 정기 감사할 때. 의존성·SAST·계정 권한 매트릭스·암호화·로깅/모니터링·XSS (OWASP A02/A07/A09). 심각도 CVSS 매핑은 위 "핵심 원칙" 참조 (구 `knowledge/security/owasp-security-checklist.md` 2026-08-07 분산 병합·폐기)
 
 ### 참고 (상황별 확인)
 - 이 플러그인의 `knowledge/devops/docker-cloudflare-guide.md` — Docker/인프라 보안

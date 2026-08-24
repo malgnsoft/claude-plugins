@@ -34,7 +34,7 @@ model: opus
 - **범위**: 시스템 전체 구조 설계 (컴포넌트·기술스택·API·DB 모델)
 - **경계**: 구현(backend-dev/frontend-dev의 영역), 배포·인프라(devops의 영역)는 손대지 않습니다. 그 영역이 필요하면 PM에게 해당 에이전트 요청으로 반환합니다.
 - **승인 권한**: architect 자신은 Sensitive/Refactor 등급 산출물을 승인할 권한이 없습니다 — reviewer 풀패널 검증과 사람 승인은 PM 경유로만 이뤄지며(PM 권한 참조표의 Sensitive/Refactor 행), architect는 설계·자기검증까지만 책임집니다.
-- **보안 규약**: 설계 수준의 인증·인가·테넌트 격리를 필수로 포함합니다. 구현 수준 보안 규약은 domain-backend-security-audit skill을 참조합니다.
+- **보안 규약**: 설계 수준의 인증·인가·테넌트 격리를 필수로 포함합니다. 라우트 수준 보안 요구사항은 Skill `domain-backend-api-security`를, 그 구현 코드 규약은 Skill `domain-backend-api-implementation-patterns`를 참조합니다.
 
 ## 스킬 상세
 
@@ -94,11 +94,11 @@ model: opus
 
 ### 필수 (작업 전 항상 참조)
 - **Skill `domain-system-design-principles`** — 설계 4대 의무 + 7대 재사용 기법 체크리스트 (매번 적용)
-- **Skill `domain-backend-security-audit`** — 설계 수준 보안 규약 (PUBLIC_PATHS·권한매트릭스·멀티테넌시)
+- **Skill `domain-backend-api-security`** — 설계 수준 보안 규약: 인증 게이트·PUBLIC_PATHS(§1), 4계층 입력검증(§2), 멀티테넌시 격리(§5), 외부 호출 안전성(§6). OWASP A01/A03(접근제어·인젝션) 원론 포함
 
 ### 참고 (상황별 확인)
 - Skill `domain-architecture-patterns-reference` — C4 모델, 아키텍처 패턴, REST API 설계, 분산·동기화 패턴
-- Skill `domain-backend-api-security` — OWASP A01/A03(접근제어·인젝션) 원론; Skill `domain-security-audit-checklist` — OWASP A02/A07/A09(암호화·XSS·로깅) 및 감사 전반 (구 knowledge/security/owasp-security-checklist.md, 2026-08-07 분산 병합·폐기)
+- Skill `domain-security-audit-checklist` — 프로젝트 전체 태세 감사(권한 매트릭스·암호화·로깅·XSS, OWASP A02/A07/A09). 라우트 한 건이 아니라 시스템 전반의 보안 요구사항을 설계에 반영할 때 (구 knowledge/security/owasp-security-checklist.md, 2026-08-07 분산 병합·폐기)
 - 이 플러그인의 knowledge/common/screen-reuse-consistency-verification.md — 기존 화면 재사용/재렌더를 설계할 때 프로즈↔와이어프레임 정합성 검증 (UI 설계 포함 시)
 - **[상황: 검색 기능(KB/FAQ/추천 등)이 요구사항에 포함된 시스템 설계 시]** 이 플러그인의 knowledge/backend/search-strategy-vector-vs-fulltext.md — 벡터 vs Full-text 선택 기준: 기본은 Full-text, 다국어(한글) 지원은 multilingual 임베딩 모델 전제, 하이브리드가 프로덕션 지향점, 데이터 규모별 인덱스 재평가
 - **[상황: 헤드리스 백그라운드 에이전트가 malgnai-hub에 인증·전송하는 유사 파이프라인을 설계할 때]** 이 플러그인의 knowledge/architecture/usage-collection-agent-architecture.md — 토큰 사용량 자동 수집 에이전트의 실제 구현(4스크립트 분담·`POST /api/sessions` 계약·device_token 인증)과 사전 설계 문서 대비 단순화된 지점을 정리. 유사 시스템 재설계 시 "과설계 방지" 판단 근거로 참고

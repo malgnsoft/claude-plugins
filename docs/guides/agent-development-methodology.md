@@ -31,7 +31,7 @@ Skill의 `description` 필드는 사람이 읽는 소개문이 아니라 **자�
 **판정 기준(기계적으로 적용 가능)**:
 1. description에 "~할 때 사용", "~할 때", "요청 시" 류 **트리거 절이 최소 1개** 있는가? 없으면(정의만 있고 트리거가 없으면) 자동 매칭 실패 위험 — 예: "전 에이전트 산출물 품질 기준"처럼 트리거 없이 정의만 있는 문장은 그 뒤에 반드시 "~시 사용"이 와야 한다(실제로 6개 common-*는 모두 이 패턴을 지킴 — 유지).
 2. 트리거절은 **사용자가 실제로 입력할 법한 표현**을 최소 1개 포함해야 한다. "코드 리뷰 관련 작업 시"보다 "코드 리뷰해줘", "PR 봐줘" 같은 발화에 가까운 명사/동사가 낫다. `code-review` 스킬의 트리거("Review the current diff... at the given effort level")처럼 실제 슬래시커맨드/발화 패턴을 그대로 반영한 것이 모범.
-3. **중복 트리거 감사**: 두 스킬의 트리거절이 같은 상황(예: "보안 검토 시")을 가리키면 자동 매칭이 둘 다 후보로 올려 혼선을 준다. `domain-backend-api-security` / `domain-backend-security-audit` / `domain-security-audit-checklist` / `domain-serverless-edge-api-security`처럼 "보안"류 스킬이 4개 이상이면, description에 **서로 배제하는 스코프 문구**("이 스킬은 X만 다루고 Y는 domain-serverless-edge-api-security를 따로 참조" 식)가 반드시 있어야 한다. 없으면 감사에서 "트리거 충돌 후보"로 표시.
+3. **중복 트리거 감사**: 두 스킬의 트리거절이 같은 상황(예: "보안 검토 시")을 가리키면 자동 매칭이 둘 다 후보로 올려 혼선을 준다. `domain-backend-api-security` / `domain-serverless-edge-api-security` / `domain-security-audit-checklist`처럼 같은 도메인어를 공유하는 스킬이 여럿이면, 각 description의 "언제 이걸 여는가"가 **하나의 축 위에서 배타적으로** 갈려야 한다(이 3종은 "무엇을 보고 있는가" — 라우트 한 건 / 이 스택의 코드베이스 / 프로젝트 전체 태세). "이 스킬은 X와 중복되지 않는다"류 해명문은 통과 근거가 아니다 — 해명이 필요하다는 것 자체가 선택 지점이 모호하다는 신호이며, 게다가 description은 상시 로드라 그 해명문 비용을 매 세션이 문다. 축이 없거나 두 스킬이 같은 칸에 들어가면 "트리거 충돌 후보"로 표시.
 4. description 길이는 **1~3문장, 300자 내외**를 상한으로 삼는다. 그 이상 길어지면 트리거 판별에 필요한 핵심 키워드가 부사어에 묻힌다 — 본문에 넣을 내용을 description에 욱여넣지 않는다.
 
 ---
