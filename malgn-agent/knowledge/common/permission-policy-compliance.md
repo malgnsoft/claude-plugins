@@ -1,6 +1,6 @@
 # 권한 정책 준수 — deny 규칙을 우회하지 않는다
 
-출처: malgnai B-1 회고 — 권한 deny 우회 사고 건(2026-06-23). 당시 회고 파일은 남아 있지 않고, 그 내용은 아래 본문에 흡수돼 있다. 적용: 명령을 실행하는 모든 에이전트(frontend-dev, backend-dev, devops, qa-engineer, security 등).
+적용: 명령을 실행하는 모든 에이전트(frontend-dev, backend-dev, devops, qa-engineer, security 등).
 
 ## 핵심 원칙
 
