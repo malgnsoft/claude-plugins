@@ -837,6 +837,47 @@ function main() {
     warn('SKILL_ORPHAN', `${opts.plugin}/skills/${dir}/SKILL.md`, '어떤 Agent/Skill/Knowledge도 이 Skill을 참조하지 않는다 (사용자 직접 호출 전용이면 무시)');
   }
 
+  // ── 문서 개수 표기 ↔ 실물 대조 ────────────────────────────────────
+  // 설치자가 읽는 문서(README·plugin.json·marketplace.json)의 "N종" 표기가 실물과
+  // 어긋나는 드리프트를 잡는다. 자산을 통폐합해 놓고 문서를 못 따라가게 두면 설치자가
+  // 읽는 첫 문장이 틀린 채로 배포된다 — 실제로 보안 스킬 4종 → 3종 통폐합 후 문서가
+  // 38종에 머물러 릴리스 직전 리뷰에서야 잡힌 적이 있다.
+  //
+  // knowledge 기준치에 주의: 이 검사기의 인벤토리(knowledgeFiles)는 진입점
+  // knowledge/README.md까지 포함한 .md 전수이지만, 문서가 세는 "참고자료 N종"은 그
+  // 진입점을 뺀 수다. 세는 규칙을 코드에 못박아 두는 것이 이 검사의 핵심이다 —
+  // 규칙이 어디에도 없으면 다음 사람이 55로 "고치는" 역방향 드리프트가 난다.
+  const COUNT_CLAIMS = [
+    { re: /에이전트\s*(\d+)\s*종/g, actual: agentFiles.length },
+    { re: /스킬\s*(\d+)\s*종/g, actual: skillDirNames.length },
+    {
+      re: /(?:참고자료|knowledge)[^\d\n]{0,12}?(\d+)\s*종/g,
+      actual: [...knowledgeFiles].filter((k) => k !== 'knowledge/README.md').length,
+    },
+  ];
+
+  // CHANGELOG는 대상이 아니다 — 과거 릴리스 시점의 수를 적는 것이 정상이다.
+  for (const docRel of [
+    path.join(opts.plugin, 'README.md'),
+    path.join(opts.plugin, '.claude-plugin', 'plugin.json'),
+    path.join('.claude-plugin', 'marketplace.json'),
+  ]) {
+    const abs = path.join(REPO_ROOT, docRel);
+    if (!fs.existsSync(abs)) continue;
+    const text = fs.readFileSync(abs, 'utf8');
+    for (const { re, actual } of COUNT_CLAIMS) {
+      re.lastIndex = 0;
+      for (const m of text.matchAll(re)) {
+        if (Number(m[1]) === actual) continue;
+        error(
+          'DOC_COUNT_DRIFT',
+          docRel.replace(/\\/g, '/'),
+          `"${m[0].trim()}"라고 적혀 있으나 실물은 ${actual}이다. 문서를 실물에 맞추거나, ` +
+            '세는 규칙 자체가 달라졌다면 이 스크립트의 COUNT_CLAIMS 기준을 함께 고친다.');
+      }
+    }
+  }
+
   // ── 리포트 ────────────────────────────────────────────────────────
   const errors = findings.filter((f) => f.level === 'ERROR');
   const warns = findings.filter((f) => f.level === 'WARN');
