@@ -223,7 +223,7 @@ pnpm run check-docs    # 구조 서술 ↔ 코드 실측 드리프트 대조
 \`\`\`
 
 ## Architecture
-- (구조를 여기 서술하고, 검증 가능한 수치는 .claude/doc-drift.json 에 등록)
+- (코드를 읽으면 그대로 나오는 나열 말고 읽어도 모르는 것 — 디렉터리의 책임, 그렇게 나뉜 이유, 손대면 안 되는 곳 — 을 적는다. 수치는 .claude/doc-drift.json 에 등록해 검증 가능하게 둔다)
 `,
 
   'docs/README.md': `# docs/ 문서 지도 (에이전트 진입점)
