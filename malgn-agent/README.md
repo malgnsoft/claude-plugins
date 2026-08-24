@@ -2,7 +2,7 @@
 
 맑은소프트 전 직원용 클로드코드(Claude Code) 플러그인입니다.
 사내 공통 운영 표준과 함께, 기획부터 배포까지 각 역할을 맡는 전문 에이전트 21종,
-노하우 스킬 37종, 참고자료(knowledge) 54종을 한 번에 설치합니다.
+노하우 스킬 38종, 참고자료(knowledge) 54종을 한 번에 설치합니다.
 
 - **마켓플레이스**: `malgnsoft-plugins` (https://github.com/malgnsoft/claude-plugins)
 - **문의**: dev@malgnsoft.com
@@ -54,7 +54,7 @@ claude plugin list
 | 다국어 | `localizer` |
 | 에이전트 관리 | `trainer`, `evaluator` |
 
-### 스킬 37종 (`skills/`)
+### 스킬 38종 (`skills/`)
 
 특정 작업에 들어갈 때 자동으로 불려오는 실행 절차서입니다. 이름 앞의 접두어가
 적용 범위를 나타냅니다.
