@@ -370,19 +370,25 @@ function checkBundledResourceRefs(relPath, body, pluginRoot) {
   }
 }
 
-// ── ${CLAUDE_PLUGIN_ROOT}/hooks/... 참조 실재 검사 ──────────────────────
+// ── hooks/... 참조 실재 검사 ─────────────────────────────────────────
 // bin/의 스크립트는 REF_BIN_MISSING이 `` `bin/x.mjs` `` 형태의 참조 실재를 잡지만, hooks/의
-// 파일은 대응하는 검사가 없었다. hooks 파일을 가리키는 표준 표기는 REF_BIN_MISSING이 잡는
-// 맨 backtick 표기(`` `bin/x.mjs` ``)가 아니라 `${CLAUDE_PLUGIN_ROOT}/hooks/x.mjs` 형태다 —
-// hooks.json의 훅 커맨드 문자열과 hooks/*.mjs 스크립트의 "사용:" 안내가 모두 이 형태를 쓴다.
-// 그래서 훅 파일을 옮기거나 지워도 이 참조는 실재 검사 없이 초록불로 남는다.
+// 파일은 대응하는 검사가 없었다. hooks 파일을 가리키는 표기는 실행 커맨드형
+// (`${CLAUDE_PLUGIN_ROOT}/hooks/x.mjs` — hooks.json의 훅 커맨드 문자열, 스크립트의 "사용:" 안내)과
+// 단순 지칭형(맨 backtick, `` `hooks/x.mjs` `` — bin/과 같은 관례)이 섞여 쓰인다. 실측상 후자가
+// 더 많이 쓰이므로 하나만 잡으면 실효가 없다 — 둘 다 잡는다.
 const CLAUDE_PLUGIN_HOOKS_REF = /\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/([A-Za-z0-9_.\-/]+\.(?:mjs|cjs|js|md|json))/g;
+const BARE_HOOKS_REF = /`(?:malgn-agent\/)?(hooks\/[a-z0-9\-./]+\.(?:mjs|cjs|js|md|json))`/g;
 
 function checkClaudePluginRootHooksRefs(relPath, body, pluginRoot) {
   for (const m of liveReferences(body, CLAUDE_PLUGIN_HOOKS_REF, { includeFenced: true })) {
     const target = m[1];
     if (!fs.existsSync(path.join(pluginRoot, 'hooks', target))) {
       error('REF_HOOKS_MISSING', relPath, `본문이 참조하는 hooks 파일이 없다: hooks/${target}`);
+    }
+  }
+  for (const m of liveReferences(body, BARE_HOOKS_REF)) {
+    if (!fs.existsSync(path.join(pluginRoot, m[1]))) {
+      error('REF_HOOKS_MISSING', relPath, `본문이 참조하는 hooks 파일이 없다: ${m[1]}`);
     }
   }
 }

@@ -53,22 +53,45 @@ const GLOB_RECURSION_DEPTH_CAP = 12
  * 루트(첫 와일드카드 세그먼트 이전의 리터럴 경로)가 존재하지 않으면 기존 규약과 동일하게
  * null(측정 불가 → skip)을 반환한다 — 재귀 매칭 결과 0건인 것과는 다른 상태다(후자는 진짜
  * 드리프트일 수 있는 정상 측정치 0).
+ *
+ * 연속된 `**`(예: `src/**\/**\/*.ts`)는 하나로 접는다 — 접지 않으면 같은 하위 트리를 두 '**'
+ * 분기가 각각 따로 밟아 파일이 중복으로 세어진다. 접은 뒤에는 `src/**\/*.ts`와 동일해진다.
+ *
+ * 깊이 상한(GLOB_RECURSION_DEPTH_CAP)에 걸려 일부 경로를 못 센 경우는 부분 카운트를 그대로
+ * 반환하지 않고 null(측정 불가)로 취급한다 — 안 그러면 "일부만 세고 잘린 값"이 정상 측정치처럼
+ * 보여 거짓 드리프트(또는 거짓 통과)를 만든다.
  */
 function countGlobRecursive(baseDir, pattern) {
-  const segments = pattern.split('/')
+  const segments = pattern.split('/').filter((seg, i, arr) => !(seg === '**' && arr[i - 1] === '**'))
   const firstWildcardIdx = segments.findIndex((s) => s.includes('*'))
   const literalPrefix = firstWildcardIdx === -1 ? segments.slice(0, -1) : segments.slice(0, firstWildcardIdx)
   const rootDir = literalPrefix.length ? join(baseDir, ...literalPrefix) : baseDir
   if (!existsSync(rootDir)) return null
 
   let count = 0
+  let truncated = false
+
+  // '**'가 패턴의 마지막 세그먼트일 때: 표준 glob 의미론상 `dir/**`는 dir 이하 모든 파일(임의
+  // 깊이)과 일치한다. walk()의 일반 분기(다음 세그먼트로 넘어가며 '**'를 소비)로는 "다음 세그먼트가
+  // 없다"는 이 경우를 셀 수 없으므로(segIdx+1이 배열 끝을 넘어가 즉시 종료됨) 별도로 전량을 센다.
+  function countAllFiles(dir, depth) {
+    if (depth > GLOB_RECURSION_DEPTH_CAP) { truncated = true; return }
+    let entries
+    try { entries = readdirSync(dir, { withFileTypes: true }) } catch { return }
+    for (const e of entries) {
+      if (e.isFile()) count++
+      else if (e.isDirectory()) countAllFiles(join(dir, e.name), depth + 1)
+    }
+  }
+
   function walk(curDir, segIdx, depth) {
-    if (depth > GLOB_RECURSION_DEPTH_CAP) return
+    if (depth > GLOB_RECURSION_DEPTH_CAP) { truncated = true; return }
     const seg = segments[segIdx]
     if (seg === undefined) return
     let entries
     try { entries = readdirSync(curDir, { withFileTypes: true }) } catch { return }
     if (seg === '**') {
+      if (segIdx === segments.length - 1) { countAllFiles(curDir, depth); return }
       walk(curDir, segIdx + 1, depth)              // '**'가 0개 디렉토리를 소비하는 경우
       for (const e of entries) {
         if (e.isDirectory()) walk(join(curDir, e.name), segIdx, depth + 1) // 1개 더 내려가며 '**' 유지
@@ -84,7 +107,7 @@ function countGlobRecursive(baseDir, pattern) {
     }
   }
   walk(rootDir, literalPrefix.length, 0)
-  return count
+  return truncated ? null : count
 }
 
 function countGlob(baseDir, pattern) {
