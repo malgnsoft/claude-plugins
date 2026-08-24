@@ -1,6 +1,6 @@
 # 5단계 파이프라인 관리
 
-> `progress.md`가 아니라 **`STATUS.md`가 진행 상태의 단일 소스**다(2026-08-07 정정). 포맷/절차 정본은 `skills/project-standards`.
+> `progress.md`가 아니라 **`STATUS.md`가 진행 상태의 단일 소스**다. 포맷/절차 정본은 `skills/project-standards`.
 
 ## 파이프라인 단계별 핵심
 
