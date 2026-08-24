@@ -39,7 +39,7 @@ description: 맑은소프트 프로젝트 운영 표준 — 패키지 매니저(
   - **토큰/시크릿은 여기 넣지 않는다**: 인증은 프로젝트 단위가 아니라 플러그인 설치 시 입력한 `device_token`(사용자 단위, `userConfig`에 저장)으로 처리된다. STATUS.md는 git에 커밋되지 않는 개인 로컬 캐시다(`.gitignore` 등록) — 토큰/시크릿을 넣지 않는 이유는 이제 "커밋되는 파일이라서"가 아니라 단순히 STATUS.md의 책임범위가 아니기 때문이다(인증은 여전히 `device_token`이 전담).
   - **git 추적 제외**: `new-project.mjs`가 스캐폴딩 시 `.gitignore`에 `STATUS.md`를 등록한다 — `project_id`가 `(user_id, repository_id)` 조합으로 직원별로 다르게 발급되는 값이라, 팀 공유 파일(git 커밋)로 두면 "직원별로 다른 값"과 "팀 전체가 공유하는 파일" 사이에 구조적 불일치가 생긴다. STATUS.md를 개인 로컬 캐시로 전환하면 이 문제 자체가 사라진다.
 - **크기 상한: 3,000바이트 이내로 유지한다.** 토큰으로 상한을 잡으면 세션에서 셀 수 없어 지킬 수단이 없다 — 바이트는 셀 수 있다. 한글은 UTF-8 3바이트/글자이고 토큰당 1글자를 넘지 않으므로, 3,000바이트면 전부 한글이어도 1,000토큰 안에 들어온다(ASCII가 섞이면 더 여유가 생긴다). **고친 직후 그 자리에서 `wc -c STATUS.md`로 확인한다**(Windows PowerShell: `(Get-Item STATUS.md).Length`) — STATUS.md는 `.gitignore` 대상이라 CI가 대신 잡아주지 못한다. 압축 규율(완료 섹션 5~7개 유지)을 지켜도 이 상한은 쉽게 넘기므로 더 타이트하게 조인다:
-  - **관리 규칙:** 완료 항목은 1줄 요약(+MCP id), 완료 섹션은 최근 **3~5개**만 유지(5~7개에서 축소). 헤더 라인은 매번 통째로 교체(과거 세션 "직전:" 체이닝 금지).
+  - **관리 규칙:** 완료 항목은 1줄 요약만 남긴다(malgnai-hub `work_record` 이력으로 상세 조회가 가능하므로 id는 적지 않는다 — 적으면 그 자체가 매 세션 주입되는 상시 비용이 된다), 완료 섹션은 최근 **3~5개**만 유지(5~7개에서 축소). 헤더 라인은 매번 통째로 교체(과거 세션 "직전:" 체이닝 금지).
   - "진행 중(🚧)" 섹션도 append하지 않는다 — 단계가 바뀔 때마다 현재 상태로 즉시 재압축한다.
 - **재작성은 다음 6가지 상황으로 제한한다** — 그 외 평범한 진행 중에는 STATUS.md를 건드리지 않는다:
   ①중요한 작업 완료 ②WBS 단계 변경 ③중요한 설계 결정 ④blocker 발생/해결 ⑤세션 종료 ⑥context compact 직전.
@@ -119,7 +119,7 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestrat
 이 스크립트는 파일을 쓰지 않는다 — cwd의 CLAUDE.md를 읽어 현재 상태를 JSON으로 출력할 뿐이다. 실제 CLAUDE.md 수정은 이 결과를 읽은 세션이 아래 절차대로 Edit로 수행한다:
 
 1. cwd의 CLAUDE.md에서 `<!-- malgn-agent:pm-orchestration:(installed|declined)?:?vN -->` 마커와 `@...pm-orchestration-block.md` import 줄 존재 여부를 확인한다(위 스크립트 `status` 필드로 판정: `no-marker`/`declined`/`legacy-no-import`/`ambiguous`/`plugin-missing`/`drift`/`ok`).
-2. `no-marker`(마커 자체가 없음): AskUserQuestion으로 설치 여부를 묻는다.
+2. `no-marker`(마커 자체가 없음): 설치 여부를 사용자에게 확인해야 한다 — 이 절차를 PM이 직접 실행했다면 AskUserQuestion으로 묻고, 서브에이전트가 실행했다면(서브에이전트에는 AskUserQuestion 도구가 없다) 이 결과를 PM에게 반환해 PM이 묻게 한다.
 3. `legacy-no-import`(installed인데 import 줄이 없음, 구버전) 또는 `drift`(경로가 실제 설치 위치와 다름): 스크립트가 제시한 `resolvedPath`로 Edit해 교정한다(사용자 재동의 불필요 — 콘텐츠 변경이 아니라 전달 방식/경로 교정일 뿐).
 4. `declined`인데 사용자가 이번에 설치를 요청했다면 마커+import를 installed로 교체한다.
 5. `ambiguous`/`plugin-missing`이면 CLAUDE.md를 건드리지 않고 그 사실을 사용자에게 알린다.
