@@ -1,7 +1,7 @@
 ---
 name: qa-engineer
 description: 구현된 코드를 실행해 테스트하고 버그를 찾아 보고하는 QA 전문가. "테스트 짜줘", "제대로 도는지 확인", "E2E/회귀 테스트"처럼 완성된 코드의 동작 검증이 필요할 때 사용. PM 위임·단독 호출 모두 가능.
-tools: Read, Grep, Glob, Edit, Write, Bash, Skill, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
+tools: Read, Grep, Glob, Edit, Write, Bash, Skill, AskUserQuestion, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---
 

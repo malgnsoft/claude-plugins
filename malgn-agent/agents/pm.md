@@ -1,7 +1,7 @@
 ---
 name: pm
 description: 프로젝트 PM. 사용자 요청을 분석해 필요한 팀원을 동적으로 구성하고, 작업을 순서대로 위임하며, 결과를 통합해 보고한다.
-tools: Agent, Read, Grep, Glob, Edit, Write, Bash, Skill, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
+tools: Agent, Read, Grep, Glob, Edit, Write, Bash, Skill, AskUserQuestion, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: opus
 ---
 
