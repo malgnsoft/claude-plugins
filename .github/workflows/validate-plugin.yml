@@ -1,0 +1,79 @@
+name: Validate plugin
+
+# 이 저장소는 전 직원이 `/plugin marketplace add`로 직접 설치하는 배포 주소다.
+# main에 들어간 규격 위반은 곧바로 설치자에게 전파되므로, main push와 모든 PR에서
+# 매니페스트 규격과 에이전트/스킬 자산 정합을 자동 검증한다.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-plugin-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Claude Code CLI 버전을 고정한다. `latest`로 두면 새 버전이 추가한 strict 경고가
+  # 무관한 PR을 갑자기 깨뜨릴 수 있다. 주기적으로 올리고, 올릴 때 로컬에서 먼저
+  # `claude plugin validate ./malgn-agent --strict`를 돌려 확인한다.
+  CLAUDE_CLI_VERSION: 2.1.241
+  PNPM_VERSION: 11
+  NODE_VERSION: 22
+
+jobs:
+  validate:
+    name: 매니페스트 규격 + 자산 정합
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: pnpm 설치
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Node 설치
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # 이 저장소에는 아직 pnpm-lock.yaml이 없다. 락파일이 생기면 아래를
+      # `pnpm install --frozen-lockfile`로 바꾸는 것이 정석이다.
+      # check-assets가 쓰는 js-yaml이 여기서 설치된다 — 이 단계를 빼면 검사가
+      # 모듈을 못 찾아 실패한다.
+      - name: 의존성 설치
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Claude Code CLI 설치
+        run: npm install -g "@anthropic-ai/claude-code@${CLAUDE_CLI_VERSION}"
+
+      - name: CLI 동작 확인
+        run: claude --version
+
+      # `plugin validate`는 매니페스트를 로컬에서 파싱·검증하는 명령이라
+      # Anthropic 자격증명이 필요 없다(무자격증명 환경에서 실행 확인함).
+      # 따라서 이 워크플로에는 어떤 시크릿도 주입하지 않는다.
+      - name: 플러그인 매니페스트 검증 (strict)
+        run: claude plugin validate ./malgn-agent --strict
+
+      # 저장소 루트를 검증하면 마켓플레이스 매니페스트를 본다. 여기서
+      # marketplace.json의 버전과 plugin.json의 버전이 어긋나는 경우를 잡는다 —
+      # 두 값이 어긋나면 설치자 쪽에서 `/plugin update`가 변경을 감지하지 못한다.
+      - name: 마켓플레이스 매니페스트 검증 (strict)
+        run: claude plugin validate . --strict
+
+      # ERROR 0이 기준선이다. WARN(예산 초과 등)은 종료 코드에 영향을 주지 않으므로
+      # 여기서 --strict를 쓰지 않는다.
+      - name: 에이전트/스킬 자산 정적 검증
+        run: pnpm run check-assets
+
+      # NOTE: `pnpm run check-docs`는 현재 개인 전역 경로($HOME/.claude/hooks/)를
+      # 실행하도록 되어 있어 CI 러너에서는 파일이 없어 실패한다. 해당 스크립트가
+      # 저장소 내부 경로를 쓰도록 수정된 뒤에 이 워크플로에 단계로 추가한다.
