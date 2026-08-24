@@ -352,7 +352,16 @@ function checkBodyReferences(relPath, body, ctx) {
   // 그래서 부재(REF_KNOWLEDGE_MISSING)와 별개로 **형태**를 따로 본다: 부재 검사만으로는
   // "파일은 있는데 못 여는" 이 결함이 초록불을 그대로 통과한다(109건이 그렇게 살아 있었다).
   // knowledge 본문 자신은 제외한다 — 그 파일에서는 이 변수가 영원히 치환되지 않는다(§1-1).
-  if (/(^|\/)(?:agents|skills)\//.test(relPath)) {
+  //
+  // 이 **형태** 검사만은 산문에만 건다(부재 검사와 달리 대상 범위가 좁다). 기준은 확장자가
+  // 아니라 "누가 이 문자열을 해소하는가"다:
+  //   · 산문(agents·skills 본문, hooks/*.md) → **읽는 이**가 적힌 그대로 Read 한다. 맨
+  //     상대경로면 cwd(사용자 프로젝트)에서 찾다가 실패한다 → 검사 대상.
+  //   · 스크립트 소스(bin/·hooks/의 .mjs·.cjs) → **코드**가 자기 루트와 path.join으로 해소한다.
+  //     거기 적힌 'knowledge/x.md'는 맨 상대경로인 것이 정상이라 오탐이 된다 → 제외.
+  // hooks/*.md를 넣는 근거: pm-orchestration-block.md는 루트 CLAUDE.md가 @import하는 상시
+  // 주입물이라, 세션(cwd=사용자 프로젝트)이 읽는다는 점에서 agents 본문과 조건이 똑같다.
+  if (/(^|\/)(?:agents|skills)\//.test(relPath) || /(^|\/)hooks\/.*\.md$/.test(relPath)) {
     const FORM = /(?<!\$\{CLAUDE_PLUGIN_ROOT\}\/)(?<!malgn-agent\/)\bknowledge\/[A-Za-z0-9_-]+\/[^\s`)*|]*/g;
     for (const m of liveReferences(body, FORM)) {
       if (/[<…{]/.test(m[0])) continue; // 형태를 설명하는 자리 표시자는 대상이 아니다
@@ -739,10 +748,24 @@ function main() {
     checkUnresolvableIds(rel, body);
   }
 
-  // ── bin·hooks 소스의 조회 불가 식별자 ─────────────────────────────
+  // ── bin·hooks 소스의 조회 불가 식별자 + 참조 ───────────────────────
   // 본문(.md)만 훑으면 코드 주석에 남은 id가 그대로 통과한다 — 실제로 .md 224건을 다 지운 뒤에도
   // bin/report-usage.mjs 주석에 hub ULID 2건이 살아 있었다. 검사 범위는 형태가 아니라
   // "설치 직원이 조회할 수 있는가"로 잡는다.
+  //
+  // 참조 검사(checkBodyReferences)도 같이 건다 — 2026-08-24까지 이 두 디렉터리는 위 식별자
+  // 검사만 받고 참조는 통째로 사각이었다. 그래서 hooks/pm-orchestration-block.md에 없는 Skill을
+  // 심어도 ERROR 0으로 통과했다(같은 줄을 agents/pm.md에 심으면 REF_SKILL_MISSING이 났다).
+  // 하필 그 파일이 루트 CLAUDE.md가 @import하는 상시 주입물이라, 참조가 썩으면 매 세션 전
+  // 직원에게 물린다 — 이 트리에서 사각이 가장 비싼 자리였다.
+  //
+  // 대상을 .md로 좁히지 않는다. 실측하니 bin/의 스크립트가 정본 Skill을 가리키는 포인터를
+  // 6줄 갖고 있었고(헤더 주석 4건 + printUsage()가 실제로 인쇄하는 런타임 문자열 2건),
+  // 개명 라운드에서 똑같이 썩는 자리다. 런타임 출력이 검사 대상이라는 것은 맨 명령어 검사가
+  // 이미 세운 판단이다(§checkBundledScriptInvocation).
+  // .json은 뺀다 — 기계 설정이라 참조 문법이 살지 않는다(실측: hooks.json 0건).
+  //
+  // 도입 시 실측: 새 ERROR 0건(오탐도 실탐도 없음), 기준선 ERROR 0 · WARN 18 유지.
   for (const sub of ['bin', 'hooks']) {
     const dir = path.join(pluginRoot, sub);
     if (!fs.existsSync(dir)) continue;
@@ -751,7 +774,10 @@ function main() {
         const p = path.join(d, e.name);
         if (e.isDirectory()) { walk(p); continue; }
         if (!/\.(mjs|cjs|js|md|json)$/.test(e.name)) continue;
-        checkUnresolvableIds(path.relative(REPO_ROOT, p), fs.readFileSync(p, 'utf8'));
+        const rel = path.relative(REPO_ROOT, p);
+        const raw = fs.readFileSync(p, 'utf8');
+        checkUnresolvableIds(rel, raw);
+        if (/\.(mjs|cjs|js|md)$/.test(e.name)) checkBodyReferences(rel, raw, refCtx);
       }
     };
     walk(dir);
