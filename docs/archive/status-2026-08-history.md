@@ -635,4 +635,12 @@ trainer 위임. 대상 4곳: `skills/project-standards/SKILL.md` 41·133행, `bi
 ## 병합 완료 (2026-08-24, 로컬 `main`, unpushed)
 
 이 시점까지의 전체 라운드(6건 원 백로그 + 15줄 정정 + 이력표기 4영역 + 이번 3건)가 로컬 `main`에 순차 병합됐다(`67d8406`→`2fe8423`). `check-assets` ERROR 0·WARN 18 기준선을 전 구간 유지. origin push는 별도 승인 대기.
+
+## v1.8.1 배포 (2026-08-24, origin/main `b1001cb`)
+
+사용자 승인으로 버전업+배포 진행. CHANGELOG 작성 중 **v1.8.0 자체의 사실 오류**를 발견해 정정 항목으로 포함했다 — v1.8.0은 "`capture-strategist`가 `AskUserQuestion`으로 사람에게 승인을 물을 수 있게 됐다"고 적었지만, 이번 라운드에서 확정한 사실(서브에이전트는 도구 목록에 있어도 이 도구를 쓸 수 없다)과 정면으로 배치된다. 같은 9종(`AskUserQuestion` 관련) 목록이 v1.8.0 CHANGELOG와 이번 라운드의 "tools: 정리 8곳(+pm 유지)" 백로그 항목에서 정확히 일치해 동일 사안임을 확인했다.
+
+버전: plugin.json + marketplace.json 1.8.0→1.8.1(동기화 확인, JSON 파싱 검증). `check-assets` ERROR 0·WARN 18 유지. plugin.json 설명문의 "knowledge 54종"은 실측 56~57건과 어긋나 있으나 이번 라운드가 만든 드리프트가 아니고(origin에서도 이미 57건) 이번 작업 범위 밖이라 손대지 않음 — 후속 확인 대상.
+
+병행 세션(claude-plugins-d7)의 `docs/anthropic/` 미러 복원 2커밋(`46c0d02`, `7088e9e`)이 로컬 main 기반에 이미 포함돼 있어 이번 push에 함께 나갔다. push 직전 알리려 했으나 해당 세션이 이미 종료돼 확인받지 못함(내용은 사전에 서로 확인·합의된 상태였음).
 - **처분 (2026-08-24 사용자 판정)**: 대상이 에이전트 2종+스킬 3종이라 trainer 위임 라운드가 필요하다 → **백로그**. 변경 동결 하에서 별도 승인 시 착수.
