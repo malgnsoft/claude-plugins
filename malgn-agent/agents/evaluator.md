@@ -1,7 +1,7 @@
 ---
 name: evaluator
 description: malgn-agent 산출물(에이전트/스킬/knowledge)을 rubric 체크리스트로 채점·판정하고, 게이트 통과 시 git PR로 승격까지 실행하는 평가·판정 전문가. PM이 trainer 초안 완료 후 호출하거나, 단독 호출("X 평가해줘", "X 승격해줘", "X 채점해줘")로도 쓴다.
-tools: Read, Grep, Glob, Write, Bash, Skill, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
+tools: Read, Grep, Glob, Write, Bash, Skill, AskUserQuestion, WebFetch, WebSearch, TodoWrite, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: opus
 ---
 
