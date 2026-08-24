@@ -10,7 +10,7 @@
       "name": "malgn-agent",
       "source": "./malgn-agent",
       "description": "맑은소프트 공통 운영 표준 + 범용 개발 에이전트 21종(PM 오케스트레이터 포함) + 노하우 스킬/knowledge + malgnai-hub 연동",
-      "version": "1.8.0"
+      "version": "1.8.1"
     }
   ]
 }
