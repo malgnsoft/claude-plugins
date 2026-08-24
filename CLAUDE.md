@@ -21,7 +21,7 @@ SessionStart 훅이 이 파일을 **매 세션 통째로 주입**하므로, 여�
 
 **필수 규율:** ①진행 상태는 `STATUS.md` 단일 소스(끝내기 전 갱신). ②주요 결정/이슈/교훈은 malgnai-hub에 기록(`decision_record`/`issue_record`/`work_record`). ③구조를 바꾸면 `.claude/doc-drift.json`과 아래 서술을 함께 갱신.
 
-**⚠️ 2026-08-19 provider 전환**: 이 프로젝트(claude-plugins) 자신의 기록 provider가 malgnai-mcp(로컬)에서 malgnai-hub(원격, projectId `01m0bw23fcqv0tet1z52a3nhcc`, repositoryKey `claude-plugins`)로 바뀌었다. 이 시점 이전 이력(결정/이슈/교훈)은 malgnai-mcp에만 남아 있으니, 옛 이력이 필요하면 malgnai-mcp `decision_list`/`memory_search`(project_id `e3c8eba1-7016-4c40-81fc-7d15cdcefd75`)로 별도 조회한다. 이 시점 이후 신규 기록은 malgnai-hub로만 남긴다.
+**⚠️ 2026-08-19 provider 전환**: 이 프로젝트(claude-plugins) 자신의 기록 provider가 malgnai-mcp(로컬)에서 malgnai-hub(원격)로 바뀌었다. **projectId는 여기 적지 않는다 — `STATUS.md` 상단 `project_id`가 단일 소스다**(여기에 박아두면 드리프트한다: 실제로 이 자리에 적혀 있던 id는 실제 프로젝트와 달랐다). 이 시점 이전 이력(결정/이슈/교훈)은 malgnai-mcp에만 남아 있으니, 옛 이력이 필요하면 malgnai-mcp `decision_list`/`memory_search`(project_id `e3c8eba1-7016-4c40-81fc-7d15cdcefd75`)로 별도 조회한다. 이 시점 이후 신규 기록은 malgnai-hub로만 남긴다.
 
 ## Git 브랜치 원칙 (이 프로젝트의 중요원칙, 2026-08-12)
 **브랜치를 통한 PR 작업은 전부 로컬에서만 진행한다. 원격(origin)에는 오직 `main` 브랜치만 존재하며, origin push는 배포(=main 갱신) 목적일 때만 한다.**

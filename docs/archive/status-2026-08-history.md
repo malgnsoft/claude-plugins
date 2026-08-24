@@ -541,3 +541,43 @@ _최종 갱신: 2026-08-24 (훅 결함 2건 수리 + 이 파일을 L0 크기로 
 ## 📋 백로그 상세 — 제품의 STATUS.md 상한을 "1000토큰" → "3,000바이트"로 (2026-08-24, 승인됨·미착수)
 
 trainer 위임. 대상 4곳: `skills/project-standards/SKILL.md` 41·133행, `bin/new-project.mjs` 204·305행. 41행의 근거 문장도 바이트 기준으로 재작성한다(토큰은 세션에서 셀 수 없다 · 한글은 UTF-8 3B/글자이므로 3,000B면 전부 한글이어도 1,000토큰 안에 들어온다). **훅 기본 12,000B는 스코프 밖**(사용자 판단). 검사 수단 미배포와 `+MCP id` 문구는 별건으로 다룬다.
+
+## ⛔ 열린 이슈 3건 재확인 — 실물 대조 (2026-08-24)
+
+위 「열린 이슈」 절은 2026-08-20~21 기록이라 "현재 유효성 재확인 필요" 딱지가 붙어 있었다. 대조 결과 **3건 중 1건은 완전히 닫혔고, 1건은 실질적으로 닫혔으며, 남은 1건 안의 3개 항목만 살아 있다.**
+
+### ① PM 블록 버전 마커 — ✅ 닫힘
+
+정본 `malgn-agent/hooks/pm-orchestration-block.md:2`에 `<!-- malgn-agent:pm-orchestration:version:2 -->`가 실재하고, 이를 파싱 전제로 쓰는 소비자 3곳이 모두 정상이다.
+
+| 소비자 | 확인 방법 | 결과 |
+|---|---|---|
+| `hooks/lib/find-pm-block-path.mjs:29` (`BLOCK_VERSION_RE`) | 모듈을 실제로 import해 정본 파일에 정규식 적용 | 버전 `"2"` 추출 성공 |
+| `bin/new-project.mjs:44` (자체 인라인 정규식) | 패턴 대조 | 동일 패턴, 매칭됨 |
+| `skills/project-standards/scripts/check-pm-orchestration-block.mjs` | **직접 실행** | `{"status":"ok","message":"…손댈 것 없음"}` |
+
+아카이브 「PM 마커 수리 — 실행 도달 증명」 기록대로 원복 라운드에서 소멸한 것이 맞다.
+
+### ② pm-orchestration-block 후속 3건 — ⛔ 3건 모두 살아 있음 (그중 결함 2)
+
+**(a) 린터가 `hooks/`를 참조검사 대상에서 뺀다 — 양성 대조군으로 실증.**
+`hooks/pm-orchestration-block.md` 끝에 존재하지 않는 스킬 참조 한 줄(``Skill `this-skill-does-not-exist` ``)을 심고 `node scripts/validate-agent-assets.mjs`를 돌렸더니 **ERROR 0으로 통과**했다. 같은 줄을 `agents/pm.md`에 심으면 `REF_SKILL_MISSING`으로 즉시 ERROR 1이 난다(테스트 후 두 파일 모두 `git checkout --`로 원복, 워킹트리 미변경 확인).
+원인: `checkBodyReferences`/`checkCanonicalClaims`/`checkAnchors`는 `validate-agent-assets.mjs:713·726·736`에서 agents·skills·knowledge 본문에만 걸리고, `hooks/`는 `:746`의 "조회 불가 식별자" 검사(`checkUnresolvableIds`)만 받는다. 그런데 이 파일은 루트 `CLAUDE.md`가 `@import`하는 상시 주입물이라, 참조가 썩으면 전 직원 세션에 그대로 물린다. `scripts/`는 배포물이 아니므로 PM 직접 수정 대상.
+
+**(b) grading 스킬의 등급 이름이 파일 안에서 갈린다.**
+`skills/common-task-grading-and-verification-depth/SKILL.md:3`(frontmatter description)은 `Trivial`, 같은 파일 `:17`의 5등급 판정표와 제품 전역(`agents/pm.md`, `agents/reviewer.md`, `agents/qa-engineer.md`, `hooks/pm-orchestration-block.md`, `skills/project-orchestration/SKILL.md` 등)은 모두 `Micro`다. 틀린 것은 frontmatter 한 줄. 다만 이 description은 에이전트가 스킬을 고를 때 읽는 문장이라 단순 오탈자보다 무게가 있고, `skills/` 아래이므로 trainer 위임.
+
+**(c) reviewer Rethink — 승인 주체를 grading 판정표의 새 열로.** 판정표 컬럼은 여전히 `등급 / 기준 / 위임·직접처리 / 리뷰 깊이 / QA 최소기준 / 캡처 깊이 / 재검토 시`뿐이고 승인 주체 열이 없다. 결함이 아니라 개선이므로 변경 동결 대상.
+
+### ③ 후보 큐 라운드 미결 2건 — ✅ 실질 닫힘 (STATUS 기록이 사실과 달랐다)
+
+- **"evaluator 판정 소재 불명"** → 실재한다. `docs/learning/scorecards/gate-v3-03b-revert-candidate-queue-2026-08-21.md`(152줄)가 커밋 `ee0d464`에 담겨 있다.
+- **"미커밋 reviewer 산출물 7건"** → 같은 커밋에 전부 커밋됐다: 리뷰 보고서 1(`review-v3-03b-revert-candidate-queue-2026-08-20.md`, 186줄) + 페르소나 신규 1(`persona-removal-landing-state-auditor.md`) + 기존 페르소나 4 적용이력 + `personas/INDEX.md`.
+- **더 중요한 사실: 후보 큐는 main에 들어간 적이 없다.** 도입 커밋 `ee4af3e`도 제거 커밋 `0599389`도 `git merge-base --is-ancestor … main`이 거짓이고, main 트리의 `malgn-agent/`에 "후보 큐" 문자열이 0건이다. 즉 제품 영향은 처음부터 없었고, 이 라운드 전체가 미병합 브랜치(`principle-upgrade-priority`, `principle-upgrade-priority-round2`, `methodology-10-1-proxy-draft`)에만 남아 있다.
+- **남는 것은 이슈가 아니라 판단 하나** — 그 브랜치의 문서 3종(리뷰 보고서·판정서·페르소나)을 main으로 가져올지. 현 워킹트리의 `personas/INDEX.md`도 이번 라운드용으로 수정돼 있어 통째 병합하면 충돌한다.
+
+### ④ 곁가지 정정 — 「리뷰 보고서에만 남고 미등록인 5건」 중 2건은 이미 해소
+
+백로그의 그 항목이 열거한 5건 중 **"검사기가 knowledge 본문 미스캔"**과 **"식별자 재유입 린터 게이트"**는 2026-08-23 린터 게이트 신설로 해소됐다(`validate-agent-assets.mjs:736`에 knowledge 본문 순회 루프 실재, `checkUnresolvableIds` 실재). 남은 것은 `pm.md`의 조회 불가 memory 키 · 커맨드 단일 소유 구조 · 표기/패턴 통일 **3건**이다.
+
+**처분 (2026-08-24 사용자 판정)**: ②(a) 린터 `hooks/` 구멍은 같은 파일 동시 편집을 피하려고 병행 세션이 가져가 **수리 완료**(`8e173c9` — 부재 검사를 `hooks/`·`bin/`까지, 형태 검사는 산문에만). 이 세션이 양성 대조군으로 독립 재현해 확인했다: `hooks/pm-orchestration-block.md`에 없는 스킬 참조를 심으면 `REF_SKILL_MISSING`, 원복하면 기준선 ERROR 0·WARN 18 복귀. 그 확장으로 드러난 기존 죽은 참조는 0건. ②(b) `Trivial`→`Micro` 정정은 **백로그**로 미뤘다(결함이지만 지금 착수하지 않음). ②(c)는 개선이라 그대로 백로그. ③의 남은 판단(미병합 브랜치 문서 3종을 main으로 가져올지)은 미결.
