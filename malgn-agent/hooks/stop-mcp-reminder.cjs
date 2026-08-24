@@ -17,20 +17,51 @@
 const fs = require("fs");
 
 const WRITE_TOOL_RE = /^(Edit|Write|NotebookEdit|Bash|Agent|Workflow)$/;
-const MCP_RECORD_TOOL_RE = /^mcp__malgnai-hub__(decision_record|issue_record|issue_resolve|work_record)$/;
+
+// 기록 도구 판정은 "접두어 무관"이어야 한다 (2026-08-24 수리).
+// MCP 도구의 실제 이름은 `mcp__<서버등록명>__<도구명>` 이고, 서버등록명은 설치 형태마다 다르다:
+//   - 플러그인 설치(이 제품의 표준 경로) → mcp__plugin_malgn-agent_malgnai-hub__decision_record
+//   - .mcp.json 등에 직접 등록          → mcp__<사용자가 정한 이름>__decision_record
+// 종전 정규식은 `mcp__malgnai-hub__…` 한 형태만 봤기 때문에 플러그인 설치본에서 단 한 번도
+// 매치되지 않았고("이미 기록했으면 스킵" 억제가 통째로 죽어 있었다), 방금 기록을 남긴 턴에도
+// 리마인더가 떴다. 그래서 접두어는 와일드카드로 두고 **도구명(뒷부분)으로만** 판정한다.
+const RECORD_VERBS = "decision_record|issue_record|issue_resolve|work_record";
+const MCP_RECORD_TOOL_RE = new RegExp("^mcp__[\\w.-]+__(?:" + RECORD_VERBS + ")$");
+
+// 리마인더 본문이 안내하는 이름도 "그 설치본에 실재하는 이름"이어야 한다 — 접두어 없는 이름을
+// 그대로 따라 부르면 도구를 못 찾는다. 트랜스크립트 원문에서 실제 쓰인 접두어를 학습하고,
+// 학습에 실패하면 이 제품의 표준 설치 경로(플러그인) 이름으로 폴백한다.
+const DEFAULT_TOOL_PREFIX = "mcp__plugin_malgn-agent_malgnai-hub__";
+// 학습 앵커는 **서버 등록명(`malgnai-hub`)**이지 도구명이 아니다. 도구명으로 접두어를 학습하면
+// issue_resolve·work_record 처럼 구 provider(malgnai-mcp)와 겹치는 이름 때문에 엉뚱한 서버의
+// 접두어를 물어온다 — 그 서버엔 decision_record 가 없어서, 결국 "없는 도구 이름"을 안내하게 된다
+// (2026-08-24 A/B 중 실제로 재현됨). 그래서 hub 서버명이 박힌 이름만 학습하고, 못 찾으면
+// 이 제품의 표준 설치(플러그인) 이름으로 폴백한다.
+const PREFIX_FROM_HUB_RE = /"(mcp__[\w.-]*malgnai-hub__)\w+"/;
+
+function detectToolPrefix(raw) {
+  if (typeof raw !== "string") return DEFAULT_TOOL_PREFIX;
+  const m = raw.match(PREFIX_FROM_HUB_RE);
+  return m ? m[1] : DEFAULT_TOOL_PREFIX;
+}
 
 // 이번 턴(마지막 진짜 사용자 메시지 이후)을 1회 스캔해 필요한 신호를 모아 반환한다.
 //   alreadyRecorded : MCP 기록 도구(decision_record/issue_record/issue_resolve/work_record)를 이미 썼다
 //   hasWriteSignal  : Edit/Write/Bash/Agent 등 실질 작업 도구를 썼다
+//   toolPrefix      : 이 설치본에서 실제로 쓰이는 MCP 도구 접두어(리마인더 본문에 그대로 쓴다)
 // 반환 null = 트랜스크립트 판단 불가(안전측 폴백 — 기록 리마인더는 표시).
 function analyzeTurn(transcriptPath) {
   if (!transcriptPath) return null;
-  let lines;
+  let raw, lines;
   try {
-    lines = fs.readFileSync(transcriptPath, "utf8").split("\n").filter(Boolean);
+    raw = fs.readFileSync(transcriptPath, "utf8");
+    lines = raw.split("\n").filter(Boolean);
   } catch (_) {
     return null;
   }
+  // 접두어 학습은 이번 턴이 아니라 트랜스크립트 전체에서 한다 — 리마인더가 뜨는 턴은
+  // 정의상 기록 도구를 안 쓴 턴이라, 그 턴만 봐서는 접두어를 알 수 없다.
+  const toolPrefix = detectToolPrefix(raw);
 
   let turnStart = -1;
   for (let i = lines.length - 1; i >= 0; i--) {
@@ -70,7 +101,7 @@ function analyzeTurn(transcriptPath) {
     }
   }
 
-  return { alreadyRecorded, hasWriteSignal };
+  return { alreadyRecorded, hasWriteSignal, toolPrefix };
 }
 
 let input = "";
@@ -96,7 +127,8 @@ process.stdin.on("end", () => {
 
   const a = analyzeTurn(payload.transcript_path);
   // 판단 불가(null) → 안전측(리마인더 표시)으로 폴백.
-  const analysis = a || { alreadyRecorded: false, hasWriteSignal: true };
+  const analysis = a || { alreadyRecorded: false, hasWriteSignal: true, toolPrefix: DEFAULT_TOOL_PREFIX };
+  const T = analysis.toolPrefix || DEFAULT_TOOL_PREFIX;
 
   const needRecord = analysis.hasWriteSignal && !analysis.alreadyRecorded;
   if (!needRecord) {
@@ -105,9 +137,9 @@ process.stdin.on("end", () => {
 
   const reason = [
     "[malgnai-hub 기록 점검] 이번 작업에서 다음 중 발생한 게 있으면 종료 전에 malgnai-hub에 남겼는지 확인하라:",
-    "- 방향·정책·기술선택 등 주요 결정 → mcp__malgnai-hub__decision_record",
-    "- 막힌 것·장애물·버그 → mcp__malgnai-hub__issue_record (해결됐으면 issue_resolve)",
-    "- 의미 있는 작업 진행/완료/막힘 → mcp__malgnai-hub__work_record (nextAction을 채워두면 다음 세션에 자동으로 이어짐)",
+    "- 방향·정책·기술선택 등 주요 결정 → " + T + "decision_record",
+    "- 막힌 것·장애물·버그 → " + T + "issue_record (해결됐으면 " + T + "issue_resolve)",
+    "- 의미 있는 작업 진행/완료/막힘 → " + T + "work_record (nextAction을 채워두면 다음 세션에 자동으로 이어짐)",
     "기록할 거리가 없던 세션(단순 조회·질문 응답 등)이면 이 메시지는 무시하라. STATUS.md는 별도로 이미 갱신했어야 한다.",
   ].join("\n");
 
