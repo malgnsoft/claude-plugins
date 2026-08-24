@@ -181,8 +181,12 @@ const RELOCATION_SRC_AFTER = /^`?\s*(?:에서|는|은|의\s*(?:본문|내용))/;
 // 줄 단위로 참조를 뽑되, 이력 서술 줄은 건너뛴다.
 // 주석은 다음 줄로 접히는 일이 흔하므로(인용문·표 밖 서술) 바로 다음 줄까지 함께 본다 —
 // 실제로 "…이 스크립트는 이 플러그인에 / 번들되지 않음" 형태로 접혀 있었다.
-function* liveReferences(body, re) {
-  const lines = stripFencedCode(body).split(/\r?\n/);
+//
+// includeFenced: 펜스 안까지 본다. 기본은 제외지만(펜스는 예시·템플릿), **복사·실행
+// 커맨드 자체가 참조 지점인 자원**은 그 커맨드가 ```bash 펜스 안에 살기 때문에 제외하면
+// 가장 깨지기 쉬운 자리를 통째로 못 본다(§checkBundledResourceRefs).
+function* liveReferences(body, re, { includeFenced = false } = {}) {
+  const lines = (includeFenced ? body : stripFencedCode(body)).split(/\r?\n/);
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (RETIREMENT_NOTE.test(line)) continue;
@@ -313,6 +317,59 @@ function checkAnchors(relPath, body, pluginRoot, skillDirNames, sectionCache) {
   }
 }
 
+// ── 번들 자원 경로 참조 (skills/*/scripts/* · templates/*) ────────────
+// 제품 본문은 bin/·knowledge/ 말고도 두 종류의 번들 자원을 가리킨다:
+//   · `skills/<스킬>/scripts/<이름>.mjs` — 스킬이 실행하라고 지시하는 자기 디렉터리의 스크립트
+//   · `templates/<이름>/…`              — 프로젝트로 복사해 쓰라고 지시하는 스캐폴드
+// 둘 다 실재 검사를 받지 않아, 파일을 옮기거나 이름을 바꿔도 초록불이 그대로 남았다. 그러면
+// 파손은 설치 직원의 세션에서 "그런 파일 없음"으로 처음 드러난다 — bin/ 참조에서 이미 겪은
+// 파손 유형이라 같은 규약(경로를 뽑아 pluginRoot 기준으로 실재 확인 → ERROR)으로 확장한다.
+// 심각도를 ERROR로 두는 근거도 그 규약이다: REF_BIN_MISSING·REF_KNOWLEDGE_MISSING·
+// REF_AGENT_MISSING 셋 다 "참조 대상이 없다"를 ERROR로 잡는다(WARN은 CI 종료 코드에
+// 영향을 주지 않아, 죽은 포인터가 초록불 아래에서 배포된다).
+//
+// **펜스 안까지 본다.** 다른 참조 검사는 펜스를 예시로 보고 제외하지만, 이 두 자원은
+// 복사·실행 커맨드가 곧 참조 지점이고 그 커맨드는 ```bash 펜스 안에 산다(실측: 스킬의 정본
+// 실행 지시가 펜스 안에만 있었다). 플레이스홀더 검사가 "사용 예시가 바로 그 자리"라며 펜스를
+// 포함하는 것과 같은 판단이다.
+//
+// **단순 지칭도 잡는다** — 실행 지시만 골라내는 것은 표기 **형태** 검사
+// (BARE_SCRIPT_COMMAND)의 방침이고, 그 경계는 산문까지 명령으로 오인하지 않기 위한 것이다.
+// 실재 검사는 산문이든 커맨드든 똑같이 죽은 포인터가 되므로 bin/·knowledge/ 실재 검사와
+// 같이 전량 본다(두 방침은 대상이 달라 모순이 아니다).
+const BUNDLED_RESOURCE_REFS = [
+  {
+    code: 'REF_SKILL_SCRIPT_MISSING',
+    what: '스킬 번들 스크립트',
+    re: /\bskills\/[a-z0-9-]+\/scripts\/[A-Za-z0-9_.-]+\.(?:mjs|cjs|js)/g,
+  },
+  {
+    // 디렉터리 참조("templates/e2e-template/")도 대상이다 — 복사 지시의 절반이 디렉터리를 가리킨다.
+    code: 'REF_TEMPLATE_MISSING',
+    what: '템플릿 스캐폴드',
+    re: /\btemplates\/[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]*)*/g,
+  },
+];
+
+// 경로 앞이 다른 디렉터리면(예: "docs/templates/x") 번들 자원이 아니라 저장소 밖 얘기다.
+// 선행 세그먼트로 허용하는 것은 정본 표기 둘뿐이다: `${CLAUDE_PLUGIN_ROOT}/`(읽기·실행 대상)와
+// `malgn-agent/`(이 저장소 소스를 고치는 대상). 규약 정본은 Skill
+// `common-output-storage-and-path-management` §1-1·§1-2.
+const BUNDLED_PREFIX_OK = /(?:CLAUDE_PLUGIN_ROOT\}|malgn-agent)\/$/;
+
+function checkBundledResourceRefs(relPath, body, pluginRoot) {
+  for (const { code, what, re } of BUNDLED_RESOURCE_REFS) {
+    for (const m of liveReferences(body, re, { includeFenced: true })) {
+      if (/[<…{]/.test(m[0])) continue; // 형태를 설명하는 자리 표시자는 대상이 아니다
+      const before = m.input.slice(0, m.index);
+      if (before.endsWith('/') && !BUNDLED_PREFIX_OK.test(before)) continue;
+      if (fs.existsSync(path.join(pluginRoot, m[0]))) continue;
+      error(code, relPath,
+        `본문이 참조하는 ${what}가 없다: ${m[0]} — 옮겼거나 이름이 바뀌었으면 참조도 함께 고친다.`);
+    }
+  }
+}
+
 // ── 본문 참조 검증 (agents·skills·knowledge 공통) ──────────────────────
 // 세 영역은 같은 문법으로 서로를 가리키므로 검사도 하나여야 한다.
 // knowledge를 참조 "원천"으로 돌리지 않았던 동안(인벤토리로만 수집하고 본문은 읽지 않았다),
@@ -381,6 +438,8 @@ function checkBodyReferences(relPath, body, ctx) {
       error('REF_BIN_MISSING', relPath, `본문이 참조하는 스크립트가 없다: ${m[1]}`);
     }
   }
+  // bin/ 밖의 번들 자원(스킬 자기 scripts/·templates/)도 같은 규약으로 실재를 확인한다.
+  checkBundledResourceRefs(relPath, body, pluginRoot);
 }
 
 // ── 조회 불가 식별자 검사 ────────────────────────────────────────────
