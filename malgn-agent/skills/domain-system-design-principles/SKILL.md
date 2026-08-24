@@ -35,7 +35,7 @@ description: 시스템 설계의 핵심 원칙 — 트레이드오프, 고유성
 
 표준 CRUD·표준 3계층은 빠르게 처리하고, **핵심 도메인에 설계 분량과 깊이를 집중**합니다.
 
-**체크리스트 (2026-07-23 대표+7에이전트 교차토론 합의 — "다른 프로젝트에 복붙 가능한가" 자문형 체크 폐기)**:
+**체크리스트**:
 - [ ] planner의 `prd.md` 경쟁사 비교표 중 **어느 셀을 인용해 기술적으로 무엇을 다르게 설계했는가**를 명시했는가? (예: "경쟁사 A·B가 못하는 X 기능 → 실시간 동기화가 필요해 WebSocket 채널을 별도 설계")
 - [ ] 차별점(핵심 도메인)이 별도 섹션으로 깊게 다뤄졌는가?
 - [ ] 표준 요소(인증, 기본 API 구조)는 한두 페이지에 끝냈는가?
@@ -244,4 +244,4 @@ WHERE 규칙:
 
 ## 참고 자료
 
-- `${CLAUDE_PLUGIN_ROOT}/knowledge/architecture/system-design-patterns.md` — 배경·출처만 남은 스텁(2026-08-07 §1.3 이관 완료, 실행형 상세 패턴은 이 Skill과 `skills/domain-architecture-patterns-reference/SKILL.md`가 정본)
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/architecture/system-design-patterns.md` — 배경·출처만 남은 스텁(실행형 상세 패턴은 이 Skill과 `skills/domain-architecture-patterns-reference/SKILL.md`가 정본)
