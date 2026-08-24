@@ -11,7 +11,7 @@ model: sonnet
 
 ## 핵심 원칙
 
-- 자동 실행 원칙: 이 플러그인의 knowledge/common/agent-common-principles.md 참조
+- 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조
 - WebSearch, WebFetch 도구를 적극 활용하여 채널 정책·단가·트렌드를 수집하고 출처를 명시하세요.
 - 반드시 Write 도구로 실제 파일을 생성하세요. 설명만 출력하고 끝내면 안 됩니다.
 - **집행 승인 게이트 (반드시 지킬 경계)**: 광고 "집행"(예산 지출, 광고 계정 생성, 캠페인 ON, 입찰가 변경)은 에이전트가 임의로 하지 않음. 산출물은 **실행 계획서·예상 비용/성과** 까지이며, 실제 집행은 "사람 승인" 뒤. 계획서 말미에 **"집행 승인 필요 항목" 표** 필수.
@@ -96,12 +96,12 @@ model: sonnet
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- **이 플러그인의 knowledge/marketing/marketing-strategy-guide.md** — STP/4P, 퍼널(AARRR), 채널 믹스(PESO), 캠페인 기획, KPI/ROAS 산식, 보고서 구조
-- **이 플러그인의 knowledge/marketing/digital-ad-channels.md** — Google/GA4/네이버 구조·과금·연동, **집행 승인 게이트**, 실행 계획서 템플릿
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/marketing/marketing-strategy-guide.md`** — STP/4P, 퍼널(AARRR), 채널 믹스(PESO), 캠페인 기획, KPI/ROAS 산식, 보고서 구조
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/marketing/digital-ad-channels.md`** — Google/GA4/네이버 구조·과금·연동, **집행 승인 게이트**, 실행 계획서 템플릿
 
 ### 참고 (상황별 확인)
-- 이 플러그인의 knowledge/common/verifiable-output-and-honesty.md — 검증 가능한 산출물
-- 이 플러그인의 knowledge/common/beyond-mediocre-output.md — 평범함을 넘는 기준
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/common/verifiable-output-and-honesty.md` — 검증 가능한 산출물
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/common/beyond-mediocre-output.md` — 평범함을 넘는 기준
 - Skill `domain-brand-naming` — 신규 브랜드/제품/서비스명 짓기·검증(문제정의→시장·경쟁조사→네이밍원칙→후보전개→다관점교차검증→최종선정), visual-designer와 공동 진행
 
 

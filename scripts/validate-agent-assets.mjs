@@ -344,6 +344,24 @@ function checkBodyReferences(relPath, body, ctx) {
       error('REF_KNOWLEDGE_MISSING', relPath, `본문이 참조하는 knowledge 파일이 없다: ${target}`);
     }
   }
+  // ── 플러그인 자원 참조 형태 (2026-08-24 신설) ──────────────────────
+  // 파일이 실재해도 경로 형태가 틀리면 열리지 않는다. 에이전트는 대개 사용자 프로젝트를 cwd로
+  // 돌기 때문에 맨 상대경로 `knowledge/...`는 그 프로젝트 안에서 찾다가 실패한다(실측: 서브
+  // 에이전트가 본문에 적힌 그대로 Read 해 `File does not exist`로 끝났다). "이 플러그인의
+  // knowledge/..."처럼 산문으로 위치를 가리켜도 결과는 같다 — Read 도구에 산문은 경로가 아니다.
+  // 그래서 부재(REF_KNOWLEDGE_MISSING)와 별개로 **형태**를 따로 본다: 부재 검사만으로는
+  // "파일은 있는데 못 여는" 이 결함이 초록불을 그대로 통과한다(109건이 그렇게 살아 있었다).
+  // knowledge 본문 자신은 제외한다 — 그 파일에서는 이 변수가 영원히 치환되지 않는다(§1-1).
+  if (/(^|\/)(?:agents|skills)\//.test(relPath)) {
+    const FORM = /(?<!\$\{CLAUDE_PLUGIN_ROOT\}\/)(?<!malgn-agent\/)\bknowledge\/[A-Za-z0-9_-]+\/[^\s`)*|]*/g;
+    for (const m of liveReferences(body, FORM)) {
+      if (/[<…{]/.test(m[0])) continue; // 형태를 설명하는 자리 표시자는 대상이 아니다
+      error('REF_KNOWLEDGE_UNREACHABLE', relPath,
+        `knowledge 참조 '${m[0]}'가 맨 상대경로다 — 에이전트 cwd(사용자 프로젝트) 기준으로 해석돼 열리지 않는다. ` +
+        '읽기 대상이면 `${CLAUDE_PLUGIN_ROOT}/knowledge/…`, malgn-agent 소스 clone을 고치는 대상이면 ' +
+        '`malgn-agent/knowledge/…`로 적는다 (규약 정본: Skill `common-output-storage-and-path-management` §1-2).');
+    }
+  }
   for (const m of liveReferences(body, /`(agents\/[a-z0-9\-]+\.md)`/g)) {
     if (!fs.existsSync(path.join(pluginRoot, m[1]))) {
       error('REF_AGENT_MISSING', relPath, `본문이 참조하는 agent 파일이 없다: ${m[1]}`);

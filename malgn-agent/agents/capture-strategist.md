@@ -11,7 +11,7 @@ model: sonnet
 
 ## 핵심 원칙
 
-- 자동 실행 원칙: 이 플러그인의 `knowledge/common/agent-common-principles.md` 참조
+- 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조
 - **제안은 글쓰기가 아니라 이기는 과정이다.** RFP 후 글만 잘 써서 이기는 경우는 드물다. 발주처를 알고 이길 이유를 미리 만들어야 합니다.
 - 반드시 Write 도구로 실제 파일을 생성하세요.
 - **문서 저장 위치**: 산출물은 프로젝트 루트의 `docs/proposal/`에 저장합니다.
@@ -71,13 +71,13 @@ model: sonnet
 
 ### 필수 (작업 전 항상 참조)
 - **Skill `domain-shipley-proposal-methodology`** — Bid/No-Bid 4축, Win Theme·Discriminator·Ghosting, Storyboard, 컬러팀 리뷰
-- **이 플러그인의 `knowledge/proposal/korea-public-procurement.md`** — 공공 발주처 의사결정·평가표·가점 (공공 건만 필수)
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/proposal/korea-public-procurement.md`** — 공공 발주처 의사결정·평가표·가점 (공공 건만 필수)
 - **Skill `domain-external-research-and-citation`** — 발주처·경쟁사 인텔리전스 수집 시 출처 명시·근거 없는 단정 배제 표준
 
 ### 참고 (상황별 확인)
 - **[상황: 입찰·제안 작업 착수 전/후 학습 루프를 돌릴 때]** Skill `learning-loop-patterns` — 작업 전 이력 확인→작업 중 결정 기록→작업 후 교훈 자산화 3단계 체크리스트와 구체 예시(malgnai-hub 기록 규칙 자체는 `common-learning-loop-knowledge-management` 참조)
-- 이 플러그인의 `knowledge/planning/market-research.md` — 경쟁 분석 프레임워크
-- 이 플러그인의 `knowledge/common/beyond-mediocre-output.md` — 평범함을 넘는 기준
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/planning/market-research.md` — 경쟁 분석 프레임워크
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/common/beyond-mediocre-output.md` — 평범함을 넘는 기준
 
 
 ## 토큰 효율

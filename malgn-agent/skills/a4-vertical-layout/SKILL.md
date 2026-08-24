@@ -33,12 +33,12 @@ pnpm add -D playwright && pnpm exec playwright install chromium
 
 ### 단계 1: 세로형 스타일가이드 정본 Read & 복사
 **체크리스트**:
-- [ ] 이 플러그인의 `knowledge/design/html-style-guide/html-스타일가이드-세로형.html` Read
+- [ ] `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/html-스타일가이드-세로형.html` Read
 - [ ] `:root{...}` 토큰 블록 전체 복사 (색상, 폰트, 변수명 **그대로**)
 - [ ] `.page`, `.rh`, `.rf`, `.content` 기본 클래스 CSS 복사
 - [ ] `h2.chap`, `h3`, `.box`, `.blist`, `.table` 등 콘텐츠 클래스 복사
 - [ ] **자체 변수명/색상 추가하지 않음** (드리프트 방지)
-- [ ] 표지/러닝 헤더에 로고가 들어가는 문서라면 이 플러그인의 `knowledge/design/html-style-guide/맑은_로고.png`(정본)를 출력 폴더로 복사해 `<img src="맑은_로고.png">`로 삽입 — CSS 합성 로고(`class="mark"`) 절대 금지(presenter.md "브랜드 로고 처리" 규칙과 동일)
+- [ ] 표지/러닝 헤더에 로고가 들어가는 문서라면 `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/맑은_로고.png`(정본)를 출력 폴더로 복사해 `<img src="맑은_로고.png">`로 삽입 — CSS 합성 로고(`class="mark"`) 절대 금지(presenter.md "브랜드 로고 처리" 규칙과 동일)
 
 **Why**: 정본 토큰을 그대로 쓰지 않으면 "스타일가이드를 참조하라"는 지시를 따르지 않은 것과 같고, 이후 색상 변경, 브랜드 업그레이드 시 이 문서가 업데이트되지 않는 좀비 파일이 된다.
 
@@ -234,7 +234,7 @@ pdftoppm -png -r 100 output.pdf /tmp/page  # 각 페이지 이미지화
 ## 참고
 
 - (원본 사고 분석·4부 교훈은 이 스킬의 단계 3~4에 이미 흡수됨)
-- 이 플러그인의 `knowledge/design/html-style-guide/html-스타일가이드-세로형.html` — 정본 스타일
-- 이 플러그인의 `knowledge/presentation/a4-document-fundamentals.md` — 기술 배경 (페이지 크기·여백·렌더 측정 원리)
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/html-스타일가이드-세로형.html` — 정본 스타일
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/presentation/a4-document-fundamentals.md` — 기술 배경 (페이지 크기·여백·렌더 측정 원리)
 - `presenter.md` "세로형(A4) 페이지 채움 게이트" 섹션
 - `skills/common-screen-verification-and-capture` — 화면 캡처가 필요하면(디자인 검토용 스크린샷 등) 이 스킬을 참조. 이 스킬(a4-vertical-layout)의 렌더 높이 측정과는 목적이 다르지만 브라우저 구동 사전 조건(`pnpm add -D playwright && pnpm exec playwright install chromium`)은 동일하다.

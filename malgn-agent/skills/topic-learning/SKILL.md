@@ -76,7 +76,7 @@ description: 주제 기반 학습 — 기술/패턴 주제로 가이드 작성 �
 **예시 (devops.md "배포 보안" 섹션)**:
 ```
 ### Docker 보안 (2024-07-15)
-[Docker 보안 가이드](malgn-agent/knowledge/devops/docker-security-2024-07-15.md) 참고.
+[Docker 배포 가이드](${CLAUDE_PLUGIN_ROOT}/knowledge/devops/docker-cloudflare-guide.md) 참고.
 
 **필수 체크리스트**:
 - [ ] Dockerfile에 image scan 단계 포함
@@ -87,7 +87,7 @@ description: 주제 기반 학습 — 기술/패턴 주제로 가이드 작성 �
 **예시 (backend-dev.md "데이터 보안" 섹션)**:
 ```
 ### 민감정보 관리
-[Docker 보안 가이드의 "Secrets Management"](malgn-agent/knowledge/devops/docker-security-2024-07-15.md#secrets-management) 섹션 참고.
+[Docker 배포 가이드의 "환경변수·시크릿"](${CLAUDE_PLUGIN_ROOT}/knowledge/devops/docker-cloudflare-guide.md) 참고.
 ```
 
 ### 5단계: 변경사항 커밋 (초안 작성까지 — 승격 실행은 evaluator 소관)

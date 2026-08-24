@@ -23,7 +23,7 @@ description: 특정 에이전트 역량 강화 — MD/Knowledge 학습 자료 �
 ## 보강 범위
 
 **Knowledge 추가 규칙**:
-- 범용 학습 자료 → `malgn-agent/knowledge/[도메인]/` (git PR로 반영, `knowledge/README.md` 등재 필수)
+- 범용 학습 자료 → `malgn-agent/knowledge/[도메인]/` (git PR로 반영, `malgn-agent/knowledge/README.md` 등재 필수)
 - 프로젝트 문서 → `workspace/[프로젝트]/docs/`
 - 기존 knowledge는 덮어쓰지 말고 추가만 (1:1 보존)
 
@@ -38,7 +38,7 @@ description: 특정 에이전트 역량 강화 — MD/Knowledge 학습 자료 �
 
 | 산출물 | 성격 | 저장 위치 |
 |---|---|---|
-| 실제 지식 콘텐츠(재사용 가능한 도메인 지식) | malgn-agent 자체의 일부가 되어야 할 자산 | **malgn-agent 플러그인 공유 knowledge**(`knowledge/<도메인>/`), 7단계 git PR로 반영. `knowledge/README.md` 등재 필수 |
+| 실제 지식 콘텐츠(재사용 가능한 도메인 지식) | malgn-agent 자체의 일부가 되어야 할 자산 | **malgn-agent 플러그인 공유 knowledge**(`knowledge/<도메인>/`), 7단계 git PR로 반영. `malgn-agent/knowledge/README.md` 등재 필수 |
 | "무엇을 왜 어떻게 보강했는가"의 진단·보고 서사(Before/After, 진단 결과) | 이 upskill 세션 자체의 1회성 작업 이력 — 재사용 지식이 아님 | **PR body**(아래 템플릿)가 1차 정본. 요약 1줄은 malgnai-hub `work_record`로 이력화 |
 
 개인 knowledge 경로(`~/.claude/knowledge/...`)는 이 파이프라인에서 쓰지 않는다 — 배포 조직에는 그 경로가 없다.

@@ -33,7 +33,7 @@ malgnai-hub에는 "미분류 pending 큐"가 없다. 대신 아래 세 곳에서
 - backend-dev 패턴 → backend-dev.md "데이터 설계" 섹션
 - 등등
 - **2개 이상 에이전트/공통 자산에 걸치면 신중히 판단** — 확신 없으면 `docs/retro-pending-approval.md`에 적어 사람 승인을 먼저 받고, 승인 전까지 MD를 고치지 않는다.
-- 여러 에이전트에 사실상 같은 문구를 넣게 된다면 개별 MD 중복 삽입 대신 `knowledge/common/` 공통 파일 1개 + 각 MD에서 참조하는 형태를 먼저 검토한다.
+- 여러 에이전트에 사실상 같은 문구를 넣게 된다면 개별 MD 중복 삽입 대신 `malgn-agent/knowledge/common/` 공통 파일 1개 + 각 MD에서 참조하는 형태를 먼저 검토한다.
 
 ### 3단계: Knowledge 추가 (해당하는 경우만)
 정말 재사용 가능한 일반 지식이면 `malgn-agent/knowledge/` 도메인 폴더에 문서 작성(대부분은 4단계 MD 보강만으로 충분 — 별도 knowledge 문서는 예외적인 경우만):

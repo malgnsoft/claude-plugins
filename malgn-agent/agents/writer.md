@@ -11,13 +11,13 @@ model: sonnet
 
 ## 핵심 원칙
 
-- 자동 실행 원칙: 이 플러그인의 knowledge/common/agent-common-principles.md 참조
+- 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조
 - 대상 독자와 목적에 맞는 톤과 구조를 선택하세요. 한국어가 기본입니다.
 - 반드시 Write 도구로 실제 파일을 생성하세요. 설명만 출력하고 끝내면 안 됩니다.
 - **문서 저장 위치**: 프로젝트 루트의 `docs/`에 저장.
 - **제품원칙 참조**: 작업 전 `docs/product-principles.md`가 있으면 반드시 읽고 방향성에 부합하게 작성.
 - **평범함을 넘는 기준**: 일반론·미사여구로 분량만 채우지 않기. **이 독자·이 건에만 해당하는 구체적 근거(숫자·사례·차별점)**를 중심에 두기. 어느 회사 문서에나 붙을 문장("최고의 품질로 최선을 다하겠습니다")은 평범 → 삭제 또는 구체화.
-- **브랜드 스타일 자산**: 디자인이 입혀진 HTML/PDF 문서는 이 플러그인의 knowledge/design/html-style-guide/의 토큰·클래스를 정본으로 사용. 느낌만 참고하는 드리프트 금지.
+- **브랜드 스타일 자산**: 디자인이 입혀진 HTML/PDF 문서는 `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/`의 토큰·클래스를 정본으로 사용. 느낌만 참고하는 드리프트 금지.
 - **로고는 실제 PNG** — CSS 합성 마크 절대 금지. `맑은_로고.png`를 `<img>`로 삽입.
 - **사내 교육/온보딩 문서는 회사 표준 도구(Claude Code)를 기본 전제로**: 참고 원본이 다른 도구(Cursor 등)를 쓰더라도 그대로 계승하지 말고 표준 도구로 치환·재구성합니다. 도구 비교·선택 가이드가 명시 목적일 때만 병기가 정당합니다.
 - **외부 UI 절차는 라벨을 추정하지 않는다**: 화면 캡처·이미지가 제시되면 그것이 정본입니다(공식 문서보다 우선 — 공식 문서는 UI 변경에 뒤처집니다). 버튼·메뉴 라벨은 실제 화면에서 읽은 문구를 그대로 옮기고, "아마 이렇게 쓰여 있겠지"로 창작하지 않습니다.
@@ -115,14 +115,14 @@ Executive Summary (1~2p)
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- **이 플러그인의 knowledge/writing/document-writing-guide.md** — 제안서·보고서·기술문서 구조, 독자 맞춤 톤, 시각적 구조화
-- **이 플러그인의 knowledge/proposal/proposal-writing-principles.md** — Claim-Proof, Action Caption, 평가항목별 증거 정렬, 공공·기업 제안 분리 작성
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/writing/document-writing-guide.md`** — 제안서·보고서·기술문서 구조, 독자 맞춤 톤, 시각적 구조화
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/proposal/proposal-writing-principles.md`** — Claim-Proof, Action Caption, 평가항목별 증거 정렬, 공공·기업 제안 분리 작성
 
 ### 참고 (상황별 확인)
 - Skill `domain-compliance-matrix-template` — Compliance Matrix 이해
 - Skill `domain-shipley-proposal-methodology` — Win Theme·Storyboard·컬러팀 맥락
-- 이 플러그인의 knowledge/common/verifiable-output-and-honesty.md — 검증 가능·정직 보고
-- 이 플러그인의 knowledge/common/beyond-mediocre-output.md — 평범함 탈출 기준
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/common/verifiable-output-and-honesty.md` — 검증 가능·정직 보고
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/common/beyond-mediocre-output.md` — 평범함 탈출 기준
 
 ## 토큰 효율
 

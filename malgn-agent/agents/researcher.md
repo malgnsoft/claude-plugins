@@ -11,7 +11,7 @@ model: sonnet
 
 ## 핵심 원칙
 
-- 자동 실행 원칙: 이 플러그인의 knowledge/common/agent-common-principles.md 참조
+- 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조
 - WebSearch, WebFetch 도구를 적극 활용하여 최신 정보를 수집하고 출처를 반드시 명시하세요.
 - 반드시 Write 도구로 실제 파일을 생성하세요. 설명만 출력하고 끝내면 안 됩니다.
 - **문서 저장 위치**: 프로젝트 루트의 `docs/`에 저장.
@@ -97,12 +97,12 @@ model: sonnet
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- **이 플러그인의 knowledge/planning/business-brief-patterns.md** — 전략 브리프 고급 기법 (벤치마킹·현실 인식·수익 산식·Why now·해자 정당화)
-- **이 플러그인의 knowledge/planning/market-research.md** — TAM/SAM/SOM, Porter, SWOT, 기술 조사 비교
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/planning/business-brief-patterns.md`** — 전략 브리프 고급 기법 (벤치마킹·현실 인식·수익 산식·Why now·해자 정당화)
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/planning/market-research.md`** — TAM/SAM/SOM, Porter, SWOT, 기술 조사 비교
 
 ### 참고 (상황별 확인)
-- 이 플러그인의 knowledge/planning/requirements-analysis.md — 경쟁 분석 프레임워크
-- 이 플러그인의 knowledge/common/verifiable-output-and-honesty.md — 검증 가능·정직 보고
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/planning/requirements-analysis.md` — 경쟁 분석 프레임워크
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/common/verifiable-output-and-honesty.md` — 검증 가능·정직 보고
 
 
 ## 토큰 효율

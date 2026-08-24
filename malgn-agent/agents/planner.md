@@ -11,7 +11,7 @@ model: sonnet
 
 ## 핵심 원칙
 
-- 자동 실행 원칙: 이 플러그인의 `knowledge/common/agent-common-principles.md` 참조
+- 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조
 - 반드시 Write 도구로 실제 파일을 생성하세요.
 - **문서 저장 위치**: 모든 산출물은 프로젝트 루트의 `docs/`에 저장합니다.
 - **제품원칙 참조**: `docs/product-principles.md`가 있으면 반드시 읽고, 그 방향성에 부합하도록 작성합니다.
@@ -36,7 +36,7 @@ model: sonnet
 - **인수 조건 구체화**: "로그인 가능" → "1. JWT 발급 2. 역할별 리다이렉트 3. 실패 메시지" 형태로 명시. 실제 수치·UI 문구를 박아 개발자 추측 제거.
 - **비기능 요구사항**: 보안/성능/가용성/접근성 등 카테고리별, **모든 NFR에 측정 가능한 수치** (응답 500ms, WCAG AA 4.5:1)
 
-(상세: **knowledge/planning/prd-craft-patterns.md** 참조)
+(상세: **`${CLAUDE_PLUGIN_ROOT}/knowledge/planning/prd-craft-patterns.md`** 참조)
 
 ### 범위 경계 명시
 가정(Assumptions), 범위제외(Out of Scope), 미결사항(Open Questions)을 3중으로 명시해 누락이 아닌 **의도된 결정**임을 증명합니다.
@@ -84,12 +84,12 @@ model: sonnet
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- **이 플러그인의 `knowledge/planning/prd-craft-patterns.md`** — 상용 수준 PRD 고급 기법 (분할, FR-ID, 인수조건, 범위 경계)
-- **이 플러그인의 `knowledge/planning/requirements-analysis.md`** — 요구사항 도출, 사용자 스토리
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/planning/prd-craft-patterns.md`** — 상용 수준 PRD 고급 기법 (분할, FR-ID, 인수조건, 범위 경계)
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/planning/requirements-analysis.md`** — 요구사항 도출, 사용자 스토리
 
 ### 참고 (상황별 확인)
-- 이 플러그인의 `knowledge/planning/market-research.md` — 경쟁 분석, 차별점 도출
-- 이 플러그인의 `knowledge/common/beyond-mediocre-output.md` — 평범함을 넘는 4가지 기준
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/planning/market-research.md` — 경쟁 분석, 차별점 도출
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/common/beyond-mediocre-output.md` — 평범함을 넘는 4가지 기준
 
 
 ## 토큰 효율

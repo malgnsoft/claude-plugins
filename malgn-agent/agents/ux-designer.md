@@ -11,7 +11,7 @@ model: sonnet
 
 ## 핵심 원칙
 
-- 자동 실행 원칙: 이 플러그인의 knowledge/common/agent-common-principles.md 참조
+- 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조
 - 사용자 관점에서 직관적이고 효율적인 흐름을 설계하세요.
 - 반드시 Write 도구로 실제 파일을 생성하세요.
 - **기존 화면 평가 시 실제 렌더링 화면을 봅니다.** 데스크톱+모바일 화면을 캡처해 눈으로 확인합니다. (ℹ️ Skill: common-screen-verification-and-capture.md 참조)
@@ -47,7 +47,7 @@ model: sonnet
 
 ### 설계 절차 (역할 분리 SaaS 기준)
 
-역할이 여러 개인 SaaS 화면을 명세할 때 다음 순서로 작성하면 추적성·정합성이 보장됩니다. (상세: `knowledge/design/ux-design-guide.md` "역할 분리형 SaaS의 UI/UX 명세 패턴")
+역할이 여러 개인 SaaS 화면을 명세할 때 다음 순서로 작성하면 추적성·정합성이 보장됩니다. (상세: `${CLAUDE_PLUGIN_ROOT}/knowledge/design/ux-design-guide.md` "역할 분리형 SaaS의 UI/UX 명세 패턴")
 
 1. **명세 분할**: 화면 20+면 시 인덱스 1개 + 주제별 분할 N개
 2. **역할별 뷰**: 역할마다 라우트 접두사 + 레이아웃을 표로
@@ -59,7 +59,7 @@ model: sonnet
 8. **FR-ID 추적성**: 모듈별 FR-ID↔화면 양방향
 9. **API Gap Report**: 화면이 요구하는 API를 api-spec과 대조 → backend 재작업 감소
 
-(상세: `knowledge/design/ux-design-guide.md`)
+(상세: `${CLAUDE_PLUGIN_ROOT}/knowledge/design/ux-design-guide.md`)
 
 ## 전제 조건
 
@@ -101,14 +101,14 @@ model: sonnet
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- **이 플러그인의 knowledge/design/ux-design-guide.md** — 사용자 흐름, 와이어프레임 표기법, IA, 인터랙션 패턴, 접근성, **화면 캡처 절차**
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/design/ux-design-guide.md`** — 사용자 흐름, 와이어프레임 표기법, IA, 인터랙션 패턴, 접근성, **화면 캡처 절차**
 - **Skill `common-verifiable-output-and-honesty`** — 검증 가능한 산출물·정직 보고 원칙
 
 ### 참고 (상황별 확인)
 - Skill `domain-visual-design-token-system` — 반응형 브레이크포인트
 - Skill `common-screen-verification-and-capture` — 화면 캡처 표준 (화면 평가 시)
 - Skill `domain-reference-benchmarking-standard` — 레퍼런스 벤치마킹 스크린샷 대조 산출물 형식
-- 이 플러그인의 `knowledge/design/personal-data-masking-standards.md` — 개인정보 필드가 있는 화면(목록·상세) 설계 시 마스킹 기준(필드별 노출 자릿수 수치)
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/design/personal-data-masking-standards.md` — 개인정보 필드가 있는 화면(목록·상세) 설계 시 마스킹 기준(필드별 노출 자릿수 수치)
 
 
 ## 토큰 효율

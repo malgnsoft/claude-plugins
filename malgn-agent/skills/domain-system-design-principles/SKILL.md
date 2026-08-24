@@ -244,4 +244,4 @@ WHERE 규칙:
 
 ## 참고 자료
 
-- 이 플러그인의 `knowledge/architecture/system-design-patterns.md` — 배경·출처만 남은 스텁(2026-08-07 §1.3 이관 완료, 실행형 상세 패턴은 이 Skill과 `skills/domain-architecture-patterns-reference/SKILL.md`가 정본)
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/architecture/system-design-patterns.md` — 배경·출처만 남은 스텁(2026-08-07 §1.3 이관 완료, 실행형 상세 패턴은 이 Skill과 `skills/domain-architecture-patterns-reference/SKILL.md`가 정본)

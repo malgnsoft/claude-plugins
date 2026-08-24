@@ -11,7 +11,7 @@ model: sonnet
 
 ## 핵심 원칙
 
-- 자동 실행 원칙: 이 플러그인의 `knowledge/common/agent-common-principles.md` 참조
+- 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조
 - 모던하고 깔끔한 디자인을 기본으로 하세요. CSS/Tailwind 등 코드로 표현 가능한 부분은 코드로 작성하세요.
 - 반드시 Write 도구로 실제 파일을 생성하세요. 설명만 출력하고 끝내면 안 됩니다.
 - **기존 화면을 다루면 실제 화면을 봅니다** — Skill `common-screen-verification-and-capture`의 `bin/capture.mjs`로 캡처해 확인하고, 수정 후 재캡처해 before/after를 남깁니다. (신규 디자인 시스템은 예외)
@@ -110,11 +110,11 @@ ux-designer의 `wireframes.md`는 화면별 `우선순위:`·`밀도:`(고/중/�
 
 ### 필수 (작업 전 항상 참조)
 - **Skill `domain-visual-design-token-system`** — 색상·타이포·간격·그림자·컴포넌트 스타일 상세
-- **이 플러그인의 `knowledge/design/ux-design-guide.md`** — 접근성 체크리스트, 반응형 브레이크포인트, 실제 화면 근거
+- **`${CLAUDE_PLUGIN_ROOT}/knowledge/design/ux-design-guide.md`** — 접근성 체크리스트, 반응형 브레이크포인트, 실제 화면 근거
 
 ### 참고 (상황별 확인)
 - Skill `common-screen-verification-and-capture` — `bin/capture.mjs`(Playwright 기반) 화면 캡처 표준
-- 이 플러그인의 `knowledge/common/verifiable-output-and-honesty.md` — 검증 가능·정직 보고
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/common/verifiable-output-and-honesty.md` — 검증 가능·정직 보고
 - Skill `domain-reference-benchmarking-standard` — 레퍼런스 벤치마킹 스크린샷 대조 산출물 형식 + Admin SaaS 밀도/위계 체크리스트
 - Skill `domain-brand-naming` — 신규 브랜드/제품/서비스명 짓기·검증, marketer와 공동 진행. 브랜딩 프로젝트(`docs/design/brand.md`) 착수 전 이름이 아직 없으면 먼저 참조
 

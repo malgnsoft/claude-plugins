@@ -10,7 +10,7 @@ description: 리뷰 페르소나 패널 설계·운영과 통합 보고서 작�
 > **위치 규칙**
 > - 프로젝트별 페르소나(인스턴스): `docs/reviewer/personas/persona-[관점].md` — reviewer가 그 자리에서 생성(자산이 있으면 재활용). `personas/` 하위폴더에 모으는 이유: `docs/reviewer/` 루트의 보고서·판정서 등 이종 산출물과 분리해 누적·재활용을 쉽게 하기 위함.
 > - 리뷰 결과 보고서: `docs/reviewer/review-[대상]-[날짜].md` — reviewer가 작성 → PM 보고.
-> - 재사용 페르소나 자산: `knowledge/review/persona-*.md` — trainer가 반복·검증된 페르소나를 승격(agents/trainer.md 모드 5 참조).
+> - 재사용 페르소나 자산: `${CLAUDE_PLUGIN_ROOT}/knowledge/review/persona-*.md` — trainer가 반복·검증된 페르소나를 승격(agents/trainer.md 모드 5 참조).
 
 ## 0. 페르소나 파일 구조 — 역할개념(고정) vs 적용이력(가변)
 
@@ -212,4 +212,4 @@ target_id: [PM이 발급한 슬러그]
 
 ## 심화 기법 (필요할 때만)
 
-라운드를 반복하는 UI 리뷰, 문서·설계서 다차수 검증 등 **비교·추적이 중요한 상황**에서 쓰는 선택 강화 패턴(공통 평가 축 정량화, 시나리오 기반 검증, 안정적 이슈 ID, 요구사항 추적성 교차검증 등)은 이 플러그인의 `knowledge/review/reviewer-personas.md`에 남아 있다 — 단발 리뷰에는 불필요하니 필요할 때만 Read한다.
+라운드를 반복하는 UI 리뷰, 문서·설계서 다차수 검증 등 **비교·추적이 중요한 상황**에서 쓰는 선택 강화 패턴(공통 평가 축 정량화, 시나리오 기반 검증, 안정적 이슈 ID, 요구사항 추적성 교차검증 등)은 `${CLAUDE_PLUGIN_ROOT}/knowledge/review/reviewer-personas.md`에 남아 있다 — 단발 리뷰에는 불필요하니 필요할 때만 Read한다.
