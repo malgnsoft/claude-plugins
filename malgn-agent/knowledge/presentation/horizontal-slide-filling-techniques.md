@@ -1,6 +1,6 @@
 # 가로형 슬라이드 채움 기법
 
-> owner: trainer · 최종검토일: 2026-08-14
+> owner: trainer
 
 **이 문서 vs `a4-document-fundamentals.md`**: 이 문서는 **가로형(16:9, 1280×720) 슬라이드**의 콘텐츠 채움 기법을 다룬다. `a4-document-fundamentals.md`는 **세로 인쇄물(A4 297×210mm)** 전용이며 서로 다른 제약(고정 여러 페이지로 콘텐츠를 분배 vs 고정 1장 안에서 콘텐츠를 채움)을 다룬다 — 가로덱 작업에 세로형 문서 절차(`a4-vertical-layout`)를 적용하지 않는다.
 
