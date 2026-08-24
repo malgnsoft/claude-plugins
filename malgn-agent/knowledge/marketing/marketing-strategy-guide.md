@@ -132,7 +132,7 @@ PESO 모델로 채널을 분류해 균형을 본다.
 
 ## 8. 단위경제 입력값은 finance와 공유한다 — 따로 발명하지 마라 (협업)
 
-> 신설 사유 (2026-06-20, 모드 7 진단): performance·mycerti 두 보고서에서 marketer가 **마진율·BEP ROAS·전환율 같은 단위경제 수치를 finance와 따로 계산**했고, finance의 핵심 재무 진단을 채널 전략에 반영하지 못했다. 마케팅 계획의 경제성은 finance 모델 위에 서야 한다.
+> performance·mycerti 두 보고서에서 marketer가 **마진율·BEP ROAS·전환율 같은 단위경제 수치를 finance와 따로 계산**했고, finance의 핵심 재무 진단을 채널 전략에 반영하지 못했다. 마케팅 계획의 경제성은 finance 모델 위에 서야 한다.
 
 **구체 증거:**
 - performance: marketer가 "마진율 80% 가정 → BEP ROAS ≈ 125%"를 독립 계산했는데, 같은 제품을 finance는 **마진 78%·ARPU 7,500원·CAC 65,000원**으로 확정 모델링하고 있었다. marketer는 "가격은 finance 범위 외"라며 넘겼지만, 정작 **finance가 이미 낸 마진·CAC 숫자를 인용해 BEP ROAS·목표 CPL을 정합화하지 않았다.** 결과적으로 두 문서의 마진 숫자가 미세하게 어긋난 채 따로 논다.

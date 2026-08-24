@@ -5,7 +5,7 @@
 A4 세로형(세로 방향, 297mm H × 210mm W) 인쇄 문서는 **슬라이드(1280×720, 가로 16:9)와 완전 다른 제약과 원칙**을 따른다. 
 이 문서는 HTML→PDF 변환 시 필요한 기술적 기초(페이지 크기, 여백, 콘텐츠 배치, CSS 최적화)와 그 배경(왜 그렇게 설계했는가)을 정리한다.
 
-**이 문서 vs Skill**: 실행 절차·측정/검증 스크립트·PDF 변환 명령은 Skill `a4-vertical-layout`이 정본이다. 이 문서는 배경 지식(치수·여백 산식, 그리디 채택 이유, 함정의 원인)만 다루며, Skill과 겹치는 절차 항목은 스텁 처리해 Skill을 가리킨다(2026-08-07 감사 패턴4 이관절차③ 정정).
+**이 문서 vs Skill**: 실행 절차·측정/검증 스크립트·PDF 변환 명령은 Skill `a4-vertical-layout`이 정본이다. 이 문서는 배경 지식(치수·여백 산식, 그리디 채택 이유, 함정의 원인)만 다루며, Skill과 겹치는 절차 항목은 스텁 처리해 Skill을 가리킨다.
 
 ---
 
@@ -138,7 +138,7 @@ A4 세로형(세로 방향, 297mm H × 210mm W) 인쇄 문서는 **슬라이드(
 
 ### 측정 방법
 
-**절차·스크립트는 Skill `a4-vertical-layout` 단계 2에 정본으로 있다** — `playwright`(전체 설치) 표준 import로 `.content > *` 각 블록의 `boundingBox()`를 측정한다. 이 문서에는 절차를 다시 싣지 않는다(2026-08-07 감사 패턴4 이관절차③ 정정 — 구 버전은 `require('playwright-core')` 인라인 방식을 실었으나 이는 package.json 미선언 상태로 전역 캐시에 의존하는 §7.4 위반 패턴이라 삭제했다. D8 결정에 따라 표준 설치(`pnpm add -D playwright && pnpm exec playwright install chromium`)로 대체됨).
+**절차·스크립트는 Skill `a4-vertical-layout` 단계 2에 정본으로 있다** — `playwright`(전체 설치) 표준 import로 `.content > *` 각 블록의 `boundingBox()`를 측정한다. 이 문서에는 절차를 다시 싣지 않는다. `require('playwright-core')` 인라인 방식은 package.json 미선언 상태로 전역 캐시에 의존하게 되므로 쓰지 않는다 — 표준 설치(`pnpm add -D playwright && pnpm exec playwright install chromium`)를 따른다.
 
 ### 해상도별 px↔mm 변환
 ```
@@ -160,7 +160,7 @@ A4 세로형(세로 방향, 297mm H × 210mm W) 인쇄 문서는 **슬라이드(
 
 ### 검증 방법과 수정 루프
 
-**절차·스크립트는 Skill `a4-vertical-layout` 단계 4에 정본으로 있다** — `.page` 각 요소의 실측 높이를 297mm(=~1122.5px @96dpi)와 비교하고, 오버플로 페이지는 마지막 블록 1개를 다음 페이지로 옮긴 뒤 캐시버스팅 재측정을 반복한다. 이 문서에는 절차를 다시 싣지 않는다(2026-08-07 감사 패턴4 이관절차③ 정정).
+**절차·스크립트는 Skill `a4-vertical-layout` 단계 4에 정본으로 있다** — `.page` 각 요소의 실측 높이를 297mm(=~1122.5px @96dpi)와 비교하고, 오버플로 페이지는 마지막 블록 1개를 다음 페이지로 옮긴 뒤 캐시버스팅 재측정을 반복한다. 이 문서에는 절차를 다시 싣지 않는다.
 
 ---
 
@@ -299,7 +299,7 @@ Chrome headless:
 
 ### Step 3: PDF → 검증
 
-**명령·절차는 Skill `a4-vertical-layout` 단계 7에 정본으로 있다**(`pdfinfo`로 페이지 수 확인, `pdftoppm`으로 페이지 이미지화 후 눈으로 스캔). 이 문서에는 절차를 다시 싣지 않는다(2026-08-07 감사 패턴4 이관절차③ 정정).
+**명령·절차는 Skill `a4-vertical-layout` 단계 7에 정본으로 있다**(`pdfinfo`로 페이지 수 확인, `pdftoppm`으로 페이지 이미지화 후 눈으로 스캔). 이 문서에는 절차를 다시 싣지 않는다.
 
 ---
 

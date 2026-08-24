@@ -35,15 +35,15 @@ description: 맑은소프트 프로젝트 운영 표준 — 패키지 매니저(
   - `provider`는 이 프로젝트가 어느 MCP 서버(malgnai-hub 또는 로컬 malgnai-mcp)에 연동됐는지 표시 — 어느 MCP 서버의 도구를 써야 하는지 세션이 바로 판별할 수 있게 한다.
   - `project_bootstrap`이 `project_id`/`repository_key`를 채운다(malgnai-hub 연동 시). frontmatter 다음 줄부터 `# STATUS — <이름>` 본문이 이어진다.
   - **`project_id` 비고**: `project_id`는 `(user_id, repository_id)` 조합으로 직원별로 다르게 발급되는 값이라, 다른 직원이 같은 STATUS.md를 열어보면 자신의 실제 값과 다른 project_id를 보게 된다 — 그러므로 **남의 STATUS.md에 적힌 project_id를 그대로 도구 호출에 쓰지 않는다.** 기록·조회 도구(`work_record`/`decision_record`/`issue_record`/`wbs_*`/`project_get_context`/`project_search_history`)는 모두 `projectId`를 받으므로, 자기 값을 모르면 `project_bootstrap`(입력은 `repositoryKey`)을 다시 호출해 발급받는다.
-  - **`repository_id`/`web_url`은 STATUS.md에 저장하지 않는다** — 내부 DB id·화면 링크는 실사용 가치가 낮다고 판단해 필드에서 제외했다(2026-08-11 원복 결정).
-  - **토큰/시크릿은 여기 넣지 않는다**: 인증은 프로젝트 단위가 아니라 플러그인 설치 시 입력한 `device_token`(사용자 단위, `userConfig`에 저장)으로 처리된다. STATUS.md는 git에 커밋되지 않는 개인 로컬 캐시다(`.gitignore` 등록, 2026-08-11 결정) — 토큰/시크릿을 넣지 않는 이유는 이제 "커밋되는 파일이라서"가 아니라 단순히 STATUS.md의 책임범위가 아니기 때문이다(인증은 여전히 `device_token`이 전담).
+  - **`repository_id`/`web_url`은 STATUS.md에 저장하지 않는다** — 내부 DB id·화면 링크는 실사용 가치가 낮다고 판단해 필드에서 제외했다.
+  - **토큰/시크릿은 여기 넣지 않는다**: 인증은 프로젝트 단위가 아니라 플러그인 설치 시 입력한 `device_token`(사용자 단위, `userConfig`에 저장)으로 처리된다. STATUS.md는 git에 커밋되지 않는 개인 로컬 캐시다(`.gitignore` 등록) — 토큰/시크릿을 넣지 않는 이유는 이제 "커밋되는 파일이라서"가 아니라 단순히 STATUS.md의 책임범위가 아니기 때문이다(인증은 여전히 `device_token`이 전담).
   - **git 추적 제외**: `new-project.mjs`가 스캐폴딩 시 `.gitignore`에 `STATUS.md`를 등록한다 — `project_id`가 `(user_id, repository_id)` 조합으로 직원별로 다르게 발급되는 값이라, 팀 공유 파일(git 커밋)로 두면 "직원별로 다른 값"과 "팀 전체가 공유하는 파일" 사이에 구조적 불일치가 생긴다. STATUS.md를 개인 로컬 캐시로 전환하면 이 문제 자체가 사라진다.
-- **크기 상한: 1000토큰 이내로 유지한다.** 이 저장소 자신의 STATUS.md가 압축 규율(완료 섹션 5~7개 유지)을 따르고도 약 1,844토큰까지 불어난 실측이 있었다(cl100k_base 근사, 2026-08-11) — 그 정도로는 부족하다는 뜻이다. 더 타이트하게 조인다:
+- **크기 상한: 3,000바이트 이내로 유지한다.** 토큰으로 상한을 잡으면 세션에서 셀 수 없어 지킬 수단이 없다 — 바이트는 셀 수 있다. 한글은 UTF-8 3바이트/글자이고 토큰당 1글자를 넘지 않으므로, 3,000바이트면 전부 한글이어도 1,000토큰 안에 들어온다(ASCII가 섞이면 더 여유가 생긴다). **고친 직후 그 자리에서 `wc -c STATUS.md`로 확인한다**(Windows PowerShell: `(Get-Item STATUS.md).Length`) — STATUS.md는 `.gitignore` 대상이라 CI가 대신 잡아주지 못한다. 압축 규율(완료 섹션 5~7개 유지)을 지켜도 이 상한은 쉽게 넘기므로 더 타이트하게 조인다:
   - **관리 규칙:** 완료 항목은 1줄 요약(+MCP id), 완료 섹션은 최근 **3~5개**만 유지(5~7개에서 축소). 헤더 라인은 매번 통째로 교체(과거 세션 "직전:" 체이닝 금지).
   - "진행 중(🚧)" 섹션도 append하지 않는다 — 단계가 바뀔 때마다 현재 상태로 즉시 재압축한다.
 - **재작성은 다음 6가지 상황으로 제한한다** — 그 외 평범한 진행 중에는 STATUS.md를 건드리지 않는다:
   ①중요한 작업 완료 ②WBS 단계 변경 ③중요한 설계 결정 ④blocker 발생/해결 ⑤세션 종료 ⑥context compact 직전.
-  그 외에는 malgnai-hub `work_record`/`decision_record`/`issue_record`에만 기록하고 STATUS.md는 그대로 둔다 — STATUS.md는 "현재 스냅숏"이지 "매 턴 로그"가 아니다. (이전에는 "상태가 바뀌면 끝내기 전 갱신"처럼 사실상 매 턴 갱신하는 관성이 있었으나, 이 6가지로 명시 제한한다 — 2026-08-11 원복 결정.)
+  그 외에는 malgnai-hub `work_record`/`decision_record`/`issue_record`에만 기록하고 STATUS.md는 그대로 둔다 — STATUS.md는 "현재 스냅숏"이지 "매 턴 로그"가 아니다. ("상태가 바뀌면 끝내기 전 갱신"처럼 두면 사실상 매 턴 갱신하는 관성이 생기므로, 이 6가지로 명시 제한한다.)
 - 장기 이력은 malgnai-hub `project_search_history`로 조회 — STATUS.md는 **지금 돌아가는 것·다음 것·열린 이슈만** 담는다.
 
 ## 4. 문서 지도 = `docs/README.md`
@@ -102,7 +102,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs" <프로젝트명> ["한 줄 설
 4. **malgnai-hub `project_bootstrap` 호출**로 프로젝트를 동기화한다. `repositoryKey`는 폴더명 기반으로 제안하고 사용자 확인 후 확정한다. 반환된 `project_id`/`repositoryKey`를 `STATUS.md` 상단 YAML frontmatter의 `project_id`/`repository_key`에 채운다.
 5. 결과를 요약 보고한다: 새로 만든 파일 / 건너뛴(기존 유지) 파일 / malgnai-hub 연동 결과.
 
-**기존 5필드 STATUS.md(2026-08-11 원복 이전에 스캐폴딩된 프로젝트)는 그대로 둬도 기능상 문제없다** — 어떤 도구도 `repository_id`/`web_url` 필드를 파싱하지 않는다(SessionStart 훅은 STATUS.md를 필드 단위가 아니라 파일 전체를 문자열로 주입한다). 억지로 지금 3필드로 정리할 필요는 없다 — 다음 갱신 시점에 자연스럽게 3필드로 옮겨가면 되고, 급하지 않다.
+**기존 5필드 STATUS.md는 그대로 둬도 기능상 문제없다** — 어떤 도구도 `repository_id`/`web_url` 필드를 파싱하지 않는다(SessionStart 훅은 STATUS.md를 필드 단위가 아니라 파일 전체를 문자열로 주입한다). 억지로 지금 3필드로 정리할 필요는 없다 — 다음 갱신 시점에 자연스럽게 3필드로 옮겨가면 되고, 급하지 않다.
 
 ## 9. PM 행동규율 블록 재확인/재설치 — 온디맨드
 
@@ -130,7 +130,7 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestrat
 
 - [ ] 패키지 매니저로 pnpm만 쓰는가? (npm/yarn 흔적 없는가)
 - [ ] 프로젝트가 `~/workspace/<이름>/` 아래 독립적으로 있는가?
-- [ ] `STATUS.md`가 1000토큰 이내이고 완료 섹션이 3~5개로 정리되어 있는가? (재작성은 6가지 트리거 상황에서만 했는가?)
+- [ ] `STATUS.md`가 3,000바이트 이내(`wc -c STATUS.md`로 확인)이고 완료 섹션이 3~5개로 정리되어 있는가? (재작성은 6가지 트리거 상황에서만 했는가?)
 - [ ] `docs/README.md` 지도가 있고, docs를 통째로 읽지 않고 지도를 거쳐 필요한 것만 읽었는가?
 - [ ] 구조 서술(CLAUDE.md)이 `.claude/doc-drift.json`으로 검증 가능한가?
 - [ ] 새 프로젝트라면 `new-project.mjs`로 스캐폴딩했는가? (기존 폴더라면 `--here`로, STATUS.md가 이미 있다면 재스탬프 대신 `project_bootstrap` 동기화로)

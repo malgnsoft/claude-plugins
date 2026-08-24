@@ -1,6 +1,5 @@
 # 리스크 관리 및 에스컬레이션 가이드
 
-> 업데이트: 2026-06-19
 > 출처: Atlassian Risk Mitigation, CoraProjectManagement 5-Step Framework, PRINCE2/Scrum Risk Model
 
 ## 리스크 식별 체크리스트
@@ -62,7 +61,7 @@
 
 ## 리스크 모니터링
 
-> `progress.md`가 아니라 **`STATUS.md`가 진행 상태의 단일 소스**다(2026-08-07 정정).
+> `progress.md`가 아니라 **`STATUS.md`가 진행 상태의 단일 소스**다.
 
 ### STATUS.md에 리스크 섹션 추가
 STATUS.md의 리스크 현황 섹션은 활성(모니터링/에스컬레이션 상태) 리스크만 유지한다. 종결된 리스크는 1줄 요약으로 압축하거나 malgnai-hub 이력 조회(decision/issue 기록)로 넘긴다.

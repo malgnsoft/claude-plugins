@@ -151,9 +151,9 @@ const items = await db.prepare(
 ).bind(cursor, limit).all()
 ```
 
-## Route → Service 계층 분리 (coaching 검증 패턴, 2026-06-20)
+## Route → Service 계층 분리 (coaching 검증 패턴)
 
-출처: coaching 프로젝트 백엔드 코드 진단 (모드 7). 실제 운영 코드에서 역추출한 우수 패턴.
+출처: coaching 프로젝트 백엔드 코드 진단. 실제 운영 코드에서 역추출한 우수 패턴.
 
 inline 핸들러에 비즈니스 로직을 다 넣는 위 예시(상단 "기본 라우트 구조")는 작은 앱엔 괜찮지만, 규모가 커지면 라우트가 비대해지고 테스트가 어렵다. coaching은 **얇은 라우트(입력 정규화·인가) + 클래스 기반 서비스(비즈니스 로직)**로 깔끔히 분리했다.
 
@@ -252,7 +252,7 @@ try {
 } finally { await client.end(); }
 ```
 
-## 계층 구조 분기 가이드: DAO 유무에 따라 (malgnai 검증, 2026-06-20)
+## 계층 구조 분기 가이드: DAO 유무에 따라 (malgnai 검증)
 
 출처: malgnai 백엔드(`server/dao/`, `server/api/`, `server/mcp/tools.js`) 실제 코드 진단. coaching 패턴을 부정하는 게 아니라, **프로젝트 구조에 맞춰 둘 중 하나를 고르는 분기**다.
 
@@ -305,7 +305,7 @@ const projects = new ProjectsDao(db)
 - 새 진입점(MCP 도구·동기화 스크립트)을 추가하며 쿼리를 **복붙** → DAO에 메서드를 추가해 공유하라.
 - 코드 리뷰 시: 새 기능에 SQL이 등장하면 "이 프로젝트에 DAO 계층이 있나? 있다면 왜 DAO 밖에 있나"를 먼저 묻는다.
 
-#### 프레임워크 레벨 우수 패턴 (performance 실서비스 검증, DAO/Service 무관, 2026-06-20)
+#### 프레임워크 레벨 우수 패턴 (performance 실서비스 검증, DAO/Service 무관)
 
 출처: performance 프로젝트 실서비스 코드(`src/`). 계층 선택과 무관하게 **모든 Hono 프로젝트에 적용할 수 있는 검증된 패턴**이다.
 
@@ -371,9 +371,9 @@ const errorMap = { ValidationError:{status:400}, UnauthorizedError:{status:401},
 
 이 A~F는 backend-dev의 기본 체크리스트로 쓴다 — 새 Hono 라우트/서비스를 만들 때 인증 게이트·역할 가드·입력검증 위치·응답봉투·id 타입·site_id를 빠짐없이 적용했는지 확인.
 
-## Service→DAO 진화 서사 — performance(실서비스)가 DAO 없이 운영하며 겪은 한계 (2026-06-20)
+## Service→DAO 진화 서사 — performance(실서비스)가 DAO 없이 운영하며 겪은 한계
 
-출처: performance 프로젝트 실서비스 Hono 코드(`src/`) 진단(모드 7). performance는 malgnai와 거의 동일한 Hono 스택이되 **DAO 없이 `Route → Service → DB`(①형)** 으로 운영 중이다. 설계자는 performance를 만들며 "다음 프로젝트(malgnai)는 Service가 아니라 DAO로 가야겠다"고 결론지었다. 이 진화의 "왜"를 실제 코드 근거로 박제한다.
+출처: performance 프로젝트 실서비스 Hono 코드(`src/`) 진단. performance는 malgnai와 거의 동일한 Hono 스택이되 **DAO 없이 `Route → Service → DB`(①형)** 으로 운영 중이다. 설계자는 performance를 만들며 "다음 프로젝트(malgnai)는 Service가 아니라 DAO로 가야겠다"고 결론지었다. 이 진화의 "왜"를 실제 코드 근거로 박제한다.
 
 **performance가 Service에 SQL을 둔 형태 (실제 코드).** 모든 서비스 메서드가 직접 커넥션을 열고 SQL을 박는다:
 

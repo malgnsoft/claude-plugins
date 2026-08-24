@@ -1,6 +1,6 @@
 ---
 name: researcher
-description: 시장조사, 경쟁사 분석, 기술 트렌드 조사, 자료 수집을 수행하는 리서치 전문가. PM이 조사·분석 업무에 호출하거나 단독으로 사용 가능.
+description: 시장조사, 경쟁사 분석, 기술 트렌드 조사, 자료 수집을 수행하는 리서치 전문가. 판단에 쓸 근거·자료가 없어 먼저 조사가 필요할 때 사용.
 tools: Read, Grep, Glob, Write, Skill, WebFetch, WebSearch, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---

@@ -47,7 +47,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" http://localhost:9000 sidebar.png -
 2. 로그인을 1회만 수행해 세션을 프로젝트 로컬 `e2e/.auth/user.json`에 저장한다(전역 경로 아님 — 프로젝트끼리 세션이 섞이지 않는다).
 3. 인증이 필요한 화면을 검증할 때는 그 화면을 이 storageState 기반 E2E 테스트 안에서 `page.screenshot()`으로 함께 캡처하거나, 별도 스크립트에서 `browser.newContext({ storageState: 'e2e/.auth/user.json' })`으로 그 세션을 직접 로드해 재사용한다. `capture.mjs` 자신은 이 옵션을 플래그로 내장하지 않는다 — 향후 확장 시 이 표준 포맷을 그대로 소비하면 된다(지금은 없음, 과장 금지).
 
-관리: 세션 파일(`e2e/.auth/`)은 `.gitignore`에 등록해 커밋하지 않는다. 과거의 `~/.claude/tools/auth/<host>.json` 전역 캐시 방식은 폐기됐다 — 프로젝트 격리는 각 프로젝트 repo 경로 자체가 보장한다.
+관리: 세션 파일(`e2e/.auth/`)은 `.gitignore`에 등록해 커밋하지 않는다. 프로젝트 격리는 전역 캐시가 아니라 각 프로젝트 repo 경로 자체가 보장한다.
 
 ## Core Principles
 
@@ -64,7 +64,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" http://localhost:9000 sidebar.png -
 - **에러 시나리오:** 네트워크 실패, 유효성 검사 실패, 서버 에러, 경계 입력
 
 ### 3. 캡처 깊이 — 위험도별로 다르게 (빈도보다 정확도)
-캡처를 매 스텝 균일하게 반복하면 실효성 없이 토큰만 쓴다. 빈도 대신 위험도로 깊이를 조절한다(2026-07-23 대표+7에이전트 교차토론 합의):
+캡처를 매 스텝 균일하게 반복하면 실효성 없이 토큰만 쓴다. 빈도 대신 위험도로 깊이를 조절한다:
 
 - **critical**(결제·인증·삭제 등 되돌리기 어렵거나 사고 시 파급이 큰 화면): 상태 전이마다 캡처(성공/실패/진행중 각각) + 아래 "Full Checklist" 전 항목 확인.
 - **standard**(일반 CRUD·목록·상세 화면): 완성 시점 1회만 + 아래 "경량 체크리스트" 4항목만 확인. critical의 전체 체크리스트를 매번 돌리지 않는다 — 캡처 횟수는 줄이되 항목당 오버헤드도 같이 줄여야 순감소가 된다.

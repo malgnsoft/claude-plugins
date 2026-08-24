@@ -7,7 +7,7 @@ description: 에이전트 산출물 평가 + 피드백 통합 — Scorecard 채�
 
 산출물 기반 에이전트 진단. **평가와 피드백을 한 턴에 통합** — Scorecard 채점 후 약점별 MD 개선안을 즉시 제시하고, 실제 MD 반영은 evaluator→trainer 인계 절차(각 에이전트 MD 참조)로 이어집니다.
 
-> 소관: 이 스킬은 `evaluator`가 실행한다(과거 trainer 내부의 "모드 7"이었으나 채점·개선안 작성 전체가 evaluator로 이관됐다 — 상세 이관 근거는 `agents/trainer.md`/`agents/evaluator.md`의 역할 경계 절 참조, 여기서 중복 서술하지 않는다). trainer는 evaluator가 작성한 개선안을 실제 MD/knowledge 파일에 반영하는 마지막 단계만 수행한다.
+> 소관: 이 스킬은 `evaluator`가 실행한다(역할 경계 상세는 `agents/trainer.md`/`agents/evaluator.md` 참조, 여기서 중복 서술하지 않는다). trainer는 evaluator가 작성한 개선안을 실제 MD/knowledge 파일에 반영하는 마지막 단계만 수행한다.
 
 ## 핵심: 평가 + 피드백 통합 (한 턴에 처리)
 

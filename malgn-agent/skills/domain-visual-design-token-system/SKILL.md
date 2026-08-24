@@ -113,9 +113,9 @@ Semantic    — 상태 표시
 
 ---
 
-## 토큰화된 admin SaaS CSS 시스템 (산출물 역추출, 2026-06-20)
+## 토큰화된 admin SaaS CSS 시스템 (산출물 역추출)
 
-> 출처: coaching 프로젝트 `style-guide.md` + `public/css/base.css` (Bootstrap 5 기반 admin SaaS). trainer가 모드 7로 우수 기법을 역추출해 박제. "Bootstrap 최대 활용 + 커스텀 최소화 + CSS 변수 토큰화"로 일관성과 유지보수성을 동시에 잡은 모범 사례다. visual-designer가 구현 단계 CSS/디자인 시스템을 만들 때 이 골격을 출발점으로 삼는다.
+> 출처: coaching 프로젝트 `style-guide.md` + `public/css/base.css` (Bootstrap 5 기반 admin SaaS). "Bootstrap 최대 활용 + 커스텀 최소화 + CSS 변수 토큰화"로 일관성과 유지보수성을 동시에 잡은 모범 사례다. visual-designer가 구현 단계 CSS/디자인 시스템을 만들 때 이 골격을 출발점으로 삼는다.
 
 ### 1. 디자인 토큰을 `:root` CSS 변수로 (단일 출처)
 색·간격·레이아웃 치수를 모두 `:root` 변수로 선언하고, 컴포넌트는 변수만 참조한다. 색을 바꿀 때 한 곳만 고치면 전체 반영(브랜드 커스터마이징 FR과 직결).

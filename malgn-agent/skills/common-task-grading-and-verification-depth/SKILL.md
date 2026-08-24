@@ -1,6 +1,6 @@
 ---
 name: common-task-grading-and-verification-depth
-description: 전 에이전트 공통 — 작업 등급(Trivial/Standard/Sensitive/Exploration/Refactor)에 따라 검증 강도를 맞춰 과소·과잉 검증을 방지. PM가 위임 전 검증 깊이를 판정하거나, 에이전트가 자기검증 수준을 정할 때 사용.
+description: 전 에이전트 공통 — 작업 등급(Micro/Standard/Sensitive/Exploration/Refactor)에 따라 검증 강도를 맞춰 과소·과잉 검증을 방지. PM가 위임 전 검증 깊이를 판정하거나, 에이전트가 자기검증 수준을 정할 때 사용.
 ---
 
 # 작업 등급 → 검증 강도 (전 에이전트 공통)

@@ -98,7 +98,7 @@ tail -30 ~/.claude/malgnai-hub/usage-agent.err.log
 Get-Content "$env:USERPROFILE\.claude\malgnai-hub\usage-agent.err.log" -Tail 30
 ```
 
-두 OS 모두 `install-usage-agent.mjs`가 stdout/stderr를 `~/.claude/malgnai-hub/usage-agent.out.log`/`.err.log`로 리다이렉트한다(macOS는 launchd plist의 `StandardOutPath`/`StandardErrorPath`, Windows는 `schtasks` 등록 시 `cmd /c ... >> out.log 2>> err.log`로 감싸는 방식 — 2026-08-19 reviewer 지적 F-01 반영). 이 로그가 비어있는데도 문제가 의심되면 3번 단계의 `last_error` 필드와 아래 5번 단계의 `--dry-run` 재현으로 넘어간다.
+두 OS 모두 `install-usage-agent.mjs`가 stdout/stderr를 `~/.claude/malgnai-hub/usage-agent.out.log`/`.err.log`로 리다이렉트한다(macOS는 launchd plist의 `StandardOutPath`/`StandardErrorPath`, Windows는 `schtasks` 등록 시 `cmd /c ... >> out.log 2>> err.log`로 감싸는 방식). 이 로그가 비어있는데도 문제가 의심되면 3번 단계의 `last_error` 필드와 아래 5번 단계의 `--dry-run` 재현으로 넘어간다.
 
 ### 5. 수동 재현 (필요시)
 

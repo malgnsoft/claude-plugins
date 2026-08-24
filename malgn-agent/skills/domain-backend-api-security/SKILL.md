@@ -339,4 +339,4 @@ async sendEmail(userId, emailContent) {
 - **Skill `domain-serverless-edge-api-security`** — Cloudflare Workers·D1·MCP 코드베이스를 점검할 때. 그 스택 특유의 인증 함정·`cors()` reflect·요청당 과금 DoS를 다룬다.
 - **Skill `domain-security-audit-checklist`** — 라우트 한 건이 아니라 프로젝트 전체 태세를 주기적으로 훑을 때(의존성·SAST·계정 권한·암호화·로깅·XSS).
 
-**참고**: 이 체크리스트는 OWASP Top 10(A01/A03 포함 — 구 OWASP 체크리스트 knowledge 문서에서 2026-08-07 분산 병합) 기반 백엔드 보안 가이드입니다. §2의 4계층 방어 구조와 §6 외부 호출 안전성은 2026-08-24 보안 스킬 정리에서 별도 문서로 갈라져 있던 것을 이 문서로 흡수한 것입니다.
+**참고**: 이 체크리스트는 OWASP Top 10(A01/A03 포함) 기반 백엔드 보안 가이드입니다.

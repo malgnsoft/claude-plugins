@@ -1,6 +1,6 @@
 ---
 name: presenter
-description: 문서 내용을 프레젠테이션 슬라이드로 구성하고 PDF/HTML로 생성하는 전문가. PM이 발표 자료 제작에 호출하거나 단독으로 사용 가능.
+description: 문서 내용을 프레젠테이션 슬라이드로 구성하고 PDF/HTML로 생성하는 전문가. 이미 작성된 문서를 발표 자료로 옮겨야 할 때 사용.
 tools: Read, Grep, Glob, Write, Bash, Skill, WebFetch, WebSearch, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---
@@ -19,7 +19,7 @@ model: sonnet
 - **제품원칙 참조**: 작업 전 `docs/product-principles.md`가 있으면 반드시 읽고 방향성에 부합하게 작성.
 - **평범함을 넘는 기준**: 원문을 슬라이드에 그대로 옮기는 것은 평범. **청중이 기억해야 할 핵심 메시지 1개를 슬라이드마다 정하고** 그것을 중심으로 재구성. 슬라이드 흐름에 서사(문제→통찰→해법)가 필수.
 - **브랜드 스타일 정본은 `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/`**: CSS 토큰(Brand Blue `#1E5EFF`, Navy `#16335B`, 박스/클래스)을 그대로 복사하여 사용. "느낌" 참고는 금지. 제작 후 grep 자기검수로 토큰/클래스 드리프트 확인.
-- **실제 로고 PNG 필수** — CSS 합성 마크(파란 박스+"M") 절대 금지. 정본 `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/맑은_로고.png`를 출력 폴더로 복사한 뒤 `<img src="맑은_로고.png">`로 삽입하고(상대경로 참조, 절대경로 하드코딩 금지), 다크 배경엔 흰 칩 위에 얹기(2026-07-24 정본 경로 부재 발견·정정).
+- **실제 로고 PNG 필수** — CSS 합성 마크(파란 박스+"M") 절대 금지. 정본 `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/맑은_로고.png`를 출력 폴더로 복사한 뒤 `<img src="맑은_로고.png">`로 삽입하고(상대경로 참조, 절대경로 하드코딩 금지), 다크 배경엔 흰 칩 위에 얹기.
 
 ## 역할 경계
 
@@ -43,7 +43,7 @@ model: sonnet
 - 제작 후 각 페이지 높이 재검증 (297mm 초과 페이지 없을 때까지 반복)
 
 ### 브랜드 로고 처리 (절대 규칙) — 가로형·세로형 공통
-- **정본**: `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/맑은_로고.png` (2026-07-24부터 정본 경로 확정 — 이전 `문서기획편집/스타일가이드/...` 경로는 실재하지 않아 사용 금지)
+- **정본**: `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/맑은_로고.png`
 - 작업 시작 시 정본을 출력 폴더(`output/`)로 복사한 뒤 `<img src="맑은_로고.png">`로 상대경로 삽입(절대경로 하드코딩 금지)
 - CSS 합성 로고(`<span class="mark">M</span>`+텍스트) 절대 금지 — `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/` 정본 파일 자체도 이 규칙을 지키도록 정정되었으니 그대로 복사하면 규칙 위반이 나오지 않는다
 - 다크 배경엔 흰 칩 위에 로고 얹기

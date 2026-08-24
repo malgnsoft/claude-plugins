@@ -107,7 +107,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
   - malgnai-hub `issue_record`: "XXX 문제 발생, YYY로 우회 (근본 해결 필요)"
 - [ ] **외부 제약 대응:**
   - 권한 부족 → `common-permission-policy-compliance` 따르기 + 기록
-  - 정책 제약 → 제약 사항을 `issue_record`로 남기고 `AskUserQuestion`으로 사람에게 직접 확인
+  - 정책 제약 → 제약 사항을 `issue_record`로 남기고 확인·승인 요청을 PM에 반환(사용자 확인은 PM이 한다)
 
 #### 5. Experiment & Validation
 - [ ] **테스트 + 기록:**

@@ -1,6 +1,5 @@
 # 보고서 통합 및 보고 가이드
 
-> 업데이트: 2026-06-19
 > 출처: Venngage Executive Summary Guide, ProjectManager Stakeholder Reporting, Bold Reports Effective Reporting
 
 ## 보고서 통합 절차
