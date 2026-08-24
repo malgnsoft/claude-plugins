@@ -135,5 +135,5 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestrat
 - [ ] 프로젝트가 `~/workspace/<이름>/` 아래 독립적으로 있는가?
 - [ ] `STATUS.md`가 3,000바이트 이내인가? — `node "${CLAUDE_PLUGIN_ROOT}/bin/check-status-size.mjs" --require`가 OK여야 한다(`--require`를 빼면 STATUS.md가 없거나 엉뚱한 폴더에서 돌렸을 때 SKIP으로 통과해버린다). 완료 섹션은 3~5개로 정리되어 있는가? (재작성은 6가지 트리거 상황에서만 했는가?)
 - [ ] `docs/README.md` 지도가 있고, docs를 통째로 읽지 않고 지도를 거쳐 필요한 것만 읽었는가?
-- [ ] 구조 서술(CLAUDE.md)이 `.claude/doc-drift.json`으로 검증 가능한가?
+- [ ] 구조 서술(CLAUDE.md)이 판단(책임·이유·함정)을 담았는가? 담은 서술 안에 수치(파일 수·테이블 수·라우트 수 등)가 있다면 `.claude/doc-drift.json`에 등록했는가? (판단도 없고 매니페스트에도 걸 수 없는 나열이면 지운다 — 판정 정본은 Skill `claude-md-architecture` §1)
 - [ ] 새 프로젝트라면 `new-project.mjs`로 스캐폴딩했는가? (기존 폴더라면 `--here`로, STATUS.md가 이미 있다면 재스탬프 대신 `project_bootstrap` 동기화로)
