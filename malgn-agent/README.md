@@ -96,6 +96,7 @@ Enter만 누르세요.** 정상 설치에서는 비워두는 것이 맞습니다
 | `capture.mjs` | Playwright로 화면 캡처(구현 결과 눈으로 확인용) |
 | `check-edge-api-security.mjs` | Cloudflare Workers·Hono·D1 스택의 인증·CORS 취약 후보 탐지 |
 | `check-output-conventions.mjs` / `check-wbs-warnings.mjs` / `diff-env-keys.mjs` | 산출물 규약·WBS·환경변수 키 점검 |
+| `check-status-size.mjs` | `STATUS.md`가 3,000바이트 상한 안에 있는지 검사(초과하면 줄여야 할 양과 큰 섹션을 알려줌) |
 | `calc-training-scorecard.mjs` | 에이전트 산출물 평가 점수 계산 |
 
 ### 템플릿 (`templates/`)
