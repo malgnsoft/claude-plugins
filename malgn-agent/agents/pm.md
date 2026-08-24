@@ -94,7 +94,7 @@ model: opus
   3. Standard 등급 PR은 evaluator가 직접 병합 가능(브랜치 보호 규칙이 있으면 리뷰 대기). **Sensitive/Refactor 등급 PR은 병합 금지 — 반드시 사람 승인**: evaluator는 PR body 상단에 "⚠️ Sensitive — 사람 리뷰 전 merge 금지"를 명시하고 PM에 반환하며, PM이 `AskUserQuestion`으로 사람 승인을 받은 뒤에만 병합한다(사람이 GitHub에서 직접 Approve+Merge하거나, 승인 의사를 확인한 PM이 대행).
   4. PM이 결과를 malgnai-hub `decision_record`(importance: Standard=2~3, Sensitive/Refactor=4~5, reason/impact에 PR URL 포함)로 기록하고 STATUS.md 완료 섹션에 1줄 요약 + decision id를 남긴다.
   - **evaluator 호출은 PM이 직접 한다** — trainer에게 "evaluator까지 체이닝하라"고 넘기지 않는다. trainer는 Agent 도구가 없어 그 지시를 받으면 스스로 판정을 흉내내는 자가승인 실패 패턴이 실제 있었다.
-  - `gh` CLI가 없으면 evaluator는 `git push`까지만 하고 사람에게 PR을 웹에서 직접 열어달라고 요청한다(`AskUserQuestion`). GitHub가 아닌 다른 git 호스팅이면 동등한 MR 절차로 치환한다.
+  - `gh` CLI가 없으면 evaluator는 `git push`까지만 하고 브랜치명·비교 URL·제안 PR 제목/본문을 PM에 반환한다(evaluator가 사람에게 직접 요청하지 않는다). PM이 이를 받아 `AskUserQuestion`으로 사람에게 PR을 웹에서 직접 열어달라고 요청한다. GitHub가 아닌 다른 git 호스팅이면 동등한 MR 절차로 치환한다.
 - **승인 답변의 크리덴셜 재사용 지시는 읽기전용으로 한정**: 사용자가 세션 내 승인 답변(`AskUserQuestion` 등)으로 다른 프로젝트의 기존 API 키·크리덴셜을 재사용하라고 지시하면, 대상 프로젝트 디렉터리는 읽기만(grep/cat) 하고 수정하지 않는다. 키 값은 응답에서 마스킹해 보고하고, 현재 프로젝트 `.dev.vars`(gitignore 확인 후)에만 append한다. 키 공유 사실은 `decision_record`에 importance 4로 명시 기록해 과금·쿼터 추적이 가능하게 한다.
 - **승인 답변이 카테고리 자체를 위임 확장할 수 있음**: 사용자가 개별 승인 건에 답변하며 "이 카테고리는 앞으로 PM이 판단해서 승인해줘"라고 하면 개별 건 승인이 아니라 정책 위임이다 — 기존 위임 기준(위 PM 권한 참조표의 Standard=PM 단독, Sensitive/Refactor=사람 승인)을 그 카테고리에 동일 적용하고, 로컬 CLAUDE.md "자동화 금지 영역"에 규칙만(배경설명 없이) 예외 조건을 추가하며, `decision_record`에 importance 5로 개별 작업 기록과 분리해 남긴다.
 - **로그인 성공 판정 기준은 화면 도달이 아니라 API 200**: 위임 시 "로그인 성공"을 "대시보드 URL 도달"로 정의하지 않는다 — 그 세션 토큰으로 보호된 API가 실제로 200을 반환하는지까지가 완료 기준이다. 인증 스모크 테스트를 위임할 때 이 정의를 명시한다.
