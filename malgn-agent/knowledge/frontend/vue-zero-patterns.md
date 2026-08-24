@@ -1,6 +1,6 @@
 # Vue-Zero 프론트엔드 구현 패턴
 
-**역할 분담(패턴 상세)**: 이 문서는 vue-zero의 **구현 패턴 상세**(컴포넌트 예시·API 연동·Bootstrap 5·모달·접근성·실전 프로젝트 사례)만 다룬다. **규칙 정본은 `knowledge/architecture/vue-zero-architecture.md`**다 — Composables 절대 금지, 페이지별 단일 `.vue` 파일 구성, Blob URL 때문에 import가 작동하지 않는 이유, 공유 로직을 `utils.js`에 모아 `window.*`로 등록하는 절차 등 "무엇을 해야/하면 안 되는가"는 그 문서를 따른다. 이 문서와 그 문서가 다르게 말하면 **architecture.md가 우선**한다(2026-08-07 이전 판에는 "composables는 window.* 경유로만 사용"이라는 서술이 있었으나, architecture.md의 "Composables 절대 금지" 규칙 및 이 문서 자신의 "vue-zero 실전 패턴"·"vue-zero 규칙 재확인" 절과 정면 모순되는 구식 서술이라 제거했다).
+**역할 분담(패턴 상세)**: 이 문서는 vue-zero의 **구현 패턴 상세**(컴포넌트 예시·API 연동·Bootstrap 5·모달·접근성·실전 프로젝트 사례)만 다룬다. **규칙 정본은 `knowledge/architecture/vue-zero-architecture.md`**다 — Composables 절대 금지, 페이지별 단일 `.vue` 파일 구성, Blob URL 때문에 import가 작동하지 않는 이유, 공유 로직을 `utils.js`에 모아 `window.*`로 등록하는 절차 등 "무엇을 해야/하면 안 되는가"는 그 문서를 따른다. 이 문서와 그 문서가 다르게 말하면 **architecture.md가 우선**한다("composables는 window.* 경유로만 사용" 같은 서술은 architecture.md의 "Composables 절대 금지" 규칙 및 이 문서 자신의 "vue-zero 실전 패턴"·"vue-zero 규칙 재확인" 절과 정면 모순되므로 따르지 않는다).
 
 ## Options API 컴포넌트 패턴
 
@@ -233,7 +233,7 @@ export default {
 ### ⑤ 한 화면의 모달 제어 방식을 통일
 한 화면에서 어떤 모달은 `v-if` 플래그로, 어떤 건 `bootstrap.Modal` 인스턴스로 제어하면 코드가 제각각이 되고 닫을 때 백드롭이 남는 버그가 난다. **vue-zero에서는 `v-if` 플래그 + 직접 오버레이 마크업으로 통일하는 것을 권장**(아래 "vue-zero 실전 패턴"의 모달 절 참조). 부트스트랩 JS 모달을 쓸 거면 화면 전체에서 그 방식 하나로 통일하고, 닫을 때 인스턴스 정리(`getInstance(el)?.hide()`)까지 책임진다.
 
-### ⑥ 분류로 묶는 화면 — 분류의 "변동성·권위 출처"를 먼저 판별해 group-by와 명시 등록 중 맞는 쪽을 고른다 (malgnai agents.vue, 2026-06-22)
+### ⑥ 분류로 묶는 화면 — 분류의 "변동성·권위 출처"를 먼저 판별해 group-by와 명시 등록 중 맞는 쪽을 고른다 (malgnai agents.vue 사례)
 탭·팀·카테고리·섹션처럼 **데이터를 분류별로 묶어 그리는 화면**에는 두 가지 정반대 접근이 있고, **어느 쪽이 옳은지는 분류 집합의 성격으로 갈린다.** 한쪽을 무조건 규칙으로 삼지 말고 아래 기준으로 판단한다.
 
 **(A) 데이터에서 group-by로 도출** — 분류가 **자주 추가·변동**되고, 분류 집합의 **권위 출처가 데이터 자체**일 때. (malgnai의 team이 이 경우: 팀이 수시로 생기고 team 값 자체가 권위라, group-by가 옳았다.) 이때 코드에 박은 분류 목록을 순회하며 `.filter(matches)`로 그리면, 그 목록에 없는 새 분류의 데이터가 **통째로 렌더링에서 누락**된다 — 데이터·DB가 다 정상인데 화면에만 안 나와 진단이 오래 걸린다(malgnai에서 새 팀 3개가 통째로 사라짐). 받아온 데이터의 분류 값으로 직접 group-by 하고, 표시용 라벨/아이콘/순서만 메타 맵으로 두며 **메타에 없는 분류는 ID 그대로라도 표시**해 누락을 막는다. 새 분류가 생겨도 화면 코드를 고칠 필요가 없다.
@@ -283,9 +283,9 @@ computed: {
 
 ---
 
-## vue-zero 실전 패턴 (malgnuniv·malgnsales·malgnhrd 검증, 2026-06-20)
+## vue-zero 실전 패턴 (malgnuniv·malgnsales·malgnhrd 검증)
 
-출처: 여러 차례 리뷰로 완성도가 높아진 실제 vue-zero 프로젝트 3종에서 역추출(모드 7). 모두 **단일 `.vue` SFC + Options API + 전역 CSS**다 (ViewLogic의 views/·logic 분리 없음). 권장 기준은 **malgnai 표준(composables 금지, 유틸은 `utils.js`)**이되, 세 프로젝트에서 공통 검증된 패턴만 뽑았다.
+출처: 여러 차례 리뷰로 완성도가 높아진 실제 vue-zero 프로젝트 3종에서 역추출. 모두 **단일 `.vue` SFC + Options API + 전역 CSS**다 (ViewLogic의 views/·logic 분리 없음). 권장 기준은 **malgnai 표준(composables 금지, 유틸은 `utils.js`)**이되, 세 프로젝트에서 공통 검증된 패턴만 뽑았다.
 
 > 스택 주의: malgnuniv·malgnsales에는 `app/composables/` 폴더가 있으나 **malgnai CLAUDE.md는 composables 금지**다. 따라서 아래 "데이터 접근" 패턴은 composable 대신 `utils.js`의 `useApi`(또는 mock 함수)를 직접 호출하는 형태로 정규화했다.
 

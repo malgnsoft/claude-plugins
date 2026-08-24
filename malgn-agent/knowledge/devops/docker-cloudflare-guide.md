@@ -153,7 +153,7 @@ API_KEY=               # 외부 API 키
 
 ---
 
-## Cloudflare Workers/D1 운영 방법론 (실전 — malgnai 런북에서 추출, 2026-06-20)
+## Cloudflare Workers/D1 운영 방법론 (실전 — malgnai 런북에서 추출)
 
 > 위 §"Cloudflare Workers 배포"는 명령어 나열이라 happy path에 그친다. 실제 배포·운영에서 사고가 나는 지점은 아래 운영 패턴이다. (사례 근거: malgnai 프로젝트 — Hono + Workers + D1 + ASSETS, 제로빌드)
 
@@ -191,9 +191,9 @@ wrangler d1 execute <db> --remote --command "PRAGMA table_info(<table>)"   # 마
 - 시크릿은 `wrangler secret put`(프롬프트 입력 → 터미널 히스토리 안 남음), 코드에서 `c.env.X`. **`wrangler.toml`/`[vars]`엔 평문 금지**(git 커밋됨). 비밀 아닌 값만 `[vars]`.
 - CI(GitHub Actions): `pnpm install --frozen-lockfile` → **scan/build** → test → `wrangler deploy`. 시크릿은 `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID`를 GitHub Secrets로. **첫 배포 전 원격 D1 생성·`database_id` 교체가 선행돼야 CI 성공.**
 
-> 사례 런북: malgnai 프로젝트의 `docs/deployment-runbook-2026-06-20.md` (그 프로젝트 실제 값 기반).
+> 사례 런북: malgnai 프로젝트의 배포 런북(그 프로젝트 실제 값 기반).
 
-### 6. 로컬 DB 연결 — Hyperdrive local mode 우선 검토 (malgnuniv 사례, 2026-07-19)
+### 6. 로컬 DB 연결 — Hyperdrive local mode 우선 검토 (malgnuniv 사례)
 - **`cloudflare:sockets` 직접 연결로 로컬 MySQL 등에 붙지 말 것.** 공식문서 명시 리스크: localhost 접속이 차단될 수 있다.
 - **대안(공식 지원): Hyperdrive `localConnectionString`.** `wrangler.toml`에 실제 Cloudflare Hyperdrive 리소스를 만들지 않고도 로컬 개발용 연결 문자열을 지정할 수 있다:
   ```toml
