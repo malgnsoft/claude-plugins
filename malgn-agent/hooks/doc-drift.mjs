@@ -15,26 +15,83 @@
  *   ] }
  *
  * 측정 프리미티브(코드가 진실):
- *   glob      — cwd 기준 "dir/패턴(*포함)" 파일 수
- *   homeGlob  — $HOME 기준 glob (러너·전역에이전트 등 프로젝트 밖)
+ *   glob      — cwd 기준 "dir/패턴(*포함)" 파일 수. `**`(임의 깊이의 하위 디렉토리 재귀)도 지원한다.
+ *   homeGlob  — $HOME 기준 glob (러너·전역에이전트 등 프로젝트 밖). `**`도 동일하게 지원.
  *   jsonLength— JSON 파일 파싱 후 배열 길이(또는 객체 키 수)
  *   file+regex— 파일 내 정규식 전역 매치 수
  *   측정 불가(경로 없음/다른 호스트) → 해당 check skip(드리프트 아님).
+ *
+ * checks가 빈 배열이면(스캐폴딩 직후 등) computeDrift()는 `empty: true`를 반환한다 — "검사해서
+ * 이상 없음"과 "아직 아무것도 검사하지 않음"은 다른 상태이므로, 매니페스트를 채우기 전까지는
+ * 통과(✅)로 보고하지 않는다.
  *
  * 사용: node "${CLAUDE_PLUGIN_ROOT}/hooks/doc-drift.mjs" [projectDir]   (기본 cwd)
  *       (이 변수는 스킬·에이전트 본문과 훅 커맨드에서 치환되고, 이 파일을 Read로 열면 문자 그대로다 — 셸 변수가 아니다)
  * 재사용: import { computeDrift } from '.../doc-drift.mjs'
  */
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join, dirname, basename } from 'node:path'
 import { homedir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { findMalgnAgentBlockPath, AMBIGUOUS } from './lib/find-pm-block-path.mjs'
+import { findMalgnAgentBlockPath, AMBIGUOUS, expandHome } from './lib/find-pm-block-path.mjs'
+
+function globSegmentRe(seg) {
+  return new RegExp('^' + seg.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$')
+}
+
+// 순환 심볼릭 링크나 과도하게 깊은 트리(오타로 프로젝트 루트에 `**`를 건 경우 등)에서 재귀가
+// 멈추지 않는 것을 막는 안전장치. 매니페스트가 가리키는 통상적인 서브트리(예: server/api/**)
+// 깊이를 넉넉히 넘는 값이라 정상 사용에는 영향이 없다.
+const GLOB_RECURSION_DEPTH_CAP = 12
+
+/**
+ * `**`가 포함된 glob 패턴을 실제로 재귀 지원한다. 예전에는 `**`가 dirname()/basename()으로
+ * 쪼개질 때 존재하지 않는 리터럴 디렉토리 `**`로 해석돼 항상 measure 실패 → skip 처리됐다
+ * (드리프트가 있어도 "측정 불가"로 조용히 넘어가 눈에 띄지 않았다). 이제는 `**`를 "0개 이상의
+ * 하위 디렉토리"로 실제로 펼쳐서 센다.
+ *
+ * 루트(첫 와일드카드 세그먼트 이전의 리터럴 경로)가 존재하지 않으면 기존 규약과 동일하게
+ * null(측정 불가 → skip)을 반환한다 — 재귀 매칭 결과 0건인 것과는 다른 상태다(후자는 진짜
+ * 드리프트일 수 있는 정상 측정치 0).
+ */
+function countGlobRecursive(baseDir, pattern) {
+  const segments = pattern.split('/')
+  const firstWildcardIdx = segments.findIndex((s) => s.includes('*'))
+  const literalPrefix = firstWildcardIdx === -1 ? segments.slice(0, -1) : segments.slice(0, firstWildcardIdx)
+  const rootDir = literalPrefix.length ? join(baseDir, ...literalPrefix) : baseDir
+  if (!existsSync(rootDir)) return null
+
+  let count = 0
+  function walk(curDir, segIdx, depth) {
+    if (depth > GLOB_RECURSION_DEPTH_CAP) return
+    const seg = segments[segIdx]
+    if (seg === undefined) return
+    let entries
+    try { entries = readdirSync(curDir, { withFileTypes: true }) } catch { return }
+    if (seg === '**') {
+      walk(curDir, segIdx + 1, depth)              // '**'가 0개 디렉토리를 소비하는 경우
+      for (const e of entries) {
+        if (e.isDirectory()) walk(join(curDir, e.name), segIdx, depth + 1) // 1개 더 내려가며 '**' 유지
+      }
+      return
+    }
+    const re = globSegmentRe(seg)
+    const isLast = segIdx === segments.length - 1
+    for (const e of entries) {
+      if (!re.test(e.name)) continue
+      if (isLast) { if (e.isFile()) count++ }
+      else if (e.isDirectory()) walk(join(curDir, e.name), segIdx + 1, depth + 1)
+    }
+  }
+  walk(rootDir, literalPrefix.length, 0)
+  return count
+}
 
 function countGlob(baseDir, pattern) {
+  if (pattern.includes('**')) return countGlobRecursive(baseDir, pattern)
   const dir = join(baseDir, dirname(pattern))
   const fnPat = basename(pattern)
-  const re = new RegExp('^' + fnPat.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$')
+  const re = globSegmentRe(fnPat)
   try { return readdirSync(dir).filter((f) => re.test(f)).length } catch { return null }
 }
 
@@ -56,7 +113,13 @@ function measure(check, cwd) {
   return null
 }
 
-/** cwd 프로젝트의 매니페스트로 드리프트 계산. 매니페스트 없으면 null(=체크 대상 아님). */
+/**
+ * cwd 프로젝트의 매니페스트로 드리프트 계산. 매니페스트 없으면 null(=체크 대상 아님).
+ * checks가 빈 배열이면(스캐폴딩 직후 등 아직 아무도 채우지 않은 상태) `empty: true`를 반환한다 —
+ * 이 경우 drift/skipped 모두 빈 배열이라 "검사해서 이상 없음"과 구분되지 않았고, 그 결과
+ * 호출부가 실제로는 아무것도 측정하지 않았는데 통과(✅)로 보고했다. `empty` 플래그로 호출부가
+ * 그 둘을 구분해 보고할 수 있게 한다.
+ */
 export function computeDrift(cwd = process.cwd()) {
   let manifest
   try { manifest = JSON.parse(readFileSync(join(cwd, '.claude', 'doc-drift.json'), 'utf8')) } catch { return null }
@@ -68,7 +131,7 @@ export function computeDrift(cwd = process.cwd()) {
     results.push({ label: c.label, expected: c.expected, actual })
     if (actual !== c.expected) drift.push(`${c.label}: 문서=${c.expected} ↔ 실측=${actual}`)
   }
-  return { results, drift, skipped }
+  return { results, drift, skipped, empty: checks.length === 0 }
 }
 
 /**
@@ -90,7 +153,10 @@ export function checkPmBlockImport(cwd = process.cwd()) {
   try { resolved = findMalgnAgentBlockPath() } catch { resolved = null }
   if (resolved === AMBIGUOUS) return { status: 'ambiguous', message: 'malgn-agent 마켓플레이스 후보가 2개 이상이라 경로를 하나로 특정할 수 없다.' }
   if (!resolved) return { status: 'plugin-missing', message: 'malgn-agent 플러그인 원본을 찾을 수 없다(마켓플레이스 제거/미등록 가능성).' }
-  if (resolved !== m[1]) return { status: 'drift', message: `import 경로(${m[1]}) != 현재 설치 경로(${resolved}) — Edit로 교정 필요.` }
+  // import 줄은 `~/...`(홈 상대, 이식 가능한 형태) 또는 옛 방식의 절대경로 둘 다일 수 있다.
+  // expandHome()으로 현재 PC 기준 절대경로로 편 뒤 비교해야 `~/...`로 정상 설치된 경우를
+  // 드리프트로 오판하지 않는다.
+  if (expandHome(m[1]) !== resolved) return { status: 'drift', message: `import 경로(${m[1]}) != 현재 설치 경로(${resolved}) — Edit로 교정 필요.` }
   return { status: 'ok' }
 }
 
@@ -98,7 +164,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const cwd = process.argv[2] || process.cwd()
   const r = computeDrift(cwd)
   if (!r) { console.log('(.claude/doc-drift.json 없음 — 드리프트 체크 대상 아님)'); }
-  else {
+  else if (r.empty) {
+    // checks가 비어 있으면 results/drift/skipped 모두 빈 배열이라, 아래 "✅ 문서가 코드와 일치"와
+    // 겉으로 구분이 안 됐다 — 실제로는 아무것도 측정하지 않았을 뿐인데 통과처럼 보였다.
+    console.log('  ℹ️ .claude/doc-drift.json의 checks가 비어 있다 — 아직 아무것도 검사하지 않았다(통과가 아니다). 매니페스트를 채우면 실제 대조가 시작된다.')
+  } else {
     for (const x of r.results) console.log(`  ${x.actual === x.expected ? '✅' : '⚠️'} ${x.label}: 문서=${x.expected} 실측=${x.actual}`)
     if (r.skipped.length) console.log('  (skip, 측정불가:', r.skipped.join(', ') + ')')
   }
@@ -114,6 +184,6 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const hasDrift = !!(r && r.drift.length)
   const hasPmIssue = !!(pmCheck && pmCheck.status !== 'ok')
   if (hasDrift) console.log('\n⚠️ 문서 드리프트 — 매니페스트 expected 와 문서 서술을 실측에 맞춰 갱신하라.')
-  if (!hasDrift && !hasPmIssue && r) console.log('\n✅ 문서가 코드와 일치.')
+  if (!hasDrift && !hasPmIssue && r && !r.empty) console.log('\n✅ 문서가 코드와 일치.')
   process.exit(hasDrift || hasPmIssue ? 1 : 0)
 }

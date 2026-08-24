@@ -30,12 +30,18 @@ import { join, basename, dirname } from 'node:path'
 import { homedir } from 'node:os'
 import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { MARKETPLACES_DIR_SEGMENTS, PLUGIN_DIR_NAME } from '../hooks/lib/find-pm-block-path.mjs'
+import { MARKETPLACES_DIR_SEGMENTS, PLUGIN_DIR_NAME, toHomeRelative } from '../hooks/lib/find-pm-block-path.mjs'
 
 /**
  * PM 행동규율(@import) 참조 로드 — 스캐폴딩 시점 1회(docs/decision/malgnai-hub-project-bootstrap-redesign.md §4-2).
  * new-project.mjs는 PM이 마켓플레이스 clone 경로에서 직접 실행하므로(${CLAUDE_PLUGIN_ROOT} 방식이 아님),
  * import.meta.url 자체가 이미 정답 경로다 — 별도 글롭 스캔이 필요 없다.
+ *
+ * 다만 이 경로를 CLAUDE.md에 심을 때는 절대경로 그대로 쓰지 않는다 — 절대경로는 스캐폴딩한 사람의
+ * 홈 디렉토리를 그대로 포함하므로, 그 프로젝트가 다른 PC로 옮겨지면(git clone 등) 존재하지 않는
+ * 남의 홈 디렉토리를 가리켜 깨진다. toHomeRelative()로 `~/...` 형태로 바꿔 심는다 — Claude Code의
+ * `@import` 문법이 `~` 홈 상대경로를 공식 지원하므로, 어느 PC에서 열든 그 PC의 홈 기준으로 다시
+ * 해석된다(pmBlockPath 자체는 절대경로를 유지 — 이 스크립트가 파일을 직접 읽을 때 쓴다).
  */
 function loadPmOrchestrationBlockRef() {
   try {
@@ -43,7 +49,7 @@ function loadPmOrchestrationBlockRef() {
     const raw = readFileSync(blockPath, 'utf8')
     const m = raw.match(/<!--\s*malgn-agent:pm-orchestration:version:(\d+)\s*-->/)
     if (!m) return null
-    return { path: blockPath, version: Number(m[1]) }
+    return { path: blockPath, importPath: toHomeRelative(blockPath), version: Number(m[1]) }
   } catch { return null }
 }
 const pmBlock = loadPmOrchestrationBlockRef()
@@ -109,7 +115,7 @@ mkdirSync(join(root, '.claude'), { recursive: true })
 // pmBlock이 있을 때만 CLAUDE.md에 마커+@import 두 줄을 삽입한다(§4-2). 없으면(배포 누락 등) 건너뛴다 —
 // 스캐폴딩 자체를 실패시키지 않는다(위 콘솔 경고로 이미 알렸다).
 const pmBlockSection = pmBlock
-  ? `\n<!-- malgn-agent:pm-orchestration:installed:v${pmBlock.version} -->\n@${pmBlock.path}\n`
+  ? `\n<!-- malgn-agent:pm-orchestration:installed:v${pmBlock.version} -->\n@${pmBlock.importPath}\n`
   : ''
 
 /**

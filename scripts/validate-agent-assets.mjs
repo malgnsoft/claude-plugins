@@ -370,6 +370,23 @@ function checkBundledResourceRefs(relPath, body, pluginRoot) {
   }
 }
 
+// ── ${CLAUDE_PLUGIN_ROOT}/hooks/... 참조 실재 검사 ──────────────────────
+// bin/의 스크립트는 REF_BIN_MISSING이 `` `bin/x.mjs` `` 형태의 참조 실재를 잡지만, hooks/의
+// 파일은 대응하는 검사가 없었다. hooks 파일을 가리키는 표준 표기는 REF_BIN_MISSING이 잡는
+// 맨 backtick 표기(`` `bin/x.mjs` ``)가 아니라 `${CLAUDE_PLUGIN_ROOT}/hooks/x.mjs` 형태다 —
+// hooks.json의 훅 커맨드 문자열과 hooks/*.mjs 스크립트의 "사용:" 안내가 모두 이 형태를 쓴다.
+// 그래서 훅 파일을 옮기거나 지워도 이 참조는 실재 검사 없이 초록불로 남는다.
+const CLAUDE_PLUGIN_HOOKS_REF = /\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/([A-Za-z0-9_.\-/]+\.(?:mjs|cjs|js|md|json))/g;
+
+function checkClaudePluginRootHooksRefs(relPath, body, pluginRoot) {
+  for (const m of liveReferences(body, CLAUDE_PLUGIN_HOOKS_REF, { includeFenced: true })) {
+    const target = m[1];
+    if (!fs.existsSync(path.join(pluginRoot, 'hooks', target))) {
+      error('REF_HOOKS_MISSING', relPath, `본문이 참조하는 hooks 파일이 없다: hooks/${target}`);
+    }
+  }
+}
+
 // ── 본문 참조 검증 (agents·skills·knowledge 공통) ──────────────────────
 // 세 영역은 같은 문법으로 서로를 가리키므로 검사도 하나여야 한다.
 // knowledge를 참조 "원천"으로 돌리지 않았던 동안(인벤토리로만 수집하고 본문은 읽지 않았다),
@@ -438,6 +455,9 @@ function checkBodyReferences(relPath, body, ctx) {
       error('REF_BIN_MISSING', relPath, `본문이 참조하는 스크립트가 없다: ${m[1]}`);
     }
   }
+  // `${CLAUDE_PLUGIN_ROOT}/hooks/...` 형태로 가리키는 hooks 파일의 실재를 확인한다(위 REF_BIN_MISSING과
+  // 대응하는 검사가 hooks/에는 없었다).
+  checkClaudePluginRootHooksRefs(relPath, body, pluginRoot);
   // bin/ 밖의 번들 자원(스킬 자기 scripts/·templates/)도 같은 규약으로 실재를 확인한다.
   checkBundledResourceRefs(relPath, body, pluginRoot);
 }
@@ -1013,7 +1033,14 @@ function main() {
         const rel = path.relative(REPO_ROOT, p);
         const raw = fs.readFileSync(p, 'utf8');
         checkUnresolvableIds(rel, raw);
-        if (/\.(mjs|cjs|js|md)$/.test(e.name)) checkBodyReferences(rel, raw, refCtx);
+        if (/\.(mjs|cjs|js|md)$/.test(e.name)) {
+          checkBodyReferences(rel, raw, refCtx);
+        } else {
+          // .json(hooks.json)은 checkBodyReferences 대상 밖이다(기계 설정이라 대부분의 참조
+          // 문법이 살지 않는다) — 그러나 hooks.json의 훅 커맨드 문자열은 실제로
+          // `${CLAUDE_PLUGIN_ROOT}/hooks/...`로 훅 파일을 가리키므로 그 실재 확인만은 여기서 건다.
+          checkClaudePluginRootHooksRefs(rel, raw, pluginRoot);
+        }
       }
     };
     walk(dir);
