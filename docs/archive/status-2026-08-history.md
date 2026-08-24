@@ -627,10 +627,12 @@ trainer 위임. 대상 4곳: `skills/project-standards/SKILL.md` 41·133행, `bi
 
 **중간 장애**: opus 계열 API 529 과부하로 5개 서브태스크가 반복 중단(커밋 전 종료라 손실 없음) — sonnet으로 재위임해 완주. 이후 재발 시 같은 패턴 적용.
 
-**신규 백로그 후보(이번 라운드에서 발견, 미착수)**:
-- `agents/*.md`의 `tools:` 중 `AskUserQuestion` 9곳(backend-dev·capture-strategist·devops·evaluator·frontend-dev·pm·qa-engineer·security·trainer) — 무시될 뿐 기동엔 무해함을 병행 세션이 2차 필터 전수 대조로 재확인. 제거해도 동작 차이 없어 결함 아님, 문서 정합성 개선.
-- `skills/project-standards/SKILL.md:42` "완료 항목은 1줄 요약(**+MCP id**)" — provider 전환 전 어휘 잔재 + 3,000B 예산과 상충(id 자체가 상시비용). 식별자 금지 위반은 아님(구체 id 아닌 양식 지시).
-- `skills/project-standards`가 어느 `agents/*.md`에서도 참조되지 않아(PM 전용 경로), `SKILL.md:122`의 `AskUserQuestion` 실행 주체를 문서로 확정하지 못함 — 서브에이전트가 이 스킬을 여는 경로가 생기면 같은 결함 재발 가능.
+**신규 백로그 후보(이번 라운드에서 발견) — 사용자 승인으로 같은 세션에서 착수·완료**:
+- `agents/*.md`의 `tools:` 중 `AskUserQuestion` 9곳 — pm.md 1곳은 실제 사용처라 유지, 나머지 8곳(backend-dev·capture-strategist·devops·evaluator·frontend-dev·qa-engineer·security·trainer)은 죽은 선언이라 제거. 정적검사 ERROR 0 유지 확인.
+- `skills/project-standards/SKILL.md:42` "+MCP id" — 어휘를 `malgnai-hub`로 통일하는 대신, id 권고 자체를 뺐다(§3의 "장기 이력은 malgnai-hub `project_search_history`로 조회"와 중복이었고, id를 STATUS.md에 적으라는 권고는 3,000B 예산과 직접 상충).
+- **판단 정정**: "`skills/project-standards`가 PM 전용 경로"라는 이전 판단은 확인 부족이었다. 공식 문서(`docs/anthropic/agents/sub-agents.md:531`, 이 라운드에 복원된 미러) — "Subagents can still invoke unlisted project, user, and plugin skills through the Skill tool". `Skill` 도구를 가진 서브에이전트(21종 전부)는 어느 agents/*.md도 참조하지 않는 스킬도 스스로 찾아 열 수 있다 — "참조 0건 = PM 전용"이 아니었다. `SKILL.md:122`와 `scripts/check-pm-orchestration-block.mjs`(82·105행 `nextAction` 문자열)가 지시하던 `AskUserQuestion` 직접 호출을 "PM이 실행했다면 직접 묻고, 서브에이전트가 실행했다면 PM에 반환"으로 분기 처리. 스크립트 실제 실행(no-marker·declined 케이스)으로 JSON 유효성 재확인.
 
-병합·push는 사용자 승인 후 진행.
+## 병합 완료 (2026-08-24, 로컬 `main`, unpushed)
+
+이 시점까지의 전체 라운드(6건 원 백로그 + 15줄 정정 + 이력표기 4영역 + 이번 3건)가 로컬 `main`에 순차 병합됐다(`67d8406`→`2fe8423`). `check-assets` ERROR 0·WARN 18 기준선을 전 구간 유지. origin push는 별도 승인 대기.
 - **처분 (2026-08-24 사용자 판정)**: 대상이 에이전트 2종+스킬 3종이라 trainer 위임 라운드가 필요하다 → **백로그**. 변경 동결 하에서 별도 승인 시 착수.
