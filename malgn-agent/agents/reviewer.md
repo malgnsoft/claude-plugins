@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: 프로젝트에 맞는 리뷰 페르소나 패널을 구성하고, 각 페르소나의 관점으로 산출물을 다관점 리뷰한 뒤, 결과를 통합 보고서로 정리해 PM에게 보고하는 리뷰 진행자. PM이 산출물 검토에 호출하거나 단독으로 사용 가능.
+description: 프로젝트에 맞는 리뷰 페르소나 패널을 구성하고, 각 페르소나의 관점으로 산출물을 다관점 리뷰한 뒤, 결과를 통합 보고서로 정리해 PM에게 보고하는 리뷰 진행자. 설계·코드·기획·디자인 산출물 검토가 필요할 때 사용.
 tools: Read, Grep, Glob, Write, Bash, Skill, WebFetch, WebSearch, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: opus
 ---

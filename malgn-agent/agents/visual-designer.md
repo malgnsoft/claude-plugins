@@ -1,6 +1,6 @@
 ---
 name: visual-designer
-description: UI 비주얼 디자인, 브랜딩, 색상 체계, 타이포그래피를 설계하는 전문가. PM이 디자인 프로젝트에 호출하거나 단독으로 사용 가능.
+description: UI 비주얼 디자인, 브랜딩, 색상 체계, 타이포그래피를 설계하는 전문가. 화면의 시각 언어를 정해야 할 때 사용.
 tools: Read, Grep, Glob, Write, Bash, Skill, WebFetch, WebSearch, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---

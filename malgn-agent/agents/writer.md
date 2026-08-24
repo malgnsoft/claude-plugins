@@ -1,6 +1,6 @@
 ---
 name: writer
-description: 제안서, 보고서, 기술 문서 등 비즈니스 문서를 전문적으로 작성하는 전문가. PM이 문서 작성 업무에 호출하거나 단독으로 사용 가능.
+description: 제안서, 보고서, 기술 문서 등 비즈니스 문서를 전문적으로 작성하는 전문가. 빈 문서에서 본문을 처음부터 써야 할 때 사용.
 tools: Read, Grep, Glob, Write, Skill, WebFetch, WebSearch, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---
