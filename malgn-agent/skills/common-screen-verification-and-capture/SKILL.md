@@ -47,7 +47,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" http://localhost:9000 sidebar.png -
 2. 로그인을 1회만 수행해 세션을 프로젝트 로컬 `e2e/.auth/user.json`에 저장한다(전역 경로 아님 — 프로젝트끼리 세션이 섞이지 않는다).
 3. 인증이 필요한 화면을 검증할 때는 그 화면을 이 storageState 기반 E2E 테스트 안에서 `page.screenshot()`으로 함께 캡처하거나, 별도 스크립트에서 `browser.newContext({ storageState: 'e2e/.auth/user.json' })`으로 그 세션을 직접 로드해 재사용한다. `capture.mjs` 자신은 이 옵션을 플래그로 내장하지 않는다 — 향후 확장 시 이 표준 포맷을 그대로 소비하면 된다(지금은 없음, 과장 금지).
 
-관리: 세션 파일(`e2e/.auth/`)은 `.gitignore`에 등록해 커밋하지 않는다. 과거의 `~/.claude/tools/auth/<host>.json` 전역 캐시 방식은 폐기됐다 — 프로젝트 격리는 각 프로젝트 repo 경로 자체가 보장한다.
+관리: 세션 파일(`e2e/.auth/`)은 `.gitignore`에 등록해 커밋하지 않는다. 프로젝트 격리는 전역 캐시가 아니라 각 프로젝트 repo 경로 자체가 보장한다.
 
 ## Core Principles
 
