@@ -3,9 +3,13 @@
  * check-status-size.mjs
  *
  * Skill `project-standards` §3이 요구하는 STATUS.md 바이트 상한(기본 3,000B)을 기계적으로 판정한다.
- * SessionStart 훅이 STATUS.md를 매 세션 통째로 주입하므로, 여기서 늘어난 1줄은 앞으로 열리는
- * 모든 세션에 곱해져 물린다. 토큰은 세션에서 셀 수 없지만 바이트는 셀 수 있어 상한을 바이트로 잡는다
+ * SessionStart 훅이 매 세션 STATUS.md를 주입하므로, 여기서 늘어난 1줄은 앞으로 열리는 모든 세션에
+ * 곱해져 물린다. 토큰은 세션에서 셀 수 없지만 바이트는 셀 수 있어 상한을 바이트로 잡는다
  * (한글은 UTF-8 3바이트/글자이고 토큰당 1글자를 넘지 않으므로, 3,000B면 전부 한글이어도 1,000토큰 안에 들어온다).
+ *
+ * 훅에도 자체 상한이 있지만(hooks/sessionstart-context.mjs: 기본 12,000B를 넘으면 줄 경계에서 잘라
+ * 앞부분만 주입) 그것은 폭주를 막는 안전선이지 목표가 아니다. 이 스크립트의 3,000B가 지켜야 할 선이고,
+ * 훅 상한에 걸릴 만큼 커졌다면 이미 한참 늦은 상태다.
  *
  * STATUS.md는 `.gitignore` 대상(직원별 로컬 캐시)이라 CI가 대신 잡아주지 못한다 — 고친 사람이
  * 그 자리에서 이 스크립트를 돌리는 것이 유일한 게이트다.
@@ -19,7 +23,9 @@
  *
  * 인자·옵션:
  *   projectRoot    STATUS.md가 있는 프로젝트 루트. 기본값 process.cwd().
- *   --limit N      바이트 상한. 기본 3000. 환경변수 STATUS_MAX_BYTES로도 지정 가능(옵션이 우선).
+ *   --limit N      바이트 상한. 기본 3000. 환경변수 STATUS_SIZE_GATE_BYTES로도 지정 가능(옵션이 우선).
+ *                  훅의 주입 절단 상한(MALGN_STATUS_MAX_BYTES)과는 다른 값이다 — 이름을 비슷하게 두면
+ *                  서로 바꿔 설정해도 아무도 눈치채지 못하므로 접두어와 낱말을 모두 다르게 잡는다.
  *   --require      STATUS.md가 없을 때도 실패(exit 1)로 취급한다. 기본은 SKIP(exit 0).
  *   --format       text(기본) | json — json은 판정 결과를 그대로 출력해 후속 자동화에서 파싱한다.
  *
@@ -50,7 +56,7 @@ function printHelp() {
   ${SELF} [projectRoot] [--limit N] [--require] [--format text|json]
 
   projectRoot    STATUS.md가 있는 프로젝트 루트 (기본: 현재 작업 디렉터리)
-  --limit N      바이트 상한 (기본 ${DEFAULT_LIMIT}, 환경변수 STATUS_MAX_BYTES도 인식)
+  --limit N      바이트 상한 (기본 ${DEFAULT_LIMIT}, 환경변수 STATUS_SIZE_GATE_BYTES도 인식)
   --require      STATUS.md가 없으면 실패로 취급 (기본은 SKIP)
   --format       text | json (기본 text)
 
@@ -100,7 +106,7 @@ function parseArgs(argv) {
   }
 
   if (opts.limit === null) {
-    const envLimit = Number(process.env.STATUS_MAX_BYTES);
+    const envLimit = Number(process.env.STATUS_SIZE_GATE_BYTES);
     opts.limit = Number.isFinite(envLimit) && envLimit > 0 ? envLimit : DEFAULT_LIMIT;
   }
   opts.root = path.resolve(opts.root ?? process.cwd());
@@ -137,9 +143,16 @@ try {
   if (err && err.code === 'ENOENT') {
     // STATUS.md는 .gitignore 대상(직원별 로컬 파일)이다. 없는 환경(새 클론·CI·미초기화 폴더)에서는
     // 검사할 대상이 없는 것이지 실패가 아니다. 다만 경로를 찍어 "엉뚱한 디렉터리에서 실행"을 구분한다.
-    const result = { status: 'skip', path: target, reason: 'STATUS.md 없음' };
-    if (opts.format === 'json') console.log(JSON.stringify(result, null, 2));
-    else {
+    // --require가 켜져 있으면 "없음"이 곧 실패다 — 종료코드만 1로 바꾸고 화면에는 SKIP이라고
+    // 적으면 읽는 사람이 통과로 오해한다. 표기와 종료코드를 같이 뒤집는다.
+    const status = opts.require ? 'fail' : 'skip';
+    if (opts.format === 'json') {
+      console.log(JSON.stringify({ status, path: target, reason: 'STATUS.md 없음' }, null, 2));
+    } else if (opts.require) {
+      console.error(`FAIL  STATUS.md 없음 — 반드시 있어야 하는 자리다`);
+      console.error(`      찾아본 경로: ${target}`);
+      console.error(`      실행 위치(cwd)가 맞는지, 프로젝트가 초기화됐는지 확인할 것.`);
+    } else {
       console.log(`SKIP  STATUS.md 없음 — 검사 대상 없음`);
       console.log(`      찾아본 경로: ${target}`);
       console.log(`      이 프로젝트에 STATUS.md가 있어야 한다면 실행 위치(cwd)를 확인할 것.`);

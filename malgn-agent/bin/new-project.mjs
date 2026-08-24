@@ -201,7 +201,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 <!-- 구조 드리프트 대조: .claude/doc-drift.json + \`pnpm run check-docs\`. 전역 SessionStart 훅이 세션 시작 시 자동 경고. -->
 ${pmBlockSection}
 ## 새 세션 부트스트랩 (읽기 순서 = 토큰 예산)
-- **L0 (자동 주입):** \`STATUS.md\`(라이브 상태, **3,000바이트 이내 유지** — 토큰은 세션에서 셀 수 없어 지킬 수단이 없다. 바이트는 \`wc -c STATUS.md\`로 그 자리에서 센다(Windows PowerShell은 \`(Get-Item STATUS.md).Length\`); 3,000바이트면 전부 한글이어도 1,000토큰 안에 들어온다) + 이 \`CLAUDE.md\`(구조·규칙). → 대부분의 경우 이것만으로 충분.
+- **L0 (자동 주입):** \`STATUS.md\`(라이브 상태, **3,000바이트 이내 유지** — 토큰은 세션에서 셀 수 없어 지킬 수단이 없지만 바이트는 셀 수 있다. 3,000바이트면 전부 한글이어도 1,000토큰 안에 들어온다. 고친 직후 크기를 검사한다 — 검사 커맨드는 malgn-agent의 \`project-standards\` 스킬 §3이 정본이고, 세션에 "STATUS.md 크기 확인해줘"라고 요청하면 그 스킬이 실행한다) + 이 \`CLAUDE.md\`(구조·규칙). → 대부분의 경우 이것만으로 충분.
 - **L1 (필요할 때만 호출):** malgnai-hub \`project_get_context\`(project_id) 등 — L0로 충분하면 호출하지 않는다. 불필요한 호출은 토큰 낭비.
 - **L2 (깊은 작업만):** \`docs/README.md\` 지도 → 필요한 문서만.
 
@@ -302,7 +302,7 @@ if (gitignoreTouched) console.log('   .gitignore에 STATUS.md 등록(git 추적 
 console.log('\n다음 단계:')
 console.log(useHere ? '  1. pnpm install' : `  1. cd ${root} && pnpm install`)
 console.log('  2. malgnai-hub project_bootstrap 호출 → 응답의 provider/project_id/repositoryKey를 STATUS.md frontmatter의 provider/project_id/repository_key에 채워 넣는다(repository_id/web_url은 응답에 포함되어도 저장하지 않는다).')
-console.log('  3. STATUS.md는 3,000바이트 이내로 유지하고(토큰은 세션에서 셀 수 없다 — `wc -c STATUS.md`, Windows PowerShell은 `(Get-Item STATUS.md).Length`), 재작성은 6가지 트리거(중요 작업 완료/WBS 단계변경/중요 설계결정/blocker 발생·해결/세션종료/context compact 직전)로 제한한다 — 평범한 진행 중에는 건드리지 않는다.')
+console.log('  3. STATUS.md는 3,000바이트 이내로 유지하고(토큰은 세션에서 셀 수 없어 바이트로 잰다 — 검사 커맨드는 project-standards 스킬 §3이 정본이다), 재작성은 6가지 트리거(중요 작업 완료/WBS 단계변경/중요 설계결정/blocker 발생·해결/세션종료/context compact 직전)로 제한한다 — 평범한 진행 중에는 건드리지 않는다.')
 console.log('  4. STATUS.md는 .gitignore에 등록되어 git에 커밋되지 않는다(개인 로컬 캐시) — 팀과 공유할 내용은 malgnai-hub(work_record/decision_record/issue_record)에 남긴다.')
 console.log('  5. PM 행동규율(@import)이 걸려 있다 — 다음 세션(또는 재시작) 시 외부 파일 승인 다이얼로그가 뜰 수 있다, 반드시 승인할 것. 나중에 마켓플레이스 별칭 변경 등으로 재확인이 필요하면 project-standards 스킬에 "PM 행동규율 다시 확인해줘"로 요청한다(매 세션 자동 점검 아님).')
 console.log('  6. 구조 잡히면 .claude/doc-drift.json 의 checks 채우고 `pnpm run check-docs`(문서 드리프트 + PM 블록 @import 상태를 함께 점검 — 자동 세션 점검은 STATUS.md/doc-drift만 해당, PM 블록은 수동 점검만 있음)')
