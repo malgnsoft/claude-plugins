@@ -32,3 +32,4 @@ reviewer-persona-panel-standard §5 표준 형식 — 절차 분해표 + 외부 
 
 ## 적용 이력 (Application Log)
 - 2026-08-23 / target_id `bin-script-reach-path` / 1차(최초) — 역할개념 수준 재사용(§2·§5는 직전 vue-zero 라운드에 고정돼 문자 그대로는 적용 불가, 2026-08-10 RV-002 선례와 동일 처리). "이 줄을 그대로 쳐서 지금 실행되는가"만 봤다. 외부 사실은 기억이 아니라 공식문서 원문 재조회로 확인(`plugins-reference`의 치환 컨텍스트 5행 표, bin/ PATH 등재 문구, 따옴표 권고문). 최대 지적: 정본 커맨드가 무따옴표라 공백 포함 경로에서 `MODULE_NOT_FOUND`로 회귀 — scratchpad에서 리터럴 경로로 직접 재현(RV-002, Major). Windows 백슬래시 건은 재현 불가라 추정으로 표기.
+- 2026-08-24 / target_id `status-size-check` / 1차(최초) — 역할개념 수준 재사용. "이 줄을 그대로 쳐서 지금 실행되는가"만 봤다. SKILL.md의 커맨드가 §1-1 정본 형태(따옴표 포함)와 문자 단위로 일치함을 원문 대조로 확인, 공백 포함 경로(`space dir`)에서 실행 성공 재현. 최대 지적: 신규 환경변수 `STATUS_MAX_BYTES`가 같은 파일을 다루는 기존 유일 선례 `MALGN_STATUS_MAX_BYTES`와 접두어만 다르고 의미는 다름(RV-004). 스캐폴더가 여전히 `wc -c`를 가르쳐 신규 프로젝트에는 이 명령이 도달하지 않음(RV-003).

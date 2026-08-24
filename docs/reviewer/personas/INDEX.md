@@ -8,19 +8,19 @@
 |---|---|---|---|---|
 | persona-skeptical-verification-architect.md | 설계 문서 내부 근거가 독립적 증거인지 의심하는 회의적 검증가 | 수렴 | 2026-08-09 | pm-orchestration-block-propagation / 1~2차 |
 | persona-ops-maintainability-realist.md | "6개월 후에도 살아있는가"를 묻는 운영 현실주의자 | 수렴 | 2026-08-09 | pm-orchestration-block-propagation / 1~2차 |
-| persona-zero-based-redesigner.md | 구조 자체(훅+스킬 조합)가 최선인지, 더 단순하고 이미 검증된 대안이 있는지 의심하는 발산형 | 발산 | 2026-08-09 | spec-audit / 1차 (직전: pm-orchestration-block-propagation / 1~2차) |
+| persona-zero-based-redesigner.md | 구조 자체(훅+스킬 조합)가 최선인지, 더 단순하고 이미 검증된 대안이 있는지 의심하는 발산형 | 발산 | 2026-08-09 | pm-approval-gate-subagent / 1차 (직전: spec-audit / 1차) |
 | persona-hook-execution-safety-verifier.md | 전역 자동실행 코드가 자기보고가 아니라 실제 실행 결과(다양한 상태 재현)로 안전한지 검증하는 실행 안전성 검증가 | 수렴 | 2026-08-10 | spec-audit / 1차 (직전: pm-orchestration-block-propagation / 3차) |
 | persona-mechanism-zero-based-challenger.md | 여러 요구사항을 만족시키려 겹겹이 쌓은 다중 레이어 구조가 정말 필요한지, 더 단순한 단일 채널로 같은 효과를 낼 수 있는지 의심하는 발산형 | 발산 | 2026-08-10 | pm-orchestration-block-propagation / 3차 |
 | persona-ops-drift-realist.md | 전사 배포 후 다양한 로컬 환경에서 새로 인정된 리스크 상태(승인대기·거절 등)가 사용자에게 감지 가능한가(조용한 열화로 남지 않는가)를 묻는 운영 현실주의자 | 수렴 | 2026-08-10 | pm-orchestration-block-propagation / 3차 |
-| persona-field-executability-officer.md | 지시를 읽고 지금 당장 실행 가능한 구체 절차인지(막연한 "확인하세요" 선언에 그치지 않는지) 보는 현장 실행가능성 검사관 | 수렴 | 2026-08-10 | bin-script-reach-path / 1차 (직전: frontend-dev-vue-zero-scope / 1차) |
+| persona-field-executability-officer.md | 지시를 읽고 지금 당장 실행 가능한 구체 절차인지(막연한 "확인하세요" 선언에 그치지 않는지) 보는 현장 실행가능성 검사관 | 수렴 | 2026-08-10 | status-size-check / 1차 (직전: bin-script-reach-path / 1차 (직전: frontend-dev-vue-zero-scope / 1차) |
 | persona-frontend-scope-consistency-auditor.md | 규칙을 조건부로 좁히는 리팩터링이 모든 절에 예외 없이 전부 반영됐는지(부분 조건화가 남아 새지 않는지) 감사하는 정합성 감사관 | 수렴 | 2026-08-10 | frontend-dev-vue-zero-scope / 1차 |
 | persona-vue-zero-regression-guardian.md | 다른 사용자/스택 배려를 명분으로 자신이 의존하는 기존 규칙이 실수로 깎이거나 도달 불가능해지지 않는지 보는 현직 사용자 관점의 회귀 파수꾼 | 수렴 | 2026-08-10 | frontend-dev-vue-zero-scope / 1차 |
 | persona-zero-based-md-restructurer.md | 조건부 태그를 문서 곳곳에 흩뿌리는 구조 자체가 대상(스택 등)이 늘어나도 유지보수 가능한지 의심하는 정보구조 설계자(발산형) | 발산 | 2026-08-10 | frontend-dev-vue-zero-scope / 1차 |
 | persona-privacy-leakage-auditor.md | 이 산출물이 회사 채널·중앙 저장소에 그대로 공유되면 무엇이 새는지 실제로 확인하는 개인정보·유출 감사관 | 수렴 | 2026-08-10 | token-usage-collection-design-2026-08-19 / 3차 (직전: 2차, 1차, token-usage-diagnosis-skill / 1차) |
-| persona-script-skill-consistency-auditor.md | 문서가 서술하는 약속(옵션·임계값·근거)과 코드 구현이 실제로 정확히 일치하는지 한 줄씩 대조하는 정합성 감사관 | 수렴 | 2026-08-10 | spec-audit / 1차 (직전: bin-script-reach-path / 1차 (직전: token-usage-collection-design-2026-08-19 / 3차)) |
+| persona-script-skill-consistency-auditor.md | 문서가 서술하는 약속(옵션·임계값·근거)과 코드 구현이 실제로 정확히 일치하는지 한 줄씩 대조하는 정합성 감사관 | 수렴 | 2026-08-10 | pm-approval-gate-subagent / 1차 (직전: spec-audit / 1차) |
 | persona-self-service-scope-challenger.md | 조직 차원 문제로 시작한 조사가 개인용 셀프서비스 도구로 축소(scope reduction)된 것은 아닌지 의심하는 발산형 | 발산 | 2026-08-10 | token-usage-diagnosis-skill / 1차 |
 | persona-verifiable-claim-discipline-auditor.md | claimed(해석)와 verified(스크립트 산출)의 구분이 문서 전 지점에서 실제로 지켜지는지(계산하지 않은 숫자를 지어내지 않는지) 보는 검증가능성 감사관 | 수렴 | 2026-08-10 | token-usage-diagnosis-skill / 1차 |
-| persona-enforcement-gap-auditor.md | 원칙 문장이 체크리스트/영속 필드로 강제 가능한지, 아니면 자기판단에 맡겨진 서술인지 가르는 강제력 격차 감사관 | 수렴 | 2026-08-10 | spec-audit / 1차 (직전: bin-script-reach-path / 1차 (직전: reviewer-repeat-review-reduction / 1차)) |
+| persona-enforcement-gap-auditor.md | 원칙 문장이 체크리스트/영속 필드로 강제 가능한지, 아니면 자기판단에 맡겨진 서술인지 가르는 강제력 격차 감사관 | 수렴 | 2026-08-10 | pm-approval-gate-subagent / 1차 (직전: spec-audit / 1차) |
 | persona-mechanism-longevity-realist.md | 새 프로세스 장치(INDEX.md 등)가 다음 라운드·동시세션 환경에서도 실제로 유지되는가를 묻는 운영 현실주의자 | 수렴 | 2026-08-10 | reviewer-repeat-review-reduction / 1차 |
 | persona-process-mechanism-zero-based-challenger.md | 도입한 메커니즘 전체가 문제 크기에 비례하는지, 더 단순한 개입(링크 필수 포함 등)으로 같은 효과를 낼 수 있는지 의심하는 발산형 | 발산 | 2026-08-10 | reviewer-repeat-review-reduction / 1차 |
 | persona-mcp-oauth-security-auditor.md | OAuth/PKCE/DCR 설계가 토큰 탈취뿐 아니라 컨센트 피싱·영구 약한경로까지 실제로 막는지 공격자 시점으로 재시뮬레이션하는 보안 감사관 | 수렴 | 2026-08-11 | malgnai-hub-oauth-device-auth-design / 1차 |
@@ -31,8 +31,8 @@
 | persona-doc-table-source-consistency-auditor.md | 요약 표가 정본(각 에이전트 MD) 산출물 경로를 정확히 압축했는지 원문과 대조하는 정합성 감사관 | 수렴 | 2026-08-12 | project-orchestration-skill-outputmap / 1차 |
 | persona-telemetry-collection-necessity-challenger.md | 수집 방식(스키마·인증)이 안전한가와 별개로, 애초에 이 정보를 자동·주기적으로 원격에 보내야 하는가(수동 옵트인 등 더 단순한 대안으로 같은 목적 달성 가능한가)를 묻는 발산형 | 발산 | 2026-08-19 | token-usage-collection-design-2026-08-19 / 3차 (직전: 2차, 1차) |
 | persona-unattended-agent-runtime-safety-auditor.md | OS 스케줄러(launchd/schtasks)가 구동하는 무인 백그라운드 프로세스가 크래시 복원력·진단 채널·자원 성장 관점에서 장기간 안전한지 보는 무인 실행 안전성 감사관 | 수렴 | 2026-08-19 | token-usage-collection-design-2026-08-19 / 3차 |
-| persona-semantic-force-preservation-auditor.md | 삭제·치환 리팩터링 후 규칙의 경계·강제력이 조용히 약해지지 않았는지 원문과 한 줄씩 대조하는 의미강도 감사관 | 수렴 | 2026-08-22 | spec-audit / 1차 (직전: bin-script-reach-path / 1차 (직전: knowledge-dead-skill-refs / 1차)) |
-| persona-spec-implementation-conformance-auditor.md | 명세를 계약서, 커밋을 납품물로 놓고 조항을 1:1로 대조하는 명세-구현 적합성 감사관 | 수렴 | 2026-08-22 | spec-audit / 1차 (직전: lesson-id-removal / 1차) |
+| persona-semantic-force-preservation-auditor.md | 삭제·치환 리팩터링 후 규칙의 경계·강제력이 조용히 약해지지 않았는지 원문과 한 줄씩 대조하는 의미강도 감사관 | 수렴 | 2026-08-22 | pm-approval-gate-subagent / 1차 (직전: spec-audit / 1차) |
+| persona-spec-implementation-conformance-auditor.md | 명세를 계약서, 커밋을 납품물로 놓고 조항을 1:1로 대조하는 명세-구현 적합성 감사관 | 수렴 | 2026-08-22 | pm-approval-gate-subagent / 1차 (직전: spec-audit / 1차) |
 | persona-dead-reference-scope-challenger.md | 문제 스코프를 "형태"로 정의한 것이 실제 판정 기준(조회 가능성)과 어긋나지 않는지, 제외 조항의 단정을 실측으로 반증하는 발산형 | 발산 | 2026-08-22 | bin-script-reach-path / 1차 (직전: knowledge-dead-skill-refs / 1차) |
 
 > **알려진 중복 역할개념 (§4.2 적용 이력 예시로 처리됨, 병합·삭제는 이번 스코프 밖)**:
@@ -58,6 +58,12 @@
 > **2026-08-23 bin-script-reach-path 리뷰**: 신규 target_id(최초 리뷰)이나 착수 전 이 INDEX를 스크리닝함. **신규 페르소나 0건 — 5개 전부 재사용.** 대상은 번들 `bin/` 스크립트 실행 지시를 `node ${CLAUDE_PLUGIN_ROOT}/bin/<스크립트>.mjs` 한 갈래로 통일한 3커밋(21파일). 재사용 판정: `persona-script-skill-consistency-auditor.md`(문서 약속 ↔ 코드 실측 대조 → 문서 커맨드 ↔ 런타임 usage 문자열 대조로 동형), `persona-semantic-force-preservation-auditor.md`(치환 후에도 같은 행동인가 → 31건 치환 검증), `persona-enforcement-gap-auditor.md`(원칙이 게이트로 강제되는가 → 린터 스코프·규약 도달성), `persona-field-executability-officer.md`(지금 당장 칠 수 있는 명령인가 → 따옴표·공백 경로 재현), 발산형은 `persona-dead-reference-scope-challenger.md`(탐지 조건을 형태로 잡은 것과 목적 기준의 간극 → 린터 `bin/`·`hooks/` 제외 조항 실측 반증). 5개 모두 §5 참고파일이 직전 라운드 대상에 고정돼 **역할개념 수준으로만** 적용(2026-08-10 RV-002 선례와 동일). 판정 🟡 Amber(Critical 0 / Major 5 / Minor 4 / Nit 1 / Rethink 2 + 범위 밖 결함 1). 상세: `docs/reviewer/review-bin-script-reach-path-2026-08-23.md`.
 
 > **2026-08-24 spec-audit 리뷰(배포 직전 게이트)**: 신규 target_id(최초 리뷰)이나 착수 전 이 INDEX를 스크리닝함. **신규 페르소나 0건 — 6개 전부 재사용.** 대상은 앤트로픽 공식문서 대조 감사에서 나온 8건을 일괄 수리한 12커밋(40파일, +1,395/-487). 재사용 판정: `persona-semantic-force-preservation-auditor.md`(리팩터 후 강제력이 조용히 약해졌는가 → 상속→허용목록 전환으로 사라진 능력), `persona-spec-implementation-conformance-auditor.md`(계약서↔납품물 1:1 대조 → 폐지 스킬 283줄의 흡수 여부), `persona-hook-execution-safety-verifier.md`(자기보고가 아니라 실제 실행 결과 → 훅 2종에 깨진 입력 17종 투입), `persona-script-skill-consistency-auditor.md`(문서 약속↔실물 실측 → 새 README·CHANGELOG·CI 주석의 개수·경로·명령어), `persona-enforcement-gap-auditor.md`(원칙이 게이트로 강제되는가 → 새 린터 규칙·CI를 양성 대조군으로 검증), 발산형은 `persona-zero-based-redesigner.md`(허용목록 복제 구조 자체가 최선인가 — INDEX의 "중복 역할개념" 안내에 따라 `persona-mechanism-zero-based-challenger.md` 대신 먼저 생성된 쪽을 재사용). 6개 모두 §5 참고파일이 직전 라운드 대상에 고정돼 **역할개념 수준으로만** 적용(2026-08-10 RV-002 선례와 동일). 판정 🔴 Red(Critical 1 / Major 4 / Minor 5 / Nit 3 / Rethink 2 · 기각 3). 상세: `docs/reviewer/review-spec-audit-2026-08-24.md`.
+
+
+
+> **2026-08-24 status-size-check 리뷰(trainer 초안 검토)**: 신규 target_id(최초 리뷰)이나 착수 전 이 INDEX를 스크리닝함. **신규 페르소나 0건 — 4개 전부 재사용.** 대상은 `malgn-agent/bin/check-status-size.mjs` 신설 + `skills/project-standards/SKILL.md` 2곳 갱신(1커밋, 2파일, +200/-2). 재사용 판정: `persona-script-skill-consistency-auditor.md`(문서 약속 ↔ 실행 결과 대조 → SKILL.md 서술을 15개 실행 시나리오로 검증), `persona-field-executability-officer.md`(지금 그대로 칠 수 있는 명령인가 → §1-1 커맨드 표기·공백 경로·환경변수 이름), `persona-enforcement-gap-auditor.md`(검사 수단이 실제 게이트로 물리는가 → 체크리스트 `--require` 누락·스캐폴더 미반영), 발산형은 `persona-zero-based-redesigner.md`(별도 스크립트 구조 자체가 최선인가 — 이미 STATUS.md를 읽는 SessionStart 훅 대안). 4개 모두 §5 참고파일이 직전 라운드 대상에 고정돼 **역할개념 수준으로만** 적용(2026-08-10 RV-002 선례와 동일). 판정 🟡 Amber(Critical 0 / Major 4 / Minor 3 / Nit 2 / Rethink 2 · 기각 3). 상세: `docs/reviewer/review-status-size-check-2026-08-24.md`.
+
+> **2026-08-24 pm-approval-gate-subagent 리뷰(Sensitive 풀패널)**: 신규 target_id(최초 리뷰)이나 착수 전 이 INDEX를 스크리닝함. **신규 페르소나 0건 — 5개 전부 재사용.** 대상은 `agents/pm.md` 1파일(+12/-4, 커밋 `dd31fc3`) — PM이 서브에이전트로 실행돼 `AskUserQuestion`이 없을 때 승인 게이트가 조용히 실효되는 구멍을 막는 규칙 신설. 재사용 판정: `persona-spec-implementation-conformance-auditor.md`(요구 4지점 ↔ diff 1:1 대조), `persona-semantic-force-preservation-auditor.md`(메인세션 기존 경로가 조용히 약해졌는가), `persona-enforcement-gap-auditor.md`(규칙이 실제로 발화·강제되는가), `persona-script-skill-consistency-auditor.md`(단정한 외부 도구 사실 ↔ 공식문서·타 파일 서술 대조), 발산형은 `persona-zero-based-redesigner.md`(불변량을 1파일에 박제하는 구조가 최선인가 — INDEX 중복 안내에 따라 `persona-mechanism-zero-based-challenger.md` 대신 먼저 생성된 쪽 재사용). 5개 모두 §5 참고파일이 직전 라운드 대상에 고정돼 **역할개념 수준으로만** 적용(2026-08-10 RV-002 선례와 동일). 판정 🟡 Amber(Critical 0 / Major 2 / Minor 4 / Nit 1 / Rethink 2 · 기각 1). 리뷰 결과는 호출자 지시에 따라 보고서 파일 없이 PM 응답 텍스트로 직접 반환(보고서 미작성).
 
 ## 유지 책임
 
