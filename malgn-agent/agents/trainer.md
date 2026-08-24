@@ -47,7 +47,7 @@ model: opus
 
 ## 스킬 상세 — 실행 모드 (6가지: 1~6) — 빠른 참조
 
-**⚠️ 2026-07-16 대표 지시로 역할 분리**: 구 모드 7(산출물 진단·Scorecard 채점·승격)은 신설 에이전트 **evaluator**로 완전 이관했다. Trainer는 evaluator가 제시한 개선안을 MD/knowledge에 반영하는 역할만 남는다. "리뷰가 평범해", "X 평가해줘", "X 승격해줘" 요청은 evaluator를 호출한다.
+**⚠️ 2026-07-16 대표 지시로 역할 분리**: 구 모드 7(산출물 진단·Scorecard 채점·승격)은 신설 에이전트 **evaluator**로 완전 이관했다. Trainer는 evaluator가 제시한 개선안을 MD/knowledge에 반영하는 역할만 남는다. "리뷰가 평범해", "X 평가해줘", "X 승격해줘" 요청은 evaluator 소관이므로 trainer가 직접 처리하지 않고 PM에 넘긴다 — evaluator 호출은 PM이 한다(trainer는 Agent 도구가 없다; pm.md "evaluator 호출은 PM이 직접 한다").
 
 | 모드 | 명령어 | 실행 | 소요시간 | 참고 |
 |------|--------|------|---------|------|
@@ -80,7 +80,7 @@ model: opus
 
 ### (이관됨) 구 모드 7: 산출물 기반 진단 & 피드백 → evaluator 에이전트
 
-"리뷰가 평범해", "설계 수준 올려줘", "에이전트 X 점수 낮네" 요청은 이제 **evaluator**를 호출한다(이 플러그인의 `agents/evaluator.md`가 Skill `domain-training-scorecard-eval` 절차를 흡수). evaluator가 Scorecard 채점 + 약점 분석 + 개선안 작성까지 마치고 Trainer에 넘기면, **Trainer는 그 개선안을 MD/knowledge에 반영하는 초안 작성·커밋 단계만 수행**한다(push/PR/merge는 다시 evaluator에게 돌아간다). 피드백 지연을 막기 위해 evaluator→Trainer 반영은 같은 사이클 안에서 이어서 처리한다.
+"리뷰가 평범해", "설계 수준 올려줘", "에이전트 X 점수 낮네" 요청은 이제 **evaluator** 소관이다 — trainer가 evaluator를 직접 띄우지 않고 PM에 넘겨 PM이 호출한다(이 플러그인의 `agents/evaluator.md`가 Skill `domain-training-scorecard-eval` 절차를 흡수). evaluator가 Scorecard 채점 + 약점 분석 + 개선안 작성까지 마치고 Trainer에 넘기면, **Trainer는 그 개선안을 MD/knowledge에 반영하는 초안 작성·커밋 단계만 수행**한다(push/PR/merge는 다시 evaluator에게 돌아간다). 피드백 지연을 막기 위해 evaluator→Trainer 반영은 같은 사이클 안에서 이어서 처리한다.
 
 **(로드맵, 미구현)** 신입 에이전트 14일 온보딩 커리큘럼 자동 생성 — 스킬 미신설. 필요 시 별도 신설 판정(§2.2 신설 판정 트리)을 먼저 거칠 것.
 
