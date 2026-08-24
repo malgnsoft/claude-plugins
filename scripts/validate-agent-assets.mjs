@@ -556,6 +556,110 @@ function scanAbsolutePaths(relPath, body) {
   }
 }
 
+// ── 도구 도달성 검사 ─────────────────────────────────────────────────
+// 같은 사고가 두 번 났다: ① `Skill`이 12개 에이전트의 tools에서 빠져 스킬 참조 55건이 죽어
+// 있었다 ② 그걸 고치는 라운드가 `AskUserQuestion`을 21종 전부에서 빠뜨려 사람 승인 게이트를
+// 통째로 실행 불가로 만들었다. **두 번 다 이 린터는 ERROR 0 초록불이었다** — tools는 타입만
+// 검사받고 "본문이 시키는 도구가 그 목록에 있는가"는 아무도 안 봤다.
+//
+// 유효 도구 이름 목록. 출처는 Claude Code가 서브에이전트 frontmatter `tools`에서 받는 이름들이다
+// (세션의 도구 목록 · code.claude.com/docs/en/sub-agents). **버전에 따라 늘어난다.**
+// 갱신 방법: 새 도구가 생기면 여기 추가한다. 모르는 이름을 ERROR로 단정하지 않는 이유가 이것이다 —
+// 목록이 뒤처지면 멀쩡한 신규 도구가 결함으로 보고되므로, 미상은 WARN으로만 알린다.
+const KNOWN_TOOLS = new Set([
+  'Agent', 'Task', 'Bash', 'BashOutput', 'KillShell', 'Read', 'Edit', 'Write', 'NotebookEdit',
+  'Glob', 'Grep', 'WebFetch', 'WebSearch', 'TodoWrite', 'AskUserQuestion', 'Skill', 'ToolSearch',
+  'SlashCommand', 'ExitPlanMode', 'Artifact', 'Monitor', 'SendMessage', 'TaskStop',
+  'EnterWorktree', 'ExitWorktree', 'ListMcpResources', 'ReadMcpResource',
+]);
+
+// 평범한 낱말과 겹치는 도구 이름. 실측된 오탐이 전부 여기서 나왔다 — 제목 `# Architect Agent`,
+// `Agent MD 대상`, 영문구 "No Claim Without Artifact", 사용량 집계 설명의 `Task`.
+// 이 이름들은 조사 조건을 통과해도 WARN까지만 올린다.
+// 나머지(AskUserQuestion·TodoWrite·WebFetch…)는 합성 식별자라 산문에 우연히 나올 수 없으므로
+// ERROR로 올린다. **이 구분이 필요한 이유**: CI는 check-assets를 --strict 없이 돌려 WARN이
+// 종료 코드에 영향을 주지 않는다. 승인 게이트가 통째로 실행 불가가 된 사고를 WARN으로만 알리면
+// 초록불이 그대로라 같은 사고가 또 배포된다.
+const AMBIGUOUS_TOOL_WORDS = new Set([
+  'Agent', 'Task', 'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep', 'Skill', 'Artifact', 'Monitor',
+]);
+
+// 도구격 조사("…으로/로 한다", "… 도구를 사용")가 붙은 것만 지시로 본다. 위 오탐 넷은
+// 모두 뒤에 조사가 없어 이 한 조건에서 걸러진다.
+const TOOL_PARTICLE = '(?:으로|로|를\\s*(?:사용|활용|호출)|을\\s*(?:사용|활용|호출)|\\s*도구)';
+// `Read/ls/Glob으로`처럼 사슬 끝에만 조사가 붙는 형태가 흔하므로 사슬 전체를 한 덩어리로 받는다.
+const TOOL_TOKEN = '(?:`?[A-Za-z][A-Za-z]+`?)';
+const TOOL_CHAIN = new RegExp('((?:' + TOOL_TOKEN + '\\s*[/,·]\\s*)*' + TOOL_TOKEN + ')' + TOOL_PARTICLE, 'g');
+
+// 제3자 주어 필터. "**PM이** `AskUserQuestion`으로 승인받는다"는 그 에이전트에 대한 지시가
+// 아니다 — 실측상 reviewer·marketer·devops·frontend-dev 본문의 언급이 전부 이 형태다.
+// 도구 언급 **앞** 45자 안에 자기 아닌 주체의 주격("X이/가")이 있으면 그 문장의 행위자는 남이다.
+function toolMentionIsThirdParty(line, idx, selfName, subjects) {
+  const before = line.slice(Math.max(0, idx - 45), idx);
+  for (const s of subjects) {
+    if (s.toLowerCase() === selfName.toLowerCase()) continue;
+    if (new RegExp('(?:^|[^A-Za-z가-힣])' + s + '(?:이|가)(?![A-Za-z가-힣])').test(before)) return s;
+  }
+  return null;
+}
+
+function checkToolReachability(relPath, selfName, data, body, subjects) {
+  // tools 키가 없으면 "전체 도구 허용"이므로 도달 불가가 성립하지 않는다.
+  if (typeof data.tools !== 'string' && !Array.isArray(data.tools)) return;
+  const listed = (Array.isArray(data.tools) ? data.tools : data.tools.split(','))
+    .map((s) => String(s).trim()).filter(Boolean);
+  // 전체 허용 와일드카드가 있으면 도달 불가가 성립하지 않는다 — 이 가드가 없으면 모든 지시가
+  // 도달 불가로 뜬다.
+  if (listed.includes('*')) return;
+  const allowed = new Set(listed);
+
+  // (C) 오타 검사. mcp 도구는 원격 서버 소유라 여기서 실재를 알 수 없으므로 형태만 본다.
+  for (const t of listed) {
+    if (t.startsWith('mcp__') || t === '*') continue;
+    if (!KNOWN_TOOLS.has(t)) {
+      warn('AGENT_TOOL_UNKNOWN', relPath,
+        `tools의 '${t}'가 알려진 도구 이름이 아니다 — 오타면 그 지시는 조용히 실행 불가가 된다. ` +
+        '이름이 맞는데 이 WARN이 뜨면 신규 도구라는 뜻이니 이 스크립트의 KNOWN_TOOLS에 추가한다.');
+    }
+  }
+
+  const lines = stripFencedCode(body).split(/\r?\n/);
+  const reported = new Set();
+  const flag = (tool, line, code, why) => {
+    if (allowed.has(tool) || reported.has(tool + code)) return;
+    reported.add(tool + code);
+    const level = AMBIGUOUS_TOOL_WORDS.has(tool) && code !== 'AGENT_TOOL_SKILL_UNREACHABLE'
+      ? warn : error;
+    level(code, relPath,
+      `본문이 '${tool}'을(를) ${why} tools 허용목록에 없다 — 그 지시는 실행 불가다. ` +
+      `tools에 '${tool}'을 추가하거나, 그 지시를 본문에서 뺀다. (예: ${line.trim().slice(0, 90)})`);
+  };
+
+  for (const line of lines) {
+    // (A) ``Skill `name` `` 참조형 → Skill 도구 필요. 정밀도가 가장 높아 ERROR로 올린다.
+    //     주어 필터를 **걸지 않는다**: "PM이 위임 시 명시한 등급(참조: Skill `x`)"처럼 문장
+    //     주어가 남이어도, 그 포인터를 여는 것은 이 본문을 읽는 에이전트 자신이다.
+    const skillRef = /Skill\s+`[a-z0-9:-]+`/.exec(line);
+    if (skillRef) flag('Skill', line, 'AGENT_TOOL_SKILL_UNREACHABLE', '호출하라고 지시하는데');
+
+    // (B) 도구격 조사가 붙은 지시. 조사 휴리스틱이라 WARN으로 둔다.
+    for (const m of line.matchAll(TOOL_CHAIN)) {
+      for (const rawTok of m[1].split(/[/,·]/)) {
+        const tool = rawTok.trim().replace(/`/g, '');
+        if (!KNOWN_TOOLS.has(tool) || allowed.has(tool)) continue;
+        if (toolMentionIsThirdParty(line, m.index, selfName, subjects)) continue;
+        flag(tool, line, 'AGENT_TOOL_UNREACHABLE', '쓰라고 지시하는데');
+      }
+    }
+  }
+
+  // (A-2) frontmatter skills preload도 Skill 도구를 전제한다.
+  if (Array.isArray(data.skills) && data.skills.length > 0 && !allowed.has('Skill')) {
+    error('AGENT_TOOL_SKILL_UNREACHABLE', relPath,
+      `skills preload가 ${data.skills.length}건인데 tools에 'Skill'이 없다 — preload된 Skill을 호출할 수 없다.`);
+  }
+}
+
 function main() {
   const opts = parseArgs(process.argv.slice(2));
   const pluginRoot = path.join(REPO_ROOT, opts.plugin);
@@ -640,6 +744,8 @@ function main() {
     ? fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md')).sort()
     : [];
   const referencedSkills = new Set();
+  // 제3자 주어 후보: 다른 에이전트 이름 + 사람/PM 호칭. 도구 지시의 행위자를 가르는 데 쓴다.
+  const TOOL_SUBJECTS = [...agentFiles.map((f) => f.replace(/\.md$/, '')), 'PM', '사용자', '사람'];
   const sizes = [];
   const refCtx = { skillNames, knowledgeFiles, pluginRoot, referencedSkills };
 
@@ -717,6 +823,9 @@ function main() {
         warn('AGENT_SKILL_PRELOAD_MANY', rel, `skills preload ${data.skills.length}개 — startup 컨텍스트 비용. 상황별 Skill은 preload하지 않는다 (SPEC §7)`);
       }
     }
+
+    // 본문이 시키는 도구가 tools 허용목록에 있는가(역방향 검사)
+    checkToolReachability(rel, base, data, body, TOOL_SUBJECTS);
 
     // 본문 참조 검증: Skill `name` / knowledge/... 경로
     checkBodyReferences(rel, body, refCtx);
