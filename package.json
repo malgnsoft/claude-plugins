@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "check-docs": "node malgn-agent/hooks/doc-drift.mjs",
-    "check-assets": "node scripts/validate-agent-assets.mjs"
+    "check-assets": "node scripts/validate-agent-assets.mjs",
+    "check-status": "node scripts/check-status-size.mjs"
   },
   "devDependencies": {
     "js-yaml": "^5.3.0"

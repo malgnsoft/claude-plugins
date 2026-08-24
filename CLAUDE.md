@@ -12,6 +12,13 @@ This file provides guidance to Claude Code when working with code in this reposi
 - **L1 (필요 시 pull):** malgnai-hub `project_get_context` / `project_search_history`(projectId는 STATUS.md 상단 `malgnai_hub.project_id`).
 - **L2 (깊은 작업만):** `docs/README.md` 지도 → 필요한 문서만.
 
+**`STATUS.md`는 3,000바이트(≈1,000토큰) 이하로 유지한다 (2026-08-24 사용자 지시, 항구 규칙).**
+SessionStart 훅이 이 파일을 **매 세션 통째로 주입**하므로, 여기서 늘어난 1줄은 앞으로 열리는 모든 세션에 곱해져 물린다. **STATUS.md를 고친 직후 `pnpm run check-status`를 돌린다**(3,000B 초과 시 exit 1). 이 파일은 `.gitignore` 대상이라 CI가 대신 잡아주지 못하므로, 고친 사람이 그 자리에서 확인하는 것 말고는 게이트가 없다.
+- **바이트를 쓰는 이유**: 토큰은 세션에서 셀 수 없다. 한글은 UTF-8 3바이트/글자이고 토큰당 1글자를 넘지 않으므로, 3,000B면 전부 한글이어도 1,000토큰 안에 들어온다(ASCII는 바이트당 더 싸므로 섞일수록 여유가 생긴다).
+- **여기에 두는 것**: 현 운영 모드 한 줄 · 지금 열려 있는 작업 · 열린 이슈 제목 · 백로그 제목 · 다음 행동.
+- **여기에 두지 않는 것**: 규칙(→ 이 `CLAUDE.md`) · 지나간 라운드 서술(→ `docs/archive/`) · 결정·이슈 원문(→ malgnai-hub). 항목은 **제목 한 줄 + 포인터**로 적고 상세는 링크 뒤에 둔다.
+- 상한을 넘기면 새 내용을 줄이는 게 아니라 **오래된 항목을 아카이브로 내보내** 자리를 만든다.
+
 **필수 규율:** ①진행 상태는 `STATUS.md` 단일 소스(끝내기 전 갱신). ②주요 결정/이슈/교훈은 malgnai-hub에 기록(`decision_record`/`issue_record`/`work_record`). ③구조를 바꾸면 `.claude/doc-drift.json`과 아래 서술을 함께 갱신.
 
 **⚠️ 2026-08-19 provider 전환**: 이 프로젝트(claude-plugins) 자신의 기록 provider가 malgnai-mcp(로컬)에서 malgnai-hub(원격, projectId `01m0bw23fcqv0tet1z52a3nhcc`, repositoryKey `claude-plugins`)로 바뀌었다. 이 시점 이전 이력(결정/이슈/교훈)은 malgnai-mcp에만 남아 있으니, 옛 이력이 필요하면 malgnai-mcp `decision_list`/`memory_search`(project_id `e3c8eba1-7016-4c40-81fc-7d15cdcefd75`)로 별도 조회한다. 이 시점 이후 신규 기록은 malgnai-hub로만 남긴다.
@@ -29,7 +36,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 - **도구명·파라미터를 기억이나 기존 문서에서 베끼지 말고 실제 스키마를 확인하라.** 세션에서 hub 도구 스키마를 직접 열어볼 수 있다.
 - hub에 대응이 **없는** 도구를 절차의 실행 단계로 쓰지 않는다: `lesson_add`/`lesson_list`/`lesson_classify` · `memory_add`/`memory_search` · `command_add`(웹 승인큐) · `project_autonomy_*` · `agent_learning_log_add`(→ `agent_learning_record`) · `decision_add`/`issue_add`(→ `decision_record`/`issue_record`). 확인: `git grep -nE 'lesson_add|lesson_list|lesson_classify|memory_add|memory_search|command_add|project_autonomy' -- malgn-agent/`
-- **제품 본문에 식별자를 근거로 달지 않는다 (2026-08-22 사용자 지시, 항구 규칙).** 8자리 hex id(`lesson 5b55dd67` 류, mcp 발급분)든 26자 ULID(`01m0c9ck8y…`, hub 발급분)든 로컬 auto-memory 키든 실재하지 않는 커밋 해시든 마찬가지다 — 설치 직원은 어느 것도 열어볼 수 없다. **교훈의 실질은 id가 아니라 문장으로 적는다.** 날짜·경위·사유는 남기되 id는 붙이지 않는다.
+- **제품 본문에 식별자를 근거로 달지 않는다 (2026-08-22 사용자 지시, 항구 규칙).** 8자리 hex id(`lesson 5b55dd67` 류, mcp 발급분)든 26자 ULID(`01m0c9ck8y…`, hub 발급분)든 로컬 auto-memory 키든 실재하지 않는 커밋 해시든 마찬가지다 — 설치 직원은 어느 것도 열어볼 수 없다. **교훈의 실질은 id가 아니라 문장으로 적는다.** 사유는 남기되 id는 붙이지 않는다 — 날짜·경위 자체는 아래 [이력을 남기지 않는다] 규칙에 따라 제품 본문에서 뺀다.
   - 2026-08-22에 제품 전량 227건을 제거해 현재 **0건**이다(v1.7.3·v1.7.4, 명세 `docs/refactor/lesson-id-removal-spec.md`). 다시 유입되면 결함으로 다룬다.
   - 확인은 **백틱 앵커 없이** 한다 — 백틱을 앵커로 잡으면 코드 주석 안의 맨몸 id가 그대로 통과한다(2026-08-22 실증: `.md`를 다 지운 뒤에도 `bin/report-usage.mjs` 주석에 같은 ULID 2건이 살아 있었다):
     ```
@@ -38,6 +45,25 @@ This file provides guidance to Claude Code when working with code in this reposi
     ```
   - 스코프는 **형태가 아니라 목적**으로 잡는다 — "설치 직원이 조회할 수 있는가". 형태(hex·백틱·확장자)는 검색어일 뿐이다. 무언가를 스코프에서 **제외할 때야말로** 근거를 실물로 확인한다(제외 항목은 "괜찮다"는 도장을 받고 아무도 다시 안 본다 — 실제로 `commit 13bcd60`이 그렇게 살아남았다).
   - 만약 id가 **범위 한정자**로 쓰인 문장을 지우게 되면 먼저 서술형으로 치환한다(기계적으로 밀면 규칙이 무한정 열린다).
+
+## 제품 본문은 최신 상태만 담는다 — 이력을 남기지 않는다 (2026-08-24 사용자 지시, 항구 규칙)
+
+**`malgn-agent/`의 `agents/`·`skills/`·`knowledge/` 본문은 "지금 무엇이 참인가"만 적는다. "언제 바뀌었나 / 예전엔 어땠나"는 적지 않는다.**
+위 [식별자 금지] 규칙과 같은 이유의 확장이다 — 설치 직원은 우리 회의도, 우리 라운드도, 우리 커밋도 조회할 수 없다. 조회할 수 없는 근거는 근거가 아니고, 매 호출마다 물리는 상시 비용만 된다. 이력의 보관처는 `STATUS.md`·`docs/archive/`·malgnai-hub이지 제품 본문이 아니다.
+
+**빼는 것 (이력)**
+- 합의·결정 날짜 도장: `(2026-07-23 대표+7에이전트 교차토론 합의)`, `(2026-08-19 신설)`, `(2026-08-19 정정)`
+- 이관·폐기 경위: `(… 본문은 skills/X로 이관) 배경만 남음`, `구 모드 7은 evaluator로 이관됐다`, `구 knowledge/…는 폐기`
+- 버전·라운드·커밋 언급: `v1.7.x에서`, `직전 라운드에서`, 커밋 해시
+
+**남기는 것**
+- **규칙이 생긴 이유(실패 양상)는 남긴다 — 단, 시제를 현재형으로 바꾸고 날짜·주체·경위는 뺀다.** 이유를 지우면 에이전트가 규칙을 상황에 따라 흘려버린다.
+  - ❌ `(2026-08-19 정정, 판단 주체 이전 — 이전엔 frontend-dev가 착수 직전 스스로 판단했으나 "안 부르면 계속 안 불려짐" 실패가 반복됐음)`
+  - ✅ `(구현자가 착수 직전에 판단하면 안 부르고 넘어가는 일이 반복된다)`
+- **형식 예시 안의 날짜는 이력이 아니다** — `review-auth-module-2025-07-10.md`(파일명 규칙), `Viewport 1440×900, 2025-02-10`(캡처 기록 양식) 등은 그대로 둔다. 날짜 모양이라고 기계적으로 밀면 예시가 망가진다.
+- 외부 사실로서의 연도 표기(표준·규격 버전 등)는 대상이 아니다.
+
+**적용 범위**: 앞으로 새로 쓰거나 고치는 본문에 즉시 적용한다. 기존 잔존분(2026-08-24 실측: 날짜 표기 255줄 = agents 48·skills 62·knowledge 145, 이관/폐기 경위 서술 109줄, 최다 밀집은 `knowledge/README.md`)은 **변경 동결 중이라 백로그**다 — 사용자 승인 후 trainer에게 위임한다.
 
 ## 에이전트 업그레이드 원칙 (이 프로젝트의 중요원칙)
 **1순위는 성능, 2순위가 토큰 효율이다. 사이즈 축소는 목적이 아니라 수단일 뿐이다.**
@@ -78,6 +104,15 @@ This file provides guidance to Claude Code when working with code in this reposi
 **위임 지시서에는 설계를 쓰지 않는다.** "무엇이 참으로 남아야 하는가"(요구사항·수용 기준·불변량)만 쓰고, 방법과 문안은 trainer가 제안하고 PM이 검증한다. 검증 중에 PM이 설계를 바꾸지 않는다 — 되돌려보낸다.
 
 **리뷰 지적을 그대로 믿지 않는다.** reviewer/evaluator의 지적도 실물·사양 원문과 대조한 뒤 채택한다. 오탐이면 근거를 들어 기각하는 것이 PM의 일이다(2026-08-22 전례: hub 도구 스키마 원문 대조로 Major 1건 기각 — 지적이 "발명된 파라미터"라 한 것이 실재했다).
+
+
+### 위임 운영 규칙
+- **계획을 먼저 받는다.** 대상과 제약만 넘기면 전문 에이전트가 계획을 반환한다. 그 계획의 **채택은 사용자 또는 evaluator가 정한다 — PM 단독 결정 금지.** PM이 남기는 것: 의도 전달 · 실물 대조 검증 · 기록 · 순서.
+- **검증 사이클 중 설계 변경 금지.** 아이디어는 적어두고 사이클을 닫은 뒤 판단한다. 크기 초과는 사유서로 끝내고 그 자리에서 고치지 않는다.
+- **검증 강도는 등급 판정표를 따른다**(Skill `common-task-grading-and-verification-depth`). "문서만 바뀌었으니 패널 생략"은 **폐기된 규칙**이다 — 풀패널이 잡은 Critical 2건은 문서를 읽어서는 안 보이고 실행해야 보이는 결함이었다.
+- **evaluator·reviewer는 항상 병렬.**
+- **파일 목록·인용은 그 자리에서 grep·원문 재확인.** 기억을 재사용하면 지시서에 사실 오류가 섞인다.
+- **목표 KB를 제시하지 않는다**(사유서로 대신). **지시가 틀렸으면 실행 말고 보고**하게 한다. 기제를 바꿨으면 **도달 증명** — 실제 사용자에게 닿는지 실행으로 보이고, 못 하면 못 했다고 적는다.
 
 ## Project Overview
 claude-plugins — 맑은소프트 전 직원 배포용 클로드코드 플러그인 마켓플레이스이자, 그 핵심 플러그인 `malgn-agent`(공통 표준 에이전트·스킬·지식·훅)를 만들고 관리하는 프로젝트.
