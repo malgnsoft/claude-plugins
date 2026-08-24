@@ -14,8 +14,8 @@
 클로드코드를 실행한 뒤, 아래 두 명령을 차례로 입력합니다.
 
 ```
-/plugin marketplace add malgnsoft/claude-plugins
-/plugin install malgn-agent@malgnsoft-plugins
+claude plugin marketplace add malgnsoft/claude-plugins
+claude plugin install malgn-agent@malgnsoft-plugins
 ```
 
 설치 중 **malgnai-hub 디바이스 토큰**을 묻는 화면이 나오면 **아무것도 입력하지 말고
@@ -27,13 +27,10 @@ Enter만 누르세요.** 정상 설치에서는 비워두는 것이 맞습니다
 설치 확인:
 
 ```
-/plugin
+claude plugin list
 ```
 
 목록에 `malgn-agent`가 보이고 활성화되어 있으면 완료입니다.
-
-> 터미널에서 바로 하고 싶다면 동일한 작업을 `claude plugin marketplace add malgnsoft/claude-plugins`,
-> `claude plugin install malgn-agent@malgnsoft-plugins`로도 할 수 있습니다.
 
 ---
 
@@ -110,13 +107,13 @@ Enter만 누르세요.** 정상 설치에서는 비워두는 것이 맞습니다
 마켓플레이스를 새로 받아온 뒤 플러그인을 갱신합니다.
 
 ```
-/plugin marketplace update malgnsoft-plugins
-/plugin update malgn-agent
+claude plugin marketplace update malgnsoft-plugins
+claude plugin update malgn-agent
 ```
 
 **업데이트 후에는 클로드코드를 재시작해야 적용됩니다.**
 
-> 새 버전이 있는데도 갱신되지 않는 것 같으면 `/plugin`에서 현재 설치된 버전을
+> 새 버전이 있는데도 갱신되지 않는 것 같으면 `claude plugin list`에서 현재 설치된 버전을
 > 확인하고, 그래도 그대로면 dev@malgnsoft.com으로 알려주세요.
 
 ---
@@ -135,7 +132,7 @@ Enter만 누르세요.** 정상 설치에서는 비워두는 것이 맞습니다
 2. malgnai-hub 도구를 처음 쓰는 시점에 브라우저로 로그인 창이 열립니다.
 3. 사내 계정으로 로그인하고 접근을 승인하면 연결이 끝납니다.
 
-연결 상태는 `/mcp`로 확인할 수 있습니다.
+연결 상태는 `claude mcp list`로 확인할 수 있습니다.
 
 ### 디바이스 토큰 항목은 무엇인가요?
 
@@ -153,9 +150,9 @@ Enter만 누르세요.** 정상 설치에서는 비워두는 것이 맞습니다
 
 | 증상 | 확인할 것 |
 | --- | --- |
-| 설치했는데 에이전트가 안 보임 | 클로드코드를 재시작했는지, `/plugin`에서 활성화 상태인지 확인 |
-| 업데이트해도 그대로임 | `/plugin marketplace update`를 먼저 실행했는지 확인 후 재시작 |
-| malgnai-hub 도구가 실패함 | `/mcp`에서 연결·로그인 상태 확인. 로그인 창이 안 열리면 문의 |
+| 설치했는데 에이전트가 안 보임 | 클로드코드를 재시작했는지, `claude plugin list`에서 활성화 상태인지 확인 |
+| 업데이트해도 그대로임 | `claude plugin marketplace update`를 먼저 실행했는지 확인 후 재시작 |
+| malgnai-hub 도구가 실패함 | `claude mcp list`에서 연결·로그인 상태 확인. 로그인 창이 안 열리면 문의 |
 | 토큰 사용량이 보고되지 않음 | 클로드코드에서 "토큰 수집 에이전트 제대로 돌고 있어?"라고 물어보면 점검해 줍니다 |
 
 ---
