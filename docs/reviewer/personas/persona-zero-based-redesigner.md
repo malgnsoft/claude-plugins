@@ -28,3 +28,4 @@
 - 2026-08-09 / target_id: pm-orchestration-implementation (target_id 체계 도입 전 소급 표기) / 사전 라운드 (review-pm-orchestration-implementation-2026-08-09.md): "메인 루프 PM화" 구현의 구조적 대안 재검증(발산형)
 - 2026-08-10 / target_id: pm-orchestration-block-propagation / 1차 (review-pm-orchestration-block-sync-2026-08-10.md): 훅+스킬 분리안 구조 자체의 타당성 최초 검증(발산형)
 - 2026-08-10 / target_id: pm-orchestration-block-propagation / 2차 (review-pm-block-propagation-mechanism-2026-08-10.md): 전파 메커니즘 구조 재검증(발산형)
+- 2026-08-24 / target_id `spec-audit` / 1차(최초) — 역할개념 수준 재사용(§5 참고파일은 직전 라운드 고정). 이번 라운드의 구조 선택 2건을 제로베이스로 재질문: ①에이전트 21종 × 12항목 허용목록을 손으로 복제하는 구조가 최선인가(→ RT-001: `disallowedTools` 기반 최소 차단이 같은 목표를 더 적은 표면으로 달성하며, 실제로 이 구조가 RV-001을 낳았다) ②`${CLAUDE_PLUGIN_ROOT}`를 에이전트 본문 97곳에 새로 심는 베팅의 하방이 무엇인가(→ RT-002: 최악의 경우가 "직전 상태와 동일한 실패"라 하방이 닫혀 있음 — 이 판정이 PM이 물은 미검증 항목의 답).

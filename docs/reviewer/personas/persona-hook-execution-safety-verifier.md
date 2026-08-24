@@ -28,3 +28,6 @@ SessionStart 훅처럼 "모든 프로젝트, 모든 세션에서 무조건 실�
 
 ## 6. 출력포맷 (Output Format)
 reviewer-persona-panel-standard §5 표준 형식 — 지적마다 파일·줄 또는 실행 시나리오 번호로 근거 인용, 페르소나 종합판정(RAG) 명시.
+
+## 적용 이력 (Application Log)
+- 2026-08-24 / target_id `spec-audit` / 1차(최초) — 역할개념 수준 재사용(§5 참고파일은 직전 라운드 고정). 대상: `sessionstart-context.mjs`(주입 상한 신설) + `stop-mcp-reminder.cjs`(MCP 도구명 판정 수리). 자기보고를 받지 않고 **깨진 입력 17종을 직접 먹여 재현**: STATUS.md 없음/디렉터리/권한없음/887KB/1줄 120KB, `MALGN_STATUS_MAX_BYTES` 7종 오설정, 훅 stdin 9종. 전부 exit 0·유효 JSON 1건(예외: RV-007 `null` payload → uncaught TypeError exit 1). 합성 트랜스크립트 8종 A/B로 Stop 훅 수리를 실증(main 버전은 기록 직후에도 리마인더 발화, 신 버전은 침묵). 판정: 세션 차단 경로 없음.
