@@ -109,7 +109,14 @@ process.stdin.on("data", (c) => (input += c));
 process.stdin.on("end", () => {
   let payload = {};
   try {
-    payload = input ? JSON.parse(input) : {};
+    // JSON.parse("null")은 예외 없이 null을 반환한다 — stdin이 문자열 "null"이면 parsed가
+    // null이 되어 아래 payload.stop_hook_active 접근에서 TypeError가 나고, 그 TypeError는 이
+    // catch가 삼켜 조용히 넘어가지만 payload는 null로 남는다. 뒤(analyzeTurn 호출부)에서
+    // payload.transcript_path 접근 시 이 catch 밖이라 그대로 크래시한다. 그래서 파싱 직후
+    // null/비객체(예: 숫자·문자열)를 걸러 항상 객체로 정규화한다 — 배열(`[]`)은 이미 object라
+    // 그대로 둬도 안전(뒤 접근이 전부 undefined일 뿐 throw 없음).
+    const parsed = input ? JSON.parse(input) : {};
+    payload = parsed && typeof parsed === "object" ? parsed : {};
     if (payload.stop_hook_active) {
       process.exit(0); // 이미 Stop hook으로 재진입한 상태면 아무것도 안 함
     }

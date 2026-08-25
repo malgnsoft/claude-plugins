@@ -33,7 +33,11 @@
  *   homeGlob  — $HOME 기준 glob (러너·전역에이전트 등 프로젝트 밖). `**`도 동일하게 지원.
  *   jsonLength— JSON 파일 파싱 후 배열 길이(또는 객체 키 수)
  *   file+regex— 파일 내 정규식 전역 매치 수
- *   측정 불가(경로 없음/다른 호스트) → 해당 check skip(드리프트 아님).
+ *   측정 불가(경로 없음/다른 호스트) → 해당 check skip(드리프트 아님, 개별 체크 단위 규칙). 다만
+ *   매니페스트의 checks가 비어있지 않은데(스캐폴딩 직후의 empty:true와는 다른 상태) 그 안의
+ *   **모든** check가 측정 불가면(하나라도 정상 측정됐으면 이 규칙 대상이 아니다) 매니페스트 자체가
+ *   썩었을 가능성이 커 CLI(§ 실행 블록)가 "⚠️ 모든 체크가 측정 불가" 경고를 내고 exit 1로 종료한다
+ *   — 전부 skip인데 통과(✅)로 보고되는 거짓 안전을 막기 위한 매니페스트 단위 규칙.
  *
  * checks가 빈 배열이면(스캐폴딩 직후 등) computeDrift()는 `empty: true`를 반환한다 — "검사해서
  * 이상 없음"과 "아직 아무것도 검사하지 않음"은 다른 상태이므로, 매니페스트를 채우기 전까지는
@@ -301,7 +305,13 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   // §6 표의 종료코드를 따른다 — status !== 'ok' 라고 전부 실패가 아니다(예: unmanaged-body/
   // declined/no-marker/plugin-outdated/block-unreadable/stale-wording은 0).
   const hasPmIssue = !!(pmCheck && (PM_BLOCK_EXIT_CODE[pmCheck.status] ?? 1) !== 0)
+  // checks가 비어있지 않은데(!r.empty) 측정된 결과가 하나도 없고(results 0건) 전부 skip이면,
+  // "검사해서 이상 없음"이 아니라 "아무것도 측정하지 못함"이다 — ✅ 통과로 보고하면 매니페스트
+  // 경로가 썩어도 영원히 거짓 통과가 난다(RV-005). 일부만 skip이고 나머지는 측정됐다면 그 측정된
+  // 결과로 드리프트를 판단하는 것이 맞으므로 이 분기 대상이 아니다.
+  const allUnmeasurable = !!(r && !r.empty && r.results.length === 0 && r.skipped.length > 0)
   if (hasDrift) console.log('\n⚠️ 문서 드리프트 — 매니페스트 expected 와 문서 서술을 실측에 맞춰 갱신하라.')
-  if (!hasDrift && !hasPmIssue && r && !r.empty) console.log('\n✅ 문서가 코드와 일치.')
-  process.exit(hasDrift || hasPmIssue ? 1 : 0)
+  else if (allUnmeasurable) console.log('\n⚠️ 모든 체크가 측정 불가 — 매니페스트의 glob/file 경로를 점검하라(통과로 볼 수 없다).')
+  else if (!hasPmIssue && r && !r.empty) console.log('\n✅ 문서가 코드와 일치.')
+  process.exit(hasDrift || hasPmIssue || allUnmeasurable ? 1 : 0)
 }
