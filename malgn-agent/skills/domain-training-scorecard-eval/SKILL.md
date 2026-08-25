@@ -73,7 +73,7 @@ echo '{ ...JSON... }' | node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.
 
 > 이 커맨드가 실패하거나(특히 `MODULE_NOT_FOUND`) 새 실행 지시를 쓸 때의 규약 — 따옴표, 이 변수가 치환되는 자리와 안 되는 자리, 맨 명령어를 쓰지 않는 이유 — 은 Skill `common-output-storage-and-path-management` §1-1이 정본이다.
 
-입력 JSON에 채워 넣는 값 (전부 이 단계에서 LLM이 채점/관찰한 정성 판단 결과):
+입력 JSON에 채워 넣는 값 (`previousScore`를 뺀 나머지는 전부 이 단계에서 LLM이 채점/관찰한 정성 판단 결과):
 ```json
 {
   "agent": "architect",
@@ -93,6 +93,8 @@ echo '{ ...JSON... }' | node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.
   "previousScore": 75
 }
 ```
+
+`previousScore`만은 이 단계에서 판단하거나 추정하지 않는다 — malgnai-hub `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 그 에이전트의 점수 이력을 조회해 **최신 기록의 `overallScore`**를 그대로 넣는다. 조회 결과에 점수 이력이 없으면(첫 채점 등) 이 필드를 생략한다 — 스크립트가 `N/A(전월 점수 없음)`으로 처리한다.
 
 스크립트가 결정론적으로 계산해 출력하는 것:
 - 기본수행 7항목 합산(배점 상한 검증 포함) → 기본수행 점수
@@ -142,13 +144,17 @@ echo '{ ...JSON... }' | node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.
 
 ## 산출물
 
-Scorecard 결과는 **파일로 저장하지 않는다** — 이 스킬만을 위한 별도 report 파일 버킷을 신설하지 않고, 아래 두 채널로만 기록한다:
+Scorecard 결과는 **파일로 저장하지 않는다** — 이 스킬만을 위한 별도 report 파일 버킷을 신설하지 않고, 아래 세 채널로만 기록한다:
 
 1. **malgnai-hub `decision_record`**(evaluator가 기록):
    - `reason` 필드에 점수 요약표(에이전트별 지난회↔이번회 점수·변화·상태)와 주요 약점 진단을 채운다.
    - `impact` 필드에 "다음 액션" bullet 목록(어떤 MD를 어떻게 고칠지, 재평가 일정)을 채운다.
    - `importance`는 습관적으로 3을 쓰지 않고 판단한다 — 하락폭이 크거나 대상 MD의 "역할 경계"/권한 서술에 영향을 주는 개선안이면 4~5, 일반적인 섹션 보강이면 2~3.
-2. **개선안 실행**: 실제 MD/knowledge 파일 반영은 이 스킬의 범위가 아니다 — evaluator→trainer 인계 절차를 그대로 따른다(등급별 git 반영·merge 조건은 `agents/evaluator.md`에 이미 정의돼 있으므로 여기서 중복 서술하지 않는다).
+2. **malgnai-hub `agent_score_record`**(evaluator가 기록, 채점을 한 회차에만): 대상 에이전트 1명당 1건을 남긴다. 1번의 산문 요약만으로는 다음 회차가 "지난회 점수"를 구조화된 형태로 조회할 수 없어 위 점수 요약표(지난회↔이번회·변화)를 채우지 못한다.
+   - 필수 3개 — `agentName`, `overallScore`(Phase 1의 3) 총점 계산에서 스크립트가 산출한 가중 총점, 0~100), `idempotencyKey`(회차 규칙은 `agents/evaluator.md`의 판정 회차 기록을 상속한다).
+   - `dimensionScores`: 구성요소 4개(기본수행/Eval Set/실전 성공률/비용 효율) 또는 기본수행 7항목 점수. `evaluatorNote`: 약점 진단. `improvementNote`: 개선안. `projectId`: 채점 계기가 된 프로젝트.
+   - 점수 이력의 소유권은 **호출한 사용자 + 에이전트명**이다 — 개인 스코프 기록이지 조직 공통 평균이 아니므로 다른 사람의 점수와 합산해 해석하지 않는다.
+3. **개선안 실행**: 실제 MD/knowledge 파일 반영은 이 스킬의 범위가 아니다 — evaluator→trainer 인계 절차를 그대로 따른다(등급별 git 반영·merge 조건은 `agents/evaluator.md`에 이미 정의돼 있으므로 여기서 중복 서술하지 않는다).
 
 **decision_record 기록 예시**(형식 참고용 — 파일이 아니라 그대로 도구 필드에 채워 넣는다):
 ```
