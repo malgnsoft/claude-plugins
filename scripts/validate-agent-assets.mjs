@@ -220,7 +220,10 @@ function* liveReferences(body, re, { includeFenced = false } = {}) {
 // 선언하는 곳을 함께 수집해 모순·순환을 찾는다.
 
 // "(정본: Skill `x`)" / "정본: agents/x.md" / "canonical: ..." 형태의 정본 지목
-const CANONICAL_CLAIM = /정본[^\n]{0,40}?(?:Skill\s+`([a-z0-9:\-]+)`|`((?:agents|skills|knowledge)\/[A-Za-z0-9_\-/.]+\.md)`)/g;
+// 백틱 안 경로 앞에 `${CLAUDE_PLUGIN_ROOT}/` 접두가 붙어도(읽는 이가 그대로 Read하는 실제 참조
+// 표기) 잡아야 한다 — 접두 유무와 무관하게 지목 대상은 같은 파일이다. 접두는 캡처하지 않는다
+// (target은 pluginRoot 기준 상대경로여야 disclaiming 셋과 비교가 맞는다).
+const CANONICAL_CLAIM = /정본[^\n]{0,40}?(?:Skill\s+`([a-z0-9:\-]+)`|`(?:\$\{CLAUDE_PLUGIN_ROOT\}\/)?((?:agents|skills|knowledge)\/[A-Za-z0-9_\-/.]+\.md)`)/g;
 // 스스로 정본이 아님을 선언하는 문장
 const CANONICAL_DISCLAIMER = /(진실의 원천이 아니|정본이 아니|참고용 요약이지|source of truth가 아니)/;
 
@@ -290,7 +293,9 @@ function checkCanonicalClaims(relPath, body, disclaiming, skillDirNames) {
 // 참조와 § 사이는 공백(또는 "의"·쉼표)만 허용한다. 간격을 넓게 잡으면 한 문장 안의 무관한
 // 절번호가 앞의 파일명과 잘못 짝지어진다 — 실제로 "`…/SKILL.md`로 이관) 배경만 남음 — §1.3"에서
 // 방법론 rubric의 §1.3이 그 SKILL.md의 절로 오인돼 없는 절 ERROR가 났다.
-const ANCHOR_REF = /(?:`((?:knowledge|agents|skills)\/[A-Za-z0-9_\-/.]+\.md)`|Skill\s+`([a-z0-9:\-]+)`)[ \t]{0,3}(?:의|,)?[ \t]{0,3}§\s*([0-9]+(?:\.[0-9]+)?)/g;
+// 백틱 안 경로 앞에 `${CLAUDE_PLUGIN_ROOT}/` 접두가 붙어도 같은 대상을 가리키므로 매칭한다
+// (CANONICAL_CLAIM과 동일 판단 — 접두는 캡처하지 않아 targetRel이 pluginRoot 기준 상대경로로 남는다).
+const ANCHOR_REF = /(?:`(?:\$\{CLAUDE_PLUGIN_ROOT\}\/)?((?:knowledge|agents|skills)\/[A-Za-z0-9_\-/.]+\.md)`|Skill\s+`([a-z0-9:\-]+)`)[ \t]{0,3}(?:의|,)?[ \t]{0,3}§\s*([0-9]+(?:\.[0-9]+)?)/g;
 
 function sectionNumbers(absPath) {
   const nums = new Set();
