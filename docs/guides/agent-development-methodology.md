@@ -1,6 +1,6 @@
 # 맑은소프트 에이전트 개발방법론 (초안 v0.1)
 
-> **⚠️ 이 문서는 v0.1 초안이며 정본이 아니다.** 신규 agent/skill/knowledge 작성 시 판정 기준은 `docs/methodology/agent-development-methodology.md`(v1.0)를 따른다. 이 파일은 참고용으로 보존된 이전 버전이다.
+> **⚠️ 이 문서는 v0.1 초안이며 정본이 아니다.** v1.0(`docs/methodology/agent-development-methodology.md`)도 이제 정본이 아니다(설계 이력 사료로 지위 정정됨) — 현행 판정 기준은 malgn-agent 번들 자산(Skill `domain-training-scorecard-eval` · `agents/evaluator.md` · `knowledge/leadership/agent-training-guide.md` 등)을 참조한다. 이 파일은 참고용으로 보존된 이전 버전이다.
 
 > **용도**: 이 문서는 `malgn-agent`의 agents/*.md·skills/*.md를 **작성·전수감사·재작성**할 때 쓰는 판정 기준(rubric)이다. 추상 선언이 아니라 "이럴 때는 이렇게 판단한다"는 실행 가능한 규칙만 담는다. 배경·이유가 필요하면 이 문서를 knowledge로 분리하지 않고 각 규칙 옆에 1줄 근거만 남긴다(이 문서 자체가 §5의 원칙을 스스로 지킨다).
 >

@@ -145,5 +145,5 @@ pnpm run check-docs    # PM 오케스트레이션 관리구역 정합성 상시 
   - `bin/` — 무의존성 Node 내장모듈만 쓰는 번들 스크립트(Windows/macOS 동일 실행). 토큰 사용량 자가진단(`analyze-usage`/`report-usage`/`usage-agent-lib`/`install-usage-agent`/`pair-usage-device`) · `capture.mjs`(Playwright 캡처) · `new-project.mjs`(스캐폴더) · `check-*.mjs`(규약·보안 점검)
   - `hooks/` — `hooks.json`(SessionStart→`sessionstart-context.mjs`, Stop→`stop-mcp-reminder.cjs`) + `doc-drift.mjs` + `pm-orchestration-block.md`(위 인라인 관리구역 `malgn-agent:pm-orchestration:*`의 정본 — `@import`가 아니라 `check-docs`로 재동기화). 경로는 `${CLAUDE_PLUGIN_ROOT}` 기준으로 포터블
   - `templates/e2e-template/` — Playwright storageState 인증 표준 스캐폴드
-- `docs/` — `README.md`가 지도. `methodology/`(rubric v1.0 — 신규 agent/skill/knowledge 작성 판정 기준) · `reviewer/`(페르소나·리뷰 보고서) · `architecture/` · `decision/` · `roadmap/`
+- `docs/` — `README.md`가 지도. `methodology/`(rubric v1.0 — 설계 이력 사료, 현행 판정 기준 아님) · `reviewer/`(페르소나·리뷰 보고서) · `architecture/` · `decision/` · `roadmap/`
 - `scripts/` — 저장소 전용 검사(`validate-agent-assets.mjs`, 배포되지 않음)

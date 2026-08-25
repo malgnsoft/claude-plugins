@@ -1,11 +1,25 @@
-# 맑은소프트 에이전트 개발방법론 (최종본 v1.0)
+# 맑은소프트 에이전트 개발방법론 (v1.0, 설계 이력 사료)
 
 **버전**: v1.0 · **작성일**: 2026-08-07
-**안내**: 이 문서는 `malgn-agent` 플러그인의 **2단계 전수분석**과 **3단계 재작성**을 착수할 때 그대로 쓰는 판정 기준(rubric)이다. 감사·재작성 세션은 새 판정 기준을 그 자리에서 발명하지 않고 이 문서의 조건→행동 규칙을 그대로 적용하며, 이견이 있으면 §10.2 절차로 개정한다.
 
-> **지위**: A(architecture)·B(prompt-engineering)·C(quality-verification)·D(delegation-orchestration)·E(end-user-adoption) 5개 초안과 그 교차비평을 병합한 최종본. 5개 초안은 `docs/architecture/`, `docs/guides/`, `docs/agent-development-methodology-draft.md`(E), 스크래치패드(C·D)에 원형 그대로 보존하고 이 문서로 대체하지 않는다 — 개별 초안이 더 상세히 다룬 논거를 찾을 때의 1차 사료로 남긴다.
-> **용도**: `malgn-agent` 플러그인(agents 21·skills 38·knowledge 54·hooks 2)의 **기존 전수 감사**와 **전체/부분 재작성** 여부를 판정하는 rubric으로 그대로 쓴다. 추상 선언이 아니라 "이 조건이면 이렇게 판단한다"는 실행 가능한 규칙만 담는다.
-> **모순 해소 원칙**: 5개 초안이 서로 다른 결론을 낸 지점(등급 체계, product-principles.md 처리, learning-loop 중복, reviewer 트리거, 재작성 임계값)은 아래 각 절에 **"[병합판정]"** 표시로 최종 결정과 근거를 명시했다. 결정에 이견이 있으면 이 문서를 고치지 말고 `decision_record`(importance 4~5)로 대안을 먼저 기록한 뒤 §10 절차로 개정한다.
+> ⚠️ **지위 정정**: 이 문서는 더 이상 신규 agent/skill/knowledge 작성의 판정 기준(정본)이 아니다. 제품(`malgn-agent/{agents,skills,knowledge}`)이 이 문서를 인용하지 않는다는 사실이 실측 확인됐다 — evaluator는 자기완결형 체크리스트로, 그 외 항목은 아래 표로 각자 판정한다. 이 문서는 rubric v1.0이 처음 만들어질 때의 **설계 이력 사료**로 보존한다. 본문의 개수·목록(agents 21·skills 38·knowledge 54 등)은 작성 시점(2026-08-07) 고정값이며 현행 실측치가 아니다.
+>
+> **현행 판정은 여기를 본다:**
+>
+> | 무엇을 판정할까 | 담당 문서 |
+> |---|---|
+> | 채점(Scorecard) | Skill `domain-training-scorecard-eval` |
+> | 게이트 판정(승격 체크리스트) | `agents/evaluator.md` §2 판정 체크리스트 |
+> | MD 골격(9단 구조) | `knowledge/leadership/agent-training-guide.md` |
+> | 신설 여부·중복 판정 | `agents/trainer.md` 핵심 원칙 |
+> | 검증 깊이 등급 | Skill `common-task-grading-and-verification-depth` |
+> | 크기 예산(파일 크기 상한) | `scripts/validate-agent-assets.mjs`(저장소 전용, WARN만) |
+
+**안내(작성 당시)**: 이 문서는 원래 `malgn-agent` 플러그인의 **2단계 전수분석**과 **3단계 재작성**을 착수할 때 그대로 쓰던 판정 기준(rubric)이었다. 아래 §10.2가 지목하는 개정 절차 자체가 §10.1 형식 규칙을 스스로 위반하는 등 자기모순이 있으니, 참고할 때 그대로 실행 지시로 따르지 말 것.
+
+> **지위(작성 당시)**: A(architecture)·B(prompt-engineering)·C(quality-verification)·D(delegation-orchestration)·E(end-user-adoption) 5개 초안과 그 교차비평을 병합한 최종본. 5개 초안은 `docs/architecture/`, `docs/guides/`, `docs/agent-development-methodology-draft.md`(E), 스크래치패드(C·D)에 원형 그대로 보존하고 이 문서로 대체하지 않는다 — 개별 초안이 더 상세히 다룬 논거를 찾을 때의 1차 사료로 남긴다.
+> **용도(작성 당시)**: `malgn-agent` 플러그인(agents 21·skills 38·knowledge 54·hooks 2)의 **기존 전수 감사**와 **전체/부분 재작성** 여부를 판정하는 rubric으로 그대로 썼다. 추상 선언이 아니라 "이 조건이면 이렇게 판단한다"는 실행 가능한 규칙만 담는다.
+> **모순 해소 원칙(작성 당시)**: 5개 초안이 서로 다른 결론을 낸 지점(등급 체계, product-principles.md 처리, learning-loop 중복, reviewer 트리거, 재작성 임계값)은 아래 각 절에 **"[병합판정]"** 표시로 최종 결정과 근거를 명시했다.
 
 ---
 

@@ -12,8 +12,8 @@
 - `architecture/` — 설계·명세
 - `analysis/` — 노하우·구조 분석
 - `evaluation/` — 평가·감사 스펙 리포트
-- `guides/` — 현행 운영/개발 가이드. 단 `guides/agent-development-methodology.md`는 v0.1 초안 보존본이며 판정 기준 정본이 아니다(정본은 `methodology/` 참조)
-- `methodology/` — malgn-agent 에이전트 개발방법론(rubric)·전수감사·결정로그·최종검증보고서(2026-08-07). 신규 agent/skill/knowledge 작성 시 `agent-development-methodology.md`가 판정 기준
+- `guides/` — 현행 운영/개발 가이드. 단 `guides/agent-development-methodology.md`는 v0.1 초안 보존본이며 어느 쪽도 판정 기준 정본이 아니다(현행 판정 기준은 malgn-agent 번들 자산 — 아래 `methodology/` 항목 참조)
+- `methodology/` — malgn-agent 에이전트 개발방법론 설계 이력(rubric v1.0, 2026-08-07 작성 당시 사료)·전수감사·결정로그·최종검증보고서. 현행 판정 기준이 아니다 — 실제 판정은 malgn-agent 번들 자산(Skill `domain-training-scorecard-eval` · `agents/evaluator.md` · `knowledge/leadership/agent-training-guide.md` 등)이 담당한다
 - `refactor/` — 리팩터링 스펙·사유서
 - `reviewer/` — 리뷰 페르소나 정의·리뷰 보고서
 - `roadmap/` — 미채택/보류 설계 메모(배포판 malgn-agent에는 미포함)
