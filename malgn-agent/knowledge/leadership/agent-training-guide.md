@@ -3,7 +3,7 @@
 **버전**: 1.0  
 **기밀등급**: 내부용  
 **대상 독자**: PM, trainer 에이전트  
-**MD 골격 정본**: 9단 골격 — 2장(§2.2)에 상세, 부록에 요약(`agent-md-format-standard.md`는 폐기된 구버전 archive)  
+**MD 골격 정본**: 9단 골격 — 2장(§2.2)에 상세, 부록에 요약  
 **훈련 모드 정본**: `agents/trainer.md`의 "스킬 상세 — 실행 모드 (6가지: 1~6)" — 이 문서의 5장은 그 표를 절차로 풀어 쓴 것이며, 번호·명칭이 어긋나면 trainer.md를 따른다
 
 ---
@@ -479,7 +479,7 @@ malgnai-hub 기록: 완료 / 미완료
 [ ] 1. 백업 완료 확인
 [ ] 2. 기존 MD 읽기 → 교훈 목록 추출 (Before 목록 작성)
 [ ] 3. 9단 골격(frontmatter→핵심원칙→역할경계→스킬상세→전제조건→자기검증→산출물→학습자료→토큰효율)으로
-       재작성 — 상세는 §2.2, 실물 예시는 §2.3 (agent-md-format-standard.md의 구 7섹션 포맷은 폐기됨, 참조 금지)
+       재작성 — 상세는 §2.2, 실물 예시는 §2.3
 [ ] 4. 교훈 목록 대조 — Before 개수 = After 개수 확인
 [ ] 5. 금지·승인 항목이 `## 역할 경계`에 들어갔는지 확인. 스킬 정의 파일(skill-definitions.js
        EMPLOYEE_CARDS)이 있는 운영 환경이면 동기화(미번들 — 없으면 각 에이전트 MD를 직접 대조)
@@ -513,7 +513,6 @@ After:  [교훈A, 교훈B, 교훈C, ...]  ← 동일 개수, 동일 핵심 내�
 | 파일 | 용도 |
 |------|------|
 | **MD 골격 정본 — 9단 골격(요약, 상세는 §2.2)** | frontmatter→핵심원칙→역할경계→스킬상세→전제조건→자기검증→산출물→학습자료→토큰효율 |
-| `knowledge/leadership/agent-md-format-standard.md` (이 플러그인 번들) | [폐기된 구버전 archive] 구 7섹션 포맷 — 참조 금지 |
 | `knowledge/common/beyond-mediocre-output.md` (이 플러그인 번들) | 산출물 진단 5가지 냄새 기준 |
 | `knowledge/common/token-efficient-collaboration.md` (이 플러그인 번들) | 토큰 효율 원칙 |
 | 스킬 정의/자동계산 스크립트 (예: `bin/skill-definitions.js`, `bin/sync-agents.js`) | 이 플러그인에는 미포함 — 운영 프로젝트에 구축되어 있다면 그 경로를 사용, 없으면 수동 산정 |

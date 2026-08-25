@@ -11,6 +11,7 @@ Compliance Matrix는 rfp-analyst의 1차 산출물이다. **RFP의 모든 요구
 
 RFP/과업지시서/평가표를 **문장 단위로** 훑으며 요구를 뽑는다.
 - **명령·의무 표현**을 신호로 잡는다: "~하여야 한다", "~포함할 것", "~제출", "필수", "이상/이내", "준수", SHALL/MUST.
+- RFP에는 **명시 요구(SHALL/필수)와 묵시 요구가 섞여 있다.** 명시 요구만 뽑으면 표가 절반짜리가 된다 — 한 줄씩 표에 채워 넣는 과정 자체가 "이 문장이 실제로 무엇을 요구하나"를 강제로 묻기 때문에 **숨은 요구까지 드러난다.** 묵시 요구도 Req-ID를 부여해 같은 표에 올린다(비고 칸에 "묵시" 표시).
 - 한 문장에 요구가 여러 개면 **쪼갠다** (한 줄 = 한 요구 = 검증 가능 단위).
 - 출처를 정확히 적는다(과업지시서 3.2.1, 평가표 항목 4, 제출서류 목록 7번 등) — 나중에 원문 대조용.
 - 요구 유형을 태그: **[자격]**(참가자격·실적), **[기술]**(과업·방법론), **[관리]**(일정·보안·품질), **[양식]**(분량·서식·파일), **[서류]**(제출물), **[평가]**(배점 항목).
@@ -68,3 +69,9 @@ RFP/과업지시서/평가표를 **문장 단위로** 훑으며 요구를 뽑는
 
 - 산출물: `~/workspace/[프로젝트명]/docs/proposal/compliance-matrix-[건명].md` (rfp-analyst 작성)
 - 흐름: rfp-analyst가 Matrix 작성 → capture-strategist가 배점 분석으로 Win Theme 앵커링 → writer가 대응 섹션 집필 → reviewer(Red Team)가 Matrix로 누락 교차검증 → rfp-analyst가 제출 전 실격방지 게이트 최종 확인.
+
+## 6. 근거 방법론
+
+- Shipley *Proposal Guide* — Compliance Matrix / Requirements Cross-Reference 표준
+- APMP BoK — Compliance & Responsiveness
+- 한국 공공 적용(실격·서류·봉투분리): `${CLAUDE_PLUGIN_ROOT}/knowledge/proposal/korea-public-procurement.md`

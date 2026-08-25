@@ -9,9 +9,9 @@
 | 폴더 | 대상 에이전트 | 내용 |
 |------|-------------|------|
 | `common/` | 전체 | 정직 보고, 산출물 품질, 교차검증 |
-| `leadership/` | pm | 팀 구성 패턴, 리스크·에스컬레이션, 보고 통합 |
+| `leadership/` | pm, trainer | 팀 구성 패턴, 리스크·에스컬레이션, 보고 통합, 에이전트 훈련 가이드 |
 | `planning/` | planner, researcher | 요구사항 분석, 시장조사 |
-| `design/` | ux-designer, visual-designer, security(마스킹 기준만) | UX 설계, 비주얼 디자인 시스템, 화면 개인정보 마스킹 기준 |
+| `design/` | ux-designer, visual-designer, security(마스킹 기준만) | UX 설계, HTML 브랜드 스타일가이드, 퍼블리싱 스타일가이드 템플릿, 화면 개인정보 마스킹 기준 |
 | `architecture/` | architect | 시스템 설계 패턴, API 설계 |
 | `backend/` | backend-dev | Hono/D1 구현 패턴, DAO |
 | `frontend/` | frontend-dev | vue-zero 패턴, Bootstrap 5 |
@@ -86,7 +86,7 @@
 ### quality/
 - (경계값분석·동등분할·상태전이 기법 + Vitest/E2E 패턴·보고서 형식·커버리지 함정 처방 정본은 knowledge가 아니라 `skills/domain-software-test-design-techniques/SKILL.md`)
 - `e2e-testing-guide.md` — E2E 테스트(Playwright Test) vs 즉석 화면 검증(`bin/capture.mjs`) 역할 구분, `templates/e2e-template/` 스캐폴드 복사 절차, 프로젝트별 브라우저 설치·인증 setup 가이드
-- `intent-fit-vs-correctness-split.md` — "기획의도 부합성 vs 동작정확성" 축 분리 개념 노트. qa-engineer/reviewer가 검수 체크리스트를 짤 때 참고 (`agents/qa-engineer.md` 실참조)
+- `intent-fit-vs-correctness-split.md` — "기획의도 부합성 vs 동작정확성" 축 분리 개념 노트. qa-engineer가 검수 체크리스트를 짤 때, reviewer가 통합 보고서에서 지적을 조치 경로별로 분류할 때 참고 (`agents/qa-engineer.md`·`agents/reviewer.md` 실참조)
 
 ### security/ — 폴더 없음 (전량 skill로 이관)
 - (OWASP Top 10 체크리스트는 knowledge가 아니라 skill에 분산돼 있다 — A01/A03→`skills/domain-backend-api-security` §1/§4, A02→`skills/domain-security-audit-checklist` §4·A09→같은 스킬 §5·A07→같은 스킬 §6, 인프라(Docker/환경변수)→`skills/domain-devops-deployment-patterns` §1, 심각도 CVSS 매핑→`agents/security.md` "핵심 원칙")

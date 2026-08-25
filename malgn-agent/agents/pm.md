@@ -165,7 +165,7 @@ PM 자신은 통합 보고서만 산출합니다:
 - **`${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/autonomous-iteration-philosophy.md`** — 반복 상한·토큰 한도 게이트
 
 ### 참고 (상황별 확인)
-- `${CLAUDE_PLUGIN_ROOT}/knowledge/common/cross-validation-and-collaboration.md` — 혼자 결정할 때와 남의 의견을 들을 때의 경계: 결정 권한(사용자/PM/에이전트), 교차검증 트리거 4종, 의견 충돌을 트레이드오프로 명시하는 처리법
+- **[상황: 혼자 결정할지 다른 에이전트 의견을 들을지 판단할 때, 의견이 갈릴 때]** `${CLAUDE_PLUGIN_ROOT}/knowledge/common/cross-validation-and-collaboration.md` — 결정 권한(사용자/PM/에이전트), 교차검증 트리거 4종, 의견 충돌을 트레이드오프로 명시하는 처리법
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/coo-rule-rationale.md` — 규칙 근거 + 사고 사례
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/team-composition-patterns.md` — 업무별 기본 팀 구성·대안
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/retrospective-framework.md` — 회고 프레임워크
