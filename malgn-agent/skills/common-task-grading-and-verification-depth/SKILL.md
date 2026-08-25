@@ -20,7 +20,7 @@ description: 전 에이전트 공통 — 작업 등급(Micro/Standard/Sensitive/
 | Exploration | 원인분석·구조파악, 무엇을 고칠지 모름 | 위임(시간·산출물 제한) | PM이 조사 결론의 채택 여부만 승인(파일 미변경 상태이므로 원 조사 자체엔 승인 불요) | 결론 검증만 | 없음 | trivial — 결론 검증만이라 캡처 불필요 | - |
 | Refactor | 구조개선·중복제거(기능변화 없음) | 위임 + 변경 전후 기준 선행 | 사람 승인 필수(PM 단독 승인 불가) | 풀패널 필수 | 기존 동작 동일성 확인 | standard — 동일성 확인 목적(UI 변경 수반 시 critical로 상향) | 동일 target_id 재검토는 축소/증분 모드 가능(§ 아래 참조) |
 
-승인 주체의 정본은 `agents/pm.md`의 "PM 권한 참조표"다 — 등급과 무관하게 항상 사람 승인이 필요한 행위(비가역·대외 영향·정책 신설)와 전역 자산 승격 실행의 담당은 그 표를 따른다.
+승인 주체의 정본은 `${CLAUDE_PLUGIN_ROOT}/agents/pm.md`의 "PM 권한 참조표"다 — 등급과 무관하게 항상 사람 승인이 필요한 행위(비가역·대외 영향·정책 신설)와 전역 자산 승격 실행의 담당은 그 표를 따른다.
 
 캡처 깊이의 상세 기준(체크리스트 항목·상태전이 캡처 방법 등)은 `common-screen-verification-and-capture` 스킬을 따른다.
 
@@ -43,7 +43,7 @@ Sensitive/Refactor 등급 산출물이 짧은 기간 내 여러 번 재수정돼
 
 **풀패널 강제 승격 조건 (하나라도 해당하면 축소 불가)**: 직전 Critical/Major 미해결 존재 / 직전에 없던 새 실행경로·리스크 표면 다수 등장 / 다른 Sensitive 하위도메인 진입 / 재검토 4차 이상 누적 / PM·사용자의 명시적 풀패널 요청.
 
-상세 절차(모드 3단계, 페르소나 재사용 방식, 보고서 템플릿)는 Skill `reviewer-persona-panel-standard`와 `agents/reviewer.md`를 따른다.
+상세 절차(모드 3단계, 페르소나 재사용 방식, 보고서 템플릿)는 Skill `reviewer-persona-panel-standard`와 `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`를 따른다.
 
 ## 등급 표기 없을 때 기본값
 

@@ -459,6 +459,17 @@ function checkBodyReferences(relPath, body, ctx) {
         '`malgn-agent/knowledge/…`로 적는다 (규약 정본: Skill `common-output-storage-and-path-management` §1-2).');
     }
   }
+  // agents/ 참조는 knowledge/와 달리 두 형태를 다르게 다룬다. 맨 상대경로 `` `agents/x.md` ``는
+  // "정본이 어디인지 알려주는 산문 인용"으로 이 저장소에서 계속 허용한다(스킬이 다른 에이전트의
+  // 역할 경계를 실행 시점에 실제로 열어볼 필요 없이 인용만 하는 사례가 다수다) — 그래서 존재
+  // 확인(REF_AGENT_MISSING)만 하고 knowledge식 "형태가 틀려서 못 연다" 에러는 걸지 않는다.
+  // 반대로 `` `${CLAUDE_PLUGIN_ROOT}/agents/x.md` ``는 읽는 이가 그대로 Read하는 실제 참조이므로
+  // 같은 존재 확인을 별도로 건다.
+  for (const m of liveReferences(body, /`\$\{CLAUDE_PLUGIN_ROOT\}\/agents\/([a-z0-9\-]+\.md)`/g)) {
+    if (!fs.existsSync(path.join(pluginRoot, 'agents', m[1]))) {
+      error('REF_AGENT_MISSING', relPath, `본문이 참조하는 agent 파일이 없다: agents/${m[1]}`);
+    }
+  }
   for (const m of liveReferences(body, /`(agents\/[a-z0-9\-]+\.md)`/g)) {
     if (!fs.existsSync(path.join(pluginRoot, m[1]))) {
       error('REF_AGENT_MISSING', relPath, `본문이 참조하는 agent 파일이 없다: ${m[1]}`);
