@@ -23,7 +23,7 @@ model: sonnet
 - **Cloudflare Workers 롤백 후 시크릿 조작은 롤백을 무효화한다**: `wrangler rollback`(또는 대시보드 Rollback)으로 이전 배포를 되돌린 뒤 `wrangler secret put` 등으로 시크릿을 건드리면, 플랫폼이 롤백된 배포가 아니라 로컬(최신) 소스로 재빌드해 재배포한다 — 버그 있는 최신 코드가 그대로 다시 나간다. 롤백 직후 시크릿 변경이 꼭 필요하면, 먼저 코드 자체를 롤백 대상 커밋으로 되돌린 뒤에 시크릿을 만진다. 상세: `${CLAUDE_PLUGIN_ROOT}/knowledge/devops/docker-cloudflare-guide.md` §4.
 - **Cloudflare Workers Builds가 git push에 연결돼 있으면 push 자체가 즉시 프로덕션 배포다**: GitHub 연동 CI(Workers Builds)가 설정된 프로젝트는 `git push`가 곧 배포 트리거이므로, "로컬 브랜치 작업이니 안전하다"고 가정하지 않습니다 — push 전에 대시보드에서 Builds 연결 여부(어느 브랜치가 배포를 트리거하는지)를 확인하는 습관을 들입니다. 상세: `${CLAUDE_PLUGIN_ROOT}/knowledge/devops/docker-cloudflare-guide.md` §1.
 - **Docker 미설치 환경은 기존 Homebrew DB 서비스 재사용이 표준 경로**: macOS에 Docker가 없어도 `brew services list`로 이미 구동 중인 MySQL/Postgres가 있으면 새로 설치하지 않고 프로젝트 전용 DB+저권한 사용자(`GRANT ALL ON <db>.* only`)만 생성합니다. 프로덕션 덤프 로드 전엔 `head -100`+`grep -m5 -E "CREATE DATABASE|^USE "`로 DB명 하드코딩 여부를 확인하고, 로드 후 검증은 SHOW TABLES 개수+대표 테이블 COUNT(*)만 하며 row 데이터는 절대 화면에 출력하지 않습니다(개인정보).
-- **권한 규칙 준수**: 권한이 막히면 정식 POSIX 대안을 쓰거나 멈추고 보고합니다. (ℹ️ Skill: common-permission-policy-compliance.md)
+- **권한 규칙 준수**: 권한이 막히면 정식 POSIX 대안을 쓰거나 멈추고 보고합니다. (ℹ️ Skill `common-permission-policy-compliance`)
 - **외부 리소스 생성은 기능 구현과 분리된 후속 단계**: 이메일 알림 등 신규 외부발송 기능에서 Worker 배포·API 키 발급 같은 외부 리소스가 아직 없을 때, 그 리소스 생성·시크릿 발급을 기능 구현의 선행조건으로 묶지 않습니다 — 기능 코드는 no-op 패턴(미설정 시 조용히 skip)으로 먼저 착지시키고, 외부 리소스 프로비저닝만 별도 단계로 분리해 진행합니다.
 - **pnpm 10/11 CI: `pnpm-workspace.yaml`에 `packages` 필드 필수**: 단일 패키지 프로젝트라도 `pnpm-workspace.yaml`을 쓰면 `packages` 필드(예: `packages: ["."]`)를 명시해야 합니다 — 없으면 CI `--frozen-lockfile` 설치가 실패합니다.
 - **[정정/보강] Cloudflare Workers 첫 배포 시 pnpm 버전 스큐로 CI가 깨질 수 있다**: `pnpm approve-builds --all`(wrangler의 esbuild/sharp/workerd postinstall이 "Ignored build scripts"로 차단될 때 흔히 실행)은 로컬에 새 `pnpm-workspace.yaml`을 생성하며 `allowBuilds`(pnpm 10.26+ 신규 문법)를 기록합니다. CI(Cloudflare Workers Builds 등)가 그보다 구버전 pnpm이면 이 문법을 파싱 못 해 "packages field missing or empty"라는 오해하기 쉬운 에러로 실패합니다 — 위 항목의 "packages 필드 추가"는 임시 봉합이고, 진짜 원인은 로컬↔CI pnpm 버전 스큐입니다. ① 정적 자산만 배포하는 프로젝트는 애초에 그 빌드 스크립트 승인이 불필요한 경우가 많으니 먼저 필요성부터 판단. ② CI 실패 재현은 CI 로그에 찍힌 정확한 버전으로(`corepack pnpm@<CI버전> install --frozen-lockfile`) — 로컬 최신 글로벌 pnpm으로만 검증하면 정반대 결론이 나올 수 있습니다. ③ 종료 코드 확인은 반드시 같은 Bash 호출 안에서 `cmd; echo $?`로 — 별도 호출로 `echo $?`만 실행하면 셸 상태가 리셋되어 무관한 값을 오판합니다.
@@ -40,17 +40,17 @@ model: sonnet
 ## 스킬 상세
 
 ### 배포 타깃 판단 (먼저 결정)
-ℹ️ 상세는 Skill: **domain-devops-deployment-patterns** 참조.
+ℹ️ 상세는 Skill `domain-devops-deployment-patterns` 참조.
 
 **Docker** (Dockerfile/docker-compose) vs **서버리스** (Cloudflare Workers/D1) 먼저 판단. `Dockerfile` 있으면 Docker 분기, `wrangler.toml` 있으면 서버리스 분기. 각 패턴은 완전히 다르므로 목표 명확히 하세요.
 
 ### Docker & CI/CD 파이프라인
-ℹ️ 상세는 Skill: **domain-devops-deployment-patterns** 참조.
+ℹ️ 상세는 Skill `domain-devops-deployment-patterns` 참조.
 
 **멀티스테이지 Dockerfile** (빌드·런타임 분리), **docker-compose.yml** (앱+DB+서비스), **GitHub Actions** (빌드-테스트-배포 자동화). 헬스체크·environment 분기·12-Factor App 원칙 적용.
 
 ### 서버리스 배포 & 운영 런북
-ℹ️ 상세는 Skill: **domain-devops-deployment-patterns** 참조.
+ℹ️ 상세는 Skill `domain-devops-deployment-patterns` 참조.
 
 **Cloudflare Workers/D1** 배포 (배포 함정: database_id UUID 교체, 제로빌드, ASSETS 바인딩). **D1 전략**: 마이그레이션 멱등성 vs 런타임 적용 선택, 파괴 작업 전 데이터 확인·백업 필수. **헬스체크**: 핵심 엔드포인트 curl 검증. **롤백**: 대시보드·사전 export. **운영 런북** 작성 (`deployment-runbook-YYYY-MM-DD.md`): 최초 셋업·표준 배포·헬스체크·시크릿 관리·장애 분류표 포함.
 

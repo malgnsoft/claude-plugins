@@ -14,11 +14,11 @@ model: sonnet
 - 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조 (플레이스홀더/TODO 금지)
 - **작업 착수 전 프로젝트 프레임워크를 실제로 확인(짐작 금지)**: 이 MD의 vue-zero 관련 규칙(Composables 금지, Blob URL, `utils.js`+`window.*` 등록 등)은 프로젝트가 실제로 vue-zero를 쓸 때만 적용됩니다. vue-zero는 이 조직 일부(주로 1인 저자)가 쓰는 스택 중 하나일 뿐, 기본값이 아닙니다. `package.json`의 dependencies(`nuxt`, `next` 등)와 프로젝트 `CLAUDE.md`/`docs/architecture.md`를 실제로 Read해 Nuxt/Next.js/vue-zero/기타 중 무엇인지 판별한 뒤, 그 프레임워크에 맞는 규칙을 적용하세요(관련: 스킬 상세 "Nuxt/Next.js 프로젝트인 경우"). **주의**: vue-zero는 CDN `<script>` 로드 방식이라 npm 의존성이 아니며 `package.json`에는 나타나지 않을 수 있습니다 — `index.html` 등에서 `<script src="https://unpkg.com/vue-zero-ai/...">` 존재 여부로 식별하세요(상세: `${CLAUDE_PLUGIN_ROOT}/knowledge/architecture/vue-zero-architecture.md` "Vue-Zero 로드 방법").
 - **모호한 UI 용어는 구현 전 1줄로 확인**: "썸네일"·"카드"·"그리드"는 사람마다 다르게 씁니다. 구현 전 예시·레퍼런스로 의도를 짧게 확인하세요.
-- **UI는 실제 화면으로 검증**: 로컬 서버(`pnpm run dev`)를 띄우고 이 플러그인 번들 스크립트 `bin/capture.mjs`로 렌더링 화면을 캡처해 확인하세요. (ℹ️ Skill: common-screen-verification-and-capture 참조)
-- **정직 보고**: 화면을 못 봤거나 검증 못 했으면 명시하세요. (ℹ️ Skill: common-verifiable-output-and-honesty 참조)
+- **UI는 실제 화면으로 검증**: 로컬 서버(`pnpm run dev`)를 띄우고 이 플러그인 번들 스크립트 `bin/capture.mjs`로 렌더링 화면을 캡처해 확인하세요. (ℹ️ Skill `common-screen-verification-and-capture` 참조)
+- **정직 보고**: 화면을 못 봤거나 검증 못 했으면 명시하세요. (ℹ️ Skill `common-verifiable-output-and-honesty` 참조)
 - **프레임워크 변경 확인 후 디버깅**: "이전엔 자동으로 되던 것"이 안 되면 프로젝트 코드보다 먼저 의존 프레임워크/라이브러리의 최근 변경 이력을 확인하세요.
 - **도메인 규칙 문서는 착수 전 실제로 Read**: 프로젝트에 날짜/타임존 등 도메인 규칙 문서가 있으면 관련 작업 착수 전 매번 Read해서 확인하세요 — 문서화만으로는 지켜지지 않습니다.
-- **권한 규칙 준수**: 권한이 막히면 정식 POSIX 대안을 쓰거나 멈추고 보고합니다. (ℹ️ Skill: common-permission-policy-compliance.md)
+- **권한 규칙 준수**: 권한이 막히면 정식 POSIX 대안을 쓰거나 멈추고 보고합니다. (ℹ️ Skill `common-permission-policy-compliance`)
 - **DTO 필드 참조 전 실물 확인**: 응답 객체 필드(특히 id 등 식별자)를 사용하기 전에 실제 API 응답에 그 필드가 존재하는지 확인합니다. 가능하면 응답 DTO보다 이미 갖고 있는 라우트 파라미터(`route.params.id` 등)를 재사용해 서버 DTO 변경에 덜 취약하게 만듭니다.
 - **설계문서 와이어프레임의 "기존 화면 재사용" 명시는 실물 대조 후 구현**: 설계 문서가 "기존 화면 X와 동일하게" 헤더·탭 등을 재사용/재렌더한다고 명시한 요소는, 와이어프레임만 보고 그대로 옮기지 말고 실제 X 화면의 `.vue` 소스(마크업 문구·클래스·순서)를 직접 열어 대조한 뒤 구현합니다. 같은 문서 안에서 프로즈와 와이어프레임이 서로 다른 내용을 그리고 있으면(흔한 설계 오류) 와이어프레임을 무비판적으로 베끼지 말고 실제 기존 화면 쪽을 우선하거나 설계자에게 확인합니다. 여러 화면이 공유해야 할 마크업(헤더·탭바 등)은 손으로 복붙하지 말고 공용 컴포넌트로 추출해 두 화면이 같은 소스를 쓰게 만드세요 — 그래야 원본이 나중에 바뀌어도 드리프트가 나지 않습니다(실제 사내 사고 사례, 상세: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/screen-reuse-consistency-verification.md`).
 - **문서 저장 위치**: 프로젝트 루트의 `docs/design/`에 저장합니다. (소스: `src/`, 최종 결과물: `output/`)
@@ -66,7 +66,7 @@ vendored/수정불가 런타임이 전역 동작(예: `document.title` 대입)�
 
 ### 반응형·상태 관리
 
-**(vue-zero 프로젝트인 경우)** ℹ️ 상세는 Skill: **frontend-vue-zero-patterns** 참조. UI 컴포넌트 라이브러리는 Bootstrap 5가 기본 원칙(조직 표준)이며, **Bootstrap 5 그리드** + 모바일 표 깨짐은 `white-space:nowrap` + 스크롤. **상태 관리**: props/emit 단방향(`emit`은 Vue 고유 API). Nuxt/Next.js 등 다른 프레임워크는 해당 프레임워크의 상태 관리 관례를 따르세요(예: React/Next.js는 props+state 또는 선택한 상태관리 라이브러리).
+**(vue-zero 프로젝트인 경우)** ℹ️ 상세는 Skill `frontend-vue-zero-patterns` 참조. UI 컴포넌트 라이브러리는 Bootstrap 5가 기본 원칙(조직 표준)이며, **Bootstrap 5 그리드** + 모바일 표 깨짐은 `white-space:nowrap` + 스크롤. **상태 관리**: props/emit 단방향(`emit`은 Vue 고유 API). Nuxt/Next.js 등 다른 프레임워크는 해당 프레임워크의 상태 관리 관례를 따르세요(예: React/Next.js는 props+state 또는 선택한 상태관리 라이브러리).
 
 **프레임워크 공통**: 고정 분류(권한·상태·단계)는 명시 등록, 데이터 변동 주도(팀·탭)는 group-by 도출. 로딩·빈 상태·에러·권한 상태도 설계에 포함.
 
