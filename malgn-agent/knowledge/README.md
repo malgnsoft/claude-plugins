@@ -51,7 +51,7 @@
 - `risk-escalation-guide.md` — 리스크 식별 체크리스트, 4가지 대응 전략(회피/완화/전가/수용), 에스컬레이션 기준/형식 (`agents/pm.md` 실참조)
 - `reporting-integration-guide.md` — 산출물 통합 절차, 최종 보고 템플릿, RAG 상태, 2분 규칙 (`agents/pm.md` 실참조)
 - `retrospective-framework.md` — Start/Stop/Continue + SWOT 회고, 교훈 문서화, 에이전트 성과 추적
-- `agent-training-guide.md` — 에이전트 훈련 시스템 전체 가이드(6가지 훈련 모드, 스킬/경험 점수 체계, knowledge 관리 체계, 학습 이력 기록 절차). 에이전트 MD 골격 정본은 이 문서 부록의 9단 골격이다 (`agents/trainer.md` 실참조)
+- `agent-training-guide.md` — 에이전트 훈련 시스템 전체 가이드(6가지 훈련 모드, 스킬/경험 점수 체계, knowledge 관리 체계, 학습 이력 기록 절차). 에이전트 MD 골격 정본은 이 문서 §2.2의 9단 골격이다(부록은 요약) (`agents/trainer.md` 실참조)
 - `autonomous-iteration-philosophy.md` — 자율 반복 상한(3~5회)·수확체감 우선 종료조건, 일일 토큰 예산 게이트와 한도 초과 시 대표 보고 절차 (`agents/pm.md` 실참조)
 - `coo-rule-rationale.md` — PM 핵심 운영 규칙의 근거 모음(orchestrator 흡수, 집필 위임 원칙, 공유 가정 주입, 경로 릴레이 순차 위임) — 각 규칙이 유래한 실제 사고 사례 포함 (`agents/pm.md` 실참조)
 - (STATUS.md 표준 포맷·크기 상한·아카이빙·헤더 교체 규칙 정본은 knowledge가 아니라 `skills/project-standards` §3)
