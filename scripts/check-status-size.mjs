@@ -5,7 +5,7 @@ import { readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-const LIMIT = Number(process.env.STATUS_MAX_BYTES || 3000);
+const LIMIT = Number(process.env.STATUS_SIZE_GATE_BYTES || 3000);
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const target = join(repoRoot, 'STATUS.md');
 

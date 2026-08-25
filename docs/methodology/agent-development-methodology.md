@@ -4,8 +4,8 @@
 **안내**: 이 문서는 `malgn-agent` 플러그인의 **2단계 전수분석**과 **3단계 재작성**을 착수할 때 그대로 쓰는 판정 기준(rubric)이다. 감사·재작성 세션은 새 판정 기준을 그 자리에서 발명하지 않고 이 문서의 조건→행동 규칙을 그대로 적용하며, 이견이 있으면 §10.2 절차로 개정한다.
 
 > **지위**: A(architecture)·B(prompt-engineering)·C(quality-verification)·D(delegation-orchestration)·E(end-user-adoption) 5개 초안과 그 교차비평을 병합한 최종본. 5개 초안은 `docs/architecture/`, `docs/guides/`, `docs/agent-development-methodology-draft.md`(E), 스크래치패드(C·D)에 원형 그대로 보존하고 이 문서로 대체하지 않는다 — 개별 초안이 더 상세히 다룬 논거를 찾을 때의 1차 사료로 남긴다.
-> **용도**: `malgn-agent` 플러그인(agents 21·skills 35·knowledge 61·hooks 2)의 **기존 전수 감사**와 **전체/부분 재작성** 여부를 판정하는 rubric으로 그대로 쓴다. 추상 선언이 아니라 "이 조건이면 이렇게 판단한다"는 실행 가능한 규칙만 담는다.
-> **모순 해소 원칙**: 5개 초안이 서로 다른 결론을 낸 지점(등급 체계, product-principles.md 처리, learning-loop 중복, reviewer 트리거, 재작성 임계값)은 아래 각 절에 **"[병합판정]"** 표시로 최종 결정과 근거를 명시했다. 결정에 이견이 있으면 이 문서를 고치지 말고 `decision_add`(importance 4~5)로 대안을 먼저 기록한 뒤 §10 절차로 개정한다.
+> **용도**: `malgn-agent` 플러그인(agents 21·skills 38·knowledge 54·hooks 2)의 **기존 전수 감사**와 **전체/부분 재작성** 여부를 판정하는 rubric으로 그대로 쓴다. 추상 선언이 아니라 "이 조건이면 이렇게 판단한다"는 실행 가능한 규칙만 담는다.
+> **모순 해소 원칙**: 5개 초안이 서로 다른 결론을 낸 지점(등급 체계, product-principles.md 처리, learning-loop 중복, reviewer 트리거, 재작성 임계값)은 아래 각 절에 **"[병합판정]"** 표시로 최종 결정과 근거를 명시했다. 결정에 이견이 있으면 이 문서를 고치지 말고 `decision_record`(importance 4~5)로 대안을 먼저 기록한 뒤 §10 절차로 개정한다.
 
 ---
 
@@ -24,7 +24,7 @@
 
 새 규칙을 어디에 쓸지 애매하면: "검증을 얼마나 깊게 할지"는 task-grading에, "산출물을 어떤 구조로 만들지"는 본 문서에 쓰고, 다른 쪽에는 "상세는 X 참조" 1줄만 남긴다(중복 서술 금지 — §10에서 이 문서 자신에게도 적용).
 
-**중요한 구분 (혼동 시 사고로 이어짐)**: 이 방법론이 다루는 것은 malgn-agent가 **설치되는 고객 조직에서의 운영 방식**(malgnai-hub 연동, `pm.md` 오케스트레이션)이다. `claude-plugins` 저장소 **자신**의 운영 방식(로컬 malgnai-mcp, 이 세션 자체가 PM)과는 별개다 — §9에서 이 두 파이프라인을 표로 명확히 분리한다.
+**중요한 구분 (혼동 시 사고로 이어짐)**: 이 방법론이 다루는 것은 malgn-agent가 **설치되는 고객 조직에서의 운영 방식**(malgnai-hub 연동, `pm.md` 오케스트레이션)이다. `claude-plugins` 저장소 **자신**의 운영 방식(malgnai-hub 연동, 이 세션 자체가 PM)과는 별개다 — §9에서 이 두 파이프라인을 표로 명확히 분리한다.
 
 ---
 
@@ -118,7 +118,7 @@ Q4. 사람의 취향·전문 판단·도메인 지식이 개입해야 하는가?
 ### 2.3 중복 판정 절차 (통합 — A/C/E 세 초안이 독립적으로 같은 절차에 수렴)
 
 1. **기계적 1차 스캔(A)**: `grep -r <핵심 키워드>`로 기존 자산이 요구의 80% 이상을 이미 커버하는지 확인한다. 80% 이상 겹치면 신규 작성 대신 기존 자산을 확장한다.
-2. **description 교집합 대조(C)**: 신규/수정 대상의 `description`을 기존 skills 35종과 나란히 놓고, "동일 트리거 문구에 반응하는 스킬이 2개 이상 되는가"를 확인한다.
+2. **description 교집합 대조(C)**: 신규/수정 대상의 `description`을 기존 skills 38종과 나란히 놓고, "동일 트리거 문구에 반응하는 스킬이 2개 이상 되는가"를 확인한다.
 3. **긍정형 배타 트리거 요구**: 교집합이 의심되면 각 description이 **"언제 이걸 여는가"를 긍정형으로, 서로 배타적으로** 진술하는지 확인한다. "이 스킬은 X와 중복되지 않는다"류 상호 해명문은 통과 근거가 아니다 — 해명이 필요하다는 것 자체가 선택 지점이 모호하다는 신호다.
 
    실제 선례(2026-08-24 보안 스킬 정리): `domain-backend-api-security`↔`domain-backend-security-audit`는 양쪽에 상호 해명문이 있었지만, 서로를 "먼저 참조하십시오"라고 가리켜 **항상 함께 읽히는 관계**였다 → 해명문을 다듬는 대신 한쪽을 흡수해 통합했다. 반대로 `domain-security-audit-checklist`↔`domain-serverless-edge-api-security`는 해명문끼리 서로를 지목했지만 실측 교집합이 거의 없었다 → 통합이 아니라 트리거 문구 재작성이 답이었다.
@@ -249,12 +249,12 @@ Skill의 `description`은 사람이 읽는 소개문이 아니라 자동 매칭 
 
 ### 5.2 감사 시 즉시 조치가 필요한 발견 — 정본 아님을 확인하고 방치하지 않는다
 
-이 방법론 수립 과정에서 A안 조사가 다음을 발견했다(§9.5에서 issue_add 대상으로 재확인):
+이 방법론 수립 과정에서 A안 조사가 다음을 발견했다(§9.5에서 issue_record 대상으로 재확인):
 
 - `knowledge/common/global-skill-architecture.md`와 `knowledge/common/skill-discovery-and-reuse-guide.md`는 이 플러그인에 **존재하지 않는 스킬명**(`common-deep-research`, `common-dataviz` 등)과 개인 `~/.claude/skills/` 경로를 정본처럼 서술한다 — 개인 전역 설정에서 이식되며 미조정된 드리프트로 추정. 재작성 또는 archive 필요.
 - `knowledge/leadership/agent-md-format-standard.md`는 실측한 21개 에이전트 MD 중 어느 것도 따르지 않는 포맷(역할/팀/모델/스킬 점수표)을 표준으로 제시한다 — 실제 표준은 §3.1이다.
 
-**일반 규칙**: "문서만 있고 실물과 대조되지 않은 채 방치된 지식"은 발견 즉시 정본으로 취급하지 않고, §9.5 절차로 issue_add한 뒤 감사 대기열에 올린다 — 발견자가 그 자리에서 재작성하지 않는다(설계 판단이 필요하면 trainer→evaluator→reviewer 체인).
+**일반 규칙**: "문서만 있고 실물과 대조되지 않은 채 방치된 지식"은 발견 즉시 정본으로 취급하지 않고, §9.5 절차로 issue_record한 뒤 감사 대기열에 올린다 — 발견자가 그 자리에서 재작성하지 않는다(설계 판단이 필요하면 trainer→evaluator→reviewer 체인).
 
 **예시(모범)**: `knowledge/common/beyond-mediocre-output.md`(41줄, 신설 사유+사고사례+5가지 냄새)는 명령형 문장이 섞이지 않은 순수 설명형 문서로, 감사 시 다른 24개 knowledge 파일과 대조하는 "정답 예시"로 쓴다.
 
@@ -322,8 +322,8 @@ Reach의 세 구간(Local=0개/Shared=1~4개/Universal=5개 이상)은 **§2.4 �
 | 독립 채점 | 생략 | evaluator 약식(diff 대조+기준문서 1건) | evaluator 정식 채점 + reviewer 풀패널(§7.3) | 생략 — PM/evaluator가 조사 결론만 검증 | evaluator 정식 채점 + reviewer 풀패널(§7.3 트리거 ⑤에 자동 해당) |
 | 회귀 점검(§7.4) | 생략 가능 | grep 기반 참조 무결성만 | 참조 무결성 + 중복/충돌 스캔 전체 | 해당 없음(파일을 바꾸지 않음) | 참조 무결성 + 중복/충돌 스캔 전체 + 재작성 전 결함목록이 재작성 후 실제로 해소됐는지 재대조 |
 | 실사용 테스트(§7.5) | 생략 | 시나리오 1건 dry-run | 시나리오 2건 이상, 최소 1건은 실제 서브에이전트 위임 재현 | 해당 없음 | Sensitive와 동일 + §9.7 트리거가 된 원 결함 재현 케이스를 재작성 후 다시 실행해 해소 확인 |
-| 승인 주체 | PM(사후 기록만) | evaluator 게이트 PASS | evaluator PASS + PM 명시 승인(malgnai-hub 웹 승인함 없음을 감안해 AskUserQuestion) | PM(조사 결론의 채택 여부만 승인) | evaluator PASS + PM 명시 승인, 트랙 전체 재작성은 착수 전 §10.2에 따라 decision_add 선행 |
-| 기록 | 생략 가능 | decision_add(importance 2~3) | decision_add(importance 4~5) + issue_add(리스크 있으면) | issue_add(발견사항 등록, importance는 발견 내용의 심각도로 별도 판단) | decision_add(importance 4~5 고정) + issue_add |
+| 승인 주체 | PM(사후 기록만) | evaluator 게이트 PASS | evaluator PASS + PM 명시 승인(malgnai-hub 웹 승인함 없음을 감안해 AskUserQuestion) | PM(조사 결론의 채택 여부만 승인) | evaluator PASS + PM 명시 승인, 트랙 전체 재작성은 착수 전 §10.2에 따라 decision_record 선행 |
+| 기록 | 생략 가능 | decision_record(importance 2~3) | decision_record(importance 4~5) + issue_record(리스크 있으면) | issue_record(발견사항 등록, importance는 발견 내용의 심각도로 별도 판단) | decision_record(importance 4~5 고정) + issue_record |
 | 롤백 준비 | 불필요 | git 커밋 단위 분리 | 배포 직후 1세션 관찰 기간 + 되돌릴 커밋 해시를 decision에 명시 | 불필요(변경 없음) | 배포 직후 최소 2세션 관찰 기간 + 트랙 규모를 반영한 단계적 롤백 계획(파일 단위 커밋 분리) |
 
 등급 판정 자체(다섯 중 무엇인지 정하는 것)는 §7.1의 Q1~Q3로 한다. 이 표는 등급이 정해진 **이후** 어떤 절차를 밟을지만 정의한다.
@@ -336,7 +336,7 @@ Reach의 세 구간(Local=0개/Shared=1~4개/Universal=5개 이상)은 **§2.4 �
 
 | §9.7 판정 | 적용 단위 |
 |---|---|
-| 국소 패치(Standard) | **배치 전체 1회** — grep 1회로 특정되는 동일 유형 결함을 여러 파일에 일괄 치환하는 경우, 파일마다 반복하지 않는다. 예: 35개 스킬 전체의 malgnai-mcp→malgnai-hub 도구명 일괄 치환은 치환 배치 전체에 약식 검증 1회. |
+| 국소 패치(Standard) | **배치 전체 1회** — grep 1회로 특정되는 동일 유형 결함을 여러 파일에 일괄 치환하는 경우, 파일마다 반복하지 않는다. 예: 38개 스킬 전체의 malgnai-mcp→malgnai-hub 도구명 일괄 치환은 치환 배치 전체에 약식 검증 1회. |
 | **역할 경계·위임 모델 절 내부 치환**(§7.1 고정 규칙, grep 1회로 특정 가능한 국소패치 규모라도 등급=Sensitive) | **파일당 1회, 풀패널이되 체크리스트형으로 경량화** — §7.1 고정 규칙이 §9.7의 국소패치 행보다 우선하므로 배치 1회로 낮추지 않는다(예: 21개 에이전트의 "호출자: COO"→"호출자: pm.md" 치환은 각 파일의 역할경계 절에 그 이상의 위임범위·승인주체·에스컬레이션 대상 서술이 딸려 있는지를 파일마다 개별 확인해야 하므로 파일당 1회). 단, 매 파일 동일한 심사 기준(아래 체크리스트)을 재사용해 세션당 소요를 최소화한다: ①치환 후에도 승인/실행/에스컬레이션 권한 서술이 실제 오케스트레이터(pm.md)의 실제 권한 범위와 일치하는가(예: security.md의 "COO 위임 정책(medium 이하 직접결정)"처럼 이전 COO 전용 권한 문구가 남아있지 않은가) ②호출 시점·조건 서술이 pm.md 기준으로도 여전히 유효한가. |
 | 해당 파일만 재작성(Refactor, 파일 단위) | **파일당 1회** — 각 파일의 구조 자체가 독립적으로 다시 설계되므로 배치로 묶지 않는다. |
 | 트랙 전체 재작성(Refactor, 트랙 단위) | **트랙당 총 2회** — 착수 시 대안 설계(architect 참여)에 1회, 트랙 완료 시 최종 통합 검수에 1회. 트랙 내부 개별 파일 재작성마다 반복하지 않는다. |
@@ -349,7 +349,7 @@ Reach의 세 구간(Local=0개/Shared=1~4개/Universal=5개 이상)은 **§2.4 �
 **이 저장소 전용 페르소나 4종(발산형 1명 필수 규칙과 결합)**:
 - **이식성 심사관(수렴형)** — 개인 경로·개인 페르소나·특정 프로젝트 전용 가정이 남아 있는가만 본다.
 - **신입 직원(수렴형)** — 배경지식 0에서 이 MD/스킬만 읽고 실제로 작업을 수행할 수 있는가(암묵 지식·미정의 약어 검출).
-- **경쟁 스킬 조사관(수렴형)** — 기존 35개 스킬/61개 지식과 내용이 겹치거나 모순되는가(§2.3과 연결).
+- **경쟁 스킬 조사관(수렴형)** — 기존 38개 스킬/54개 지식과 내용이 겹치거나 모순되는가(§2.3과 연결).
 - **제로베이스 재설계자(발산형, 필수)** — 이 에이전트/스킬이 애초에 이 형태로 존재해야 하는가, 다른 자산에 흡수·삭제되는 게 낫지 않은가를 구체적 대안 구조와 함께 제시.
 
 ### 7.4 회귀 점검 — 충돌·중복 탐지 절차 (Standard 이상)
@@ -413,7 +413,7 @@ Standard 이상 위임 시 다음 8항목이 모두 있어야 "완전한 위임"
 | (a) 산출물 품질 미달 | 근거 없는 수치, happy-path만 서술 | `activity_log`/`work_record` | `common-beyond-mediocre-output` 보강 후보 |
 | (b) 팀 구성/위임 오류 | 불필요한 풀파이프라인 가동, 등급 오판 | `decision_add`/`decision_record`(importance 재판정) | `common-task-grading-and-verification-depth` 보강 후보 |
 | (c) 도구/경로 오류 | 존재하지 않는 파일 참조, 개인 절대경로 잔존 | `issue_add`/`issue_record` → 해결 후 resolve | 감사 rubric §9.6 A/G 항목으로 흡수 |
-| (d) 권한/승인 경계 위반 | 승인 없이 비가역 실행(배포·집행) | `issue_add`(importance 최고) + 즉시 사용자 보고 | agent 역할 경계 문구 즉시 수정 |
+| (d) 권한/승인 경계 위반 | 승인 없이 비가역 실행(배포·집행) | `issue_record`(importance 최고) + 즉시 사용자 보고 | agent 역할 경계 문구 즉시 수정 |
 
 ### 8.6 이 저장소가 이미 계승한 pm.md 원칙 (1곳에만 기술, 나머지 절은 참조만)
 
@@ -453,7 +453,7 @@ Standard 이상 위임 시 다음 8항목이 모두 있어야 "완전한 위임"
 
 ### 9.3 [최우선 감사 항목, E §6-F를 정본 채택] malgnai-hub 어댑테이션 정합
 
-**fail 조건**: malgnai-mcp 전용 도구명(`decision_add`, `issue_add`, `activity_log`, `lesson_add`, `memory_add` 등 malgnai-mcp 버전 시그니처 — malgnai-hub 쪽 이름인 `decision_record`/`issue_record`/`work_record`(§9.1 표)와 혼동하지 말 것)이 malgnai-hub 연동판 문서(agents/skills/knowledge)에 "해당 없음" 처리 없이 그대로 호출 예시로 남아있음. `pm.md`는 이미 명시적으로 처리했으나(52·63·206·253행) **skills 35개+knowledge 61개 전체는 미검증** — 감사 대기열 최우선순위로 지정한다. 특히 `common-token-efficient-collaboration`과 `common-output-storage-and-path-management`는 malgnai-mcp 시절 도구명·개인 경로 관례를 그대로 쓰고 있을 가능성이 지목되었으므로(§9.5 표 참조) 우선 확인 대상이다.
+**fail 조건**: malgnai-mcp 전용 도구명(`decision_add`, `issue_add`, `activity_log`, `lesson_add`, `memory_add` 등 malgnai-mcp 버전 시그니처 — malgnai-hub 쪽 이름인 `decision_record`/`issue_record`/`work_record`(§9.1 표)와 혼동하지 말 것)이 malgnai-hub 연동판 문서(agents/skills/knowledge)에 "해당 없음" 처리 없이 그대로 호출 예시로 남아있음. `pm.md`는 이미 명시적으로 처리했으나(52·63·206·253행) **skills 38개+knowledge 54개 전체는 미검증** — 감사 대기열 최우선순위로 지정한다. 특히 `common-token-efficient-collaboration`과 `common-output-storage-and-path-management`는 malgnai-mcp 시절 도구명·개인 경로 관례를 그대로 쓰고 있을 가능성이 지목되었으므로(§9.5 표 참조) 우선 확인 대상이다.
 
 ### 9.4 이식성(Portability) 판정
 
@@ -487,33 +487,33 @@ C안은 "전체 파일 모집단의 30%"를, E안은 "카테고리 내 30%"(분�
 |---|---|---|---|
 | 국소 패치 | Standard | A/G 위반이 grep 1회로 전량 특정·수정 가능한 수준 | trainer 일괄 치환 → reviewer 약식, 적용 단위는 §7.3 표(배치 전체 1회) |
 | 해당 파일만 재작성 | Refactor(파일 단위) | D 또는 F가 그 파일 하나의 실행 가능성 자체를 막음 | 파일 단위 재작성 + reviewer 풀패널, 적용 단위는 §7.3 표(파일당 1회) |
-| **트랙 전체 재작성** | Refactor(트랙 단위) | **전체 117개 파일 중 30% 이상이 Sensitive 결함**, **또는** **특정 카테고리(skills 35/knowledge 61/agents 21) 내에서 30% 이상**, **또는** 핵심 3종(pm/evaluator/trainer) 중 2개 이상이 실행 불가 지시를 포함 | 패치가 아니라 **깨진 축 단위**로 재작성(파일 단위 아님). architect 참여해 대안 설계부터. 적용 단위는 §7.3 표(트랙당 착수 1회+완료 1회, 총 2회) |
+| **트랙 전체 재작성** | Refactor(트랙 단위) | **전체 113개 파일 중 30% 이상이 Sensitive 결함**, **또는** **특정 카테고리(skills 38/knowledge 54/agents 21) 내에서 30% 이상**, **또는** 핵심 3종(pm/evaluator/trainer) 중 2개 이상이 실행 불가 지시를 포함 | 패치가 아니라 **깨진 축 단위**로 재작성(파일 단위 아님). architect 참여해 대안 설계부터. 적용 단위는 §7.3 표(트랙당 착수 1회+완료 1회, 총 2회) |
 | 방법론 자체 재검토 | Sensitive | `common-*` 6종 중 2개 이상에서 상충하는 지시 발견 | 이 문서 §10 절차로 개정 |
 
 기존에 §9.7이 "해당 파일만 재작성"·"트랙 전체 재작성"을 "(Sensitive 취급)"으로만 적었던 것은 §7.1 정본 5단계 표기와 불일치했다 — 이 문서는 이 두 판정을 **Refactor**로 명시한다(둘 다 §7.1 Q2 조건을 그대로 충족한다: 기능 변화 없이 구조·서술을 다시 쓰는 작업).
 
-**핵심 3종 조건의 범위("트랙"의 정의)**: 이 조건이 트리거하는 "트랙"은 agents 21개 전체도, 117개 전체도 아니다 — **pm.md·evaluator.md·trainer.md 3개 파일 + 이 3개가 직접 인용하는 도구/스킬 경로**로 한정한다 — 이하 "오케스트레이션 트랙"이라 부른다. 다른 18개 에이전트나 나머지 skills/knowledge는 이 조건만으로 자동 포함되지 않는다(포함 여부는 별도로 위 표의 30% 카테고리 조건으로 판정한다).
+**핵심 3종 조건의 범위("트랙"의 정의)**: 이 조건이 트리거하는 "트랙"은 agents 21개 전체도, 113개 전체도 아니다 — **pm.md·evaluator.md·trainer.md 3개 파일 + 이 3개가 직접 인용하는 도구/스킬 경로**로 한정한다 — 이하 "오케스트레이션 트랙"이라 부른다. 다른 18개 에이전트나 나머지 skills/knowledge는 이 조건만으로 자동 포함되지 않는다(포함 여부는 별도로 위 표의 30% 카테고리 조건으로 판정한다).
 
 **[D3 해소, 2026-08-07] "직접 인용" 판정은 인용 여부만으로 한다 — 결함 심각도로 다시 거르지 않는다**: 이 스코프는 순수 인용 그래프(citation graph) 기준이다. pm/evaluator/trainer 중 하나라도 그 경로를 모드표·섹션 헤딩·본문 참조 어디서든 직접 인용하면 그 파일은 트랙 멤버다 — 그 파일 자신의 결함이 가볍다는 이유로 스코프에서 뺀 뒤 "별도 경량 재확인"으로 격하하지 않는다(스코프=대상 확정, 결함 심각도=그 안에서 파일별 재작성 분량 결정 — 두 판단을 섞으면 같은 grep 결과를 놓고도 판정이 갈린다는 것이 2026-08-07 D3 심사에서 실증됐다). 이 rubric 채택 시점 실측(grep) 기준으로 pm/evaluator/trainer가 직접 인용하는 경로는 다음 5개 스킬이다: `agent-upskill`(trainer 모드1) · `project-retrospective`(모드3) · `topic-learning`(모드4) · `reflect-lessons`(모드5) · `training-scorecard-eval`(evaluator 산출물 기준 + trainer 필수 학습자료). 도구 경로는 `promote-agent.mjs`/`promote-skill.mjs`/`promote-knowledge.mjs`/`bin/record-eval.mjs`/`bin/design-review.mjs`/`bin/promote-check.mjs` 등(전부 미실재 — §7.6 결함의 실체). **`screen-verification-and-capture`는 pm/evaluator/trainer 어디에도 인용되지 않으므로(grep 0건) 이 정의로 스코프에 포함되지 않는다** — 도구 인프라 결정(§9.8-6 `c3ef5744`, D8)과는 별개 트랙으로 유지한다. 인용 목록은 코드가 바뀌면 같이 바뀌므로, 재작성 착수 세션은 이 목록을 그대로 믿지 말고 `grep -n "skills/\|skill\`" agents/{pm,evaluator,trainer}.md`로 즉시 재확인한다.
 
 **[즉시 발동, "재확인 필요"가 아님]** §7.6은 evaluator.md·trainer.md **둘 다** 이미 §7.4 "경로 실재 대조" 게이트를 통과하지 못한다고 문서 스스로 자인했다 — 핵심 3종 중 2개 이상 실행 불가 조건은 **이 문서 채택 시점에 이미 충족된 상태**다. §9.8은 이를 "재확인 필요"로 격하하지 않고 **오케스트레이션 트랙(위에서 정의한 범위) 재작성을 감사 대기열 1순위로 즉시 등록**한다.
 
-**판정 절차**: evaluator가 rubric A~G로 파일별 채점 → 카테고리별 fail 비율 집계 → PM이 GO/NO-GO 결정 → `decision_add`(패치=importance 2~3, 트랙 전체 재작성=importance 4~5)로 근거 기록.
+**판정 절차**: evaluator가 rubric A~G로 파일별 채점 → 카테고리별 fail 비율 집계 → PM이 GO/NO-GO 결정 → `decision_record`(패치=importance 2~3, 트랙 전체 재작성=importance 4~5)로 근거 기록.
 
 **[D2 해소, 2026-08-07] agents 카테고리 30% 조건 실제 발동 확인**: "COO 잔존은 국소 패치(Standard)"라는 초기 잠정 권고는 §7.1의 "역할 경계 절 변경은 위치 기준으로 무조건 Sensitive" 고정 규칙(§7.1 참조)과 충돌해 기각됐다 — COO 잔존은 agents 20/21의 "## 역할 경계" 섹션 안에 있으므로 파일 단위로 Sensitive 집계 대상이고, 20/21≈95%는 30%(7/21) 임계값을 크게 초과한다. 따라서 agents 카테고리는 위 표의 **트랙 전체 재작성** 행에 해당한다. 처리 범위는 §7.1의 D2 서술대로 "호출자 명칭 정정 + 파일별 위임모델 합치 대조"로 한정한다(전면 재설계 아님) — 판정 근거·세부 절차 중복 서술 금지 원칙(§10.1)에 따라 상세는 §7.1 [D1/D2 정정] 항목을 정본으로 삼는다.
 
 ### 9.8 즉시 감사 대기열에 올릴 초기 배치 (5개 초안이 이미 발견, 아직 등록되지 않음)
 
-5개 초안 중 A안이 발견한 knowledge 드리프트(§5.2)는 어느 초안에도 issue_add되지 않은 채 남아 있었다 — 이 문서 완성과 별개로 **즉시 등록**한다.
+5개 초안 중 A안이 발견한 knowledge 드리프트(§5.2)는 어느 초안에도 issue_record되지 않은 채 남아 있었다 — 이 문서 완성과 별개로 **즉시 등록**한다.
 
 1. `knowledge/common/global-skill-architecture.md`, `knowledge/common/skill-discovery-and-reuse-guide.md` — 존재하지 않는 스킬명·개인 경로 서술(§5.2).
 2. `knowledge/leadership/agent-md-format-standard.md` — 실제 21개 에이전트 중 어느 것도 따르지 않는 포맷 제시(§5.2).
 3. `knowledge/README.md` — "COO는 lessons/[프로젝트명].md에 회고 기록" 페르소나 잔재이자 존재하지 않는 폴더 서술.
 4. agents 20/21개 — "COO가 STAGE N에서 호출"류 서술이 남음(제품 호출자는 pm.md, "COO" 페르소나는 제품에 없음).
 5. `pm.md` "학습 자료" 섹션 — `~/.claude/skills/...`, `~/.claude/knowledge/...` 절대경로 잔존(고객 환경에 없는 경로라 회귀 테스트로 못 잡고 조용히 깨짐).
-6. STATUS.md 기존 known-issue: `929edddc`(승격 파이프라인 미번들, §7.6), `c3ef5744`(screen-verification-and-capture의 개인 `shot` CLI 의존), `f1913b79` — 이 중 `929edddc`(evaluator.md·trainer.md 공동 결함)는 §9.7의 "핵심 3종 실행불가 → 트랙 전체 재작성" 조건을 **이미 충족**시킨 상태다. "재확인 필요"가 아니라 **오케스트레이션 트랙(pm/evaluator/trainer + 인용 경로, §9.7에서 정의) 재작성을 즉시 issue_add(importance 5)하고 감사 대기열 1순위로 등록**한다.
+6. STATUS.md 기존 known-issue: `929edddc`(승격 파이프라인 미번들, §7.6), `c3ef5744`(screen-verification-and-capture의 개인 `shot` CLI 의존), `f1913b79` — 이 중 `929edddc`(evaluator.md·trainer.md 공동 결함)는 §9.7의 "핵심 3종 실행불가 → 트랙 전체 재작성" 조건을 **이미 충족**시킨 상태다. "재확인 필요"가 아니라 **오케스트레이션 트랙(pm/evaluator/trainer + 인용 경로, §9.7에서 정의) 재작성을 즉시 issue_record(importance 5)하고 감사 대기열 1순위로 등록**한다.
 
-이 6건은 §9.7 rubric으로 재감사할 필요 없이 **곧바로 issue_add(1~5) 하거나, 이미 등록된 known-issue(6)는 §9.7의 트랙 전체 재작성 조건을 이미 충족시켰으므로 오케스트레이션 트랙 재작성에 즉시 착수**한다.
+이 6건은 §9.7 rubric으로 재감사할 필요 없이 **곧바로 issue_record(1~5) 하거나, 이미 등록된 known-issue(6)는 §9.7의 트랙 전체 재작성 조건을 이미 충족시켰으므로 오케스트레이션 트랙 재작성에 즉시 착수**한다.
 
 ---
 
@@ -532,7 +532,7 @@ C안은 "전체 파일 모집단의 30%"를, E안은 "카테고리 내 30%"(분�
 
 ### 10.2 개정 트리거와 절차
 
-1. 전수 감사·실사용 중 이 문서의 판정 기준과 실제 사례가 어긋나는 지점을 발견하면, 그 자리에서 문서를 고치지 않고 대안을 `decision_add`(importance는 §7.1 등급 판정에 따름 — 판정 기준 자체 변경은 최소 4)로 먼저 기록한다.
+1. 전수 감사·실사용 중 이 문서의 판정 기준과 실제 사례가 어긋나는 지점을 발견하면, 그 자리에서 문서를 고치지 않고 대안을 `decision_record`(importance는 §7.1 등급 판정에 따름 — 판정 기준 자체 변경은 최소 4)로 먼저 기록한다.
 2. §7.3의 reviewer 풀패널 필수 트리거 ⑤("전수 감사/전체 재작성 결론 자체")를 이 문서의 실질적 개정에도 적용한다 — 판정 기준을 바꾸는 것은 그 자체로 Sensitive 산출물이다.
 3. 승인된 개정은 이 문서에 표의 행으로 반영하고, 5개 원본 초안(§ 서두 지위 표기)은 그대로 사료로 남긴다 — 원본 초안을 소급 수정하지 않는다.
 4. 이 문서가 8개 대주제(§1~10 실질 7개 절)를 넘겨 비대해지면, 그 시점에 §10.1 원칙을 이 문서 자신의 분할 승격 판단에 적용한다.
