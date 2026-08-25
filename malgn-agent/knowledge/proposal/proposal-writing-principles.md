@@ -78,5 +78,5 @@ rfp-analyst(Compliance Matrix + 배점) → capture-strategist(Win Theme·Discri
 ## 출처 및 참고
 - Shipley *Proposal Guide* — Claim-Proof-Benefit, Action Caption, Theme Statement
 - APMP BoK — Persuasive Writing, Executive Summary, Win Strategy
-- 공공 적용: `korea-public-procurement.md` / `compliance-matrix-template.md`
+- 공공 적용: `korea-public-procurement.md` / Skill `domain-compliance-matrix-template`
 - 일반 문서 기법: `writing/document-writing-guide.md`, 평범함 판별: `common/beyond-mediocre-output.md`
