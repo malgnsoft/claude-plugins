@@ -49,7 +49,7 @@ malgnai-hub에는 "미분류 pending 큐"가 없다. 대신 아래 세 곳에서
 
 **서로 다른 파일을 건드리는 편집은 파일 간 의존관계가 없는 한 같은 턴에서 병렬로 Edit한다.**
 
-### 5단계: git 커밋 + evaluator 인계 (agents/evaluator.md §2·§3)
+### 5단계: git 커밋 + evaluator 인계 (`${CLAUDE_PLUGIN_ROOT}/agents/evaluator.md` §2·§3)
 
 malgn-agent 소스를 git으로 관리하는 조직에서만 적용된다. 소스클론이 없으면 이 단계는 건너뛰고 4단계 Edit 결과를 그대로 evaluator에게 보고한다.
 
