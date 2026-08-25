@@ -83,8 +83,9 @@ claude plugin list
 
 ### 번들 스크립트 (`bin/`)
 
-외부 패키지 설치 없이 Node 내장 모듈만으로 도는 스크립트라 Windows·macOS에서 똑같이
-실행됩니다.
+대부분 외부 패키지 설치 없이 Node 내장 모듈만으로 도는 스크립트라 Windows·macOS에서
+똑같이 실행됩니다(`capture.mjs`는 예외 — Playwright가 필요하며 없으면 설치 안내와 함께
+종료합니다).
 
 | 스크립트 | 하는 일 |
 | --- | --- |
