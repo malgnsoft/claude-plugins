@@ -73,7 +73,7 @@ echo '{ ...JSON... }' | node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.
 
 > 이 커맨드가 실패하거나(특히 `MODULE_NOT_FOUND`) 새 실행 지시를 쓸 때의 규약 — 따옴표, 이 변수가 치환되는 자리와 안 되는 자리, 맨 명령어를 쓰지 않는 이유 — 은 Skill `common-output-storage-and-path-management` §1-1이 정본이다.
 
-입력 JSON에 채워 넣는 값 (전부 이 단계에서 LLM이 채점/관찰한 정성 판단 결과):
+입력 JSON에 채워 넣는 값 (`previousScore`를 뺀 나머지는 전부 이 단계에서 LLM이 채점/관찰한 정성 판단 결과):
 ```json
 {
   "agent": "architect",
@@ -93,6 +93,8 @@ echo '{ ...JSON... }' | node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.
   "previousScore": 75
 }
 ```
+
+`previousScore`만은 이 단계에서 판단하거나 추정하지 않는다 — malgnai-hub `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 그 에이전트의 점수 이력을 조회해 **최신 기록의 `overallScore`**를 그대로 넣는다. 조회 결과에 점수 이력이 없으면(첫 채점 등) 이 필드를 생략한다 — 스크립트가 `N/A(전월 점수 없음)`으로 처리한다.
 
 스크립트가 결정론적으로 계산해 출력하는 것:
 - 기본수행 7항목 합산(배점 상한 검증 포함) → 기본수행 점수
