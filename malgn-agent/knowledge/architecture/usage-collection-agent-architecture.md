@@ -50,13 +50,14 @@ payload 필드(실제 코드 `buildPayload()` 기준):
 - **집계 수치만 전송한다**: 프롬프트 원문, cwd 절대경로 원문, 도구 input 원문은 payload 어디에도 없다. `repository_key`도 절대경로가 아니라 git remote의 `owner/repo`만 추출.
 - **`summary`는 유일한 예외**: 첫 사용자 프롬프트를 120자로 truncate해 전송한다. "세션ID만으론 무슨 세션인지 식별 불가"하다는 지적에 따른 국소 예외이며, 프롬프트 전문이나 도구 input 원문은 이 예외를 확장하지 않는다.
 - **에이전트/도구별 상세분해는 서버로 가지 않는다**: `analyze-usage.mjs`(로컬 콘솔 진단, `token-usage-diagnosis` 스킬 전담)는 도구별·서브에이전트별·프로젝트별 표를 만들지만, `report-usage.mjs`는 그런 분해를 만들지 않고 세션 단위 총합만 보낸다. "반복 호출 패턴"처럼 도구 input 일부를 노출하는 표는 애초에 원격 전송 스키마에 존재하지 않는다.
+- **로그 파일은 두 OS에서 동일하게 남는다**: macOS는 launchd plist의 `StandardOutPath`/`StandardErrorPath`로, Windows는 `installWindows()`가 `cmd /c "... >> out.log 2>> err.log"`로 감싸는 방식으로 각각 `usage-agent.out.log`/`.err.log`를 기록한다 — OS별로 로그 유무가 갈리지 않는다.
 - **`turns`/`api_calls`는 malgnai-public migration 0012로 추가됐다**: 이 두 필드는 처음부터 스키마에 있던 것이 아니라, 서버 쪽 `sessions`/`usage_daily` 테이블에 컬럼이 추가되면서 전송 바디에 채워 넣게 됐다(둘 다 optional, NOT NULL DEFAULT 0, 음수는 서버가 0으로 clamp).
 
-## 4. 흔히 "당연히 있겠지"라고 기대하지만 실제로는 없는 것들
+## 4. 이 파이프라인에 없는 장치와 실제 구현
 
-이런 파이프라인이면 으레 있으리라 기대하는 장치들이 여기엔 없다. 아래 표 오른쪽이 **코드 실측 정본**이다:
+아래 왼쪽 장치들은 이 파이프라인에 존재하지 않는다. 오른쪽이 **코드 실측 정본**이다:
 
-| 흔히 있으리라 기대하는 것 | 실제 구현 |
+| 장치 | 실제 구현 |
 |---|---|
 | `POST /api/usage/daily-aggregate` + `POST /api/usage/detail` 2개 엔드포인트, 날짜 단위 upsert | 엔드포인트 하나(`POST /api/sessions`), 세션 단위 upsert. **daily-aggregate 전용 엔드포인트 없음** — `usage_daily`는 서버가 세션 데이터로부터 자동 재집계하는 것으로 추정(별도 일별 전송 로직이 클라이언트에 없다) |
 | `purpose="usage_report"` 파라미터로 전용 `usage:write` scope 토큰 발급 | `pair-usage-device.mjs`의 `pair-init` 바디는 `{device_id, device_name}`뿐 — **scope 개념 없이 범용 device_token을 그대로 사용**한다. MCP 인증과 별도 파일(`usage-agent-credentials.json`)에 저장한다는 "저장 위치 분리" 결정은 유지됐지만, "권한 범위 분리"는 구현되지 않았다 |
@@ -65,12 +66,11 @@ payload 필드(실제 코드 `buildPayload()` 기준):
 | `expiresAt`(180일 TTL) + 만료 임박 헬스체크 항목 | credentials 파일에 `expiresAt` 필드 자체가 없다(`{device_id, device_name, device_token, paired_at}`만 저장) — **만료 개념이 구현에 없다**. 헬스체크 스킬(`skills/usage-agent-healthcheck`)도 이 실제 동작에 맞춰 만료 확인 항목을 넣지 않았다 |
 | PID 락 파일(`usage-report.lock`)로 동시 실행 방지 | 코드에 락 파일 구현 없음 |
 | 날짜별 상태 파일 `usage-report-state.json`(`lastSyncedDate` 등) | 실제 파일명·필드명이 다르다 — `usage-agent-last-run.json`(`last_run_at`/`last_success_at`/`since_used`/`sessions_considered`/`sent_success`/`sent_fail`/`last_error`) |
-| Windows도 macOS와 동일하게 로그 파일 기록 | 실제로도 동일하게 기록한다 — `installWindows()`가 `cmd /c "... >> out.log 2>> err.log"`로 감싸 macOS와 동일하게 `usage-agent.out.log`/`.err.log`를 남긴다 |
 
 **왜 이렇게 단순한가**: scope 분리·해시화·PID 락·상태파일 정교화는 "확인되지 않은 문제에 미리 대비하지 않는다(과설계 방지)"는 원칙에 따라 넣지 않은 것으로 보인다 — 이 문서는 코드에서 관찰되는 사실만 확정으로 적고, 그 사실의 이유는 추정임을 명시한다.
 
 ## 5. 유지보수 시 참고
 
 - **재현 가능한 정본은 코드**: `bin/*.mjs` 4개 파일과 그 안의 주석(특히 `report-usage.mjs` 상단 주석의 "개인정보 하드 제약")이 실제 동작의 유일한 정본이다. 이 knowledge가 코드와 다르면 코드를 따른다.
-- **비슷한 파이프라인을 또 만들 때**: 이 구현이 재사용한 패턴 — (1) 무의존성 Node 내장모듈만 사용(설치 없이 어디서나 실행), (2) 재집계+upsert로 멱등성 확보(증분 동기화의 체크포인트 손상 리스크 회피), (3) 실패해도 조용히 종료하고 다음 스케줄에 자연 복구(사용자를 방해하지 않는다는 `token-usage-diagnosis`와 동일한 "조용한 실패" 철학) — 는 유지할 가치가 있다. 반대로 위 §4의 "구현되지 않은 설계"들은 실제로 필요해지기 전까지는 다시 만들 필요가 없다는 신호로 읽을 수 있다(단, 이 판단 자체는 이 문서가 내리는 것이 아니라 다음 유지보수자가 실제 필요를 보고 판단할 사안이다).
-- **헬스체크 스킬과의 관계**: `skills/usage-agent-healthcheck/SKILL.md`는 이 문서가 정리한 실제 구현(파일 경로·필드명·Windows 로그 부재 등)을 그대로 전제로 점검 절차를 짠다 — 두 문서 중 하나만 갱신하고 다른 쪽을 방치하면 드리프트가 생긴다.
+- **비슷한 파이프라인을 또 만들 때**: 이 구현이 재사용한 패턴 — (1) 무의존성 Node 내장모듈만 사용(설치 없이 어디서나 실행), (2) 재집계+upsert로 멱등성 확보(증분 동기화의 체크포인트 손상 리스크 회피), (3) 실패해도 조용히 종료하고 다음 스케줄에 자연 복구(사용자를 방해하지 않는다는 `token-usage-diagnosis`와 동일한 "조용한 실패" 철학) — 는 유지할 가치가 있다. 반대로 위 §4의 "없는 장치"들은 실제로 필요해지기 전까지는 다시 만들 필요가 없다는 신호로 읽을 수 있다(단, 이 판단 자체는 이 문서가 내리는 것이 아니라 다음 유지보수자가 실제 필요를 보고 판단할 사안이다).
+- **헬스체크 스킬과의 관계**: `skills/usage-agent-healthcheck/SKILL.md`는 이 문서가 정리한 실제 구현(파일 경로·필드명·양 OS 공통 로그 경로 등)을 그대로 전제로 점검 절차를 짠다 — 두 문서 중 하나만 갱신하고 다른 쪽을 방치하면 드리프트가 생긴다.
