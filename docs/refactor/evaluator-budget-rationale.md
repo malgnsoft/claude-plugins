@@ -2,8 +2,8 @@
 
 - 대상: `malgn-agent/agents/evaluator.md`
 - 권고 예산: 15 KB (`AGENT_BUDGET_KB`)
-- 이 문서가 변호하는 실측 크기: **17,867 B (17.4 KB)**
-- 작성: PM, `agent-md-defects-20260825` 트랙(승인된 결함 5건 + reviewer 4라운드 재검증에서 나온 잔여 연쇄 수정)
+- 이 문서가 변호하는 실측 크기: **18,633 B (18.2 KB)**
+- 작성: PM, `agent-md-defects-20260825` 트랙(승인된 결함 5건 + reviewer 4라운드 재검증) + `audit-r2-score-record-20260825` 트랙(agent_score_record 배선)
 
 ## 1. 무엇 때문에 넘었나
 
@@ -12,6 +12,7 @@
 - **결함3(스크립트 사용범위 문면 충돌 해소)**: "채점·판정에 스크립트를 쓰지 않는다"가 `domain-training-scorecard-eval` SKILL.md의 "총점은 반드시 스크립트로"와 정면 충돌했다. 두 문장이 공존하려면 "게이트 판정은 grep/ls/diff, 채점 총점 집계만 스크립트"로 범위를 갈라야 했다 — 압축하면 다시 충돌이 재발한다.
 - **결함4(판정 회차 기록 의무 확장)**: 이력화 조건절이 "PR이 열리면"에만 걸려 있어, 이 저장소처럼 PR을 안 쓰는 조직에서는 게이트 판정만 한 회차가 기록 없이 사라졌다(실제로 한 라운드가 유실돼 재수행된 전례가 있다). 조건절을 "게이트 판정 또는 채점을 했다면"으로 넓히고, `decision_record` 필수 필드(`projectId`·`idempotencyKey` 포함) 전체를 명시해야 그대로 호출 가능한 지시가 된다.
 - **reviewer 재검증 3라운드(RV-001·RV-002·RV-006·RV-010·RV-014)**: 결함4가 "기록 주체"를 명확히 하는 과정에서 다른 파일(`pm.md`·`trainer.md`)과의 정합을 맞추느라 evaluator.md 쪽에도 스코프 한정어·필드 명세·`project_bootstrap` 파라미터명 병기가 추가됐다. 전부 실물 대조로 확정된 결함이며 임의 확장이 아니다.
+- **전수감사 RV-004(agent_score_record 최소 배선)**: hub `agent_score_record` 도구가 실재하는데 쓰는 지시가 없어 Scorecard 채점 결과가 산문 안에만 남고 다음 회차가 "지난회 점수"를 구조화된 형태로 조회할 수 없었다(`domain-training-scorecard-eval` SKILL.md 자신의 필수 출력 칸을 스스로 못 채우는 상태). evaluator.md에 조건부 지시(채점한 회차에만) + 자기검증 체크박스 1줄 + 다회차 동시채점 시 키 충돌 방지용 `idempotencyKey` 규칙을 추가했다(+766 B).
 
 ## 2. 잘라낼 것을 찾았는가 — 찾았고, 일부 정리했다
 

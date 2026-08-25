@@ -79,7 +79,7 @@ const BUDGET_RATIONALE = {
   // 아니다 — 근거: docs/refactor/evaluator-budget-rationale.md.
   'agents/evaluator.md': {
     doc: 'docs/refactor/evaluator-budget-rationale.md',
-    bytes: 17867,
+    bytes: 18633,
   },
 };
 // 사유서가 변호하는 크기에서 이만큼까지는 드리프트로 보지 않는다(오탈자·1줄 규칙 수정 여유).
