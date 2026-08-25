@@ -11,8 +11,7 @@
  * 있는 안내문을 stdout에 JSON으로 출력한다. `--write` 플래그가 있을 때만 실제로 CLAUDE.md를
  * 고친다 — 자동 경로(SessionStart 훅 없음, `pnpm run check-docs`는 이 스크립트를 읽기 전용으로만
  * 부른다)에는 쓰기가 없다는 불변식은 유지된다. 그 실질을 지키는 것은 "코드가 파일을 쓰지 않는다"는
- * 글자 그대로의 문장이 아니라 "사용자가 명시적으로 요청하지 않으면 쓰지 않는다"는 것이다
- * (docs/decision/pm-orchestration-block-inline-design.md §9 `--write` 트레이드오프).
+ * 글자 그대로의 문장이 아니라 "사용자가 명시적으로 요청하지 않으면 쓰지 않는다"는 것이다.
  *
  * 경로 계산·구역 파싱(readBlockFile/extractManagedRegion/renderManagedBlock/bodyMatches/
  * findStrayBodyCopy 등)은 ../../../hooks/lib/find-pm-block-path.mjs 로 위임한다 — 이 스크립트,

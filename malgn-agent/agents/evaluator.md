@@ -48,11 +48,11 @@ model: opus
 
 **공통(agent/skill/knowledge 전부)**
 - [ ] 경로 실재: 새/변경 문서가 인용하는 모든 파일 경로를 `test -f`로 확인. 미실재 도구·문서를 인용하면 "번들 안 됨" 각주가 있는가?
-- [ ] 이식성: `grep -n "/Users/\|~/\.claude" <파일>` 0건인가?
+- [ ] 이식성: `grep -n "/Users/\|~/\.claude" <파일>`로 후보를 뽑되, 0건이어야 PASS인 것은 아니다 — 걸린 줄이 전부 아래 둘 중 하나여야 PASS다. ①그 경로를 실제로 가리켜야 기능이 성립하는 경우(직원 PC의 로컬 세션 로그를 분석하는 스킬 등 — 이때 특정 사용자 이름이 박히지 않고 홈 기준으로 쓰였는지까지 본다), ②그 경로를 쓰지 말라고 금지하거나 폐기 사실로 언급하는 경우. 그 외(산출물 저장 위치·실행 예시에 특정 PC의 절대경로가 박힌 것)는 FAIL.
 - [ ] malgnai-hub 정합: hub에 없는 도구명(`lesson_*`/`memory_*`/`command_add`/`project_autonomy_*`/`decision_add`/`issue_add`/`agent_learning_log_add`/`activity_log`/`issue_list`/`decision_list`)이 **절차의 실행 단계로** 지시돼 있지 않은가(없다는 사실을 알리는 각주는 허용)? 파라미터도 실제 스키마와 일치하는가 — 기록·조회 도구는 `projectId`, `repositoryKey`는 `project_bootstrap` 전용이다.
 
 **Agent MD 대상**
-- [ ] 골격 순서: frontmatter→핵심원칙→역할경계→스킬상세→전제조건→자기검증→산출물→학습자료
+- [ ] 골격 순서(9단): frontmatter→핵심원칙→역할경계→스킬상세→전제조건→자기검증→산출물→학습자료→토큰효율
 - [ ] 페르소나 5요소: 정체성 1문장 / 호출조건 / 역할경계(인접 에이전트 이름 명시) / 산출물 계약(경로 패턴) / 완료정의(체크리스트)
 
 **Skill 대상**
