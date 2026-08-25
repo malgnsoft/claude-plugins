@@ -2,9 +2,9 @@
 
 > owner: trainer
 
-> 출처: 설계 문서 `docs/architecture/token-usage-collection-design-2026-08-19.md`·`docs/architecture/token-usage-api-spec-for-malgnai-public-2026-08-19.md`(둘 다 claude-plugins 소스 저장소 루트 `docs/`에만 있고 **malgn-agent 플러그인에 번들되지 않는다** — 재현 불가 시에도 이 knowledge 문서만으로 개념 이해에 지장 없음). malgnai-hub 결정 기록: 최종 설계 승인 · summary 정책(프롬프트 첫 120자 truncate 예외 확정). 실제 구현체는 `malgn-agent/bin/{usage-agent-lib,pair-usage-device,report-usage,install-usage-agent}.mjs`다.
+> 이 문서의 사실 정본은 구현체 `malgn-agent/bin/{usage-agent-lib,pair-usage-device,report-usage,install-usage-agent}.mjs`다 — 필드명·엔드포인트·동작이 이 문서와 어긋나면 코드가 맞다.
 
-이 문서는 나중에 이 기능을 유지보수하거나 비슷한 백그라운드 텔레메트리 파이프라인을 또 만들 사람이 "왜 이렇게 돼 있지"를 빠르게 파악하도록 돕는다. **설계 문서와 실제 구현이 상당히 다르다** — 아래에서 그 차이를 명시한다. 유지보수 시 설계 문서를 정본으로 오인하지 않도록, 필드명·엔드포인트·동작은 실제 코드(`bin/*.mjs`)를 항상 우선한다.
+이 문서는 나중에 이 기능을 유지보수하거나 비슷한 백그라운드 텔레메트리 파이프라인을 또 만들 사람이 "왜 이렇게 돼 있지"를 빠르게 파악하도록 돕는다.
 
 ## 1. 전체 그림 — 로컬 스크립트 4개의 역할 분담
 
@@ -52,11 +52,11 @@ payload 필드(실제 코드 `buildPayload()` 기준):
 - **에이전트/도구별 상세분해는 서버로 가지 않는다**: `analyze-usage.mjs`(로컬 콘솔 진단, `token-usage-diagnosis` 스킬 전담)는 도구별·서브에이전트별·프로젝트별 표를 만들지만, `report-usage.mjs`는 그런 분해를 만들지 않고 세션 단위 총합만 보낸다. "반복 호출 패턴"처럼 도구 input 일부를 노출하는 표는 애초에 원격 전송 스키마에 존재하지 않는다.
 - **`turns`/`api_calls`는 malgnai-public migration 0012로 추가됐다**: 이 두 필드는 처음부터 스키마에 있던 것이 아니라, 서버 쪽 `sessions`/`usage_daily` 테이블에 컬럼이 추가되면서 전송 바디에 채워 넣게 됐다(둘 다 optional, NOT NULL DEFAULT 0, 음수는 서버가 0으로 clamp).
 
-## 4. 실제 구현이 설계보다 단순해진 지점 (중요 — 설계 문서를 그대로 믿지 말 것)
+## 4. 흔히 "당연히 있겠지"라고 기대하지만 실제로는 없는 것들
 
-설계 문서(`token-usage-collection-design-2026-08-19.md`)는 아래를 상정했지만, 실제 구현은 다르게 갔다. 유지보수 시 **이 표를 정본으로 삼는다**(코드 실측 기준):
+이런 파이프라인이면 으레 있으리라 기대하는 장치들이 여기엔 없다. 아래 표 오른쪽이 **코드 실측 정본**이다:
 
-| 설계 문서가 상정한 것 | 실제 구현 |
+| 흔히 있으리라 기대하는 것 | 실제 구현 |
 |---|---|
 | `POST /api/usage/daily-aggregate` + `POST /api/usage/detail` 2개 엔드포인트, 날짜 단위 upsert | 엔드포인트 하나(`POST /api/sessions`), 세션 단위 upsert. **daily-aggregate 전용 엔드포인트 없음** — `usage_daily`는 서버가 세션 데이터로부터 자동 재집계하는 것으로 추정(별도 일별 전송 로직이 클라이언트에 없다) |
 | `purpose="usage_report"` 파라미터로 전용 `usage:write` scope 토큰 발급 | `pair-usage-device.mjs`의 `pair-init` 바디는 `{device_id, device_name}`뿐 — **scope 개념 없이 범용 device_token을 그대로 사용**한다. MCP 인증과 별도 파일(`usage-agent-credentials.json`)에 저장한다는 "저장 위치 분리" 결정은 유지됐지만, "권한 범위 분리"는 구현되지 않았다 |
@@ -67,10 +67,10 @@ payload 필드(실제 코드 `buildPayload()` 기준):
 | 날짜별 상태 파일 `usage-report-state.json`(`lastSyncedDate` 등) | 실제 파일명·필드명이 다르다 — `usage-agent-last-run.json`(`last_run_at`/`last_success_at`/`since_used`/`sessions_considered`/`sent_success`/`sent_fail`/`last_error`) |
 | Windows도 macOS와 동일하게 로그 파일 기록 | 실제로도 동일하게 기록한다 — `installWindows()`가 `cmd /c "... >> out.log 2>> err.log"`로 감싸 macOS와 동일하게 `usage-agent.out.log`/`.err.log`를 남긴다 |
 
-**왜 이렇게 단순해졌는지**: 설계 문서 자체가 "이 세션은 코드를 작성하지 않았다 — 실제 코드는 사용자 승인 이후 별도 턴에서 구현한다"고 명시한 사전 설계였다. 구현 턴에서 scope 분리·해시화·PID 락·상태파일 정교화 같은 항목들이 "확인되지 않은 문제에 미리 대비하지 않는다(과설계 방지)"는 이 프로젝트의 기존 architect 원칙에 따라 가지치기된 것으로 보인다(정확한 구현 결정 기록은 별도로 남아있지 않아 이 문서에서는 코드와 설계의 차이만 사실로 기록하고, 그 차이의 이유는 추정임을 명시한다).
+**왜 이렇게 단순한가**: scope 분리·해시화·PID 락·상태파일 정교화는 "확인되지 않은 문제에 미리 대비하지 않는다(과설계 방지)"는 원칙에 따라 넣지 않은 것으로 보인다 — 이 문서는 코드에서 관찰되는 사실만 확정으로 적고, 그 사실의 이유는 추정임을 명시한다.
 
 ## 5. 유지보수 시 참고
 
-- **재현 가능한 정본은 코드**: `bin/*.mjs` 4개 파일과 그 안의 주석(특히 `report-usage.mjs` 상단 주석의 "개인정보 하드 제약")이 실제 동작의 유일한 정본이다. 이 knowledge와 설계 문서가 코드와 다르면 코드를 따른다.
+- **재현 가능한 정본은 코드**: `bin/*.mjs` 4개 파일과 그 안의 주석(특히 `report-usage.mjs` 상단 주석의 "개인정보 하드 제약")이 실제 동작의 유일한 정본이다. 이 knowledge가 코드와 다르면 코드를 따른다.
 - **비슷한 파이프라인을 또 만들 때**: 이 구현이 재사용한 패턴 — (1) 무의존성 Node 내장모듈만 사용(설치 없이 어디서나 실행), (2) 재집계+upsert로 멱등성 확보(증분 동기화의 체크포인트 손상 리스크 회피), (3) 실패해도 조용히 종료하고 다음 스케줄에 자연 복구(사용자를 방해하지 않는다는 `token-usage-diagnosis`와 동일한 "조용한 실패" 철학) — 는 유지할 가치가 있다. 반대로 위 §4의 "구현되지 않은 설계"들은 실제로 필요해지기 전까지는 다시 만들 필요가 없다는 신호로 읽을 수 있다(단, 이 판단 자체는 이 문서가 내리는 것이 아니라 다음 유지보수자가 실제 필요를 보고 판단할 사안이다).
 - **헬스체크 스킬과의 관계**: `skills/usage-agent-healthcheck/SKILL.md`는 이 문서가 정리한 실제 구현(파일 경로·필드명·Windows 로그 부재 등)을 그대로 전제로 점검 절차를 짠다 — 두 문서 중 하나만 갱신하고 다른 쪽을 방치하면 드리프트가 생긴다.
