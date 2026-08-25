@@ -38,17 +38,18 @@ Sensitive·Exploration·Refactor이거나 Standard 이상인데 위임 후보가
 
 **필수 규율:** ①진행 상태는 `STATUS.md` 단일 소스(끝내기 전 갱신). ②주요 결정/이슈/교훈은 malgnai-hub에 기록(`decision_record`/`issue_record`/`work_record`). ③구조를 바꾸면 `.claude/doc-drift.json`과 아래 서술을 함께 갱신.
 
-**이 프로젝트(claude-plugins) 자신의 기록 provider는 malgnai-hub(원격)다.** projectId는 여기 적지 않는다 — `STATUS.md` 상단 `project_id`가 단일 소스다(고정값을 여기 박아두면 실제 프로젝트와 어긋나는 드리프트가 난다). provider 전환 이전 이력(결정/이슈/교훈)은 malgnai-mcp에만 남아 있다 — 필요하면 malgnai-mcp `decision_list`/`memory_search`(project_id `e3c8eba1-7016-4c40-81fc-7d15cdcefd75`)로 조회한다.
+**이 프로젝트(claude-plugins) 자신의 기록 provider는 malgnai-hub(원격)다.** projectId는 여기 적지 않는다 — `STATUS.md` 상단 `project_id`가 단일 소스다(고정값을 여기 박아두면 실제 프로젝트와 어긋나는 드리프트가 난다).
 
 ## Git 브랜치 원칙 (이 프로젝트의 중요원칙)
 **브랜치를 통한 PR 작업은 전부 로컬에서만 진행한다. 원격(origin)에는 오직 `main` 브랜치만 존재하며, origin push는 배포(=main 갱신) 목적일 때만 한다.**
-- trainer 초안 → reviewer 검토 → evaluator 판정은 로컬 브랜치(필요 시 `isolation:"worktree"`)에서 수행하고, `git push origin <branch>`나 `gh pr create`로 원격에 올리지 않는다.
+- **브랜치를 분리해서 하는 작업은 예외 없이 별도 워크트리(`isolation:"worktree"` 또는 `git worktree add`)에서 진행한다.** 메인 워킹트리에서 `git checkout`으로 브랜치만 바꾸지 않는다. 이유: 이 세션은 여러 세션이 동시에 작업하는 경우가 많아, 한 워킹트리에서 브랜치를 전환하면 병행 세션의 작업 중인 파일·HEAD와 충돌한다.
+- trainer 초안 → reviewer 검토 → evaluator 판정도 위 규칙에 따라 워크트리에서 수행하고, `git push origin <branch>`나 `gh pr create`로 원격에 올리지 않는다.
 - 사용자 승인 후에는 `git merge`(로컬)로 main에 합치고, **오직 그 시점에만** `git push origin main`으로 배포한다.
 - 작업이 끝난 로컬 브랜치는 병합 후 삭제한다(`git branch -d`). origin에 non-main 브랜치가 쌓이지 않게 한다.
 - 이유: 이 저장소는 다른 직원들이 `/plugin marketplace add`로 직접 설치하는 배포 주소다 — WIP 브랜치가 원격에 쌓이면 병렬 위임 시 얽힘 위험과 불필요한 노출이 생긴다.
 
 ## malgnai-hub 도구 사양은 스키마 원문이 정본이다
-**도구명·파라미터를 기억이나 기존 문서에서 베끼지 말고 세션에서 실제 스키마를 직접 열어 확인한다.** 이전 provider(malgnai-mcp) 시절 도구명이 제품 본문에 남아 실행 불가 지시가 됐던 전례가 있다.
+**도구명·파라미터를 기억이나 기존 문서에서 베끼지 말고 세션에서 실제 스키마를 직접 열어 확인한다.** 오래된 도구명이 제품 본문에 남아 실행 불가 지시가 되는 사례가 있다.
 - hub에 대응이 **없는** 도구를 절차의 실행 단계로 쓰지 않는다: `lesson_add`/`lesson_list`/`lesson_classify` · `memory_add`/`memory_search` · `command_add`(웹 승인큐) · `project_autonomy_*` · `agent_learning_log_add`(→ `agent_learning_record`) · `decision_add`/`issue_add`(→ `decision_record`/`issue_record`). 확인: `git grep -nE 'lesson_add|lesson_list|lesson_classify|memory_add|memory_search|command_add|project_autonomy' -- malgn-agent/`
 - **제품 본문에 식별자를 근거로 달지 않는다(항구 규칙).** 8자리 hex id·26자 ULID·로컬 auto-memory 키·커밋 해시 전부 대상이다 — 설치 직원은 어느 것도 열어볼 수 없다. **교훈의 실질은 id가 아니라 문장으로 적는다.** 사유는 남기되 id는 붙이지 않는다 — 경위 자체는 위 [제품 본문 이력 금지] 규칙에 따라 뺀다. 한 번 대량 제거한 뒤에도 재유입되면 결함으로 다룬다.
   - 확인은 **백틱 앵커 없이** 한다 — 백틱을 앵커로 잡으면 코드 주석 안의 맨몸 id가 그대로 통과한다:
@@ -91,6 +92,7 @@ Sensitive·Exploration·Refactor이거나 Standard 이상인데 위임 후보가
 **전 직원 배포가 끝났으므로 업데이트는 보수적으로 간다: 오류·결함 수정과 작은 수정으로 한정한다.**
 - **채택 대상**: 실증 가능한 결함(재현 로그·실물 대조·정적검사 ERROR·깨진 참조·실행 불가 도구 호출), 오탈자, 사실 오류 정정, 1파일 국소 수정.
 - **보류 대상**: 리팩터링·재설계·슬리밍 라운드·신규 에이전트/스킬 신설·구조 변경. 기각이 아니라 **백로그**에 적어두고 사용자 판단을 기다린다("좋은 아이디어니 지금 하자"로 스스로 승격하지 않는다).
+- **백로그 등재 범위**: 오류·결함이거나 효과가 명백한 개선만 올린다. "하면 좋을 것 같다" 수준의 막연한 후보는 등재하지 않고 그 자리에서 접는다 — 근거 약한 항목이 쌓이면 우선순위 판단 자체가 흐려져 백로그가 정리 대상이 아니라 혼란의 원인이 된다.
 - **판정 기준**: "지금 무엇이 깨져 있는가"에 답할 수 있으면 결함, "이렇게 하면 더 좋아진다"면 개선 → 후자는 보류.
 - **면제되지 않는 것**: 아래 [편집 권한 경계](#편집-권한-경계-반복적으로-무너져-명문화한다)와 reviewer 검증. 작다고 PM이 직접 `agents/`·`skills/`·`knowledge/`·`hooks/`를 고치지 않는다(오탈자 1줄 예외는 그대로).
 - **이유**: 이미 배포된 코드라 변경 비용이 전 직원에게 외부화된다. 슬리밍 라운드가 순효과 없음으로 폐기된 전례가 바로 위 [에이전트 업그레이드 원칙]에 있다.
@@ -141,7 +143,7 @@ pnpm run check-docs    # PM 오케스트레이션 관리구역 정합성 상시 
   - `.claude-plugin/plugin.json` — `mcpServers.malgnai-hub`(원격 HTTP `https://malgnai-hub.apiserver.kr/mcp`, OAuth 로그인이 정상 경로) + `userConfig.device_token`(OAuth가 안 되는 예외 상황의 탈출구 필드 — 값을 채워도 자동으로 쓰이지 않는다, 정상 설치는 비워둔다)
   - `agents/` 21종 — 전원 `pm.md` 기준 위임모델. ⚠️ `agents/pm.md`는 **이 프로젝트가 만드는 산출물**(설치사 직원이 쓰는 제품용 PM)이지 이 세션 자신의 운영 규칙이 아니다
   - `skills/` 38종 — 명명은 참조 에이전트 수 기준(`common-*` 전역 상시비용 / `domain-*` 도메인 / 무접두어 단일 참조)
-  - `knowledge/` 55개 — 도메인별 디렉토리, 진입점 `knowledge/README.md`
+  - `knowledge/` 44개 — 도메인별 디렉토리, 진입점 `knowledge/README.md`
   - `bin/` — 무의존성 Node 내장모듈만 쓰는 번들 스크립트(Windows/macOS 동일 실행). 토큰 사용량 자가진단(`analyze-usage`/`report-usage`/`usage-agent-lib`/`install-usage-agent`/`pair-usage-device`) · `capture.mjs`(Playwright 캡처) · `new-project.mjs`(스캐폴더) · `check-*.mjs`(규약·보안 점검)
   - `hooks/` — `hooks.json`(SessionStart→`sessionstart-context.mjs`, Stop→`stop-mcp-reminder.cjs`) + `doc-drift.mjs` + `pm-orchestration-block.md`(위 인라인 관리구역 `malgn-agent:pm-orchestration:*`의 정본 — `@import`가 아니라 `check-docs`로 재동기화). 경로는 `${CLAUDE_PLUGIN_ROOT}` 기준으로 포터블
   - `templates/e2e-template/` — Playwright storageState 인증 표준 스캐폴드

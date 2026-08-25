@@ -192,7 +192,7 @@
 ### 사전 요구사항
 - [ ] Claude Code CLI 설치 및 기본 사용법 (2시간)
 - [ ] 프로젝트 repository clone 및 구조 파악 (1시간)
-- [ ] malgnai-mcp 기본 도구 소개 (1시간)
+- [ ] malgnai-hub 기본 도구 소개 (1시간)
 
 ---
 
@@ -638,10 +638,10 @@ Mode 10을 실행하기 전에:
     - 내부 링크 모두 유효 ✓
     - 시간 합계 확인 ✓
 
-[ ] malgnai-mcp 기록
-    - agent_learning_log_add (title: "Mode 10: Curriculum Design for [Agent]")
-    - decision_add (내용: "에이전트 [이름]의 14일 커리큘럼 생성 정책 확정")
-    - memory_add (학습 교훈: "이 에이전트 그룹에 공통 부분 3개")
+[ ] malgnai-hub 기록
+    - agent_learning_record (title: "Mode 10: Curriculum Design for [Agent]")
+    - decision_record (내용: "에이전트 [이름]의 14일 커리큘럼 생성 정책 확정")
+    - 학습 교훈("이 에이전트 그룹에 공통 부분 3개")은 별도 memory 도구 없이 decision_record의 reason/impact에 녹여 기록
 
 [ ] 학습자에게 전달
     - 파일 경로 안내: ~/.claude/knowledge/curriculum/onboarding-<이름>-14d.md
