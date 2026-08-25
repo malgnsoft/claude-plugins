@@ -131,6 +131,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-0
 - **보안 단계 배치**: 개발·구현 중에는 security를 게이트로 돌리지 않는다 — 보안 리뷰가 게이트를 양산해 개발을 막는 것을 방지. security는 개발 중 "아주 심각한 Critical"만 즉시 올리고 나머지는 `docs/security-plan.md`에 적재만 한다. **정밀 보안 점검·보안계획 실행은 배포 직전 최종 운영 테스트 단계에서, 사용자 승인(Sensitive/Refactor급 상당 — malgnai-hub 연동판에서는 세션 내 `AskUserQuestion` 등으로 직접 확인) 후에만** 착수한다(security.md 운영 정책과 정합).
 - **권위자 매핑**: architecture=architect, requirements/prd=planner, src=backend/frontend-dev, 문서=writer, 발표=presenter, 리뷰=reviewer, 에이전트MD/knowledge 초안=trainer, 전역 자산(에이전트/스킬/knowledge) 채점·판정·승격=evaluator.
 - **공유 가정 주입**: 여러 에이전트가 같은 수치(마진율·CAC)를 쓸 때, 위임 전에 PM이 값을 고정해 동일하게 주입.
+- **evaluator·reviewer는 항상 병렬로 소집한다**: 둘은 같은 산출물을 서로 다른 관점에서 보는 검증이다 — reviewer는 산출물 자체의 결함·품질을, evaluator는 등급 기준 충족 여부와 승격 가능 여부를 판정한다. 한쪽 결과가 다른 쪽의 입력이 아니므로 순서를 강제할 이유가 없다. 순차로 돌려 대기 시간을 두 배로 만들지 말고 같은 턴에 동시에 소집하고, 두 결과가 엇갈리면 그 차이 자체를 판단 재료로 쓴다(먼저 온 쪽 결론으로 나중 쪽을 미리 재단하지 않는다).
 
 ## 3.5 산출물 지도 (누가 무엇을 읽고 만드는가)
 
@@ -186,6 +187,8 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-0
 2. 문제 발견 시 재지시 + 재검증 (최대 2회)
 3. 중요 산출물은 직접 실물 검증 (PDF 페이지·UI·끝부터 끝까지)
 4. 미검증 항목은 "미검증 + 사유"로 정직하게 보고.
+
+**검증 사이클이 도는 중에는 설계를 바꾸지 않는다.** reviewer/evaluator가 검증 중인 산출물의 설계를 PM이 그 자리에서 손대면, 검증자는 이미 사라진 버전을 채점하게 되고 돌아온 지적과 실제 산출물이 서로 다른 것을 가리켜 사이클을 처음부터 다시 돌려야 한다. 검증 중에 떠오른 개선 아이디어는 실행하지 말고 적어두었다가, 사이클을 닫은 뒤 다음 사이클의 입력으로 판단한다. 범위·크기 초과 같은 문제도 그 자리에서 고치지 않고 사유서로 남긴다.
 
 ## 6. 운영 표준 보충 (project-standards 미포함분)
 - **WBS 그룹(부모) 노드는 status를 'done'으로 직접 못 바꾼다(설계, 버그 아님)**: `wbs_update`로 그룹 노드에 status='done'을 시도하면 STATUS_DONE_LEAF_ONLY 에러가 난다 — 그룹 노드는 리프의 진행률로 계산되는 bucket/computed_progress가 진짜 신호다. "진행상태 점검" 시 그룹 status='planned'인데 bucket='done'/computed_progress=100이면 정상이며, stale 여부는 리프 항목의 status/progress로만 판단한다.
