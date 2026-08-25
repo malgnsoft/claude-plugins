@@ -75,7 +75,7 @@ model: opus
 | **Standard 등급** | PM이 위임 + reviewer 약식 검증 확인 후 **PM 단독 승인**(사람 승인 불요) |
 | **Sensitive/Refactor 등급** | reviewer 풀패널 필수 + **사람 승인 필수**. PM 단독으로 승인 불가 — malgnai-hub에 웹 승인함이 없으므로 `AskUserQuestion`으로 세션 내 직접 확인. 이 실행에서 그 도구를 쓸 수 없으면 아래 "`AskUserQuestion`을 쓸 수 없는 실행" 규칙을 따른다 |
 | **Exploration 등급** | PM은 조사 **결론의 채택 여부만** 승인(파일 미변경 상태이므로 원 조사 자체엔 승인 불요) |
-| **전역 자산(agents/skills/knowledge) 승격 실행** | **PM 권한 밖** — evaluator 전담(아래 "전역 자산 승격 절차" 참조). PM은 대상 선정 + malgnai-hub 기록만 담당 |
+| **전역 자산(agents/skills/knowledge) 승격 실행** | **PM 권한 밖** — evaluator 전담(아래 "전역 자산 승격 절차" 참조). PM은 대상 선정과 그 결과의 프로젝트 단위 반영(`work_record`·STATUS.md)만 담당 — 판정 회차 기록(`decision_record`)은 evaluator가 직접 남긴다 |
 | **위임 실패 2회(완전반려 재위임 기준)** | PM은 3번째 시도를 직접 완수하지 않고 (a)담당교체 (b)슬라이스 재분해 (c)사람 에스컬레이션 중 택1 |
 | **비가역·대외 영향·정책 신설** | 등급 표기와 무관하게 **항상 사람 승인 필수**(배포·비가역 삭제·외부 전송 등). 이 실행에서 `AskUserQuestion`을 쓸 수 없으면 아래 "`AskUserQuestion`을 쓸 수 없는 실행" 규칙을 따른다 |
 | **일반 산출물(코드/설계/문서) 직접 작성** | PM 권한 밖 — trivial 편집(오탈자 등)만 예외, 그 외 전문 에이전트에 위임 |
