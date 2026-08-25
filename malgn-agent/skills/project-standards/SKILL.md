@@ -62,7 +62,7 @@ description: 맑은소프트 프로젝트 운영 표준 — 패키지 매니저(
 
 **현 상황 파악을 위해 코드·docs를 통독하지 않는다** (토큰 낭비 + 옛 정보 오독 위험). L0(`STATUS.md`) 자체의 재작성 트리거는 §3의 6가지로 제한된다 — 매 턴 갱신 관성으로 되돌아가지 않는다.
 
-CLAUDE.md **본문에 어떤 내용을 남기고 무엇을 다른 자리로 내보낼지**(배치 결정·크기 규율·비파괴 리팩터링)는 Skill `claude-md-architecture`가 정본이다. 반대로 CLAUDE.md에 **무엇을 스탬프하고 어떤 배선을 넣는지**는 이 스킬 소관이다 — 스캐폴딩 뼈대(§7), 구조 서술의 드리프트 검증 계약(§6), PM 행동규율 블록 `@import`의 삽입·점검(§9).
+CLAUDE.md **본문에 어떤 내용을 남기고 무엇을 다른 자리로 내보낼지**(배치 결정·크기 규율·비파괴 리팩터링)는 Skill `claude-md-architecture`가 정본이다. 반대로 CLAUDE.md에 **무엇을 스탬프하고 어떤 배선을 넣는지**는 이 스킬 소관이다 — 스캐폴딩 뼈대(§7), 구조 서술의 드리프트 검증 계약(§6), PM 행동규율 블록 관리 구역의 삽입·점검(§9).
 
 ## 6. 정확성 보증 — 드리프트 가드
 
@@ -116,7 +116,7 @@ cwd에 `STATUS.md`가 있는지 확인한다.
   - cwd에 STATUS.md/CLAUDE.md/docs/README.md/.claude/doc-drift.json/package.json 중 **없는 파일만** 스탬프한다. 이미 코드가 있는 폴더(기존 `package.json` 등)라도 기존 파일은 덮어쓰지 않고 건너뛴다 — 실행 후 출력의 "건너뜀" 목록을 사용자에게 보고한다.
   - `.git`이 없으면 `git init`까지 수행한다. 홈 디렉토리 자체에서는 실행되지 않는다(안전장치).
   - 이어서 **`pnpm install`**을 실행한다(package.json이 새로 생겼거나 이미 있던 경우 모두).
-  - **스탬프를 돌렸다고 배선이 갖춰졌다고 보지 않는다** — CLAUDE.md가 이미 있으면 스캐폴더가 그 파일을 통째로 건너뛰므로 PM 행동규율 `@import`도 심지 못한다. 확인은 2단계에서 한다.
+  - **스탬프를 돌렸다고 배선이 갖춰졌다고 보지 않는다** — CLAUDE.md가 이미 있으면 스캐폴더가 그 파일을 통째로 건너뛰므로 PM 행동규율 관리 구역도 심지 못한다. 확인은 2단계에서 한다.
 
 ### 2단계 — 환경 점검 (갈래와 무관하게 항상 실행)
 
@@ -124,7 +124,7 @@ cwd에 `STATUS.md`가 있는지 확인한다.
 
 1. **CLAUDE.md 배치·크기·`@import` 상태 진단** — Skill `claude-md-architecture`를 호출해 **상태만 진단한다**(CLAUDE.md가 아예 없으면 그 스킬 기준으로 새로 쓴다). **판정 기준(배치 결정표·크기 규율)은 그 스킬이 정본이므로 여기에 옮겨 적지 않는다.**
    - **정리(비파괴 리팩터링)까지 이 흐름에서 하지 않는다.** 그 절차는 `/context` 실측과 실제 작업 1건 관찰을 요구해 "초기화 해줘" 한 번 안에서 닫히지 않는다 — 진단 결과를 보고하고, 정리가 필요해 보이면 별도 작업으로 진행할지 사용자에게 묻는 데서 그친다.
-   - **PM 행동규율 블록의 마커+`@import` 두 줄은 이 진단의 대상이 아니다** — 그 배선의 소유·판정은 §9다. 여기서 오용으로 판정하거나 지우지 않는다(플러그인 설치 위치를 가리켜야 해서 저장소 밖 경로가 될 수밖에 없어, 일반 import 규칙으로 보면 오탐되기 쉽다). 그 줄에 대한 판단은 아래 2번에 맡긴다.
+   - **PM 행동규율 블록의 관리 구역(시작 마커부터 종료 마커까지)은 이 진단의 대상이 아니다** — 그 구역의 소유·판정은 §9다. 여기서 오용이나 중복 서술로 판정하거나 지우지 않는다(§9가 소유하고 기계가 대조·교체하는 관리 구역이라, 일반 배치 판정의 대상이 아니다). 그 구역에 대한 판단은 아래 2번에 맡긴다.
 2. **PM 행동규율 블록** — §9 절차를 그대로 실행한다(`check-pm-orchestration-block.mjs`를 돌리고 `status`별 대응). 판정 로직은 §9가 정본이라 여기에 복제하지 않는다.
    - 1번을 먼저 하는 이유: 이 블록은 CLAUDE.md 안에 사는 배선이라, CLAUDE.md가 없으면 스크립트가 `no-claude-md`로 빠져 점검 자체가 성립하지 않는다.
    - §9의 "사용자가 명시적으로 요청할 때만" 제약과 충돌하지 않는다 — 그 제약은 §9를 **매 세션 자동으로 돌리지 않는다**는 뜻이고, "초기화 해줘"는 사용자의 명시적 요청이다. 이 흐름 안에서 호출한다고 상시 감시가 생기는 것은 아니다.
@@ -141,25 +141,41 @@ cwd에 `STATUS.md`가 있는지 확인한다.
 
 ## 9. PM 행동규율 블록 재확인/재설치 — 온디맨드
 
-**대상 상황**: 이미 스캐폴딩된 프로젝트에서 나중에 재확인/재설치가 필요할 때 — 마켓플레이스 별칭이 바뀌었거나, PM 블록 버전이 올라갔거나, 사용자가 처음에 거절했다가 나중에 설치하고 싶을 때.
+**대상 상황**: 이미 스캐폴딩된 프로젝트에서 나중에 재확인/재설치가 필요할 때 — PM 블록 버전이 올라갔거나, 심긴 관리 구역이 손대져 깨졌거나, 사용자가 처음에 거절했다가 나중에 설치하고 싶을 때.
 
-**트리거: 사용자가 명시적으로 요청할 때만**(예: "PM 행동규율 다시 확인해줘", "마켓플레이스 옮겼는데 PM 블록 깨졌나 봐줘"). **매 세션 자동 실행이 아니다** — `new-project.mjs`가 스캐폴딩 시점 1회 `@import`를 삽입한 뒤(§7), 그 정적 배선을 매 세션 다시 확인하던 SessionStart 훅(구 `pm-orchestration-nudge.mjs`)은 제거됐다. 상시 감시가 없는 대신 이 온디맨드 절차와, `pnpm run check-docs`(수동 드리프트 점검, §6)가 안전망이다.
+**트리거: 사용자가 명시적으로 요청할 때만**(예: "PM 행동규율 다시 확인해줘", "마켓플레이스 옮겼는데 PM 블록 깨졌나 봐줘"). **매 세션 자동 실행이 아니다** — `new-project.mjs`가 스캐폴딩 시점 1회 관리 구역을 삽입하고(§7), 그 구역을 매 세션 다시 확인하는 SessionStart 훅은 두지 않는다. 상시 감시가 없는 대신 이 온디맨드 절차와, `pnpm run check-docs`(수동 드리프트 점검, §6)가 안전망이다.
 
 절차:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestration-block.mjs" [cwd]
+node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestration-block.mjs" [cwd]                        # 점검(읽기 전용)
+node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestration-block.mjs" [cwd] --write [--upgrade-to <n>]  # 재동기화
+node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestration-block.mjs" [cwd] --decline             # 거절로 되돌리기
 ```
 
-이 스크립트는 파일을 쓰지 않는다 — cwd의 CLAUDE.md를 읽어 현재 상태를 JSON으로 출력할 뿐이다. 실제 CLAUDE.md 수정은 이 결과를 읽은 세션이 아래 절차대로 Edit로 수행한다:
+`--write`와 `--decline`은 함께 줄 수 없다 — 재동기화 요청과 거절 의사는 서로 다른 행동이라, 둘 다 주면 `invalid-args`로 아무것도 하지 않고 멈춘다(exit 1).
 
-1. cwd의 CLAUDE.md에서 `<!-- malgn-agent:pm-orchestration:(installed|declined)?:?vN -->` 마커와 `@...pm-orchestration-block.md` import 줄 존재 여부를 확인한다(위 스크립트 `status` 필드로 판정: `no-marker`/`declined`/`legacy-no-import`/`ambiguous`/`plugin-missing`/`drift`/`ok`).
-2. `no-marker`(마커 자체가 없음): 설치 여부를 사용자에게 확인해야 한다 — 이 절차를 PM이 직접 실행했다면 AskUserQuestion으로 묻고, 서브에이전트가 실행했다면(서브에이전트에는 AskUserQuestion 도구가 없다) 이 결과를 PM에게 반환해 PM이 묻게 한다.
-3. `legacy-no-import`(installed인데 import 줄이 없음, 구버전) 또는 `drift`(경로가 실제 설치 위치와 다름): 스크립트가 제시한 `resolvedPath`로 Edit해 교정한다(사용자 재동의 불필요 — 콘텐츠 변경이 아니라 전달 방식/경로 교정일 뿐).
-4. `declined`인데 사용자가 이번에 설치를 요청했다면 마커+import를 installed로 교체한다.
-5. `ambiguous`/`plugin-missing`이면 CLAUDE.md를 건드리지 않고 그 사실을 사용자에게 알린다.
+**이 스크립트는 기본이 읽기 전용이다** — cwd의 CLAUDE.md를 읽어 현재 상태를 JSON으로 출력한다. 사용자가 재동기화를 요청했을 때만 `--write`로 **관리 구역 하나**를 교체하고, 그 밖의 본문은 건드리지 않는다.
 
-경로 계산 로직(`findMalgnAgentBlockPath()`/`AMBIGUOUS`/`readBlockFile()`)은 `hooks/lib/find-pm-block-path.mjs`가 단일 소스다 — 이 스크립트와 `new-project.mjs`, `hooks/doc-drift.mjs`(수동 드리프트 점검) 셋 모두 같은 모듈을 import해 동일한 알고리즘을 공유한다.
+**관리 구역 본문을 세션이 손으로 옮겨 적지 않는다.** 이 블록은 문안 자체가 규범이라 한 글자만 달라져도 규율이 달라지고, 그 차이는 다음 점검마다 `stale-wording`으로 남아 신호를 마비시킨다. 세션이 하는 일은 `status`를 읽고, 사용자 확인이 필요한 지점에서 묻고, `--write`를 부르는 것이다:
+
+1. 스크립트 출력의 `status`로 판정한다 — `ok` / `stale-wording` / `stale-version` / `plugin-outdated` / `legacy-import` / `legacy-no-body` / `duplicate-body` / `unmanaged-body` / `malformed-region` / `declined` / `no-marker` / `block-unreadable` / `no-claude-md`.
+2. **손댈 것이 없는 상태**: `ok`는 그대로 둔다. `no-claude-md`(CLAUDE.md 파일 자체가 없음)는 점검 대상이 아니므로 스크립트가 그대로 통과시킨다 — CLAUDE.md를 대신 만들지 않는다(그 파일을 새로 쓰는 판단은 §8 2단계-1이 소유한다). `stale-wording`(버전은 같고 문구만 다름)은 의무가 동일하므로 급하지 않다 — 사용자가 원할 때 `--write`로 맞춘다. `plugin-outdated`(프로젝트 마커 버전이 플러그인 블록 버전보다 높음)는 **다운그레이드하지 않고** 플러그인 업데이트를 안내한다. `block-unreadable`(플러그인 원본을 읽지 못함)은 신선도만 확인 불가일 뿐 이미 심긴 규율은 계속 작동하므로, 사실만 알리고 CLAUDE.md는 건드리지 않는다.
+3. **재동기화 대상**: `legacy-import`(마커와 import 줄만 있고 구역이 없음) · `legacy-no-body`(마커만 있음) · `stale-version`(마커 버전 < 블록 버전) → `--write`로 관리 구역을 심거나 교체한다.
+   - **레거시 마이그레이션(`legacy-import`·`legacy-no-body`)에서는 구역을 심으면서 코드펜스 밖에 남은 `@...pm-orchestration-block.md` 잔재 줄도 함께 지운다** — 펜스·코드 스팬 안의 같은 줄은 배선이 아니라 설명용이라 그대로 둔다. 구역이 이미 있는 상태의 재동기화(`stale-version`·`stale-wording`)는 구역 하나만 교체하고 그 줄에는 손대지 않으므로, 잔재 줄이 남아 있다면 사람이 직접 지운다.
+   - **버전 승격은 자동으로 하지 않는다.** 마커 버전이 블록 버전보다 낮으면 `--write`는 거부하고 `needs-version-consent`로 멈춘다 — 전달 방식만 바뀌는 것이 아니라 그 프로젝트가 받은 적 없는 의무가 한꺼번에 들어오는 일이기 때문이다. 무엇이 달라지는지 사용자에게 보이고 수락을 받은 뒤 `--write --upgrade-to <블록 버전>`으로 다시 부른다(이 값이 블록 버전과 정확히 같지 않으면 거부된다 — 숫자를 눈으로 확인하게 하는 장치다).
+   - 마커 버전과 블록 버전이 같으면 `--write`만으로 통과한다(전달 방식만 바뀌는 경우).
+   - 쓰기 뒤에는 읽기 전용으로 한 번 더 돌려 `ok`가 나오는 것으로 절차를 닫는다.
+4. **기계가 경계를 정할 수 없는 상태**: `duplicate-body`(관리 구역 밖에 블록 본문과 겹치는 구간이 있음 — 종료 마커 없이 본문만 남아 있는 경우, 예컨대 종료 마커를 실수로 지운 파일도 여기로 들어온다. 이땐 마커 복구가 먼저다) · `unmanaged-body`(마커 없이 본문 사본만 손으로 들어가 있음) · `malformed-region`(마커가 짝을 이루지 못함 — 시작·종료 어느 쪽이든 2개 이상이거나, 시작 마커 없이 종료 마커만 있거나, 순서가 뒤집혔거나, `declined` 마커에 종료 마커가 붙어 있음. 시작 마커만 있고 종료 마커가 없는 경우는 여기가 아니라 `legacy-no-body`·`duplicate-body`로 간다) → **`--write`가 거부한다.** 스크립트가 인쇄한 겹친 줄 범위(`duplicate-body`/`unmanaged-body`) 또는 마커 개수(`malformed-region`)를 사용자에게 보이고, 어디까지가 블록 본문이고 어디부터 사용자 문장인지 확인받은 뒤에만 경계를 잡아 감싼다. 기계가 범위를 추정해 교체하면 사용자 문장을 삼킨다. 감싼 다음 `stale-wording`으로 떨어지면 그때 `--write`로 맞춘다 — 손사본에서 빠진 문장이 이 경로로 복구된다.
+5. **설치 동의**: `no-marker`(마커도 본문 사본도 없음)는 설치 여부를 사용자에게 확인해야 한다 — 이 절차를 PM이 직접 실행했다면 AskUserQuestion으로 묻고, 서브에이전트가 실행했다면(서브에이전트에는 AskUserQuestion 도구가 없다) 이 결과를 PM에게 반환해 PM이 묻게 한다. 임의로 설치하지 않는다. `declined`는 사용자가 이번에 설치를 요청했을 때만 installed로 전환한다.
+6. **역방향(installed → declined)**: 사용자가 이미 설치된 규율을 거절로 되돌리겠다고 명시하면 `--decline`을 부른다. 마커만 declined로 고치고 본문을 남기면 규율이 계속 주입돼 **동의 위반**이 되므로, 세션이 마커 한 줄만 손대는 일이 없도록 이 옵션이 제거·치환·잔재 정리·원문 인쇄를 한 번에 수행한다.
+   - **동작**: 완전한 구역이면 시작 마커부터 종료 마커까지 통째로 지우고 그 자리에 `<!-- malgn-agent:pm-orchestration:declined:v<블록 버전> -->` 한 줄만 남긴다. 구역 없이 마커 줄만 있는 레거시라면 그 마커 줄을 같은 형태로 바꾼다. 코드펜스 밖에 남은 `@import` 잔재 줄이 있으면 함께 지운다. **지운 구역(또는 마커 줄) 원문은 출력의 `decline.removedRegion`에 그대로 실린다(되돌리기 근거)** — 다만 이 필드는 구역·마커 본문만 담고, 같은 호출 안에서 함께 지워지는 잔존 `@import` 줄은 포함하지 않는다(재구성 가능한 플러그인 보일러플레이트라 되돌릴 근거가 필요 없다). `removedRegion` 값을 사용자에게 보여준 뒤 절차를 닫는다.
+   - **허용되는 상태**: `ok` · `stale-wording` · `stale-version` · `plugin-outdated`(완전한 구역이 있는 상태) · `legacy-import` · `legacy-no-body`(마커 줄만 있는 레거시). `plugin-outdated`가 포함되는 이유는, 다운그레이드 금지 규칙이 막으려는 것은 **본문을 낡은 내용으로 덮어쓰는 일**이고 `--decline`은 덮어쓰기가 아니라 제거이기 때문이다 — 설치된 플러그인이 낡았다는 사실은 사용자가 규율을 거절할 권리와 무관하다.
+   - **거부되는 상태**: `malformed-region` · `duplicate-body` · `unmanaged-body`(제거 경계를 기계가 정할 수 없다) · `no-marker` · `block-unreadable`(동의 기록 자체가 없어 거절이라는 개념이 성립하지 않는다). 출력은 `{"decline": {"result": "rejected", "reason": "<status>"}}` 형태이며, 이때는 §9-4처럼 사람이 경계를 확인하는 것이 먼저다.
+   - **이미 `declined`인 경우**: 아무것도 바꾸지 않고 `{"decline": {"result": "noop", "reason": "already-declined"}}`로 멱등 보고한다 — 반복 호출해도 안전하다.
+   - 이 전환은 사용자의 명시적 거절 의사가 있을 때만 실행한다. 점검기가 스스로 판단해 내리지 않는다.
+
+관리 구역의 표기·판정 로직(`readBlockFile()`/`extractManagedRegion()`/`renderManagedBlock()`)은 `hooks/lib/find-pm-block-path.mjs`가 단일 소스다 — 이 스크립트와 `new-project.mjs`, `hooks/doc-drift.mjs`(수동 드리프트 점검) 셋 모두 같은 모듈을 import해 동일한 표기와 판정을 공유한다. 구역 텍스트를 다른 곳에서 따로 조립하면 그 순간 두 벌이 된다.
 
 ## 체크리스트
 

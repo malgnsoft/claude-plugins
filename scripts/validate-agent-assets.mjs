@@ -62,12 +62,19 @@ const BUDGET_SKILL_KB = 25;
 // bytes = 그 사유서가 실측으로 "변호한다"고 명시한 크기. 이 숫자를 넘어서 자라면 면제가 아니라
 // 드리프트로 잡아 사유서 갱신을 요구한다(면제가 형식적 면죄부가 되지 않게 하는 장치).
 //
-// 2026-08-22 현재 등록 0건이다. 이전에 등록돼 있던 사유서 4건(pm·trainer·frontend-dev·reviewer)은
+// 이전에 등록돼 있던 사유서 4건(pm·trainer·frontend-dev·reviewer)은
 // 슬리밍 라운드 폐기·배포본 원복 때 docs/refactor/에서 함께 삭제됐고, 그 문서들이 변호하던 크기는
 // 원복으로 사라진 슬림본의 실측치다(현 배포본은 pm +9.0KB · frontend-dev +4.4KB · reviewer +3.6KB로
 // 그 변호분을 이미 넘었다). 복구했다면 실재하지 않는 본문을 변호하는 문서가 되므로 등록을 지웠다 —
 // 해당 4개는 BUDGET_UNJUSTIFIED(근거 없는 초과)로 정직하게 남는다. 기제 자체는 유지한다.
-const BUDGET_RATIONALE = {};
+const BUDGET_RATIONALE = {
+  // PM 행동규율 블록이 @import에서 CLAUDE.md 인라인 관리 구역으로 바뀌면서 §9 판정 절차가 커졌다.
+  // 늘어난 분량이 전부 "남의 CLAUDE.md를 고치기 전에 거쳐야 하는 거부 조건·동의 게이트"라 감축 대상이 아니다.
+  'skills/project-standards/SKILL.md': {
+    doc: 'docs/refactor/project-standards-skill-budget-rationale.md',
+    bytes: 29286,
+  },
+};
 // 사유서가 변호하는 크기에서 이만큼까지는 드리프트로 보지 않는다(오탈자·1줄 규칙 수정 여유).
 const RATIONALE_DRIFT_TOLERANCE_B = 512;
 
@@ -439,8 +446,9 @@ function checkBodyReferences(relPath, body, ctx) {
   //     상대경로면 cwd(사용자 프로젝트)에서 찾다가 실패한다 → 검사 대상.
   //   · 스크립트 소스(bin/·hooks/의 .mjs·.cjs) → **코드**가 자기 루트와 path.join으로 해소한다.
   //     거기 적힌 'knowledge/x.md'는 맨 상대경로인 것이 정상이라 오탐이 된다 → 제외.
-  // hooks/*.md를 넣는 근거: pm-orchestration-block.md는 루트 CLAUDE.md가 @import하는 상시
-  // 주입물이라, 세션(cwd=사용자 프로젝트)이 읽는다는 점에서 agents 본문과 조건이 똑같다.
+  // hooks/*.md를 넣는 근거: pm-orchestration-block.md는 루트 CLAUDE.md의 관리 구역(managed
+  // region)에 인라인되는 상시 주입물이라, 세션(cwd=사용자 프로젝트)이 읽는다는 점에서 agents
+  // 본문과 조건이 똑같다.
   if (/(^|\/)(?:agents|skills)\//.test(relPath) || /(^|\/)hooks\/.*\.md$/.test(relPath)) {
     const FORM = /(?<!\$\{CLAUDE_PLUGIN_ROOT\}\/)(?<!malgn-agent\/)\bknowledge\/[A-Za-z0-9_-]+\/[^\s`)*|]*/g;
     for (const m of liveReferences(body, FORM)) {
@@ -1018,8 +1026,8 @@ function main() {
   // 참조 검사(checkBodyReferences)도 같이 건다 — 2026-08-24까지 이 두 디렉터리는 위 식별자
   // 검사만 받고 참조는 통째로 사각이었다. 그래서 hooks/pm-orchestration-block.md에 없는 Skill을
   // 심어도 ERROR 0으로 통과했다(같은 줄을 agents/pm.md에 심으면 REF_SKILL_MISSING이 났다).
-  // 하필 그 파일이 루트 CLAUDE.md가 @import하는 상시 주입물이라, 참조가 썩으면 매 세션 전
-  // 직원에게 물린다 — 이 트리에서 사각이 가장 비싼 자리였다.
+  // 하필 그 파일이 루트 CLAUDE.md 관리 구역에 인라인되는 상시 주입물이라, 참조가 썩으면 매 세션
+  // 전 직원에게 물린다 — 이 트리에서 사각이 가장 비싼 자리였다.
   //
   // 대상을 .md로 좁히지 않는다. 실측하니 bin/의 스크립트가 정본 Skill을 가리키는 포인터를
   // 6줄 갖고 있었고(헤더 주석 4건 + printUsage()가 실제로 인쇄하는 런타임 문자열 2건),
@@ -1050,6 +1058,35 @@ function main() {
       }
     };
     walk(dir);
+  }
+
+  // ── PM 행동규율 블록 본문 안전 게이트 (권고, 저장소 CI 단계) ───────────────
+  // hooks/pm-orchestration-block.md 본문은 CLAUDE.md 관리 구역(managed region)에 그대로
+  // 인라인된다(docs/decision/pm-orchestration-block-inline-design.md §3 "본문 인라인 전 안전
+  // 게이트"). 그 게이트(renderManagedBlock())는 스캐폴딩·재동기화 실행 시점에야 던지므로,
+  // trainer가 본문에 무심코 `^@` 줄이나 마커 접두 문자열을 넣어도 이 정적 검사 없이는 배포 전에
+  // 드러나지 않는다. 검사 대상은 "본문"뿐이다 — 파일 자신의 버전 마커 줄(1~2행)은 그 문자열을
+  // 정당하게 담고 있으므로 제외해야 한다(readBlockFile()과 동일한 방식으로 마커 줄 다음부터를
+  // 본문으로 자른다).
+  {
+    const blockPath = path.join(pluginRoot, 'hooks', 'pm-orchestration-block.md');
+    if (fs.existsSync(blockPath)) {
+      const raw = fs.readFileSync(blockPath, 'utf8');
+      const rel = path.relative(REPO_ROOT, blockPath);
+      const versionMatch = raw.match(/<!--\s*malgn-agent:pm-orchestration:version:(\d+)\s*-->/);
+      if (!versionMatch) {
+        error('PM_BLOCK_NO_VERSION_MARKER', rel, '버전 마커(`<!-- malgn-agent:pm-orchestration:version:N -->`)를 찾을 수 없다 — readBlockFile()이 null을 반환해 신선도 비교가 불가능해진다.');
+      } else {
+        const markerLineEnd = raw.indexOf('\n', versionMatch.index);
+        const body = (markerLineEnd === -1 ? '' : raw.slice(markerLineEnd + 1)).trim();
+        if (/^@/m.test(body)) {
+          error('PM_BLOCK_UNSAFE_BODY', rel, '본문(버전 마커 다음 줄부터)에 `@`로 시작하는 줄이 있다 — CLAUDE.md 관리 구역에 인라인되면 새 import 줄로 오인될 수 있다.');
+        }
+        if (body.includes('malgn-agent:pm-orchestration:')) {
+          error('PM_BLOCK_UNSAFE_BODY', rel, '본문에 "malgn-agent:pm-orchestration:" 문자열이 있다 — 관리 구역 시작/종료 마커와 충돌해 구역 경계가 잘못 잡힐 수 있다.');
+        }
+      }
+    }
   }
 
   // ── 번들 스크립트 도달 경로 (제품 전 트리) ────────────────────────
