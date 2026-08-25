@@ -44,6 +44,18 @@ function globSegmentRe(seg) {
 // 깊이를 넉넉히 넘는 값이라 정상 사용에는 영향이 없다.
 const GLOB_RECURSION_DEPTH_CAP = 12
 
+// `**` 재귀나 트레일링 `**`의 전량 카운트가 절대 진입하지 않는 잘 알려진 비소스 디렉토리.
+// 이런 트리는 매니페스트가 실제로 매치를 기대하는 대상이 아니면서도 깊거나 커서 깊이상한에
+// 먼저 걸려, 패턴이 실제로 매치하는 얕은 결과까지 무관하게 통째로 null(skip) 처리해버린다
+// (실측: `app/**/*.ts` 정답 2인데 무관한 node_modules 서브트리 하나 때문에 skip). 여기 걸러낸
+// 디렉토리는 진입 자체를 안 하므로 기여분이 "미확인"이 아니라 확정 0으로 취급된다 — 이 상한 뒤에도
+// 걸러지지 않은(=진짜 매치 후보일 수 있는) 서브트리가 깊이상한을 넘기면 여전히 null로 남는다.
+const PRUNED_DIR_NAMES = new Set([
+  'node_modules', '.git', 'dist', 'build', 'out', 'coverage',
+  '.next', '.nuxt', '.turbo', '.svelte-kit', '.cache', 'vendor',
+  '.venv', '__pycache__', '.parcel-cache', '.output',
+])
+
 /**
  * `**`가 포함된 glob 패턴을 실제로 재귀 지원한다. 예전에는 `**`가 dirname()/basename()으로
  * 쪼개질 때 존재하지 않는 리터럴 디렉토리 `**`로 해석돼 항상 measure 실패 → skip 처리됐다
@@ -80,7 +92,7 @@ function countGlobRecursive(baseDir, pattern) {
     try { entries = readdirSync(dir, { withFileTypes: true }) } catch { return }
     for (const e of entries) {
       if (e.isFile()) count++
-      else if (e.isDirectory()) countAllFiles(join(dir, e.name), depth + 1)
+      else if (e.isDirectory() && !PRUNED_DIR_NAMES.has(e.name)) countAllFiles(join(dir, e.name), depth + 1)
     }
   }
 
@@ -94,7 +106,7 @@ function countGlobRecursive(baseDir, pattern) {
       if (segIdx === segments.length - 1) { countAllFiles(curDir, depth); return }
       walk(curDir, segIdx + 1, depth)              // '**'가 0개 디렉토리를 소비하는 경우
       for (const e of entries) {
-        if (e.isDirectory()) walk(join(curDir, e.name), segIdx, depth + 1) // 1개 더 내려가며 '**' 유지
+        if (e.isDirectory() && !PRUNED_DIR_NAMES.has(e.name)) walk(join(curDir, e.name), segIdx, depth + 1) // 1개 더 내려가며 '**' 유지
       }
       return
     }
