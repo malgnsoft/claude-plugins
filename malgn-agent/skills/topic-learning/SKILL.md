@@ -104,9 +104,9 @@ description: 주제 기반 학습 — 기술/패턴 주제로 가이드 작성 �
 
 evaluator가 없거나 조직이 malgn-agent 소스를 git으로 관리하지 않는 경우, 이 3단계는 생략하고 변경 파일 목록만 사람에게 전달한다.
 
-### 6단계: 완료 보고 (malgnai-hub 기록은 PM 소관)
+### 6단계: 완료 보고 (프로젝트 단위 기록은 PM 소관)
 
-`agents/trainer.md`의 '## 역할 경계' 절 '책임 구분 요약' 표는 malgnai-hub 기록(`decision_record`/`issue_record`/`work_record`)을 PM 전속으로 명시한다(`agents/evaluator.md`의 역할 경계도 동일하게 "malgnai-hub 기록은 PM 소관"이라 재확인). 따라서 trainer는 이 스킬을 완료해도 malgnai-hub에 직접 기록하지 않는다 — 아래 내용을 PM에게 인계하면, PM이 `work_record`(status='completed')를 남긴다:
+`agents/trainer.md`의 '## 역할 경계' 절 '책임 구분 요약' 표는 malgnai-hub 기록의 주체를 둘로 나눈다 — 프로젝트 단위 기록(`work_record`, 필요 시 `issue_record`)은 PM 담당, 판정 회차 기록(`decision_record`)은 evaluator 담당이다(`agents/evaluator.md`의 '판정 회차 기록' 절도 "이 기록의 주체는 evaluator 하나"라고 명시한다). 따라서 trainer는 이 스킬을 완료해도 프로젝트 단위 기록을 직접 남기지 않는다 — 아래 내용을 PM에게 인계하면, PM이 `work_record`(status='completed')를 남긴다(5단계에서 evaluator가 낸 판정·승격 회차는 evaluator가 `decision_record`로 직접 남기므로 여기 인계 대상이 아니다):
 - summary: 학습 주제 + 대상 에이전트 목록
 - result: 작성한 knowledge 파일 경로, 업데이트한 에이전트 MD 목록, PR URL(5단계에서 evaluator가 PR을 열었다면)
 
@@ -114,7 +114,7 @@ evaluator가 없거나 조직이 malgn-agent 소스를 git으로 관리하지 �
 
 - `malgn-agent/knowledge/[도메인]/[주제]-YYYY-MM-DD.md` — 주제 가이드 (2~4KB)
 - 각 에이전트 MD 업데이트 (참조 링크 + 체크리스트)
-- PM에게 인계하는 완료 보고 1건(진단·보고 서사의 1차 정본은 PR body) — malgnai-hub `work_record` 기록은 trainer가 아니라 PM이 수행한다(`agents/trainer.md` 역할 경계 참조)
+- PM에게 인계하는 완료 보고 1건(진단·보고 서사의 1차 정본은 PR body) — 프로젝트 단위 `work_record` 기록은 trainer가 아니라 PM이 수행하고, 판정 회차 `decision_record`는 evaluator가 직접 남긴다(`agents/trainer.md` 역할 경계 참조)
 
 ## 효율 규칙
 

@@ -42,7 +42,7 @@ model: sonnet
 ### E2E 테스트 (ℹ️ Knowledge: `${CLAUDE_PLUGIN_ROOT}/knowledge/quality/e2e-testing-guide.md`)
 - Playwright 기반 사용자 시나리오 검증
 - 프로젝트에 이미 있는 E2E 스캐폴드(playwright.config, auth.setup.js 등)를 우선 재사용하고, 없으면 새로 구성
-- 인증은 프로젝트 로컬 storageState(`e2e/auth.setup.js`, `e2e/.auth/user.json`)로 재사용한다 — 전역 `shot` CLI는 이 배포 환경에 실재하지 않으므로 사용하지 않는다(decision D8)
+- 인증은 프로젝트 로컬 storageState(`e2e/auth.setup.js`, `e2e/.auth/user.json`)로 재사용하는 것이 표준 경로다 — 전역 `shot` CLI는 이 배포 환경에 실재하지 않으므로 인증 경로로 쓰지 않는다
 
 ### 버그 분석 및 수정
 - 근본 원인 분석(RCA) 패턴 적용
