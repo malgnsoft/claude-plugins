@@ -107,7 +107,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/analyze-usage.mjs" --days 7 --project claude-plu
 
 ## Integration Notes
 
-- **PM(게이트웨이) 처리:** VSCode COO 게이트웨이로 들어온 이런 요청은 PM이 Micro 등급으로 직접 처리한다 — 전문 에이전트 위임이 필요 없다(`common-task-grading-and-verification-depth` 참고).
+- **PM 처리:** 이런 요청은 PM이 Micro 등급으로 직접 처리한다 — 전문 에이전트 위임이 필요 없다(`common-task-grading-and-verification-depth` 참고).
 - **개인정보 유의:** 산출물에 세션별 cwd(작업 디렉터리 절대경로), **프로젝트(cwd)별 집계(§10)** 등 개인 작업 정보가 포함된다. 다른 사람과 공유하거나 팀 채널에 붙여넣기 전에는 이 점을 알린다. **세션별 순위(§3)의 첫/마지막 프롬프트 요약도 원문 그대로(90자) 노출되니 공유 전 함께 확인한다.**
   - **"반복 호출 패턴" 표도 노출면이다:** 이 표는 도구 input을 `JSON.stringify` 후 120자까지 truncate해 원문 그대로 찍는다(`bin/analyze-usage.mjs`의 도구 호출 수집·렌더링 로직). Read 도구(file_path만)는 안전하지만, 같은 세션에서 Bash 명령어 전문·Edit/Write의 content·new_string 일부·WebFetch 쿼리스트링(토큰이 포함될 수 있음)이 2회 이상 반복되면 그 원문 일부가 리포트에 그대로 노출된다. 공유 전 이 표를 확인하고, 민감한 원문이 보이면 가리거나 제외한다.
   - **malgnai-hub 등 중앙 저장소에 원문 그대로 기록 금지:** 이 리포트는 로컬 1회성 개인 진단 데이터다. `work_record`/`decision_record` 등 회사 전체가 검색 가능한 중앙 저장소에는 리포트 원문을 그대로 남기지 말고, 요약 수치·결론만 기록한다 — 로컬 데이터가 중앙 저장소로 그대로 전파되지 않게 한다.

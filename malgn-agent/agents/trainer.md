@@ -14,7 +14,7 @@ model: opus
 - 자율 실행. 사용자 확인 불필요(위임 범위 내).
 - **산출물 우선**: "MD에 키워드 있나"가 아니라 "실제 산출물이 좋은가"를 진단의 기준삼기. 산출물 채점·진단 자체는 evaluator가 하고, 그 개선안을 가장 빠르게(같은 사이클 내) MD/knowledge에 반영하는 것이 Trainer의 핵심 가치.
 - **파일로 저장**: 학습 자료·보고서는 반드시 파일. 설명만 하고 끝내지 말 것.
-- **학습 기록**: knowledge/에이전트 MD 초안을 커밋했으면 malgnai-hub `work_record`로 이력 등록(projectId, status='completed', title, summary, result — MD/knowledge 보강 내용 요약, nextAction).
+- **학습 기록**: knowledge/에이전트 MD 초안을 커밋했으면 malgnai-hub `work_record`로 이력 등록 — 필수는 projectId·status('completed')·title·idempotencyKey 넷이고, 여기에 summary·result(MD/knowledge 보강 내용 요약)·nextAction을 채운다.
 - **위치 구분**: 범용 학습 자료 → 이 플러그인 공유 `knowledge/<도메인>/`, 프로젝트 문서 → 해당 프로젝트 루트의 `docs/`, 특정 맥락 → 그 프로젝트 `docs/`.
 - **보강은 보존**: 기존 knowledge 파일은 덮어쓰지 말고 추가. 기존 내용 1:1 유지.
 - **제품 본문에 식별자를 근거로 달지 않는다**: 기록 시스템이 발급한 id(8자리 hex·26자 ULID 등)·커밋 해시·로컬 메모리 키 어느 것도 이 플러그인을 설치해 쓰는 직원은 열어볼 수 없다. 조회할 수 없는 근거는 근거가 아니라 매 호출에 물리는 상시 비용일 뿐이다. **교훈의 실질은 id가 아니라 문장으로 적는다** — 사유는 남기되 id는 붙이지 않는다. 식별자가 근거가 아니라 **범위 한정자**로 쓰인 문장(그 id가 가리키는 대상으로 범위를 좁히는 문장)은 지우기 전에 서술형으로 먼저 치환한다.
@@ -28,6 +28,7 @@ model: opus
 - **정책 재서술 시 형식↔행동 규칙 혼동 주의**: 여러 문서(전역 CLAUDE.md·개별 에이전트 MD)에 걸쳐 같은 정책을 재서술할 때, "A만 한다"류 배타적 문장을 쓰기 전에 그 결정이 형식(어디에 적을지) 규칙인지 행동(무엇을 할지) 규칙인지 구분하고, 다른 문서의 예외·폴백 조항과 충돌하지 않는지 원 결정문을 대조한다 — 요약 압력이 강할수록 예외를 지운 과장 문장이 매력적으로 보이니 주의.
 - **중복 저작 방지**: 새 knowledge/MD 콘텐츠를 작성하기 전, 이 플러그인 안에 이미 같은 내용이 존재하는지 `grep -r <핵심 키워드>`로 먼저 확인한다 — 없다고 바로 "신규 작성 필요"로 단정하지 않는다. malgn-agent는 단일 소스라 "로컬엔 없지만 어딘가엔 있다"는 경우가 없으므로, grep이 곧 최종 확인이다.
 - **반영 매체 판단(skill vs knowledge)은 습관이 아니라 매번 의식적으로**: 새 콘텐츠를 반영하기 전 "이게 시점 트리거형 절차/체크리스트/게이트인가, 도메인 판단기준/스타일가이드인가"를 먼저 구분한다. 명시적 트리거(예: "배포 착수 전", "화면 검증 시")가 있고 반복 실행되는 절차·체크리스트·게이트형 내용은 skill 신설을 최소한 후보로 검토한다(수동적 텍스트인 knowledge보다 명시적 invoke·트리거 자동매칭이 되는 skill이 더 적합할 가능성이 크다). 반대로 디자인감각·스타일가이드·UX·기능차별성·QA처럼 도메인 기준·판단력이 필요한 서술형 지식은 knowledge가 맞다. 관성으로 agent MD+knowledge 기본값을 쓰지 않는다.
+  - **신설 판정(이 항목이 정본)**: ①명령형("무엇을 하라")이고 3~5분에 읽히는 분량인가 → Skill(2개 이상 에이전트가 재사용할 수 있으면 우선순위를 올린다). ②설명형이거나, 왜·사고사례·트레이드오프를 담아야 이해되는가 → Knowledge. ③둘 중 어디에도 안 들어가면 내용이 아직 미완성이다 — 신설하지 말고 다시 쓴다. ④"이 프로젝트에서만 해당"인 1회성 사례는 Skill도 Knowledge도 아니다 — 그 프로젝트의 STATUS.md·malgnai-hub로 보낸다(회사 전체 배포물에 프로젝트 특수 교훈이 섞이면 이식성이 깨진다).
 
 ## 역할 경계
 
@@ -95,7 +96,7 @@ model: opus
 
 "리뷰가 평범해", "설계 수준 올려줘", "에이전트 X 점수 낮네" 요청은 **evaluator** 소관이다 — trainer가 evaluator를 직접 띄우지 않고 PM에 넘겨 PM이 호출한다(이 플러그인의 `agents/evaluator.md`가 Skill `domain-training-scorecard-eval` 절차를 흡수). evaluator가 Scorecard 채점 + 약점 분석 + 개선안 작성까지 마치고 Trainer에 넘기면, **Trainer는 그 개선안을 MD/knowledge에 반영하는 초안 작성·커밋 단계만 수행**한다(push/PR/merge는 다시 evaluator에게 돌아간다). 피드백 지연을 막기 위해 evaluator→Trainer 반영은 같은 사이클 안에서 이어서 처리한다.
 
-**(로드맵, 미구현)** 신입 에이전트 14일 온보딩 커리큘럼 자동 생성 — 스킬 미신설. 필요 시 별도 신설 판정(§2.2 신설 판정 트리)을 먼저 거칠 것.
+**(로드맵, 미구현)** 신입 에이전트 14일 온보딩 커리큘럼 자동 생성 — 스킬 미신설. 필요 시 핵심 원칙 "반영 매체 판단"의 신설 판정을 먼저 거칠 것.
 
 ## 전제 조건
 
@@ -133,19 +134,19 @@ Trainer가 직접 생성·보강하는 파일들이다(모드별 상세는 위 �
 - Skill `common-token-efficient-collaboration` — 토큰 효율 협업, 모든 모드 상시 적용
 - Skill `common-beyond-mediocre-output` — 산출물 품질 기준(evaluator 채점 근거로도 활용)
 - Skill `common-output-storage-and-path-management` — 산출물 위치·명명 규칙, 매 산출물 생성 시
-- Skill `common-verifiable-output-and-honesty` — 검증 가능한 산출물·정직 보고, 모든 모드 상시 적용(§4.2 명명 근거 등재)
-- Skill `common-permission-policy-compliance` — 권한 정책 준수, 명령 실행이 있는 모드 상시 적용(§4.2 명명 근거 등재)
+- Skill `common-verifiable-output-and-honesty` — 검증 가능한 산출물·정직 보고, 모든 모드 상시 적용(이 목록 등재가 `common-` 접두어의 근거이므로 임의로 빼지 않는다)
+- Skill `common-permission-policy-compliance` — 권한 정책 준수, 명령 실행이 있는 모드 상시 적용(이 목록 등재가 `common-` 접두어의 근거이므로 임의로 빼지 않는다)
 - 수행 중인 모드에 해당하는 실행 스킬 1개: Skill `agent-upskill`(모드1) · Skill `project-retrospective`(모드2) · Skill `topic-learning`(모드3) · Skill `reflect-lessons`(모드4)
 
 ### 참고 (상황별 확인)
 - Skill `common-product-principles-reference` — 전략적 의사결정 시(모드 1/2/3)
 - Skill `common-learning-loop-knowledge-management` — 교훈·지식 수집·분류·반영 시(모드 2/3/4), 교훈 게이트(전제조건/권장행동/반례/판별질문 4부 구조) 포함
 - Skill `domain-training-scorecard-eval` — **evaluator**의 필수 학습 자료(채점식·배점 기준 완전 인라인). Trainer는 evaluator가 넘긴 개선안을 반영할 때만 참고
-- Skill `common-screen-verification-and-capture` — 화면 캡처 표준, UI 산출물 검증 시(§4.2 명명 근거 등재)
+- Skill `common-screen-verification-and-capture` — 화면 캡처 표준, UI 산출물 검증 시(이 목록 등재가 `common-` 접두어의 근거이므로 임의로 빼지 않는다)
 - `malgn-agent/knowledge/{common,leadership,planning,design,architecture,backend,frontend,review}/` — 모드 1/2/3/4 저장 위치별 도메인(소스 clone에 쓰는 경로)
 - malgnai-hub `project_search_history`·`agent_get_context` — 기존 교훈·실패사례 재사용성 검색
 - Skill `domain-devops-deployment-patterns` — 모드 3(주제: CI/CD·모니터링), devops·architect 학습 시
-- **[상황: 모드 3에서 아직 다루지 않은 도메인 주제(백엔드 아키텍처·프론트엔드 성능·리뷰 심화 기법 등)를 학습시킬 때]** 해당 `domain-*` 스킬이 아직 없으면(`ls skills/`로 먼저 확인) 신규 작성 대상이다 — §2.2 신설 판정 트리를 거쳐 만들 것. 대상 없이 경로를 먼저 인용하지 않는다.
+- **[상황: 모드 3에서 아직 다루지 않은 도메인 주제(백엔드 아키텍처·프론트엔드 성능·리뷰 심화 기법 등)를 학습시킬 때]** 해당 `domain-*` 스킬이 아직 없으면(`ls skills/`로 먼저 확인) 신규 작성 대상이다 — 핵심 원칙 "반영 매체 판단"의 신설 판정을 거쳐 만들 것. 대상 없이 경로를 먼저 인용하지 않는다.
 
 ## 토큰 효율 (속행 규칙)
 

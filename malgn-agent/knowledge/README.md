@@ -37,7 +37,7 @@
 - `permission-policy-compliance.md` — 권한 정책 준수 배경(deny 규칙 우회 금지 사고사례), 실행 체크리스트는 `skills/common-permission-policy-compliance`
 - `token-efficient-collaboration.md` — (본문 정본은 `skills/common-token-efficient-collaboration`) 신설 배경만 남음
 - `screen-reuse-consistency-verification.md` — 화면 재사용/재렌더 시 시각적 일관성 diff 절차 (설계→구현→리뷰 공통)
-- `skill-vs-knowledge-boundary.md` — Skill/Knowledge 경계 판정 원칙의 배경·기원 자료(실무 정본은 방법론 rubric §1.1/§1.3/§2.2)
+- `skill-vs-knowledge-boundary.md` — Skill/Knowledge 경계 판정 원칙의 배경·기원 자료(실무 정본은 `agents/trainer.md` 핵심 원칙 "반영 매체 판단"의 신설 판정과 `agents/evaluator.md` 판정 체크리스트)
 
 ### review/
 - `reviewer-personas.md` — (핵심 절차 정본은 `skills/reviewer-persona-panel-standard/SKILL.md`) 발산형 페르소나 배경, 선택 강화 패턴 A/B/C, 문서·설계서 다차수 검증 패턴 D~G
@@ -94,7 +94,7 @@
 - `intent-fit-vs-correctness-split.md` — "기획의도 부합성 vs 동작정확성" 축 분리 개념 노트. qa-engineer/reviewer가 검수 체크리스트를 짤 때 참고
 
 ### security/ — 폴더 없음 (전량 skill로 이관)
-- (OWASP Top 10 체크리스트는 knowledge가 아니라 skill에 분산돼 있다 — A01/A03→`skills/domain-backend-api-security` §1/§4, A02/A07/A09→`skills/domain-security-audit-checklist` §4/§5/§6, 인프라(Docker/환경변수)→`skills/domain-devops-deployment-patterns` §1, 심각도 CVSS 매핑→`agents/security.md` "핵심 원칙")
+- (OWASP Top 10 체크리스트는 knowledge가 아니라 skill에 분산돼 있다 — A01/A03→`skills/domain-backend-api-security` §1/§4, A02→`skills/domain-security-audit-checklist` §4·A09→같은 스킬 §5·A07→같은 스킬 §6, 인프라(Docker/환경변수)→`skills/domain-devops-deployment-patterns` §1, 심각도 CVSS 매핑→`agents/security.md` "핵심 원칙")
 - (서버리스/엣지(Cloudflare Workers·Hono·D1·MCP) 스택 특화 점검 절차 정본은 knowledge가 아니라 `skills/domain-serverless-edge-api-security/SKILL.md`. backend-dev/security 공용)
 
 ### devops/

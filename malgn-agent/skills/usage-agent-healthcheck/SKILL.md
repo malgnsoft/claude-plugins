@@ -132,6 +132,6 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/report-usage.mjs" --dry-run
 
 ## Integration Notes
 
-- **PM(게이트웨이) 처리**: VSCode COO 게이트웨이로 들어온 "토큰 수집 에이전트 상태 확인" 요청은 PM이 Micro 등급으로 직접 처리한다(전문 에이전트 위임 불요) — `common-task-grading-and-verification-depth` 참고.
+- **PM 처리**: "토큰 수집 에이전트 상태 확인" 요청은 PM이 Micro 등급으로 직접 처리한다(전문 에이전트 위임 불요) — `common-task-grading-and-verification-depth` 참고.
 - **`token-usage-diagnosis`와의 관계**: 이 스킬은 수집 파이프라인의 배관(등록·페어링·전송)만 본다. "수집은 잘 되고 있는데 내가 토큰을 왜 이렇게 많이 썼는지"는 별개 질문이며 `token-usage-diagnosis`가 담당한다 — 필요하면 두 스킬을 이어서 안내한다.
 - **아키텍처 배경**: 이 파이프라인이 왜 이렇게(4개 스크립트 분리, `POST /api/sessions` 단일 엔드포인트, device_token 인증 등) 설계됐는지는 이 스킬의 범위가 아니다 — `${CLAUDE_PLUGIN_ROOT}/knowledge/architecture/usage-collection-agent-architecture.md`를 참고한다(유지보수·재설계 판단이 필요할 때).

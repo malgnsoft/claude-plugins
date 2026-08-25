@@ -52,9 +52,9 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" http://localhost:9000 sidebar.png -
 ## Core Principles
 
 ### 1. 뷰포트 표준화
-- **데스크톱:** 1920×1080 (또는 프로젝트 명시 기본값)
+- **데스크톱:** 1440×900 (`--responsive`의 데스크톱 기본값. 뷰포트를 직접 지정하는 `--vp`의 기본값은 1280×800이다. 프로젝트가 다른 값을 명시하면 그쪽을 쓴다)
 - **모바일:** 375×667 (iPhone SE) + 추가 필요 시 태블릿 768×1024
-- `node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" --responsive`로 3종 동시 캡처 → 일관된 해상도
+- `node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" <url> <output.png> --responsive`로 3종 동시 캡처 → 일관된 해상도(파일명에 `-WxH`가 자동으로 붙는다). **url은 생략할 수 없다** — 빼고 실행하면 그 자리에서 종료된다.
 - 장비/브라우저 간 렌더링 편차 문서화 (유연성·표준)
 
 ### 2. 캡처 상태 분류
@@ -86,7 +86,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" http://localhost:9000 sidebar.png -
 
 ### 5. 메타데이터와 추적성
 - **캡처 정보:** 뷰포트, 날짜·시간, 브라우저/OS, 테스트 데이터(사용자 역할, 상태), URL/라우트
-- **근거 남기기:** "Screenshot A (로그인 상태, 1920×1080, 2025-02-10)" 형식으로 실행 조건 기록
+- **근거 남기기:** "Screenshot A (로그인 상태, 1440×900, 2025-02-10)" 형식으로 실행 조건 기록
 - **변경 이력:** 이전 버전과의 비교 가능하도록 태그·커밋·날짜 연결
 
 ### 6. 저장 규칙

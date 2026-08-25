@@ -26,7 +26,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const DEFAULT_MAX_BYTES = 12000
 
@@ -80,7 +80,11 @@ try {
 
   let note = ''
   try {
-    const { computeDrift } = await import(join(dirname(fileURLToPath(import.meta.url)), 'doc-drift.mjs'))
+    // 절대경로를 그대로 넘기면 Windows에서 `C:`가 URL 스킴으로 해석돼
+    // ERR_UNSUPPORTED_ESM_URL_SCHEME으로 죽는다 — 아래 catch가 그 에러를 삼켜
+    // 드리프트 경고만 조용히 사라지므로, file:// URL로 변환해 넘긴다.
+    const driftUrl = pathToFileURL(join(dirname(fileURLToPath(import.meta.url)), 'doc-drift.mjs')).href
+    const { computeDrift } = await import(driftUrl)
     const r = computeDrift(cwd)
     if (r && r.drift.length) {
       note = '\n\n⚠️ **문서 드리프트 감지** (문서가 코드와 불일치 — 코드가 진실):\n' +
