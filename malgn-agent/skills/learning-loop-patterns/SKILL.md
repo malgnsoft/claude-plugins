@@ -9,7 +9,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 작업 전 지식 확인과 작업 후 교훈 기록의 폐쇄 루프로 팀 지식을 자산화하는 기술. 반복되는 문제를 사전에 회피하고, 실행 경험을 체계적으로 축적하여 생산성을 높인다.
 - **대상 에이전트:** backend-dev, frontend-dev, qa-engineer, capture-strategist 등 실행 무거운(태스크 단위 산출물을 만드는) 에이전트
 - **핵심 목표:** "작업 전 knowledge 확인" → "작업 실행" → "작업 후 교훈 기록" 폐쇄 루프 자동화
-- **역할 구분:** MCP 기록 규칙 자체(issue_record/decision_record/work_record를 언제·어떻게 쓰는지)는 `common-learning-loop-knowledge-management` 스킬을 참조하라. 이 문서는 그 위에서 동작하는 **태스크 단위 실행 플레이북**(Pre/Mid/Post-Execution 체크리스트와 구체 예시)을 다룬다.
+- **역할 구분:** malgnai-hub 기록 규칙 자체(issue_record/decision_record/work_record를 언제·어떻게 쓰는지)는 `common-learning-loop-knowledge-management` 스킬을 참조하라. 이 문서는 그 위에서 동작하는 **태스크 단위 실행 플레이북**(Pre/Mid/Post-Execution 체크리스트와 구체 예시)을 다룬다.
 
 ## Core Principles
 
