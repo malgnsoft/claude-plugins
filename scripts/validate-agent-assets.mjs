@@ -220,7 +220,10 @@ function* liveReferences(body, re, { includeFenced = false } = {}) {
 // 선언하는 곳을 함께 수집해 모순·순환을 찾는다.
 
 // "(정본: Skill `x`)" / "정본: agents/x.md" / "canonical: ..." 형태의 정본 지목
-const CANONICAL_CLAIM = /정본[^\n]{0,40}?(?:Skill\s+`([a-z0-9:\-]+)`|`((?:agents|skills|knowledge)\/[A-Za-z0-9_\-/.]+\.md)`)/g;
+// 백틱 안 경로 앞에 `${CLAUDE_PLUGIN_ROOT}/` 접두가 붙어도(읽는 이가 그대로 Read하는 실제 참조
+// 표기) 잡아야 한다 — 접두 유무와 무관하게 지목 대상은 같은 파일이다. 접두는 캡처하지 않는다
+// (target은 pluginRoot 기준 상대경로여야 disclaiming 셋과 비교가 맞는다).
+const CANONICAL_CLAIM = /정본[^\n]{0,40}?(?:Skill\s+`([a-z0-9:\-]+)`|`(?:\$\{CLAUDE_PLUGIN_ROOT\}\/)?((?:agents|skills|knowledge)\/[A-Za-z0-9_\-/.]+\.md)`)/g;
 // 스스로 정본이 아님을 선언하는 문장
 const CANONICAL_DISCLAIMER = /(진실의 원천이 아니|정본이 아니|참고용 요약이지|source of truth가 아니)/;
 
@@ -290,7 +293,9 @@ function checkCanonicalClaims(relPath, body, disclaiming, skillDirNames) {
 // 참조와 § 사이는 공백(또는 "의"·쉼표)만 허용한다. 간격을 넓게 잡으면 한 문장 안의 무관한
 // 절번호가 앞의 파일명과 잘못 짝지어진다 — 실제로 "`…/SKILL.md`로 이관) 배경만 남음 — §1.3"에서
 // 방법론 rubric의 §1.3이 그 SKILL.md의 절로 오인돼 없는 절 ERROR가 났다.
-const ANCHOR_REF = /(?:`((?:knowledge|agents|skills)\/[A-Za-z0-9_\-/.]+\.md)`|Skill\s+`([a-z0-9:\-]+)`)[ \t]{0,3}(?:의|,)?[ \t]{0,3}§\s*([0-9]+(?:\.[0-9]+)?)/g;
+// 백틱 안 경로 앞에 `${CLAUDE_PLUGIN_ROOT}/` 접두가 붙어도 같은 대상을 가리키므로 매칭한다
+// (CANONICAL_CLAIM과 동일 판단 — 접두는 캡처하지 않아 targetRel이 pluginRoot 기준 상대경로로 남는다).
+const ANCHOR_REF = /(?:`(?:\$\{CLAUDE_PLUGIN_ROOT\}\/)?((?:knowledge|agents|skills)\/[A-Za-z0-9_\-/.]+\.md)`|Skill\s+`([a-z0-9:\-]+)`)[ \t]{0,3}(?:의|,)?[ \t]{0,3}§\s*([0-9]+(?:\.[0-9]+)?)/g;
 
 function sectionNumbers(absPath) {
   const nums = new Set();
@@ -457,6 +462,17 @@ function checkBodyReferences(relPath, body, ctx) {
         `knowledge 참조 '${m[0]}'가 맨 상대경로다 — 에이전트 cwd(사용자 프로젝트) 기준으로 해석돼 열리지 않는다. ` +
         '읽기 대상이면 `${CLAUDE_PLUGIN_ROOT}/knowledge/…`, malgn-agent 소스 clone을 고치는 대상이면 ' +
         '`malgn-agent/knowledge/…`로 적는다 (규약 정본: Skill `common-output-storage-and-path-management` §1-2).');
+    }
+  }
+  // agents/ 참조는 knowledge/와 달리 두 형태를 다르게 다룬다. 맨 상대경로 `` `agents/x.md` ``는
+  // "정본이 어디인지 알려주는 산문 인용"으로 이 저장소에서 계속 허용한다(스킬이 다른 에이전트의
+  // 역할 경계를 실행 시점에 실제로 열어볼 필요 없이 인용만 하는 사례가 다수다) — 그래서 존재
+  // 확인(REF_AGENT_MISSING)만 하고 knowledge식 "형태가 틀려서 못 연다" 에러는 걸지 않는다.
+  // 반대로 `` `${CLAUDE_PLUGIN_ROOT}/agents/x.md` ``는 읽는 이가 그대로 Read하는 실제 참조이므로
+  // 같은 존재 확인을 별도로 건다.
+  for (const m of liveReferences(body, /`\$\{CLAUDE_PLUGIN_ROOT\}\/agents\/([a-z0-9\-]+\.md)`/g)) {
+    if (!fs.existsSync(path.join(pluginRoot, 'agents', m[1]))) {
+      error('REF_AGENT_MISSING', relPath, `본문이 참조하는 agent 파일이 없다: agents/${m[1]}`);
     }
   }
   for (const m of liveReferences(body, /`(agents\/[a-z0-9\-]+\.md)`/g)) {
