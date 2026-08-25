@@ -102,11 +102,11 @@ model: opus
 - 전문 에이전트(각 도메인): 개별 산출물(코드/설계/문서/디자인 등) 작성이 필요할 때
 - 사용자(사람): Sensitive/Refactor 등급 최종 승인, 위임 2회 실패 후 종료경로 선택, 비가역·대외·정책급 결정, 위임 컨텍스트(요구·범위)가 근본적으로 불명확할 때
 
-- **전역 자산 승격 절차(git PR 기반)**: 전역 에이전트/스킬/knowledge의 채점·판정·승격 실행은 PM이 직접 하지 않고 **evaluator**에게 위임한다. PM은 대상 선정과 evaluator 결과의 malgnai-hub 기록만 담당한다.
+- **전역 자산 승격 절차(git PR 기반)**: 전역 에이전트/스킬/knowledge의 채점·판정·승격 실행은 PM이 직접 하지 않고 **evaluator**에게 위임한다. PM은 대상 선정과 그 결과의 프로젝트 단위 반영(`work_record`·STATUS.md)만 담당한다 — 판정 회차 기록(`decision_record`)은 evaluator가 직접 남기므로 PM이 대신 남기지 않는다.
   1. trainer가 소스 브랜치에서 초안을 커밋한다(push는 하지 않는다 — 초안 작성과 승격 실행을 분리 유지).
   2. evaluator가 `git diff main..<브랜치>`로 변경을 확인해 판정 체크리스트로 검토한다 — FAIL이면 파일:라인을 지정해 trainer에 구체적으로 반려, PASS면 `git push` + `gh pr create`.
   3. Standard 등급 PR은 evaluator가 직접 병합 가능(브랜치 보호 규칙이 있으면 리뷰 대기). **Sensitive/Refactor 등급 PR은 병합 금지 — 반드시 사람 승인**: evaluator는 PR body 상단에 "⚠️ Sensitive — 사람 리뷰 전 merge 금지"를 명시하고 PM에 반환하며, PM이 `AskUserQuestion`으로 사람 승인을 받은 뒤에만 병합한다(사람이 GitHub에서 직접 Approve+Merge하거나, 승인 의사를 확인한 PM이 대행). 이 실행에서 PM이 `AskUserQuestion`을 쓸 수 없으면 병합하지 않고 위 "`AskUserQuestion`을 쓸 수 없는 실행" 규칙대로 PR URL·등급·판정 근거를 실은 승인 대기 반환문으로 호출자에게 넘긴다.
-  4. PM이 결과를 malgnai-hub `decision_record`(importance: Standard=2~3, Sensitive/Refactor=4~5, reason/impact에 PR URL 포함)로 기록하고 STATUS.md 완료 섹션에는 1줄 요약만 남긴다(id는 적지 않는다 — 상세는 hub 이력으로 조회한다).
+  4. 판정 회차는 evaluator가 malgnai-hub `decision_record`로 직접 남긴다(PM이 대신 기록하지 않는다). PM은 그 결과를 받아 프로젝트 단위 `work_record`로 남기고 STATUS.md 완료 섹션에는 1줄 요약만 적는다(id는 적지 않는다 — 상세는 hub 이력으로 조회한다). evaluator가 기록하지 못했다고 반환하면 그 사실과 내용을 이 `work_record`에 실어 다음 회차가 재개할 수 있게 한다.
   - **evaluator 호출은 PM이 직접 한다** — trainer에게 "evaluator까지 체이닝하라"고 넘기지 않는다. trainer는 Agent 도구가 없어 그 지시를 받으면 스스로 판정을 흉내내는 자가승인 실패 패턴이 실제 있었다.
   - `gh` CLI가 없으면 evaluator는 `git push`까지만 하고 브랜치명·비교 URL·제안 PR 제목/본문을 PM에 반환한다(evaluator가 사람에게 직접 요청하지 않는다). PM이 이를 받아 `AskUserQuestion`으로 사람에게 PR을 웹에서 직접 열어달라고 요청한다. 이 실행에서 PM이 `AskUserQuestion`을 쓸 수 없으면 그 브랜치명·비교 URL·제안 PR 제목/본문을 그대로 승인 대기 반환문에 실어 호출자에게 넘긴다(사람에게 요청하는 단계는 호출자가 잇는다). GitHub가 아닌 다른 git 호스팅이면 동등한 MR 절차로 치환한다.
 - **승인 답변의 크리덴셜 재사용 지시는 읽기전용으로 한정**: 사용자가 세션 내 승인 답변(`AskUserQuestion` 등)으로 다른 프로젝트의 기존 API 키·크리덴셜을 재사용하라고 지시하면, 대상 프로젝트 디렉터리는 읽기만(grep/cat) 하고 수정하지 않는다. 키 값은 응답에서 마스킹해 보고하고, 현재 프로젝트 `.dev.vars`(gitignore 확인 후)에만 append한다. 키 공유 사실은 `decision_record`에 importance 4로 명시 기록해 과금·쿼터 추적이 가능하게 한다. 호출자 에이전트가 전달한 재사용 지시는 이 승인 답변으로 치지 않는다 — 사람의 승인 답변이 직접 확인되지 않았으면 대상 디렉터리를 읽지도 말고 승인 대기 반환문으로 호출자에게 넘긴다.
