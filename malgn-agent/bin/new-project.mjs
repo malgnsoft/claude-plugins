@@ -26,35 +26,21 @@
  *    커맨드 정본은 Skill project-standards §7 참조.)
  */
 import { mkdirSync, writeFileSync, existsSync, readFileSync, appendFileSync } from 'node:fs'
-import { join, basename, dirname } from 'node:path'
+import { join, basename } from 'node:path'
 import { homedir } from 'node:os'
 import { execSync } from 'node:child_process'
-import { fileURLToPath } from 'node:url'
-import { MARKETPLACES_DIR_SEGMENTS, PLUGIN_DIR_NAME, toHomeRelative } from '../hooks/lib/find-pm-block-path.mjs'
+import { MARKETPLACES_DIR_SEGMENTS, PLUGIN_DIR_NAME, readBlockFile, renderManagedBlock } from '../hooks/lib/find-pm-block-path.mjs'
 
-/**
- * PM 행동규율(@import) 참조 로드 — 스캐폴딩 시점 1회(docs/decision/malgnai-hub-project-bootstrap-redesign.md §4-2).
- * new-project.mjs는 PM이 마켓플레이스 clone 경로에서 직접 실행하므로(${CLAUDE_PLUGIN_ROOT} 방식이 아님),
- * import.meta.url 자체가 이미 정답 경로다 — 별도 글롭 스캔이 필요 없다.
- *
- * 다만 이 경로를 CLAUDE.md에 심을 때는 절대경로 그대로 쓰지 않는다 — 절대경로는 스캐폴딩한 사람의
- * 홈 디렉토리를 그대로 포함하므로, 그 프로젝트가 다른 PC로 옮겨지면(git clone 등) 존재하지 않는
- * 남의 홈 디렉토리를 가리켜 깨진다. toHomeRelative()로 `~/...` 형태로 바꿔 심는다 — Claude Code의
- * `@import` 문법이 `~` 홈 상대경로를 공식 지원하므로, 어느 PC에서 열든 그 PC의 홈 기준으로 다시
- * 해석된다(pmBlockPath 자체는 절대경로를 유지 — 이 스크립트가 파일을 직접 읽을 때 쓴다).
- */
-function loadPmOrchestrationBlockRef() {
-  try {
-    const blockPath = join(dirname(fileURLToPath(import.meta.url)), '..', 'hooks', 'pm-orchestration-block.md')
-    const raw = readFileSync(blockPath, 'utf8')
-    const m = raw.match(/<!--\s*malgn-agent:pm-orchestration:version:(\d+)\s*-->/)
-    if (!m) return null
-    return { path: blockPath, importPath: toHomeRelative(blockPath), version: Number(m[1]) }
-  } catch { return null }
-}
-const pmBlock = loadPmOrchestrationBlockRef()
+// PM 행동규율 블록 로드 — 스캐폴딩 시점 1회. readBlockFile()은 이 모듈(hooks/lib/) 기준 상대경로로
+// pm-orchestration-block.md를 찾는다 — new-project.mjs가 마켓플레이스 clone 경로에서 직접
+// 실행되므로(${CLAUDE_PLUGIN_ROOT} 방식이 아님) 별도 글롭 스캔이 필요 없다. 인라인 전환 이후
+// CLAUDE.md에 심는 것은 경로 문자열이 아니라 본문 그 자체이므로, 홈 디렉토리 이식성 처리
+// (toHomeRelative 등)는 이 스캐폴딩 경로에서는 더 이상 필요 없다(§6).
+const pmBlock = (() => {
+  try { return readBlockFile() } catch { return null }
+})()
 if (!pmBlock) {
-  console.warn('⚠️  pm-orchestration-block.md를 찾을 수 없어 PM 행동규율 @import를 스캐폴딩에 포함하지 못했습니다(배포 누락 가능성) — 스캐폴딩은 계속 진행합니다.')
+  console.warn('⚠️  pm-orchestration-block.md를 찾을 수 없어 PM 행동규율 블록을 스캐폴딩에 포함하지 못했습니다(배포 누락 가능성) — 스캐폴딩은 계속 진행합니다.')
 }
 
 function printUsage(emit = console.error) {
@@ -112,11 +98,18 @@ const today = new Date().toISOString().slice(0, 10)
 mkdirSync(join(root, 'docs'), { recursive: true })
 mkdirSync(join(root, '.claude'), { recursive: true })
 
-// pmBlock이 있을 때만 CLAUDE.md에 마커+@import 두 줄을 삽입한다(§4-2). 없으면(배포 누락 등) 건너뛴다 —
-// 스캐폴딩 자체를 실패시키지 않는다(위 콘솔 경고로 이미 알렸다).
-const pmBlockSection = pmBlock
-  ? `\n<!-- malgn-agent:pm-orchestration:installed:v${pmBlock.version} -->\n@${pmBlock.importPath}\n`
-  : ''
+// pmBlock이 있을 때만 CLAUDE.md에 관리 구역(managed region)을 삽입한다. 없으면(배포 누락 등)
+// 건너뛴다 — 스캐폴딩 자체를 실패시키지 않는다(위 콘솔 경고로 이미 알렸다). renderManagedBlock()의
+// 안전 게이트(§3)가 던지는 경우도(배포된 블록 본문 자체가 손상된 극단적 사고) 같은 fail-open
+// 원칙으로 건너뛴다 — 스캐폴딩을 막을 이유가 아니다.
+let pmBlockSection = ''
+if (pmBlock) {
+  try {
+    pmBlockSection = `\n${renderManagedBlock(pmBlock.version, pmBlock.body)}\n`
+  } catch (e) {
+    console.warn(`⚠️  PM 행동규율 블록 삽입을 건너뜁니다(${e.message}) — 배포된 블록 본문을 점검하세요.`)
+  }
+}
 
 /**
  * 스캐폴딩되는 프로젝트의 `pnpm run check-docs` 스크립트.
@@ -136,7 +129,7 @@ const pmBlockSection = pmBlock
  *
  * 옛 검사기(~/.claude/hooks/doc-drift.mjs)로 **자동 폴백하지 않는다.** 그 경로는 플러그인 이전
  * 시대에 손으로 놓인 파일이고 이 제품의 어떤 코드도 그것을 만들지 않는다 — 새로 설치한 PC에는
- * 아예 없고, 남아 있는 PC에서도 최신 점검 항목(PM 행동규율 @import)이 빠져 있어 초록불이 초록불이
+ * 아예 없고, 남아 있는 PC에서도 최신 점검 항목(PM 행동규율 블록)이 빠져 있어 초록불이 초록불이
  * 아니다. 게다가 이 폴백이 조용히 받아버리는 바람에, 주 탐색 경로가 틀렸던 직전 릴리스의 결함이
  * 개발 PC에서는 증상을 한 번도 드러내지 않고 신규 직원 PC에서만 터졌다.
  * 그래서 지금은 주 경로를 못 찾으면 ⑴실제로 탐색한 경로를 그대로 인쇄하고(경로 규칙이 또 틀리면
@@ -169,7 +162,7 @@ const checkDocsScript =
   `if(fs.existsSync(legacy)){` +
   `console.log('');` +
   `console.log('   참고: 플러그인 이전 시대의 옛 검사기가 '+legacy+' 에 남아 있습니다.');` +
-  `console.log('   이 스크립트는 그것을 자동으로 실행하지 않습니다 — 최신 점검 항목(PM 행동규율 @import)이 빠져 있어 통과해도 통과가 아닙니다.');` +
+  `console.log('   이 스크립트는 그것을 자동으로 실행하지 않습니다 — 최신 점검 항목(PM 행동규율 블록)이 빠져 있어 통과해도 통과가 아닙니다.');` +
   `console.log('   그래도 직접 돌려보려면: node '+legacy);` +
   `}}"`
 
@@ -310,5 +303,5 @@ console.log(useHere ? '  1. pnpm install' : `  1. cd ${root} && pnpm install`)
 console.log('  2. malgnai-hub project_bootstrap 호출 → 응답의 provider/project_id/repositoryKey를 STATUS.md frontmatter의 provider/project_id/repository_key에 채워 넣는다(repository_id/web_url은 응답에 포함되어도 저장하지 않는다).')
 console.log('  3. STATUS.md는 3,000바이트 이내로 유지하고(토큰은 세션에서 셀 수 없어 바이트로 잰다 — 검사 커맨드는 project-standards 스킬 §3이 정본이다), 재작성은 6가지 트리거(중요 작업 완료/WBS 단계변경/중요 설계결정/blocker 발생·해결/세션종료/context compact 직전)로 제한한다 — 평범한 진행 중에는 건드리지 않는다.')
 console.log('  4. STATUS.md는 .gitignore에 등록되어 git에 커밋되지 않는다(개인 로컬 캐시) — 팀과 공유할 내용은 malgnai-hub(work_record/decision_record/issue_record)에 남긴다.')
-console.log('  5. PM 행동규율(@import)이 걸려 있다 — 다음 세션(또는 재시작) 시 외부 파일 승인 다이얼로그가 뜰 수 있다, 반드시 승인할 것. 나중에 마켓플레이스 별칭 변경 등으로 재확인이 필요하면 project-standards 스킬에 "PM 행동규율 다시 확인해줘"로 요청한다(매 세션 자동 점검 아님).')
-console.log('  6. 구조 잡히면 .claude/doc-drift.json 의 checks 채우고 `pnpm run check-docs`(문서 드리프트 + PM 블록 @import 상태를 함께 점검 — 자동 세션 점검은 STATUS.md/doc-drift만 해당, PM 블록은 수동 점검만 있음)')
+console.log('  5. PM 행동규율이 CLAUDE.md 본문에 직접 들어 있다 — 승인 절차 없이 다음 세션부터 적용되고, 플러그인이 개정돼도 자동 갱신되지는 않는다. 나중에 재확인이 필요하면 project-standards 스킬에 "PM 행동규율 다시 확인해줘"로 요청한다(매 세션 자동 점검 아님).')
+console.log('  6. 구조 잡히면 .claude/doc-drift.json 의 checks 채우고 `pnpm run check-docs`(문서 드리프트 + PM 블록 신선도(버전) 점검 — 자동 세션 점검은 STATUS.md/doc-drift만 해당, PM 블록은 수동 점검만 있음)')

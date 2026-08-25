@@ -47,7 +47,14 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join, dirname, basename } from 'node:path'
 import { homedir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { findMalgnAgentBlockPath, AMBIGUOUS, expandHome } from './lib/find-pm-block-path.mjs'
+import {
+  IMPORT_LINE_RE,
+  readBlockFile,
+  extractManagedRegion,
+  bodyMatches,
+  findStrayBodyCopy,
+  maskFencedAndInlineCode,
+} from './lib/find-pm-block-path.mjs'
 
 function globSegmentRe(seg) {
   return new RegExp('^' + seg.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$')
@@ -198,29 +205,74 @@ export function computeDrift(cwd = process.cwd()) {
   return { results, drift, skipped, empty: checks.length === 0 }
 }
 
+// §6 상태 어휘 표의 종료코드(구조가 고정된 표라 값 자체를 여기서 다시 규정하지 않는다 — 이 맵은
+// project-standards의 check-pm-orchestration-block.mjs가 process.exit()로 직접 구현한 것과 같은
+// 표를 doc-drift.mjs 쪽에서도 참조하기 위한 사본이다. 표가 바뀌면 두 곳을 함께 고친다).
+const PM_BLOCK_EXIT_CODE = {
+  ok: 0,
+  'stale-wording': 0,
+  'stale-version': 1,
+  'plugin-outdated': 0,
+  'legacy-import': 1,
+  'legacy-no-body': 1,
+  'duplicate-body': 1,
+  'unmanaged-body': 0,
+  'malformed-region': 1,
+  declined: 0,
+  'no-marker': 0,
+  'block-unreadable': 0,
+}
+
 /**
- * checkPmBlockImport() — CLAUDE.md 의 PM 행동규율 `@import` 줄이 실제 malgn-agent 설치 경로와
- * 여전히 일치하는지 수동 점검한다(docs/decision/malgnai-hub-project-bootstrap-redesign.md §4-5).
+ * checkPmBlockInline() — CLAUDE.md 안 PM 행동규율 관리 구역(managed region)이 최신 블록과
+ * 여전히 일치하는지 수동 점검한다(docs/decision/pm-orchestration-block-inline-design.md §6).
  *
- * SessionStart 훅(자동)은 없앴지만, `pnpm run check-docs`로 수동 확인은 남겨둬 `@import`가 조용히
- * 깨졌을 때(마켓플레이스 별칭 변경, external-import 승인 거절 후 방치 등) 감지할 방법을 하나는
- * 남긴다. import 줄 자체가 없으면(미설치 상태 — 이 저장소 자신 포함) 점검 대상이 아니므로 null을
+ * SessionStart 훅(자동)은 없다. `pnpm run check-docs`로 수동 확인만 남겨둬 인라인 사본이 조용히
+ * 낡았을 때(플러그인 버전이 올라갔는데 재동기화 안 함, 손편집으로 문구가 갈라짐 등) 감지할 방법을
+ * 하나는 남긴다. 이 함수는 읽기 전용이다 — 파일을 고치지 않는다(쓰기는
+ * skills/project-standards/scripts/check-pm-orchestration-block.mjs 의 --write 전담).
+ *
+ * 마커도 본문 사본도 전혀 없으면(미설치 상태 — 이 저장소 자신도 예전엔 여기 해당했다) null을
  * 반환해 조용히 스킵한다 — 강제 설치를 유도하지 않는다.
  */
-export function checkPmBlockImport(cwd = process.cwd()) {
+export function checkPmBlockInline(cwd = process.cwd()) {
   let claudeMd
   try { claudeMd = readFileSync(join(cwd, 'CLAUDE.md'), 'utf8') } catch { return null }
-  const IMPORT_LINE_RE = /^@(.+pm-orchestration-block\.md)\s*$/m
-  const m = claudeMd.match(IMPORT_LINE_RE)
-  if (!m) return null // import 줄 자체가 없으면(미설치 상태 — 이 저장소 자신 포함) 점검 대상 아님, 강제하지 않는다
-  let resolved
-  try { resolved = findMalgnAgentBlockPath() } catch { resolved = null }
-  if (resolved === AMBIGUOUS) return { status: 'ambiguous', message: 'malgn-agent 마켓플레이스 후보가 2개 이상이라 경로를 하나로 특정할 수 없다.' }
-  if (!resolved) return { status: 'plugin-missing', message: 'malgn-agent 플러그인 원본을 찾을 수 없다(마켓플레이스 제거/미등록 가능성).' }
-  // import 줄은 `~/...`(홈 상대, 이식 가능한 형태) 또는 옛 방식의 절대경로 둘 다일 수 있다.
-  // expandHome()으로 현재 PC 기준 절대경로로 편 뒤 비교해야 `~/...`로 정상 설치된 경우를
-  // 드리프트로 오판하지 않는다.
-  if (expandHome(m[1]) !== resolved) return { status: 'drift', message: `import 경로(${m[1]}) != 현재 설치 경로(${resolved}) — Edit로 교정 필요.` }
+
+  const region = extractManagedRegion(claudeMd)
+  if (region.kind === 'malformed') {
+    return { status: 'malformed-region', message: `관리 구역 유일성 위반(시작 마커 ${region.startCount}개, 종료 마커 ${region.endCount}개).` }
+  }
+
+  let block = null
+  try { block = readBlockFile() } catch { block = null }
+  if (!block) {
+    return { status: 'block-unreadable', message: 'pm-orchestration-block.md를 읽지 못했다(배포 누락 가능성) — 신선도 확인 불가.' }
+  }
+
+  const excludeRange = region.kind === 'region' ? { start: region.regionStartIndex, end: region.regionEndIndex } : null
+  const stray = findStrayBodyCopy(claudeMd, block.body, excludeRange)
+  if (stray.found) {
+    return region.kind === 'no-start'
+      ? { status: 'unmanaged-body', message: `마커 없이 블록 본문과 겹치는 구간이 있다(줄 ${stray.startLine}-${stray.endLine}).` }
+      : { status: 'duplicate-body', message: `관리 구역 밖에 블록 본문과 겹치는 구간이 있다(줄 ${stray.startLine}-${stray.endLine}) — Edit로 정리 필요.` }
+  }
+
+  if (region.kind === 'no-start') return null // 미설치 상태 — 점검 대상 아님, 강제하지 않는다
+  if (region.kind === 'declined') return { status: 'declined', message: `v${region.version}에서 설치를 거절한 상태.` }
+  if (region.kind === 'no-region') {
+    // check-pm-orchestration-block.mjs 와 동일하게 코드펜스 밖 텍스트만으로 판정한다(§6 표 —
+    // 두 소비자가 같은 CLAUDE.md에 다른 status를 내면 안 된다).
+    const hasImportLine = IMPORT_LINE_RE.test(maskFencedAndInlineCode(claudeMd))
+    return hasImportLine
+      ? { status: 'legacy-import', message: `installed(v${region.version}) 마커 + @import 잔재 — 마이그레이션 필요.` }
+      : { status: 'legacy-no-body', message: `installed(v${region.version}) 마커만 있고 구역 없음 — 마이그레이션 필요.` }
+  }
+
+  // region.kind === 'region'
+  if (region.version > block.version) return { status: 'plugin-outdated', message: `설치본(v${region.version}) > 블록(v${block.version}) — 다운그레이드 금지, 조치 없음.` }
+  if (region.version < block.version) return { status: 'stale-version', message: `마커 버전(v${region.version}) < 블록 버전(v${block.version}) — 재동기화 필요.` }
+  if (!bodyMatches(region.body, block.body)) return { status: 'stale-wording', message: '버전은 같지만 본문 실물이 다르다(의무는 동일).' }
   return { status: 'ok' }
 }
 
@@ -237,16 +289,18 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     if (r.skipped.length) console.log('  (skip, 측정불가:', r.skipped.join(', ') + ')')
   }
 
-  // PM 행동규율 @import 드리프트는 doc-drift.json 매니페스트 유무와 무관하게 항상 점검한다
-  // (§4-5) — 단, sessionstart-context.mjs 는 computeDrift() 만 import 해서 쓰므로 이 CLI 블록
-  // 자체가 여기 있다는 사실만으로 "자동 세션 점검엔 포함 안 됨"이 구조적으로 보장된다.
-  const pmCheck = checkPmBlockImport(cwd)
+  // PM 행동규율 관리 구역 드리프트는 doc-drift.json 매니페스트 유무와 무관하게 항상 점검한다 —
+  // 단, sessionstart-context.mjs 는 computeDrift() 만 import 해서 쓰므로 이 CLI 블록 자체가 여기
+  // 있다는 사실만으로 "자동 세션 점검엔 포함 안 됨"이 구조적으로 보장된다.
+  const pmCheck = checkPmBlockInline(cwd)
   if (pmCheck) {
-    console.log(pmCheck.status === 'ok' ? '  ✅ PM 행동규율 @import 정상' : `  ⚠️ PM 행동규율 @import: ${pmCheck.message}`)
+    console.log(pmCheck.status === 'ok' ? '  ✅ PM 행동규율 관리 구역 정상' : `  ⚠️ PM 행동규율(${pmCheck.status}): ${pmCheck.message}`)
   }
 
   const hasDrift = !!(r && r.drift.length)
-  const hasPmIssue = !!(pmCheck && pmCheck.status !== 'ok')
+  // §6 표의 종료코드를 따른다 — status !== 'ok' 라고 전부 실패가 아니다(예: unmanaged-body/
+  // declined/no-marker/plugin-outdated/block-unreadable/stale-wording은 0).
+  const hasPmIssue = !!(pmCheck && (PM_BLOCK_EXIT_CODE[pmCheck.status] ?? 1) !== 0)
   if (hasDrift) console.log('\n⚠️ 문서 드리프트 — 매니페스트 expected 와 문서 서술을 실측에 맞춰 갱신하라.')
   if (!hasDrift && !hasPmIssue && r && !r.empty) console.log('\n✅ 문서가 코드와 일치.')
   process.exit(hasDrift || hasPmIssue ? 1 : 0)
