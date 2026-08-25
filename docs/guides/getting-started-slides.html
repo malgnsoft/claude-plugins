@@ -292,7 +292,7 @@ html,body{background:#0a0f1c;font-family:var(--sans);}
       <h2 class="s-title">에이전트 · 스킬 · 참고자료, <span class="hl">한눈에</span></h2>
       <p class="s-lead">직접 다룰 필요는 없지만, PM이 무엇을 움직이는지 알아두면 이해가 빨라집니다.</p>
     </div>
-    <div class="num">05 / 08</div>
+    <div class="num">05 / 09</div>
   </div>
   <div class="rule"></div>
 
@@ -330,7 +330,7 @@ html,body{background:#0a0f1c;font-family:var(--sans);}
       <h2 class="s-title">최신 상태 유지하기, <span class="hl">맥락은 자동 기억</span></h2>
       <p class="s-lead">둘 다 특별히 신경 쓰지 않아도 되지만, 알아두면 도움이 됩니다.</p>
     </div>
-    <div class="num">06 / 08</div>
+    <div class="num">06 / 09</div>
   </div>
   <div class="rule"></div>
 
@@ -357,15 +357,51 @@ html,body{background:#0a0f1c;font-family:var(--sans);}
   <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>설치 · 사용법 가이드</div></div>
 </section>
 
-<!-- ==================== 7 · 자주 겪는 문제 ==================== -->
+<!-- ==================== 7 · 프로젝트별 사용 설정 ==================== -->
 <section class="slide">
   <div class="s-head">
     <div>
-      <div class="eyebrow">06 · 문제 해결</div>
+      <div class="eyebrow">06 · 프로젝트별 설정</div>
+      <h2 class="s-title">필요 없는 프로젝트라면 <span class="hl">꺼둘 수</span> 있습니다</h2>
+      <p class="s-lead">malgn-agent는 프로젝트 단위로 켜고 끌 수 있습니다. 팀 전체에 적용할지, 나에게만 적용할지도 고를 수 있습니다.</p>
+    </div>
+    <div class="num">07 / 09</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="body">
+    <div class="cmp">
+      <div class="cmp-card a">
+        <div class="hd"><div class="meta">Command</div><div class="ttl">끄기 · 켜기</div><div class="sub">해당 프로젝트 폴더에서 실행</div></div>
+        <div class="bd">
+          <div class="cmp-row"><div class="k">끄기</div><div class="v"><span class="kbd">claude plugin disable malgn-agent -s project</span></div></div>
+          <div class="cmp-row"><div class="k">켜기</div><div class="v"><span class="kbd">claude plugin enable malgn-agent -s project</span></div></div>
+          <div class="cmp-row"><div class="k">주의</div><div class="v">변경 후에는 <b>재시작</b>해야 적용됩니다.</div></div>
+          <div class="cmp-row"><div class="k">확인</div><div class="v"><span class="kbd">claude plugin list</span>에서 활성화 여부 확인</div></div>
+        </div>
+      </div>
+      <div class="cmp-card b">
+        <div class="hd"><div class="meta">Scope</div><div class="ttl">적용 범위 선택</div><div class="sub">-s 옵션으로 지정</div></div>
+        <div class="bd">
+          <div class="cmp-row"><div class="k">project</div><div class="v">프로젝트 전체에 적용. <span class="kbd">.claude/settings.json</span>에 저장돼 git으로 팀원과 공유됩니다.</div></div>
+          <div class="cmp-row"><div class="k">local</div><div class="v">나에게만 적용. <span class="kbd">.claude/settings.local.json</span>에 저장돼 git에는 올라가지 않습니다.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:20px;">프로젝트 성격상 malgn-agent가 필요 없다면(예: 개인 실험용 저장소) <b>project</b> 범위로 꺼서 팀원 모두에게 적용하고, 나만 잠시 쓰지 않고 싶다면 <b>local</b> 범위를 쓰세요.</div>
+  </div>
+  <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>설치 · 사용법 가이드</div></div>
+</section>
+
+<!-- ==================== 8 · 자주 겪는 문제 ==================== -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="eyebrow">07 · 문제 해결</div>
       <h2 class="s-title">자주 겪는 문제, <span class="hl">이렇게 확인하세요</span></h2>
       <p class="s-lead">대부분 재시작이나 상태 확인 명령 한 번으로 풀립니다.</p>
     </div>
-    <div class="num">07 / 08</div>
+    <div class="num">08 / 09</div>
   </div>
   <div class="rule"></div>
 
@@ -384,7 +420,7 @@ html,body{background:#0a0f1c;font-family:var(--sans);}
   <div class="s-foot"><span class="logo"><img src="맑은_로고.png" alt="맑은소프트">MALGN-AGENT GUIDE</span><div>설치 · 사용법 가이드</div></div>
 </section>
 
-<!-- ==================== 8 · 클로징 ==================== -->
+<!-- ==================== 9 · 클로징 ==================== -->
 <section class="slide dark">
   <div class="grad"></div>
   <div class="grid-tex"></div>
