@@ -17,7 +17,7 @@
  * 측정 프리미티브(코드가 진실):
  *   glob      — cwd 기준 "dir/패턴(*포함)" 파일 수. `**`(임의 깊이의 하위 디렉토리 재귀)도 지원한다.
  *             `**` 재귀는 `node_modules`·`.git`·`.venv`·`__pycache__`·`.parcel-cache`·`.next`·
- *             `.nuxt`·`.turbo`·`.svelte-kit`·`.cache`·`.output`(PRUNED_DIR_NAMES, `:53` 부근) 이름의
+ *             `.nuxt`·`.turbo`·`.svelte-kit`·`.cache`·`.output`(PRUNED_DIR_NAMES) 이름의
  *             디렉토리에는 진입하지 않는다 — 글롭 루트 안에 이 이름의 하위 디렉토리가 있으면,
  *             설령 그 안에 패턴과 매치되는 파일이 있어도 집계되지 않는다.
  *   homeGlob  — $HOME 기준 glob (러너·전역에이전트 등 프로젝트 밖). `**`도 동일하게 지원.
