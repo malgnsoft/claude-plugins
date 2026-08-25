@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: 맑은소프트 프로젝트 운영 표준 — 패키지 매니저(pnpm 전용), 프로젝트 구조(~/workspace/<이름>/ 독립 프로젝트), STATUS.md/CLAUDE.md/docs 3층 부트스트랩, 드리프트 가드, 신규 프로젝트 스캐폴딩, 기존 폴더 초기화/동기화, STATUS.md 크기 검사. 새 프로젝트를 시작하거나, 사용자가 이미 만들어 둔 폴더 안에서 "초기화 해줘/이 프로젝트 초기화"라고 요청하거나, "STATUS.md 크기 확인해줘/STATUS.md 용량 검사해줘"처럼 STATUS.md가 상한 안에 있는지 확인해달라고 하거나, 프로젝트 구조/진행 상태 관리 방식을 판단할 때 사용.
+description: 맑은소프트 프로젝트 운영 표준 — 패키지 매니저(pnpm 전용), 프로젝트 구조(~/workspace/<이름>/ 독립 프로젝트), STATUS.md/CLAUDE.md/docs 3층 부트스트랩, 드리프트 가드, 신규 프로젝트 스캐폴딩, 기존 폴더 초기화·환경 점검(PM 행동규율 블록·docs 지도·CLAUDE.md·malgnai-hub 연동), STATUS.md 크기 검사. 새 프로젝트를 시작하거나, 사용자가 이미 만들어 둔 폴더 안에서 "초기화 해줘/이 프로젝트 초기화"라고 요청하거나, "STATUS.md 크기 확인해줘/STATUS.md 용량 검사해줘"처럼 STATUS.md가 상한 안에 있는지 확인해달라고 하거나, 프로젝트 구조/진행 상태 관리 방식을 판단할 때 사용.
 ---
 
 # Malgn Project Standards
@@ -98,23 +98,42 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs" <프로젝트명> ["한 줄 설
 
 스캐폴딩 후에는 malgnai-hub `project_bootstrap`을 호출해 `repositoryKey`를 발급받고(첫 호출 시 자동 프로비저닝 — 별도 project_create 불필요), `STATUS.md` 상단 YAML frontmatter의 `provider`/`project_id`/`repository_key` 필드를 채운다.
 
-## 8. 기존 폴더 초기화 — "초기화 해줘"
+## 8. 기존 폴더 초기화·환경 점검 — "초기화 해줘"
 
 사용자가 폴더를 직접 만들고(또는 이미 코드가 있는 폴더) 그 안에서 "초기화 해줘"라고 요청하면, `~/workspace/<이름>/`을 새로 만드는 절차(§7)가 아니라 아래 in-place 절차를 따른다.
 
-1. **현재 상태 판별**: cwd에 `STATUS.md`가 있는지 확인.
-   - **있으면 → 이미 초기화됨.** 새로 스탬프하지 않는다. 상단 YAML frontmatter의 `project_id`가 비어 있으면 malgnai-hub `project_bootstrap`을 호출해 동기화하고 frontmatter 필드를 채운다. 이미 채워져 있으면 `project_get_context`로 최신 상태만 확인하고 그대로 진행한다.
-   - **없으면 → 아래 신규 초기화로 진행.**
-2. **신규 초기화(in-place)**:
-   ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs" --here ["한 줄 설명"]
-   ```
-   - cwd에 STATUS.md/CLAUDE.md/docs/README.md/.claude/doc-drift.json/package.json 중 **없는 파일만** 스탬프한다. 이미 코드가 있는 폴더(기존 `package.json` 등)라도 기존 파일은 덮어쓰지 않고 건너뛴다 — 실행 후 출력의 "건너뜀" 목록을 사용자에게 보고한다.
-   - `.git`이 없으면 `git init`까지 수행한다.
-   - 홈 디렉토리 자체에서는 실행되지 않는다(안전장치).
-3. **pnpm install** 실행 (package.json이 새로 생겼거나 이미 있던 경우 모두).
-4. **malgnai-hub `project_bootstrap` 호출**로 프로젝트를 동기화한다. `repositoryKey`는 폴더명 기반으로 제안하고 사용자 확인 후 확정한다. 반환된 `project_id`/`repositoryKey`를 `STATUS.md` 상단 YAML frontmatter의 `project_id`/`repository_key`에 채운다.
-5. 결과를 요약 보고한다: 새로 만든 파일 / 건너뛴(기존 유지) 파일 / malgnai-hub 연동 결과.
+**"초기화"는 파일 스탬프가 아니라 malgn-agent 환경 점검이다.** `STATUS.md` 유무 하나로 "이미 초기화됨"이라 판정하고 끝내면, STATUS.md만 있고 PM 행동규율 블록·docs 지도가 빠졌거나 깨진 폴더가 그대로 통과한다. 그래서 1단계(스탬프)가 어느 갈래로 갈라지든 **2단계 환경 점검은 항상 실행한다.**
+
+### 1단계 — 스탬프 상태 판별
+
+cwd에 `STATUS.md`가 있는지 확인한다.
+
+- **있으면 → 이미 스탬프됨.** 새로 스탬프하지 않고 바로 2단계로 간다(`--here`도 STATUS.md가 있으면 스스로 중단한다).
+- **없으면 → in-place 스탬프 후 2단계로 간다.**
+  ```bash
+  node "${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs" --here ["한 줄 설명"]
+  ```
+  - cwd에 STATUS.md/CLAUDE.md/docs/README.md/.claude/doc-drift.json/package.json 중 **없는 파일만** 스탬프한다. 이미 코드가 있는 폴더(기존 `package.json` 등)라도 기존 파일은 덮어쓰지 않고 건너뛴다 — 실행 후 출력의 "건너뜀" 목록을 사용자에게 보고한다.
+  - `.git`이 없으면 `git init`까지 수행한다. 홈 디렉토리 자체에서는 실행되지 않는다(안전장치).
+  - 이어서 **`pnpm install`**을 실행한다(package.json이 새로 생겼거나 이미 있던 경우 모두).
+  - **스탬프를 돌렸다고 배선이 갖춰졌다고 보지 않는다** — CLAUDE.md가 이미 있으면 스캐폴더가 그 파일을 통째로 건너뛰므로 PM 행동규율 `@import`도 심지 못한다. 확인은 2단계에서 한다.
+
+### 2단계 — 환경 점검 (갈래와 무관하게 항상 실행)
+
+아래 순서대로 확인하고, **빠지거나 깨진 것만** 채운다. 이미 갖춰진 항목은 다시 쓰지 않는다.
+
+1. **CLAUDE.md 배치·크기·`@import` 적정성** — Skill `claude-md-architecture`를 호출해 진단·정리한다(파일이 아예 없으면 그 스킬 기준으로 새로 쓴다). **판정 기준(배치 결정표·크기 규율)은 그 스킬이 정본이므로 여기에 옮겨 적지 않는다.**
+2. **PM 행동규율 블록** — §9 절차를 그대로 실행한다(`check-pm-orchestration-block.mjs`를 돌리고 `status`별 대응). 판정 로직은 §9가 정본이라 여기에 복제하지 않는다.
+   - 1번을 먼저 하는 이유: 이 블록은 CLAUDE.md 안에 사는 배선이라, CLAUDE.md가 없으면 스크립트가 `no-claude-md`로 빠져 점검 자체가 성립하지 않는다.
+   - §9의 "사용자가 명시적으로 요청할 때만" 제약과 충돌하지 않는다 — 그 제약은 §9를 **매 세션 자동으로 돌리지 않는다**는 뜻이고, "초기화 해줘"는 사용자의 명시적 요청이다. 이 흐름 안에서 호출한다고 상시 감시가 생기는 것은 아니다.
+3. **문서 지도** — `docs/README.md`가 있는지 확인한다. 없으면 §4의 진입점 지도로 만든다. 있으면 내용을 다시 쓰지 않는다.
+4. **malgnai-hub 연동** — `STATUS.md` 상단 YAML frontmatter의 `project_id`를 본다.
+   - 비어 있으면 `project_bootstrap`을 호출해 동기화하고 `provider`/`project_id`/`repository_key`를 채운다. `repositoryKey`는 폴더명 기반으로 제안하고 사용자 확인 후 확정한다.
+   - 이미 채워져 있으면 `project_get_context`로 최신 상태만 확인하고 그대로 진행한다.
+
+### 3단계 — 보고
+
+새로 만든 파일 / 건너뛴(기존 유지) 파일 / 환경 점검 4항목 각각의 결과(정상 · 교정함 · 사용자 확인 필요) / malgnai-hub 연동 결과를 요약 보고한다.
 
 **기존 5필드 STATUS.md는 그대로 둬도 기능상 문제없다** — 어떤 도구도 `repository_id`/`web_url` 필드를 파싱하지 않는다(SessionStart 훅은 STATUS.md를 필드 단위가 아니라 파일 전체를 문자열로 주입한다). 억지로 지금 3필드로 정리할 필요는 없다 — 다음 갱신 시점에 자연스럽게 3필드로 옮겨가면 되고, 급하지 않다.
 
@@ -147,4 +166,5 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestrat
 - [ ] `STATUS.md`가 3,000바이트 이내인가? — `node "${CLAUDE_PLUGIN_ROOT}/bin/check-status-size.mjs" --require`가 OK여야 한다(`--require`를 빼면 STATUS.md가 없거나 엉뚱한 폴더에서 돌렸을 때 SKIP으로 통과해버린다). 완료 섹션은 3~5개로 정리되어 있는가? (재작성은 6가지 트리거 상황에서만 했는가?)
 - [ ] `docs/README.md` 지도가 있고, docs를 통째로 읽지 않고 지도를 거쳐 필요한 것만 읽었는가?
 - [ ] 구조 서술(CLAUDE.md)이 판단(책임·이유·함정)을 담았는가? 담은 서술 안에 수치(파일 수·테이블 수·라우트 수 등)가 있다면 `.claude/doc-drift.json`에 등록했는가? (판단도 없고 매니페스트에도 걸 수 없는 나열이면 지운다 — 판정 정본은 Skill `claude-md-architecture` §1)
-- [ ] 새 프로젝트라면 `new-project.mjs`로 스캐폴딩했는가? (기존 폴더라면 `--here`로, STATUS.md가 이미 있다면 재스탬프 대신 `project_bootstrap` 동기화로)
+- [ ] 새 프로젝트라면 `new-project.mjs`로 스캐폴딩했는가? (기존 폴더라면 `--here`로, STATUS.md가 이미 있다면 재스탬프 없이 §8 2단계 환경 점검으로)
+- [ ] "초기화 해줘"를 처리했다면, STATUS.md 유무와 무관하게 환경 점검 4항목(CLAUDE.md 배치·크기 / PM 행동규율 블록 / `docs/README.md` / malgnai-hub 연동)을 모두 확인했는가? — STATUS.md 하나만 보고 "이미 초기화됨"으로 끝내지 않는다(§8)
