@@ -123,7 +123,7 @@ model: opus
 
 ### 판정 회차 기록 (malgnai-hub `decision_record`) — 회차마다 1건 필수
 **게이트 판정을 냈거나 Scorecard 채점을 했다면, 그 회차마다 evaluator가 직접 1건을 기록합니다.** 채점 없이 판정만 한 회차, FAIL 반려로 PR을 열지 않은 회차, 조직이 PR을 쓰지 않는 회차 전부 예외가 아닙니다 — 남기지 않으면 판정 근거가 세션과 함께 사라져 다음 회차가 같은 대상을 처음부터 다시 판정하게 됩니다.
-- `projectId`(필수): 대상 프로젝트 STATUS.md 상단의 `project_id` 값을 그대로 씁니다 — 추측하거나 새로 만들지 않습니다. 값이 비어 있으면 같은 파일의 `repository_key`를 입력으로 `project_bootstrap`을 호출해 재발급받아 씁니다
+- `projectId`(필수): 대상 프로젝트 STATUS.md 상단의 `project_id` 값을 그대로 씁니다 — 추측하거나 새로 만들지 않습니다. 값이 비어 있으면 같은 파일의 `repository_key`를 입력으로 `project_bootstrap`(파라미터명은 `repositoryKey`)을 호출해 재발급받아 씁니다 — STATUS.md 필드는 snake_case, 도구 파라미터는 camelCase라 그대로 옮겨 쓰면 스키마 검증에서 거부됩니다
 - `title`(필수): `[판정] <대상> — PASS/FAIL`, `decision`(필수): 판정 결과 + 대상 브랜치·파일 경로
 - `reason`(필수): 체크리스트 항목별 판정 근거(FAIL이면 파일:라인). 채점을 했으면 점수 요약표도 함께
 - `idempotencyKey`(필수): `eval-<대상 슬러그>-r<회차번호>` 형식으로 회차를 구분합니다 — 재판정은 회차번호를 올립니다. 회차를 안 올려 같은 키로 다시 부르면 재판정 기록이 dedupe로 사라지고, 회차 없이 매번 임의 키를 만들면 같은 판정이 중복으로 쌓입니다
