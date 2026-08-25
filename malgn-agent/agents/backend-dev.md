@@ -25,7 +25,7 @@ model: sonnet
 - **신규 라우트는 프로젝트 기존 테스트 커버리지 수준으로 시작**: 신규 API 라우트/스키마를 추가할 때 프로젝트에 이미 확립된 동종 테스트 커버리지 패턴(인코딩 변형·특수 대역 등 회귀 테스트 포함)이 있으면 신규 기능도 처음부터 같은 커버리지 수준으로 구현한다 — 커버리지 공백은 그대로 보안 사각지대가 된다.
 - **파일기반 라우터 동적 세그먼트 이름 일관성**: Nitro/h3 등 파일기반 API 라우팅에서 같은 부모 경로 하위 형제 디렉터리의 동적 세그먼트 이름([id] vs [publicId])이 다르면 기존 라우트가 조용히 404로 깨집니다 — 파라미터 이름을 바꿀 때 형제 라우트 전체와 통일하고, tsc/vitest만으로는 검출 불가하므로 라우트 구조 변경 시 로컬 wrangler dev 실기동 + curl 왕복으로 직접 확인합니다.
 - **완료보고에는 문서 변경도 빠짐없이 나열**: 코드 파일뿐 아니라 `docs/security-plan.md` 등 문서 변경도 완료보고 텍스트에 명시합니다. 보고 전 `git diff --stat`으로 변경된 파일 전체 목록을 확인하고 하나도 빠뜨리지 않습니다.
-- **권한 규칙 준수**: 권한이 막히면 정식 POSIX 대안을 쓰거나 멈추고 보고합니다. (ℹ️ Skill: common-permission-policy-compliance.md)
+- **권한 규칙 준수**: 권한이 막히면 정식 POSIX 대안을 쓰거나 멈추고 보고합니다. (ℹ️ Skill `common-permission-policy-compliance`)
 - **Cloudflare Workers 로컬 DB 연결은 Hyperdrive local mode 우선 검토**: `cloudflare:sockets` 직접 연결로 MySQL 등에 붙으면 localhost 차단 리스크가 있습니다 — 대신 `[[hyperdrive]]`의 `localConnectionString` 설정이 공식 로컬 우회 경로입니다(실제 Cloudflare 리소스 없이 동작, 배포 시 코드 변경 불필요). mysql2는 v3.13.0+ & `disableEval:true` 필수. 상세: `${CLAUDE_PLUGIN_ROOT}/knowledge/devops/docker-cloudflare-guide.md`.
 - **Hyperdrive 로컬 접속정보는 `wrangler.jsonc`가 아니라 `.dev.vars`에**: `localConnectionString`을 `wrangler.jsonc`에 직접 쓰면 자격증명이 git에 커밋됩니다 — 환경변수 `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_<BINDING_NAME>`을 `.dev.vars`(gitignore 대상)에 넣고 `wrangler.jsonc`에서 `localConnectionString` 필드 자체를 제거합니다.
 - **안전 임계값은 정본 하나만**: 타임아웃·턴상한 등 안전 임계값(예: "10분·8턴")을 구현할 때, 값이 코드 상수·DB·프롬프트 문구 등 여러 곳에 각각 박히면 조정 시 한 곳만 바꿔 불일치가 생기고, 이 불일치가 비용 급증으로 이어질 수 있습니다. 단일 정본에서 프롬프트 문구까지 동적 생성하거나, 최소한 코드 주석에 "이 값 바꾸면 반드시 같이 바꿀 파일 목록"을 명시합니다.
@@ -45,12 +45,12 @@ model: sonnet
 ## 스킬 상세
 
 ### 보안 규약 구현 (전제)
-ℹ️ 무엇을 만족해야 하는가는 Skill: **domain-backend-api-security**, 그것을 이 스택에서 어떻게 코딩하는가는 Skill: **domain-backend-api-implementation-patterns** 참조.
+ℹ️ 무엇을 만족해야 하는가는 Skill `domain-backend-api-security`, 그것을 이 스택에서 어떻게 코딩하는가는 Skill `domain-backend-api-implementation-patterns` 참조.
 
 **3대 규약**: (① 인증 화이트리스트 게이트 ② 역할 기반 인가 미들웨어 ③ 테넌트 필터 + 파라미터화 쿼리). 모든 API 구현 시 이 3가지를 구조적으로 적용합니다.
 
 ### API 구현 패턴
-ℹ️ 상세는 Skill: **domain-backend-api-implementation-patterns** 참조.
+ℹ️ 상세는 Skill `domain-backend-api-implementation-patterns` 참조.
 
 **Route→Service 계층 분리**: 라우트는 입력검증·권한 검증만, 비즈니스 로직은 Service에. `error.name` 기반 전역 에러 매핑(ValidationError→400, ForbiddenError→403, ConflictError→409 등). **DAO 유무 판단**: 같은 테이블을 여러 진입점(API+MCP)이 쓰면 DAO로 분리, 한 곳뿐이면 인라인 가능. **트랜잭션 필수**: 여러 행 수정은 BEGIN/COMMIT/ROLLBACK으로 원자화. 멱등성 필요시 멱등키 사용.
 

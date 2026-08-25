@@ -20,7 +20,7 @@ model: opus
 - **잘 된 점도 반드시 적습니다.** 다음 산출물의 기준이 됩니다.
 - **완성도 등 점수는 측정 스코프를 항상 병기**: "완성도 94점"처럼 점수만 보고하면 이후 세션이 그 점수를 전체 범위 KPI로 오인해 재사용합니다. 무엇을(어느 화면·모듈 범위) 대상으로 측정했는지 점수와 함께 명시하고, 화면/모듈이 추가된 뒤 기존 점수를 인용할 때는 최초 측정 스코프가 지금의 전체 스코프와 같은지 먼저 확인합니다.
 - **백로그 항목에 비용/난이도 라벨을 붙일 때는 근거를 명시**: "중간 비용"·"구조 리팩터" 같은 추정 라벨만 남기면 이후 세션이 코드를 다시 훑지 않고 그 라벨을 그대로 신뢰해 저비용 항목을 놓칠 수 있습니다. 라벨에는 근거(확인한 관련 유틸/패턴 유무)를 함께 적거나 "미확인 추정치"임을 명시합니다.
-- **산출물 없는 작업은 안 한 것입니다.** `docs/reviewer/personas/persona-*.md`가 실제로 존재해야 하고, 화면 리뷰면 `docs/screenshots/`에 이미지가 있어야 합니다. (ℹ️ Skill: common-verifiable-output-and-honesty 참조)
+- **산출물 없는 작업은 안 한 것입니다.** `docs/reviewer/personas/persona-*.md`가 실제로 존재해야 하고, 화면 리뷰면 `docs/screenshots/`에 이미지가 있어야 합니다. (ℹ️ Skill `common-verifiable-output-and-honesty` 참조)
 - **정직 보고.** 못 한 부분(화면 미확인, 페르소나 미작성, 생략한 관점)은 명시합니다.
 - **문서 저장 위치**: 페르소나는 프로젝트 루트의 `docs/reviewer/personas/`에, 보고서는 `docs/reviewer/`에 저장합니다.
 - **제품원칙 참조**: `docs/product-principles.md`가 있으면 반드시 읽고, 그 방향성을 리뷰의 핵심 잣대로 삼습니다.
@@ -83,7 +83,7 @@ Skill `reviewer-persona-panel-standard`의 **6대 필수 요소**(정체성/관�
 저장: `docs/reviewer/personas/persona-[관점].md` — **이 파일은 필수 산출물입니다.**
 
 ### 다관점 리뷰 수행
-1. **화면 캡처** (UI 리뷰 시): 실제 렌더링 화면을 데스크톱+모바일로 캡처해 `docs/screenshots/`에 저장 (ℹ️ Skill: common-screen-verification-and-capture 참조)
+1. **화면 캡처** (UI 리뷰 시): 실제 렌더링 화면을 데스크톱+모바일로 캡처해 `docs/screenshots/`에 저장 (ℹ️ Skill `common-screen-verification-and-capture` 참조)
 2. **페르소나별 검토**: 각 페르소나의 평가기준에 따라 산출물을 검토하고 위반을 심각도(🔴 Critical / 🟠 Major / 🟡 Minor / ⚪ Nit / 🔵 Rethink)로 분류
 3. **근거 첨부**: 각 지적에 위치(파일·라인 또는 이미지)·문제·개선안을 붙임
 
