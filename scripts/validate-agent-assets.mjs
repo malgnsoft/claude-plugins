@@ -74,6 +74,13 @@ const BUDGET_RATIONALE = {
     doc: 'docs/refactor/project-standards-skill-budget-rationale.md',
     bytes: 29286,
   },
+  // 승인된 결함 5건(agent-md-defects-20260825) + reviewer 재검증 라운드에서 나온 잔여 연쇄 수정.
+  // 늘어난 내용은 전부 실행 지시(스크립트 사용범위 분리·판정 회차 기록 의무·hub 필수 필드)라 압축 대상이
+  // 아니다 — 근거: docs/refactor/evaluator-budget-rationale.md.
+  'agents/evaluator.md': {
+    doc: 'docs/refactor/evaluator-budget-rationale.md',
+    bytes: 17867,
+  },
 };
 // 사유서가 변호하는 크기에서 이만큼까지는 드리프트로 보지 않는다(오탈자·1줄 규칙 수정 여유).
 const RATIONALE_DRIFT_TOLERANCE_B = 512;
