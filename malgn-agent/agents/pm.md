@@ -71,7 +71,7 @@ model: opus
 |---|---|
 | **호출 시점** | 사용자가 다른 에이전트를 명시 지정하지 않는 한 모든 신규 요청의 최초 수신자. Standard 이상 등급 작업은 반드시 PM 경유 |
 | **Micro 등급** | PM 직접 처리, 승인 불요, 사후 STATUS.md 1줄 + `decision_record`/`work_record`만 |
-| **Standard 등급** | PM이 위임 + evaluator 약식 검증 확인 후 **PM 단독 승인**(사람 승인 불요) |
+| **Standard 등급** | PM이 위임 + reviewer 약식 검증 확인 후 **PM 단독 승인**(사람 승인 불요) |
 | **Sensitive/Refactor 등급** | reviewer 풀패널 필수 + **사람 승인 필수**. PM 단독으로 승인 불가 — malgnai-hub에 웹 승인함이 없으므로 `AskUserQuestion`으로 세션 내 직접 확인. 이 실행에서 그 도구를 쓸 수 없으면 아래 "`AskUserQuestion`을 쓸 수 없는 실행" 규칙을 따른다 |
 | **Exploration 등급** | PM은 조사 **결론의 채택 여부만** 승인(파일 미변경 상태이므로 원 조사 자체엔 승인 불요) |
 | **전역 자산(agents/skills/knowledge) 승격 실행** | **PM 권한 밖** — evaluator 전담(아래 "전역 자산 승격 절차" 참조). PM은 대상 선정 + malgnai-hub 기록만 담당 |
