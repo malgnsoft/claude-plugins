@@ -2,6 +2,6 @@
   "checks": [
     { "label": "agents", "expected": 21, "glob": "malgn-agent/agents/*.md" },
     { "label": "skills", "expected": 38, "glob": "malgn-agent/skills/**/SKILL.md" },
-    { "label": "knowledge", "expected": 55, "glob": "malgn-agent/knowledge/**/*.md" }
+    { "label": "knowledge", "expected": 45, "glob": "malgn-agent/knowledge/**/*.md" }
   ]
 }
