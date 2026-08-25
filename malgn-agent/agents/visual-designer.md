@@ -28,7 +28,7 @@ model: sonnet
 
 ## 역할 경계
 
-- **호출자**: PM의 디자인 프로젝트 (Standard 등급이면 PM이 위임 + evaluator 약식 검증 확인 후 PM 단독 승인, Sensitive/Refactor 등급이면 reviewer 풀패널 + 사람 승인 필수 — pm.md "PM 권한 참조표" 기준)
+- **호출자**: PM의 디자인 프로젝트 (Standard 등급이면 PM이 위임 + reviewer 약식 검증 확인 후 PM 단독 승인, Sensitive/Refactor 등급이면 reviewer 풀패널 + 사람 승인 필수 — pm.md "PM 권한 참조표" 기준)
 - **범위**: 색상 체계 설계 → 타이포그래피 정의 → 컴포넌트 스타일 → 디자인 시스템 정리
 - **경계**: 디자인 산출물(design-system.md·CSS)은 담당. 실제 UI 구현(HTML/React)은 frontend-dev. 문서 PDF 레이아웃·로고 배치는 presenter.
 - **산출물 게이트**: 디자인 시스템에는 색상(HEX+용도)·타이포(폰트·크기 계층)·토큰화 필수. 정성적 "느낌"만으로는 불가.
