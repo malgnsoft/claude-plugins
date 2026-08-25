@@ -16,10 +16,14 @@
  *
  * 측정 프리미티브(코드가 진실):
  *   glob      — cwd 기준 "dir/패턴(*포함)" 파일 수. `**`(임의 깊이의 하위 디렉토리 재귀)도 지원한다.
- *             `**` 재귀는 `node_modules`·`.git`·`.venv`·`venv`·`__pycache__`·`.parcel-cache`·`.next`·
+ *             `**`가 포함된 패턴의 재귀는(패턴 안의 일반 `*` 세그먼트를 통한 하강도 포함)
+ *             `node_modules`·`.git`·`.venv`·`venv`·`__pycache__`·`.parcel-cache`·`.next`·
  *             `.nuxt`·`.turbo`·`.svelte-kit`·`.cache`·`.output`(PRUNED_DIR_NAMES) 이름의
  *             디렉토리에는 진입하지 않는다 — 글롭 루트 안에 이 이름의 하위 디렉토리가 있으면,
- *             설령 그 안에 패턴과 매치되는 파일이 있어도 집계되지 않는다.
+ *             설령 그 안에 패턴과 매치되는 파일이 있어도 집계되지 않는다. 단, 리터럴 프리픽스로
+ *             직접 명시한 경로는 걸러지지 않는다(예: `app/venv/**\/*.py`는 `venv`가 와일드카드
+ *             매칭이 아니라 글롭 루트를 이루는 literal 세그먼트라 정상 집계된다) — pruning은
+ *             와일드카드 매칭으로 디렉토리에 진입할 때만 적용된다.
  *   homeGlob  — $HOME 기준 glob (러너·전역에이전트 등 프로젝트 밖). `**`도 동일하게 지원.
  *   jsonLength— JSON 파일 파싱 후 배열 길이(또는 객체 키 수)
  *   file+regex— 파일 내 정규식 전역 매치 수
@@ -130,7 +134,7 @@ function countGlobRecursive(baseDir, pattern) {
     for (const e of entries) {
       if (!re.test(e.name)) continue
       if (isLast) { if (e.isFile()) count++ }
-      // '**' 분기(위 120번째 줄)와 동일하게 PRUNED_DIR_NAMES는 여기서도 걸러야 한다 — 이 분기는
+      // `seg === '**'` 분기와 동일하게 PRUNED_DIR_NAMES는 여기서도 걸러야 한다 — 이 분기는
       // 일반 세그먼트(예: `*`)가 매치한 디렉토리로 재귀하는 경로라, 패턴에 `**`가 섞여 있으면
       // (예: `app/*/**/*.ts`) 이 분기를 거쳐서도 node_modules 등 산출물 디렉토리 안으로 내려갈 수
       // 있다. 여기만 안 걸러내면 같은 walk() 안에서 분기별로 pruning 동작이 달라져 일관성이 깨진다.
