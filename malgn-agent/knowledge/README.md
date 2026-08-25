@@ -31,7 +31,7 @@
 - `verifiable-output-and-honesty.md` — 검증 가능한 산출물·정직 보고 원칙, 산출물 게이트, 자기검증/수령 검증 (전체 공통, 실행 체크리스트는 `skills/common-verifiable-output-and-honesty`)
 - `beyond-mediocre-output.md` — 평범 vs 우수 산출물 판별 골격(5가지 냄새/4가지 표지/자가검증), 역할별 특화 연결 (전체 공통, evaluator 진단 잣대)
 - `cross-validation-and-collaboration.md` — 상호 협력·교차검증 원칙: 결정 권한, 트리거 기반 의견 청취, 의견 충돌 처리 (전체 공통, `agents/pm.md` 실참조)
-- `agent-common-principles.md` — 21개 에이전트 공통 원칙의 배경("왜")만 남음, 실행 체크리스트는 각 대응 skill 정본 참조
+- `agent-common-principles.md` — 에이전트 MD가 자기 "핵심 원칙" 첫 줄에서 참조하는 공통 원칙의 배경("왜")만 남음, 실행 체크리스트는 각 대응 skill 정본 참조
 - `permission-policy-compliance.md` — 권한 정책 준수 배경(deny 규칙 우회 금지 사고사례), 실행 체크리스트는 `skills/common-permission-policy-compliance`
 - `token-efficient-collaboration.md` — (본문 정본은 `skills/common-token-efficient-collaboration`) 신설 배경만 남음
 - `screen-reuse-consistency-verification.md` — 화면 재사용/재렌더 시 시각적 일관성 diff 절차 (설계→구현→리뷰 공통)

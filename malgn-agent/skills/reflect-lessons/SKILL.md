@@ -58,7 +58,7 @@ malgn-agent 소스를 git으로 관리하는 조직에서만 적용된다. 소�
 
 ### 6단계: 학습 기록
 
-- 반영 결과는 `work_record`(projectId, status='completed', title, summary, result=반영 내용 요약, nextAction?, idempotencyKey)로 남긴다.
+- 내가 한 실행(무엇을 어디에 반영했는가)은 `work_record`(projectId, status='completed', title, summary, result=반영 내용 요약, nextAction?, idempotencyKey)로 trainer가 직접 남긴다. 여러 에이전트 결과를 종합한 사이클 종결 기록은 PM 몫이므로 대신 쓰지 않는다(기준: `agents/trainer.md` 역할 경계의 "`work_record` 주인 판별").
 - 특정 에이전트의 역량 변화로 남길 것은 `agent_learning_record`(agentName, type='experience', title, content, source=반영한 파일 경로, idempotencyKey)로 함께 남긴다 — 다음 회차의 1단계가 이걸 다시 읽는다.
 - 재사용 가능한 판단 근거가 특히 뚜렷하면 `decision_record`(projectId, title, decision, reason, impact, idempotencyKey)로도 남겨 검색성을 높인다.
 - 여러 건을 동시에 기록할 때, 항목마다 개별 턴으로 나누지 말고 서로 의존관계 없는 기록 호출은 같은 턴에서 병렬로 묶는다.
