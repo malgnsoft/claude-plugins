@@ -301,7 +301,13 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   // §6 표의 종료코드를 따른다 — status !== 'ok' 라고 전부 실패가 아니다(예: unmanaged-body/
   // declined/no-marker/plugin-outdated/block-unreadable/stale-wording은 0).
   const hasPmIssue = !!(pmCheck && (PM_BLOCK_EXIT_CODE[pmCheck.status] ?? 1) !== 0)
+  // checks가 비어있지 않은데(!r.empty) 측정된 결과가 하나도 없고(results 0건) 전부 skip이면,
+  // "검사해서 이상 없음"이 아니라 "아무것도 측정하지 못함"이다 — ✅ 통과로 보고하면 매니페스트
+  // 경로가 썩어도 영원히 거짓 통과가 난다(RV-005). 일부만 skip이고 나머지는 측정됐다면 그 측정된
+  // 결과로 드리프트를 판단하는 것이 맞으므로 이 분기 대상이 아니다.
+  const allUnmeasurable = !!(r && !r.empty && r.results.length === 0 && r.skipped.length > 0)
   if (hasDrift) console.log('\n⚠️ 문서 드리프트 — 매니페스트 expected 와 문서 서술을 실측에 맞춰 갱신하라.')
-  if (!hasDrift && !hasPmIssue && r && !r.empty) console.log('\n✅ 문서가 코드와 일치.')
-  process.exit(hasDrift || hasPmIssue ? 1 : 0)
+  else if (allUnmeasurable) console.log('\n⚠️ 모든 체크가 측정 불가 — 매니페스트의 glob/file 경로를 점검하라(통과로 볼 수 없다).')
+  else if (!hasPmIssue && r && !r.empty) console.log('\n✅ 문서가 코드와 일치.')
+  process.exit(hasDrift || hasPmIssue || allUnmeasurable ? 1 : 0)
 }
