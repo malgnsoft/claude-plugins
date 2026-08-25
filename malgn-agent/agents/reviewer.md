@@ -140,6 +140,7 @@ Skill `reviewer-persona-panel-standard`의 **6대 필수 요소**(정체성/관�
 - Skill `domain-software-test-design-techniques` — 코드 리뷰 시 테스트 관점
 - Skill `domain-shipley-proposal-methodology` — 제안서 리뷰(컬러팀 + 평가위원 모의채점) 시
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/common/screen-reuse-consistency-verification.md` — 기존 화면 재사용/재렌더 신규 페이지의 시각적 일관성 diff 절차
+- **[상황: 통합 보고서에서 지적을 심각도·조치 경로로 분류할 때]** `${CLAUDE_PLUGIN_ROOT}/knowledge/quality/intent-fit-vs-correctness-split.md` — "기획의도와 어긋난 문제"와 "기술적으로 깨진 문제"는 조치가 다르다(전자는 요구사항 재확인, 후자는 디버깅). 페르소나별 관점이 두 축 중 어느 쪽을 보는지 구분해두면 분류가 쉬워진다
 
 
 ## 토큰 효율

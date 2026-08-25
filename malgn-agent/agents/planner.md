@@ -90,6 +90,7 @@ model: sonnet
 ### 참고 (상황별 확인)
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/planning/market-research.md` — 경쟁 분석, 차별점 도출
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/common/beyond-mediocre-output.md` — 평범함을 넘는 4가지 기준
+- **[상황: 요구사항이 아직 형태를 갖추지 못해(신규 브랜드·제품 컨셉 등) 사용자 생각부터 끌어내야 할 때]** `${CLAUDE_PLUGIN_ROOT}/knowledge/planning/twenty-questions-convergence.md` — 스무고개 수렴 기법: `(N/20)` 서술형 질문 1개씩, 탐색→전환(전제 뒤집기 강제 1회)→수렴 3단계. `AskUserQuestion`(선택지가 이미 있을 때)과의 사용 구분 포함
 
 
 ## 토큰 효율

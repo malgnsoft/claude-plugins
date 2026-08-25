@@ -8,10 +8,10 @@
 
 | 폴더 | 대상 에이전트 | 내용 |
 |------|-------------|------|
-| `common/` | 전체 | 프로젝트 관리, 품질 검토 |
-| `leadership/` | pm | 팀 구성 패턴, 파이프라인 관리 |
+| `common/` | 전체 | 정직 보고, 산출물 품질, 교차검증 |
+| `leadership/` | pm, trainer | 팀 구성 패턴, 리스크·에스컬레이션, 보고 통합, 에이전트 훈련 가이드 |
 | `planning/` | planner, researcher | 요구사항 분석, 시장조사 |
-| `design/` | ux-designer, visual-designer, security(마스킹 기준만) | UX 설계, 비주얼 디자인 시스템, 화면 개인정보 마스킹 기준 |
+| `design/` | ux-designer, visual-designer, security(마스킹 기준만) | UX 설계, HTML 브랜드 스타일가이드, 퍼블리싱 스타일가이드 템플릿, 화면 개인정보 마스킹 기준 |
 | `architecture/` | architect | 시스템 설계 패턴, API 설계 |
 | `backend/` | backend-dev | Hono/D1 구현 패턴, DAO |
 | `frontend/` | frontend-dev | vue-zero 패턴, Bootstrap 5 |
@@ -28,38 +28,33 @@
 ## 파일 목록
 
 ### common/
-- `project-management.md` — STATUS.md 상태 추적 원칙(포맷 정본은 `skills/project-standards`), 품질 체크리스트, 리스크 관리, ADR
-- `project-folder-structure.md` — 프로젝트 폴더 트리 표준(STATUS.md 단일 소스 기준)
 - `verifiable-output-and-honesty.md` — 검증 가능한 산출물·정직 보고 원칙, 산출물 게이트, 자기검증/수령 검증 (전체 공통, 실행 체크리스트는 `skills/common-verifiable-output-and-honesty`)
 - `beyond-mediocre-output.md` — 평범 vs 우수 산출물 판별 골격(5가지 냄새/4가지 표지/자가검증), 역할별 특화 연결 (전체 공통, evaluator 진단 잣대)
-- `cross-validation-and-collaboration.md` — 상호 협력·교차검증 원칙: 결정 권한, 트리거 기반 의견 청취, 의견 충돌 처리 (전체 공통)
+- `cross-validation-and-collaboration.md` — 상호 협력·교차검증 원칙: 결정 권한, 트리거 기반 의견 청취, 의견 충돌 처리 (전체 공통, `agents/pm.md` 실참조)
 - `agent-common-principles.md` — 21개 에이전트 공통 원칙의 배경("왜")만 남음, 실행 체크리스트는 각 대응 skill 정본 참조
 - `permission-policy-compliance.md` — 권한 정책 준수 배경(deny 규칙 우회 금지 사고사례), 실행 체크리스트는 `skills/common-permission-policy-compliance`
 - `token-efficient-collaboration.md` — (본문 정본은 `skills/common-token-efficient-collaboration`) 신설 배경만 남음
 - `screen-reuse-consistency-verification.md` — 화면 재사용/재렌더 시 시각적 일관성 diff 절차 (설계→구현→리뷰 공통)
-- `skill-vs-knowledge-boundary.md` — Skill/Knowledge 경계 판정 원칙의 배경·기원 자료(실무 정본은 `agents/trainer.md` 핵심 원칙 "반영 매체 판단"의 신설 판정과 `agents/evaluator.md` 판정 체크리스트)
 
 ### review/
 - `reviewer-personas.md` — (핵심 절차 정본은 `skills/reviewer-persona-panel-standard/SKILL.md`) 발산형 페르소나 배경, 선택 강화 패턴 A/B/C, 문서·설계서 다차수 검증 패턴 D~G
 - `screenshot-capture-guide.md` — (절차 본문 정본은 `skills/common-screen-verification-and-capture`) 하드 게이트 원칙 + 상태별 캡처 체크리스트만 남음
 
 ### proposal/
-- `shipley-proposal-process.md` — (라이프사이클·Bid/No-Bid·Win Theme/Discriminator/Ghosting·Storyboard·컬러팀 리뷰 본문 정본은 `skills/domain-shipley-proposal-methodology/SKILL.md`) 배경·출처만 남음
+- (Shipley 라이프사이클·Bid/No-Bid·Win Theme/Discriminator/Ghosting·Storyboard·컬러팀 리뷰 정본은 knowledge가 아니라 `skills/domain-shipley-proposal-methodology/SKILL.md`. 출처 표기도 그 스킬 안에 있다)
 - `korea-public-procurement.md` — 나라장터/조달청, 협상에 의한 계약, 기술:가격 배점·과락, 평가표 구조, **실격·감점 요인**, 필수서류·봉투분리·예가, 사업수행계획서 구성
-- `compliance-matrix-template.md` — (표·작성법·체크리스트 본문 정본은 `skills/domain-compliance-matrix-template/SKILL.md`) 배경·출처만 남음
+- (Compliance Matrix 표·작성법·실격방지 체크리스트 정본은 knowledge가 아니라 `skills/domain-compliance-matrix-template/SKILL.md`)
 - `proposal-writing-principles.md` — 평가자 관점 집필(claim-proof, Action Caption, 평가항목별 증거 정렬), Executive Summary, 공공 사업수행계획서 vs 기업 ROI 제안
 
 ### leadership/
 - `team-composition-patterns.md` — 업무 유형별 팀 구성, 위임 모델, 복합 요청 처리, Goal Drift 방지
-- `pipeline-management.md` — 5단계 파이프라인 체크포인트, 전환 조건, 병목 식별
-- `risk-escalation-guide.md` — 리스크 식별 체크리스트, 4가지 대응 전략, 에스컬레이션 기준/형식
-- `reporting-integration-guide.md` — 산출물 통합 절차, 최종/중간 보고 템플릿, RAG 상태, 2분 규칙
+- `risk-escalation-guide.md` — 리스크 식별 체크리스트, 4가지 대응 전략(회피/완화/전가/수용), 에스컬레이션 기준/형식 (`agents/pm.md` 실참조)
+- `reporting-integration-guide.md` — 산출물 통합 절차, 최종 보고 템플릿, RAG 상태, 2분 규칙 (`agents/pm.md` 실참조)
 - `retrospective-framework.md` — Start/Stop/Continue + SWOT 회고, 교훈 문서화, 에이전트 성과 추적
-- `agent-md-format-standard.md` — [폐기된 구버전 archive] 구 7섹션 포맷 — 참조 금지. MD 골격 정본은 `agent-training-guide.md` 부록의 9단 골격
-- `agent-training-guide.md` — 에이전트 훈련 시스템 전체 가이드(6가지 훈련 모드, 스킬/경험 점수 체계, knowledge 관리 체계, 학습 이력 기록 절차)
+- `agent-training-guide.md` — 에이전트 훈련 시스템 전체 가이드(6가지 훈련 모드, 스킬/경험 점수 체계, knowledge 관리 체계, 학습 이력 기록 절차). 에이전트 MD 골격 정본은 이 문서 §2.2의 9단 골격이다(부록은 요약) (`agents/trainer.md` 실참조)
 - `autonomous-iteration-philosophy.md` — 자율 반복 상한(3~5회)·수확체감 우선 종료조건, 일일 토큰 예산 게이트와 한도 초과 시 대표 보고 절차 (`agents/pm.md` 실참조)
 - `coo-rule-rationale.md` — PM 핵심 운영 규칙의 근거 모음(orchestrator 흡수, 집필 위임 원칙, 공유 가정 주입, 경로 릴레이 순차 위임) — 각 규칙이 유래한 실제 사고 사례 포함 (`agents/pm.md` 실참조)
-- `progress-status-templates.md` — `progress.md`/`STATUS.md` 표준 템플릿, STATUS.md 비대화 방지 아카이빙·헤더 교체 규칙
+- (STATUS.md 표준 포맷·크기 상한·아카이빙·헤더 교체 규칙 정본은 knowledge가 아니라 `skills/project-standards` §3)
 - `judgment-independence-patterns.md` — 판정 독립성 설계 3요소(선기대치 자술/blind 판정/합격에만 서명) 참고 노트, 타 AI 조직 사례 재정리. evaluator 판정 체크리스트 개선 논의의 참고 자료(evaluator.md 자체는 미수정)
 
 ### planning/
@@ -67,11 +62,11 @@
 - `prd-craft-patterns.md` — 상용 수준 PRD 고급 기법 (분할 전략, FR-ID 추적성, 인수조건, 시나리오 6요소, 범위 경계 3중, 도메인 용어 사전). coaching 우수 사례 역추출
 - `market-research.md` — TAM/SAM/SOM, Porter 5 Forces, SWOT, 기술 비교 기준
 - `business-brief-patterns.md` — 전략 브리프 고급 기법 (벤치마킹 포지셔닝, 시장규모 현실 인식, 수익 산식, Why now, 해자 정당화, 리스크↔대응). coaching 우수 사례 역추출
-- `twenty-questions-convergence.md` — 스무고개 수렴 기법: AI가 질문자가 되어 `(N/20)` 서술형 질문 1개씩 탐색→전환(전제 뒤집기 강제 1회)→수렴 진행. planner가 요구사항이 불명확한 상황(신규 브랜드/제품 기획 등)에서 참고
+- `twenty-questions-convergence.md` — 스무고개 수렴 기법: AI가 질문자가 되어 `(N/20)` 서술형 질문 1개씩 탐색→전환(전제 뒤집기 강제 1회)→수렴 진행. planner가 요구사항이 불명확한 상황(신규 브랜드/제품 기획 등)에서 참고 (`agents/planner.md` 실참조)
 
 ### design/
 - `ux-design-guide.md` — 사용자 흐름, 와이어프레임 표기, IA, 인터랙션, 접근성
-- `visual-design-system.md` — (색상·타이포·간격·그림자·컴포넌트 스타일 + admin SaaS 토큰 패턴 본문 정본은 `skills/domain-visual-design-token-system/SKILL.md`) 배경·출처만 남음
+- (색상·타이포·간격·그림자·컴포넌트 스타일 + admin SaaS 토큰 패턴 정본은 knowledge가 아니라 `skills/domain-visual-design-token-system/SKILL.md`)
 - `html-style-guide/html-스타일가이드-가로형.html`, `html-스타일가이드-세로형.html` — 맑은소프트 HTML 문서/슬라이드 브랜드 스타일가이드 정본(CSS 토큰·클래스 어휘의 단일 소스). presenter/writer가 HTML/PDF 문서 제작 시 Read. 가로형=16:9 슬라이드, 세로형=A4 인쇄 문서.
 - (레퍼런스 벤치마킹 스크린샷 대조 표준 정본은 knowledge가 아니라 `skills/domain-reference-benchmarking-standard/SKILL.md`. frontend-dev/visual-designer/ux-designer 공용)
 - `publishing-style-guide-template.md` — 퍼블리싱 스타일가이드 전역 기본 템플릿(버튼 3사이즈·테이블/카드 기본형·탭 2종), 프로젝트별로 값만 채움. frontend-dev 주 사용
@@ -86,12 +81,12 @@
 - `search-strategy-vector-vs-fulltext.md` — 벡터 검색 vs Full-text 검색 선택 기준(한글/다국어 쿼리 시 임베딩 모델 언어지원 전제조건, 하이브리드 지향, 데이터규모별 인덱스 재평가), kb-draft 375건 POC 실측 근거
 
 ### frontend/
-- `vue-zero-patterns.md` — (규칙 정본은 `architecture/vue-zero-architecture.md`, 이 문서는 패턴 상세만) Options API 컴포넌트 예시, API 연동, Bootstrap 5, 모달, 접근성, 범용 UX 교훈, malgnuniv/malgnsales/malgnhrd 실전 패턴
+- `vue-zero-patterns.md` — (규칙 정본은 `architecture/vue-zero-architecture.md`, 이 문서는 패턴 상세만) Options API 컴포넌트 예시, API 연동, Bootstrap 5, 모달, 접근성, 범용 UX 교훈, malgnuniv/malgnsales/malgnhrd 실전 패턴 (`agents/frontend-dev.md` 실참조)
 
 ### quality/
-- `testing-guide.md` — (경계값분석·동등분할·상태전이 기법 + Vitest/E2E 패턴·보고서 형식·커버리지 함정 처방 본문 정본은 `skills/domain-software-test-design-techniques/SKILL.md`) 배경·출처만 남음
+- (경계값분석·동등분할·상태전이 기법 + Vitest/E2E 패턴·보고서 형식·커버리지 함정 처방 정본은 knowledge가 아니라 `skills/domain-software-test-design-techniques/SKILL.md`)
 - `e2e-testing-guide.md` — E2E 테스트(Playwright Test) vs 즉석 화면 검증(`bin/capture.mjs`) 역할 구분, `templates/e2e-template/` 스캐폴드 복사 절차, 프로젝트별 브라우저 설치·인증 setup 가이드
-- `intent-fit-vs-correctness-split.md` — "기획의도 부합성 vs 동작정확성" 축 분리 개념 노트. qa-engineer/reviewer가 검수 체크리스트를 짤 때 참고
+- `intent-fit-vs-correctness-split.md` — "기획의도 부합성 vs 동작정확성" 축 분리 개념 노트. qa-engineer가 검수 체크리스트를 짤 때, reviewer가 통합 보고서에서 지적을 조치 경로별로 분류할 때 참고 (`agents/qa-engineer.md`·`agents/reviewer.md` 실참조)
 
 ### security/ — 폴더 없음 (전량 skill로 이관)
 - (OWASP Top 10 체크리스트는 knowledge가 아니라 skill에 분산돼 있다 — A01/A03→`skills/domain-backend-api-security` §1/§4, A02→`skills/domain-security-audit-checklist` §4·A09→같은 스킬 §5·A07→같은 스킬 §6, 인프라(Docker/환경변수)→`skills/domain-devops-deployment-patterns` §1, 심각도 CVSS 매핑→`agents/security.md` "핵심 원칙")

@@ -91,6 +91,7 @@ model: sonnet
 - **[상황: 테스트 설계·결함 조사 착수 전/후 학습 루프를 돌릴 때]** Skill `learning-loop-patterns` — 작업 전 이력 확인→작업 중 결정 기록→작업 후 교훈 자산화 3단계 체크리스트와 구체 예시(malgnai-hub 기록 규칙 자체는 `common-learning-loop-knowledge-management` 참조)
 - Skill `domain-backend-api-implementation-patterns` — API 구조 (테스트 대상)
 - Skill `common-screen-verification-and-capture` — 즉석 화면 검증 (화면 테스트 시)
+- **[상황: 검수 체크리스트를 새로 짤 때]** `${CLAUDE_PLUGIN_ROOT}/knowledge/quality/intent-fit-vs-correctness-split.md` — "기획의도 부합성"과 "동작정확성"을 같은 항목에 섞으면 확인하기 쉬운 후자로 쏠려 전자가 생략된다. 두 축을 별개 절차로 분리해 각각에 노력을 따로 배정하는 개념 노트
 
 
 ## 토큰 효율

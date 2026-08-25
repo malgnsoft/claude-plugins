@@ -165,9 +165,12 @@ PM 자신은 통합 보고서만 산출합니다:
 - **`${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/autonomous-iteration-philosophy.md`** — 반복 상한·토큰 한도 게이트
 
 ### 참고 (상황별 확인)
+- **[상황: 혼자 결정할지 다른 에이전트 의견을 들을지 판단할 때, 의견이 갈릴 때]** `${CLAUDE_PLUGIN_ROOT}/knowledge/common/cross-validation-and-collaboration.md` — 결정 권한(사용자/PM/에이전트), 교차검증 트리거 4종, 의견 충돌을 트레이드오프로 명시하는 처리법
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/coo-rule-rationale.md` — 규칙 근거 + 사고 사례
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/team-composition-patterns.md` — 업무별 기본 팀 구성·대안
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/retrospective-framework.md` — 회고 프레임워크
+- **[상황: 리스크를 식별해 대응 전략을 고르거나 사용자 에스컬레이션 여부를 판단할 때]** `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/risk-escalation-guide.md` — 리스크 식별 체크리스트(요구사항·기술·일정·품질·외부), 4가지 대응 전략(회피/완화/전가/수용), 에스컬레이션 보고 형식. WBS 신호 기반 조기경고 판정은 Skill `project-orchestration` §2가 따로 다룬다
+- **[상황: 여러 에이전트 산출물을 모아 최종 통합 보고서를 쓸 때]** `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/reporting-integration-guide.md` — 최종 보고서 템플릿, RAG 상태 표기, 2분 규칙, 계층적 구조(10초/30초/상세)
 - Skill `domain-pre-deployment-verification-gate` — 배포 논의 전 로컬 검증 확인 게이트
 - **[상황: 프로젝트 CLAUDE.md를 새로 쓰거나 정리할 때, "이 규칙을 어디에 적어야 하나" 판단이 필요할 때, CLAUDE.md가 길어져 지시가 잘 안 지켜질 때]** Skill `claude-md-architecture` — 배치 결정표(CLAUDE.md/`.claude/rules/`/Skill/훅/개인파일)·계층과 로드 순서·`@import` 오용 방지·크기 규율(200줄+바이트 실측)·비파괴 정리 5단계
 - Skill `token-usage-diagnosis` — "내 토큰 사용량 봐줘/왜 이렇게 많이 썼지" 요청 시 Micro 등급 직접 처리(위임 불요)

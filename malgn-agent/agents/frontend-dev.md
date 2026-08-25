@@ -120,6 +120,7 @@ vendored/수정불가 런타임이 전역 동작(예: `document.title` 대입)�
 - **[상황: 프로젝트가 실제로 vue-zero를 쓰는 경우]** `${CLAUDE_PLUGIN_ROOT}/knowledge/architecture/vue-zero-architecture.md` — 3가지 핵심 규칙 (Composables 금지, 페이지별 Vue, utils.js 중앙화 + `window.*` 등록, `useApi()` 패턴) + CDN 로드 방법
 - **[상황: 기능 개발·버그 수정 착수 전/후 학습 루프를 돌릴 때]** Skill `learning-loop-patterns` — 작업 전 이력 확인→작업 중 결정 기록→작업 후 교훈 자산화 3단계 체크리스트와 구체 예시(malgnai-hub 기록 규칙 자체는 `common-learning-loop-knowledge-management` 참조)
 - **[상황: 프로젝트가 실제로 vue-zero를 쓰는 경우]** Skill `frontend-vue-zero-patterns` — Blob URL(파일/이미지 다운로드)·Options API 구조·컴포넌트 재사용성 패턴
+- **[상황: vue-zero 화면을 실제로 구현할 때 — 위 스킬과 다루는 범위가 다르다]** `${CLAUDE_PLUGIN_ROOT}/knowledge/frontend/vue-zero-patterns.md` — API 연동(`useApi` 튜플), Bootstrap 5 레이아웃·모달, 접근성, 범용 UX 교훈 6가지(에러를 `console.error`로 삼키지 않기, 로딩·빈·에러 3상태, 토스트, `computed` 파생값 등)와 구현/리뷰 체크리스트, malgnuniv·malgnsales·malgnhrd 실전 패턴 7가지
 - Skill `domain-visual-design-token-system` — 색상·타이포·간격 체계
 - Skill `common-verifiable-output-and-honesty` — 검증 가능한 산출물·정직 보고
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/common/screen-reuse-consistency-verification.md` — 기존 화면 재사용/재렌더 구현 시 와이어프레임보다 실제 소스 대조 우선
