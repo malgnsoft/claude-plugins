@@ -71,7 +71,7 @@
    Knowledge (15~20분): When/Anti-patterns/개념 설명
    ```
 
-**참고**: 플러그인 번들 `knowledge/common/skill-vs-knowledge-boundary.md` 정의 참조
+**참고**: 신설 판정 정본은 플러그인 번들 `agents/trainer.md`의 "반영 매체 판단(skill vs knowledge)" 항목
 - **Skill**: 재사용 가능한 절차/기법, 실행 체크리스트 중심, 3~5분 읽기
 - **Knowledge**: 도메인별 교훈·사례·개념, 배경 학습, 15~30분 읽기
 
