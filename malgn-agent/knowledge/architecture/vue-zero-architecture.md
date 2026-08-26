@@ -12,7 +12,12 @@ vue-zero는 빌드 스텝 없이 CDN `<script>` 태그로 로드합니다. 프�
 <script src="https://unpkg.com/vue-zero-ai/dist/vue-zero.js"></script>
 ```
 
-이 스크립트가 먼저 로드된 이후에 페이지별 `.vue` 파일과 `app/assets/js/index.js`(utils.js 등록 스크립트)가 로드되도록 순서를 배치합니다.
+`index.html`의 `<script>` 순서에서 지켜야 할 제약은 두 가지입니다.
+
+- **Vue 전역(`vue.global.prod.js`)이 `utils.js`보다 먼저** — `utils.js`가 최상위에서 `Vue.ref(...)` 같은 공유 상태를 만드는 경우, Vue가 아직 없으면 파일 전체가 그 자리에서 실패합니다.
+- **vue-zero와 `utils.js`가 둘 다 `VueZero.createApp()` 호출보다 먼저** — `createApp()`은 보통 `index.html` 아래쪽 인라인 `<script>`에서 부릅니다.
+
+vue-zero와 `utils.js` 사이의 상대 순서는 제약이 아닙니다. 페이지 `.vue`의 `<script>`는 라우팅 시점에 비동기로 실행되므로, 그때는 두 스크립트가 이미 모두 평가돼 있습니다.
 
 ## 핵심 규칙 3가지
 
@@ -178,8 +183,8 @@ export default {
 
 **우리가 사용 중인 `useApi` 함수**:
 ```javascript
-// app/assets/js/utils.js — export로 선언하고, index.js에서 window.useApi로 등록한다
-export async function useApi(url, options = {}) {
+// app/assets/js/utils.js — export 없이 선언한다(선언 자체가 전역이 된다)
+async function useApi(url, options = {}) {
   const { method = 'GET', body } = options
   const headers = { 'Content-Type': 'application/json' }
   
@@ -228,31 +233,53 @@ export default {
 }
 ```
 
+**utils.js가 전역이 되는 방식**:
+
+`utils.js`는 `index.html`에서 **`type="module"`이 없는 일반 `<script>`로 로드**합니다.
+
+```html
+<!-- index.html -->
+<script src="/assets/js/utils.js"></script>
+```
+
+일반 스크립트의 최상위 `function` 선언은 그 자체로 전역이 되므로, 페이지가 import 없이 바로 호출할 수 있습니다. **등록 전용 파일은 두지 않습니다.**
+
+- `utils.js`에 **`export`를 쓰면 안 됩니다** — 모듈이 아닌 스크립트에서 `export`는 `SyntaxError`이고, 파일 전체가 실행되지 않아 유틸이 통째로 사라집니다.
+- 같은 이유로 `<script type="module">`로 바꿔서도 안 됩니다 — 모듈의 최상위 선언은 그 모듈 안에만 존재해 페이지에서 보이지 않습니다.
+
 **utils.js에 함수 추가하는 절차**:
 
-1. `app/assets/js/utils.js`에 함수 작성 — **반드시 `export`를 붙인다**(2단계에서 import 하므로, export 없이 선언하면 등록 스크립트가 `SyntaxError`로 죽는다):
+1. `app/assets/js/utils.js`에 `export` 없이 선언한다:
    ```javascript
-   export function formatDate(date) {
+   function formatDate(date) {
      return new Date(date).toLocaleDateString('ko-KR')
    }
    ```
 
-2. `app/assets/js/index.js`에서 window에 등록:
-   ```javascript
-   import { formatDate } from './utils.js'
-   window.formatDate = formatDate
-   ```
-
-3. 페이지에서 바로 사용:
+2. 페이지에서 바로 사용한다:
    ```javascript
    export default {
      computed: {
        displayDate() {
-         return window.formatDate(this.createdAt)  // ✅ import 없음
+         return formatDate(this.createdAt)  // ✅ import 없음
        }
      }
    }
    ```
+   `window.formatDate(...)`로 불러도 동일하게 동작합니다 — 일반 스크립트의 `function` 선언은 `window`의 속성이기도 하기 때문입니다. 두 표기 모두 유효하니 프로젝트 안에서 쓰던 쪽으로 맞추면 됩니다.
+
+**함수가 아닌 값을 공유할 때**: `const`·`let`으로 선언한 값(상수 매핑, `Vue.ref()` 공유 상태 등)은 이름으로는 보이지만 `window`의 속성이 되지는 않습니다. 페이지에서 `window.이름`으로 접근할 계획이라면 `utils.js` **맨 끝에서 명시적으로 등록**합니다.
+
+```javascript
+const DEAL_STAGE_LABELS = { prospecting: '잠재 발굴', /* ... */ }
+const authUser = Vue.ref(null)
+
+// 파일 끝 — window 접근이 필요한 것만 등록한다
+window.DEAL_STAGE_LABELS = DEAL_STAGE_LABELS
+window.authUser = authUser
+```
+
+이 등록 코드도 별도 파일이 아니라 `utils.js` 안에 둡니다.
 
 ## 아키텍처 체크리스트
 
@@ -260,12 +287,16 @@ vue-zero 프로젝트 착수 전:
 - [ ] 새 기능을 composable로 분리할 생각을 했는가 → **하지 말 것**
 - [ ] 페이지 파일이 여러 개로 쪼개져 있는가 → **하나의 페이지 = 하나의 `.vue` 파일로 통일**
 - [ ] 여러 페이지가 쓸 함수를 composable로 만들었는가 → **`utils.js`에 옮길 것**
-- [ ] utils.js 함수가 window에 등록돼 있는가 → `app/assets/js/index.js`에서 확인
+- [ ] utils.js가 `index.html`에 `type="module"` 없는 `<script>`로 걸려 있고, 파일 안에 `export`가 하나도 없는가
 - [ ] 신규 공유 로직 파일의 폴더 위치를 정할 때, 프로젝트 내 기존 폴더명 선례(예: `composables/`)를 그대로 따르지 않고 이 문서의 정책을 재확인해 결정했는가?
 
-## 왜 페이지에서 `import`가 작동하지 않는가 (Blob URL 패턴)
+## 왜 페이지에서 `import`가 작동하지 않는가 (`.vue` 스크립트 실행 방식)
 
-vue-zero는 빌드 스텝 없이 `.vue` 파일을 런타임에 읽어 `<script>` 부분을 **Blob URL로 변환해** 실행한다. Blob URL은 원본 파일의 경로 맥락을 잃으므로 `import { formatDate } from './utils.js'` 같은 **상대 경로 import가 해석되지 않는다.** 그래서 공유 로직은 `app/assets/js/index.js`에서 `window.*`로 등록하고 페이지는 `window.formatDate(...)`처럼 전역으로 호출한다(위 규칙 3).
+vue-zero는 빌드 스텝 없이 `.vue` 파일을 런타임에 읽어, `<script>` 안의 코드를 Blob으로 감싼 뒤 그 임시 주소를 **ES 모듈로 import해서 실행**한다(페이지가 `export default { ... }` 형태인 이유가 이것이다). 이때 모듈의 주소는 원본 `.vue` 경로가 아니라 임시 blob 주소라서, `import { formatDate } from './utils.js'` 같은 **상대 경로 import는 기준점을 잃어 해석되지 않는다.**
+
+반대로 전역은 그대로 보인다 — 모듈이라도 자기 스코프에 없는 이름은 전역에서 찾으므로, 일반 `<script>`로 먼저 로드된 `utils.js`의 선언을 페이지가 `formatDate(...)`로 바로 부를 수 있다. 공유 로직을 `utils.js` 한 곳에 모으는 근거가 이것이다(위 규칙 3).
+
+> 여기서 말하는 Blob은 **vue-zero가 페이지 코드를 실행하는 내부 방식**이다. 화면에서 이미지·파일을 다루려고 `URL.createObjectURL(blob)`으로 만드는 **객체 URL**(Skill `frontend-vue-zero-patterns` 1절)과는 이름만 겹칠 뿐 다른 이야기다.
 
 ## 관련 참고 자료
 
