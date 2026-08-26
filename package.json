@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "check-docs": "node malgn-agent/hooks/doc-drift.mjs",
-    "check-assets": "node scripts/validate-agent-assets.mjs",
+    "check-assets": "node scripts/validate-agent-assets.mjs && node scripts/check-doc-drift-spec.mjs",
+    "check-drift-spec": "node scripts/check-doc-drift-spec.mjs",
     "check-status": "node scripts/check-status-size.mjs",
     "sync-docs": "node scripts/sync-anthropic-docs.mjs",
     "sync-docs:check": "node scripts/sync-anthropic-docs.mjs --check"

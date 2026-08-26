@@ -108,7 +108,7 @@ evaluator가 없거나 조직이 malgn-agent 소스를 git으로 관리하지 �
 
 기록 주체는 `agents/trainer.md` '## 역할 경계' 절의 "`work_record` 주인 판별"을 따른다 — 주어가 "내가 방금 한 실행"이면 trainer, "이 프로젝트가 어디까지 갔는가"면 PM, "에이전트의 역량·교훈"이면 `agent_learning_record`다.
 
-- **trainer가 직접 남긴다**: 이 스킬에서 자신이 한 실행 1건을 `work_record`(projectId, status='completed', title, idempotencyKey + summary=학습 주제 + 대상 에이전트 목록, result=작성한 knowledge 파일 경로·업데이트한 에이전트 MD 목록, artifacts=브랜치명·변경 파일 경로)로 남긴다. PR URL은 5단계에서 evaluator가 열기 때문에 trainer는 알 수 없으므로 적지 않는다.
+- **trainer가 직접 남긴다**: 이 스킬에서 자신이 한 실행 1건을 `work_record`(projectId, status='completed', title, idempotencyKey + summary=학습 주제 + 대상 에이전트 목록, result=작성한 knowledge 파일 경로·업데이트한 에이전트 MD 목록, artifacts=브랜치명·변경 파일 경로)로 남긴다. PR URL은 5단계에서 evaluator가 열기 때문에 trainer는 알 수 없으므로 적지 않는다(모르는 값을 채우려 재확인하러 돌아가지 않는다). 이번 주제 학습으로 그 에이전트의 역량으로 남길 교훈이 생겼으면 `agent_learning_record`(agentName, type='experience')로 함께 남긴다 — 대상 에이전트가 여럿이면 에이전트별로 1건씩이다.
 - **PM에게 인계한다**: 위와 같은 내용을 완료 보고로 넘긴다 — PM이 여러 에이전트 결과를 종합한 사이클 종결 `work_record`와 STATUS.md 반영을 맡고, 필요하면 PR URL을 거기서 보완한다.
 - **evaluator 몫은 인계 대상이 아니다**: 5단계에서 evaluator가 낸 판정·승격 회차는 evaluator가 `decision_record`로 직접 남긴다(`agents/evaluator.md`의 '판정 회차 기록' 절).
 
@@ -116,7 +116,7 @@ evaluator가 없거나 조직이 malgn-agent 소스를 git으로 관리하지 �
 
 - `malgn-agent/knowledge/[도메인]/[주제]-YYYY-MM-DD.md` — 주제 가이드 (2~4KB)
 - 각 에이전트 MD 업데이트 (참조 링크 + 체크리스트)
-- trainer 자신의 실행 `work_record` 1건 + PM에게 인계하는 완료 보고 1건(진단·보고 서사의 1차 정본은 PR body) — 사이클 종결 `work_record`와 STATUS.md 반영은 PM, 판정 회차 `decision_record`는 evaluator가 직접 남긴다(`agents/trainer.md` 역할 경계의 "`work_record` 주인 판별" 참조)
+- trainer 자신의 실행 `work_record` 1건 + 역량 교훈이 생긴 에이전트마다 `agent_learning_record` 1건 + PM에게 인계하는 완료 보고 1건(진단·보고 서사의 1차 정본은 PR body) — 사이클 종결 `work_record`와 STATUS.md 반영은 PM, 판정 회차 `decision_record`는 evaluator가 직접 남긴다(`agents/trainer.md` 역할 경계의 "`work_record` 주인 판별" 참조)
 
 ## 효율 규칙
 
