@@ -11,8 +11,26 @@
  *       { "label": "API 파일", "expected": 13, "glob": "server/api/*.js" },
  *       { "label": "DB 테이블", "expected": 20, "file": "server/dao/init.js", "regex": "CREATE TABLE IF NOT EXISTS \\w+" },
  *       { "label": "페이지",   "expected": 15, "jsonLength": "app/pages/pages.json" },
- *       { "label": "러너",     "expected": 7,  "homeGlob": "Library/LaunchAgents/com.malgnai.*.plist" }
+ *       { "label": "러너",     "expected": 7,  "homeGlob": "Library/LaunchAgents/com.malgnai.*.plist" },
+ *       { "label": "skills",  "glob": "malgn-agent/skills/**\/SKILL.md", "docFile": "CLAUDE.md", "docRegex": "`skills/`\\s+(\\d+)종" }
  *   ] }
+ *
+ * expected 의 두 조달 방식(택1, 체크 단위로 결정):
+ *   1) 정적 `expected` 숫자 — 매니페스트 안에 값을 그대로 박아둔다(기존 방식, 하위호환 유지).
+ *      이 값 자체는 코드가 아니라 매니페스트 작성자가 손으로 넣은 사본이라, 문서 원문이 바뀌어도
+ *      매니페스트를 함께 고치는 걸 잊으면 감시기가 그 불일치를 구조적으로 볼 수 없다(문서=매니페스트
+ *      사본, 실측=코드를 비교할 뿐 "문서 원문"은 애초에 읽지 않기 때문 — 이게 이 파일이 고쳐야 했던
+ *      결함의 본질이었다).
+ *   2) `docFile`+`docRegex` — expected 를 매니페스트에 박지 않고, **문서 원문에서 그 자리에 직접
+ *      캡처**한다. `docRegex`는 정확히 하나의 캡처 그룹으로 숫자를 감싸야 한다(첫 매치의 그룹 1을
+ *      정수로 파싱). 이러면 문서 문구가 바뀌는 순간 그 새 숫자가 바로 "문서가 주장하는 값"이 되므로,
+ *      매니페스트를 손으로 동기화할 필요가 없다 — 매니페스트 자체 복제가 사라진다. `docFile`은
+ *      프로젝트 루트 기준 상대경로 1개(현재는 파일 1개만 지원 — 같은 숫자를 언급하는 문서가 여러 곳에
+ *      있어도 이 메커니즘은 그중 지정된 1곳만 감시한다. 나머지 문서는 이 자동 검사 밖이므로 별도로
+ *      챙겨야 한다).
+ *   문서 쪽이 측정 불가(`docFile` 못 읽음 / `docRegex` 매치 없음 / 캡처값이 숫자로 파싱 안 됨)이면,
+ *   실측(glob 등)이 정상이어도 그 check 전체를 skip 한다 — "문서에서 숫자를 못 찾음"이 "드리프트 0"으로
+ *   조용히 위장되면 안 되기 때문이다(§ 아래 "측정 불가" 단락과 동일한 원칙을 문서 쪽에도 적용).
  *
  * 측정 프리미티브(코드가 진실):
  *   glob      — cwd 기준 "dir/패턴(*포함)" 파일 수. `**`(임의 깊이의 하위 디렉토리 재귀)도 지원한다.
@@ -189,6 +207,28 @@ function measure(check, cwd) {
 }
 
 /**
+ * docFile+docRegex 체크의 "문서가 주장하는 값"을 문서 원문에서 직접 캡처한다(정적 `expected`
+ * 사본 대신). docRegex 는 전역(`g`) 매치가 아니라 **첫 매치**만 쓴다 — 이 자리는 "문서 서술이 지금
+ * 뭐라고 말하고 있는가" 한 곳을 가리키는 것이지, 파일 전체에서 같은 패턴이 몇 번 나오는지 세는
+ * `file+regex` 측정 프리미티브(개수 세기 용도)와는 목적이 다르다.
+ *
+ * 아래 세 실패 모드를 전부 null(측정 불가)로 통일한다 — 하나라도 정상 처리하면 "문서 쪽이 조용히
+ * 드리프트 0으로 위장"되는 원래 결함이 형태만 바꿔 재발한다:
+ *   - docFile 을 못 읽음(경로 오타, 파일 삭제 등)
+ *   - docRegex 가 매치하지 않음(문서 문구가 바뀌어 패턴이 더 이상 안 맞음)
+ *   - 캡처 그룹 1이 정수로 파싱되지 않음(그룹을 숫자가 아닌 걸 감싸게 잘못 씀)
+ */
+function measureDocExpected(check, cwd) {
+  try {
+    const s = readFileSync(join(cwd, check.docFile), 'utf8')
+    const m = s.match(new RegExp(check.docRegex))
+    if (!m || m[1] === undefined) return null
+    const n = Number.parseInt(m[1], 10)
+    return Number.isFinite(n) ? n : null
+  } catch { return null }
+}
+
+/**
  * cwd 프로젝트의 매니페스트로 드리프트 계산. 매니페스트 파일 자체가 없으면 null(=체크 대상 아님,
  * 정상 no-op). checks가 빈 배열이면(스캐폴딩 직후 등 아직 아무도 채우지 않은 상태) `empty: true`를
  * 반환한다 — 이 경우 drift/skipped 모두 빈 배열이라 "검사해서 이상 없음"과 구분되지 않았고, 그 결과
@@ -217,9 +257,15 @@ export function computeDrift(cwd = process.cwd()) {
   const results = [], drift = [], skipped = []
   for (const c of checks) {
     const actual = measure(c, cwd)
-    if (actual == null) { skipped.push(c.label); continue }
-    results.push({ label: c.label, expected: c.expected, actual })
-    if (actual !== c.expected) drift.push(`${c.label}: 문서=${c.expected} ↔ 실측=${actual}`)
+    // docFile+docRegex 가 지정된 체크는 expected 를 문서 원문에서 캡처한다(§ 상단 docstring) —
+    // 없으면 기존처럼 매니페스트의 정적 expected 값을 그대로 쓴다(하위호환).
+    const usesDocCapture = !!(c.docFile && c.docRegex)
+    const expected = usesDocCapture ? measureDocExpected(c, cwd) : c.expected
+    // 코드 쪽(actual)과 문서 쪽(expected) 둘 중 하나라도 측정 불가면 skip — "측정 못 함"과
+    // "측정했더니 일치/불일치"를 섞지 않는다(문서 쪽 측정 불가가 드리프트 0으로 위장되면 안 됨).
+    if (actual == null || (usesDocCapture && expected == null)) { skipped.push(c.label); continue }
+    results.push({ label: c.label, expected, actual })
+    if (actual !== expected) drift.push(`${c.label}: 문서=${expected} ↔ 실측=${actual}`)
   }
   return { results, drift, skipped, empty: checks.length === 0, corrupted: false }
 }
