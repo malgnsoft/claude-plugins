@@ -9,6 +9,28 @@
 
 ---
 
+## [1.8.13] — 2026-08-26
+
+결함 수정 릴리스입니다.
+
+### 수정
+
+- `frontend-vue-zero-patterns` 스킬과 정본 아키텍처 문서(`vue-zero-architecture.md`)가 규정한
+  `utils.js` 등록 절차가 실제 프로덕션 배포본과 어긋나 있던 결함을 고쳤습니다. `export`로 작성한
+  뒤 별도 등록 스크립트(`index.js`)에서 `import`해 `window.*`로 재등록하던 절차를, 실제 배포본처럼
+  `export` 없이 선언해 일반 `<script>` 태그로 로드하는 방식(최상위 `function` 선언은 자동 전역,
+  `const`/`let`/`class` 값만 필요시 수동 등록)으로 정정했습니다. `agents/frontend-dev.md`에 남아
+  있던 옛 절차 지시(존재가 금지된 `composables/index.js` 참조)도 함께 정정했습니다.
+- `evaluator`의 판정 체크리스트 공백 4항목(등급고정·실행력 도메인 승인게이트·스킬 중복판정·
+  Knowledge→Skill 링크 판정)을 보강했습니다.
+- 토큰 사용량 수집 스크립트(`report-usage.mjs`)가 `import`만으로 수집·전송이 실행되던 결함에
+  ESM 메인모듈 가드를 추가했습니다(symlink 우회까지 realpath 정규화로 방어).
+- `doc-drift.mjs`가 매니페스트 값을 문서 캡처 결과와 대조하지 않고 자기 자신을 복제해 비교하던
+  구조를 문서 원문에서 직접 캡처하는 방식으로 전환하고, 문서 캡처 실패를 skip이 아닌 드리프트로
+  승격했습니다.
+
+---
+
 ## [1.8.12] — 2026-08-26
 
 7개 트랙으로 나눈 강화 검증단(영역별 reviewer 3인 + qa-engineer 실기동 + security 데이터흐름 추적 +
