@@ -19,6 +19,8 @@ vue-zero는 빌드 스텝 없이 CDN `<script>` 태그로 로드합니다. 프�
 
 vue-zero와 `utils.js` 사이의 상대 순서는 제약이 아닙니다. 페이지 `.vue`의 `<script>`는 라우팅 시점에 비동기로 실행되므로, 그때는 두 스크립트가 이미 모두 평가돼 있습니다.
 
+**이 스크립트들에는 `defer`·`async`를 붙이지 않습니다.** 두 속성은 위 순서 제약을 조용히 깨뜨립니다 — `async`는 내려받는 대로 실행해 순서를 아예 보장하지 않고, `defer`는 실행을 문서 파싱 이후로 미룹니다. 특히 `createApp()`이 인라인 `<script>`에 있으면 인라인 스크립트는 `defer`를 무시하고 제자리에서 실행되므로, `utils.js`에만 `defer`를 붙여도 `createApp()`이 먼저 돌아 유틸이 없는 상태로 앱이 뜹니다. 증상이 로드 실패가 아니라 `useApi is not defined` 같은 산발적 오류로 나타나 원인을 찾기 어렵습니다.
+
 ## 핵심 규칙 3가지
 
 ### 1. Composables 절대 금지
@@ -247,6 +249,13 @@ export default {
 - `utils.js`에 **`export`를 쓰면 안 됩니다** — 모듈이 아닌 스크립트에서 `export`는 `SyntaxError`이고, 파일 전체가 실행되지 않아 유틸이 통째로 사라집니다.
 - 같은 이유로 `<script type="module">`로 바꿔서도 안 됩니다 — 모듈의 최상위 선언은 그 모듈 안에만 존재해 페이지에서 보이지 않습니다.
 
+**이름을 `window` 내장 속성과 겹치지 않게 짓습니다.** 최상위 선언이 전역과 같은 이름 공간을 쓰므로 충돌이 그대로 사고가 됩니다.
+
+- `window`·`document`·`location`·`top`처럼 **바꿀 수 없는** 내장 속성과 같은 이름을 선언하면, 브라우저가 파일을 실행하기도 전에 오류를 던져 **`utils.js`가 한 줄도 실행되지 않습니다**(`export`를 썼을 때와 같은 전멸 방식이라, 선언 앞줄에 있던 코드조차 돌지 않습니다). `var`만 예외로 오류 없이 넘어가지만 대입이 조용히 무시돼 값이 들어가지 않습니다.
+- `name`·`status`처럼 **문자열로 강제되는** 내장 속성 이름은 값을 변질시킵니다 — `var status = 5`가 `"5"`(문자열)로 저장됩니다.
+
+`useApi`·`formatDate`처럼 서술적인 이름을 쓰고, 짧은 일반 명사(`name`·`status`·`top`·`open`·`close`·`length`·`origin`·`event`·`history`·`parent`·`self`·`focus`·`print`)는 피하세요.
+
 **utils.js에 함수 추가하는 절차**:
 
 1. `app/assets/js/utils.js`에 `export` 없이 선언한다:
@@ -268,7 +277,16 @@ export default {
    ```
    `window.formatDate(...)`로 불러도 동일하게 동작합니다 — 일반 스크립트의 `function` 선언은 `window`의 속성이기도 하기 때문입니다. 두 표기 모두 유효하니 프로젝트 안에서 쓰던 쪽으로 맞추면 됩니다.
 
-**함수가 아닌 값을 공유할 때**: `const`·`let`으로 선언한 값(상수 매핑, `Vue.ref()` 공유 상태 등)은 이름으로는 보이지만 `window`의 속성이 되지는 않습니다. 페이지에서 `window.이름`으로 접근할 계획이라면 `utils.js` **맨 끝에서 명시적으로 등록**합니다.
+**함수가 아닌 값을 공유할 때**: 최상위 선언은 종류에 따라 `window` 속성이 되기도 하고 안 되기도 합니다.
+
+| 최상위 선언 | 이름으로 보이는가 | `window`의 속성인가 |
+|---|---|---|
+| `function` · `var` | ✅ | ✅ |
+| `const` · `let` · `class` | ✅ | ❌ |
+
+즉 `const`·`let`·`class`로 선언한 것(상수 매핑, `Vue.ref()` 공유 상태 등)은 **이름으로는 보이지만** `window`의 속성이 되지는 않습니다. 페이지에서 `window.이름`으로 접근할 계획이라면 `utils.js` **맨 끝에서 명시적으로 등록**합니다.
+
+(`var`도 `window` 속성이 되지만 `utils.js`에서 값 선언에는 `const`/`let`을 씁니다 — `var`는 위에서 본 내장 속성 충돌을 오류 없이 삼켜 버려 원인을 찾기 어렵게 만듭니다.)
 
 ```javascript
 const DEAL_STAGE_LABELS = { prospecting: '잠재 발굴', /* ... */ }
@@ -288,6 +306,8 @@ vue-zero 프로젝트 착수 전:
 - [ ] 페이지 파일이 여러 개로 쪼개져 있는가 → **하나의 페이지 = 하나의 `.vue` 파일로 통일**
 - [ ] 여러 페이지가 쓸 함수를 composable로 만들었는가 → **`utils.js`에 옮길 것**
 - [ ] utils.js가 `index.html`에 `type="module"` 없는 `<script>`로 걸려 있고, 파일 안에 `export`가 하나도 없는가
+- [ ] Vue·vue-zero·`utils.js` 스크립트 태그에 `defer`·`async`가 붙어 있지 않은가 (로드 순서가 조용히 깨진다)
+- [ ] `utils.js`의 최상위 선언 이름이 `window` 내장 속성(`name`·`status`·`top`·`open`·`length`·`origin` 등)과 겹치지 않는가
 - [ ] 신규 공유 로직 파일의 폴더 위치를 정할 때, 프로젝트 내 기존 폴더명 선례(예: `composables/`)를 그대로 따르지 않고 이 문서의 정책을 재확인해 결정했는가?
 
 ## 왜 페이지에서 `import`가 작동하지 않는가 (`.vue` 스크립트 실행 방식)

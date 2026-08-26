@@ -21,6 +21,7 @@ Vue-Zero 플랫폼 기반 프로젝트에서 반드시 따라야 할 필수 패�
 
 **구현 규칙**:
 - [ ] 인증 API 바이너리는 `fetch`(+`Authorization` 헤더) 헬퍼로 받는다 — API URL을 `src`/`href`에 직접 넣지 않는다
+- [ ] 그 바이너리 헬퍼가 이 프로젝트 `utils.js`에 **실제로 있는지 먼저 확인**한다 — 아래 예제의 `useApiBlob`은 vue-zero 내장이 아니라 프로젝트마다 직접 만들어 두는 헬퍼라 없는 프로젝트도 많다. 없으면 `utils.js`에 먼저 만든 뒤 쓴다(`useApi`와 달리 `res.json()`이 아니라 `res.blob()`으로 받고, 파일명이 필요하면 `Content-Disposition`에서 꺼낸다)
 - [ ] Blob 확보 후 `URL.createObjectURL(blob)` 호출
 - [ ] 컴포넌트 언마운트·화면 전환·다운로드 완료 시 `URL.revokeObjectURL(url)` 호출
 - [ ] 객체 URL은 전역이 아니라 컴포넌트 `data`에 저장
@@ -35,7 +36,8 @@ export default {
   },
   methods: {
     async playVideo() {
-      // useApiBlob: 토큰을 헤더에 붙여 fetch하고 { blob, filename, error }를 반환하는 utils.js 헬퍼
+      // useApiBlob: 토큰을 헤더에 붙여 fetch하고 { blob, filename, error }를 반환하는 utils.js 헬퍼.
+      // 표준 제공 함수가 아니다 — 이 프로젝트 utils.js에 있는지 확인하고, 없으면 먼저 만든다.
       const { blob, error } = await useApiBlob(`/api/lectures/${this.lid}/stream`);
       if (error) { this.error = error; return; }
       this.videoUrl = URL.createObjectURL(blob);
@@ -66,6 +68,8 @@ window.blobUrl = URL.createObjectURL(blob);
 - [ ] 유틸 본체는 `app/assets/js/utils.js`에 작성 (빌드 스텝이 없으므로 `main.js`·`App.vue`는 존재하지 않음)
 - [ ] `utils.js`에 **`export`를 쓰지 않는다** — 모듈이 아닌 스크립트에서 `export`는 `SyntaxError`라 파일 전체가 실행되지 않는다
 - [ ] `index.html`에서 `type="module"` **없이** `<script src="/assets/js/utils.js">`로 로드 (모듈로 로드하면 선언이 모듈 안에 갇혀 페이지에서 안 보인다)
+- [ ] 그 `<script>` 태그에 `defer`·`async`를 붙이지 않는다 — 로드 순서가 조용히 깨져 `createApp()`이 유틸보다 먼저 돈다
+- [ ] 최상위 선언 이름이 `window` 내장 속성과 겹치지 않는다 — `top`·`document`·`location`처럼 바꿀 수 없는 속성과 겹치면 오류가 나 `utils.js`가 한 줄도 실행되지 않고, `name`·`status`와 겹치면 값이 문자열로 변질된다
 - [ ] 별도의 등록 전용 파일을 만들지 않는다
 - [ ] 각 함수에 JSDoc 주석으로 용도·입출력 타입 명시
 - [ ] 페이지에서는 `import` 없이 함수명으로 직접 호출
@@ -91,7 +95,7 @@ async function rotateImage(file, angle) { /* ... */ }
 
 페이지에서는 `formatDate(...)`로 바로 부릅니다. `window.formatDate(...)`도 동일하게 동작하니(일반 스크립트의 `function` 선언은 `window` 속성이기도 함) 프로젝트에서 쓰던 표기에 맞추면 됩니다.
 
-**함수가 아닌 값을 공유할 때**: `const`·`let`으로 선언한 값(상수 매핑, `Vue.ref()` 공유 상태)은 이름으로는 보이지만 `window` 속성이 되지는 않습니다. `window.이름`으로 접근할 계획이라면 `utils.js` **맨 끝에서** 명시적으로 등록합니다.
+**함수가 아닌 값을 공유할 때**: 최상위 `function`·`var`는 `window` 속성이 되지만, `const`·`let`·`class`로 선언한 것(상수 매핑, `Vue.ref()` 공유 상태)은 **이름으로는 보여도** `window` 속성이 되지는 않습니다. `window.이름`으로 접근할 계획이라면 `utils.js` **맨 끝에서** 명시적으로 등록합니다.
 
 ```javascript
 // utils.js 맨 끝 — window 접근이 필요한 것만
@@ -285,9 +289,10 @@ export default {
 
 - [ ] 유틸 본체를 `app/assets/js/utils.js`에 두었는가?
 - [ ] `utils.js`에 `export`가 하나도 없는가?
-- [ ] `index.html`에서 `type="module"` 없는 `<script>`로 로드하는가?
+- [ ] `index.html`에서 `type="module"` 없는 `<script>`로, `defer`·`async` 없이 로드하는가?
+- [ ] 최상위 선언 이름이 `window` 내장 속성(`name`·`status`·`top`·`open`·`length`·`origin` 등)과 겹치지 않는가?
 - [ ] 페이지에서 `import` 없이 함수명으로 호출하는가?
-- [ ] 함수가 아닌 값을 `window.*`로 쓸 거라면 `utils.js` 끝에서 등록했는가?
+- [ ] 함수가 아닌 값(`const`·`let`·`class`)을 `window.*`로 쓸 거라면 `utils.js` 끝에서 등록했는가?
 - [ ] 각 함수에 JSDoc 주석으로 용도·입출력 타입 명시하는가?
 
 ### 컴포넌트 재사용성 검증
