@@ -189,15 +189,30 @@ function measure(check, cwd) {
 }
 
 /**
- * cwd 프로젝트의 매니페스트로 드리프트 계산. 매니페스트 없으면 null(=체크 대상 아님).
- * checks가 빈 배열이면(스캐폴딩 직후 등 아직 아무도 채우지 않은 상태) `empty: true`를 반환한다 —
- * 이 경우 drift/skipped 모두 빈 배열이라 "검사해서 이상 없음"과 구분되지 않았고, 그 결과
+ * cwd 프로젝트의 매니페스트로 드리프트 계산. 매니페스트 파일 자체가 없으면 null(=체크 대상 아님,
+ * 정상 no-op). checks가 빈 배열이면(스캐폴딩 직후 등 아직 아무도 채우지 않은 상태) `empty: true`를
+ * 반환한다 — 이 경우 drift/skipped 모두 빈 배열이라 "검사해서 이상 없음"과 구분되지 않았고, 그 결과
  * 호출부가 실제로는 아무것도 측정하지 않았는데 통과(✅)로 보고했다. `empty` 플래그로 호출부가
  * 그 둘을 구분해 보고할 수 있게 한다.
+ *
+ * "파일이 없음"과 "파일은 있지만 JSON 파싱 실패"는 절대 같은 값(null)으로 섞지 않는다 — 예전에는
+ * 두 경우 모두 catch에서 null을 반환해, 매니페스트가 깨져도 "체크 대상 아님"과 구분이 안 됐다(RV류
+ * 결함 — 손상이 부재로 위장돼 드리프트 검사가 꺼진 채 조용히 "통과"로 보고됨). 파싱 실패는
+ * `corrupted: true`를 담은 별도 결과 객체로 반환한다. results/skipped/empty 필드는 그대로 채워
+ * 넣어(skipped에 파싱 실패 사유 1건, empty:false) 이 반환값을 그대로 소비하는 기존 호출부
+ * (sessionstart-context.mjs — "전부 측정 불가" 분기)가 별도 수정 없이도 자동으로 이 상태를
+ * 감지해 세션 컨텍스트에 경고를 얹게 한다. 단, 그 훅은 세션을 막지 않는 것이 원칙이라 계속 진행할
+ * 뿐이고, "조용히 통과하지 않는다"는 요구는 CLI 실행 블록(§ 실행 블록)의 exit code로 강하게 만족한다
+ * — 사람이 실행하는 CLI 경로와 자동 실행되는 훅 경로의 실패 처리 강도를 의도적으로 다르게 둔다.
  */
 export function computeDrift(cwd = process.cwd()) {
+  const manifestPath = join(cwd, '.claude', 'doc-drift.json')
+  let raw
+  try { raw = readFileSync(manifestPath, 'utf8') } catch { return null } // 파일 자체가 없음 — 체크 대상 아님
   let manifest
-  try { manifest = JSON.parse(readFileSync(join(cwd, '.claude', 'doc-drift.json'), 'utf8')) } catch { return null }
+  try { manifest = JSON.parse(raw) } catch (err) {
+    return { corrupted: true, error: err && err.message ? err.message : String(err), results: [], drift: [], skipped: ['(매니페스트 파싱 실패)'], empty: false }
+  }
   const checks = Array.isArray(manifest.checks) ? manifest.checks : []
   const results = [], drift = [], skipped = []
   for (const c of checks) {
@@ -206,7 +221,7 @@ export function computeDrift(cwd = process.cwd()) {
     results.push({ label: c.label, expected: c.expected, actual })
     if (actual !== c.expected) drift.push(`${c.label}: 문서=${c.expected} ↔ 실측=${actual}`)
   }
-  return { results, drift, skipped, empty: checks.length === 0 }
+  return { results, drift, skipped, empty: checks.length === 0, corrupted: false }
 }
 
 // §6 상태 어휘 표의 종료코드(구조가 고정된 표라 값 자체를 여기서 다시 규정하지 않는다 — 이 맵은
@@ -284,6 +299,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const cwd = process.argv[2] || process.cwd()
   const r = computeDrift(cwd)
   if (!r) { console.log('(.claude/doc-drift.json 없음 — 드리프트 체크 대상 아님)'); }
+  else if (r.corrupted) {
+    // "없음"과 뚜렷이 다른 메시지 + 아래 exit code로 CLI를 실패시킨다 — 매니페스트 손상이
+    // "체크 대상 아님"으로 조용히 위장되지 않게 한다(호출자가 반드시 알아채야 하는 상태).
+    console.log(`  ⚠️ .claude/doc-drift.json 파싱 실패: ${r.error} — 매니페스트가 손상돼 드리프트 검사를 수행할 수 없다(파일을 고쳐라).`)
+  }
   else if (r.empty) {
     // checks가 비어 있으면 results/drift/skipped 모두 빈 배열이라, 아래 "✅ 문서가 코드와 일치"와
     // 겉으로 구분이 안 됐다 — 실제로는 아무것도 측정하지 않았을 뿐인데 통과처럼 보였다.
@@ -309,9 +329,14 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   // "검사해서 이상 없음"이 아니라 "아무것도 측정하지 못함"이다 — ✅ 통과로 보고하면 매니페스트
   // 경로가 썩어도 영원히 거짓 통과가 난다(RV-005). 일부만 skip이고 나머지는 측정됐다면 그 측정된
   // 결과로 드리프트를 판단하는 것이 맞으므로 이 분기 대상이 아니다.
-  const allUnmeasurable = !!(r && !r.empty && r.results.length === 0 && r.skipped.length > 0)
+  // corrupted는 allUnmeasurable과 형태가 겹치지만(skipped 1건, results 0건) 원인이 다르므로
+  // (glob/file 경로 문제 vs JSON 문법 자체가 깨짐) 메시지·exit code 판단에서 별도 분기로 뗀다 —
+  // 겹친 채로 두면 사람이 "glob 경로를 점검하라"는 엉뚱한 안내를 받는다.
+  const hasCorrupted = !!(r && r.corrupted)
+  const allUnmeasurable = !!(r && !r.corrupted && !r.empty && r.results.length === 0 && r.skipped.length > 0)
   if (hasDrift) console.log('\n⚠️ 문서 드리프트 — 매니페스트 expected 와 문서 서술을 실측에 맞춰 갱신하라.')
+  else if (hasCorrupted) console.log('\n⚠️ 매니페스트 손상 — 드리프트 검사가 비활성화된 상태다(통과로 볼 수 없다). .claude/doc-drift.json의 JSON 문법을 고쳐라.')
   else if (allUnmeasurable) console.log('\n⚠️ 모든 체크가 측정 불가 — 매니페스트의 glob/file 경로를 점검하라(통과로 볼 수 없다).')
   else if (!hasPmIssue && r && !r.empty) console.log('\n✅ 문서가 코드와 일치.')
-  process.exit(hasDrift || hasPmIssue || allUnmeasurable ? 1 : 0)
+  process.exit(hasDrift || hasPmIssue || allUnmeasurable || hasCorrupted ? 1 : 0)
 }

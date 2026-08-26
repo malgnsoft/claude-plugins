@@ -26,6 +26,11 @@
  * 개인정보 하드 제약:
  *  - summary 필드는 첫 사용자 프롬프트를 120자로 truncate한 "세션 제목"만 전송한다
  *    (2026-08-19 사용자 최종 결정). 그 이상의 프롬프트 전문은 전송하지 않는다.
+ *  - summary는 그 truncate 전에 반드시 scrubSecrets()를 거친다 — 첫 프롬프트에 API 키/토큰/
+ *    비밀번호/Bearer 토큰/사용자 홈 절대경로(실명 계정명 노출)가 원문 그대로 섞여 있을 수 있어,
+ *    그 값들을 패턴 마스킹한 뒤에만 truncate·전송한다. buildPayload() 단 한 지점에서만 배선하고
+ *    (§ scrubSecrets 참고), 스크럽이 실패(예외)하면 그 레코드는 절대 원문 그대로 내보내지 않고
+ *    세션 자체를 건너뛴다(안전 실패 — run()의 payload 생성 try/catch 참고).
  *  - cwd 원문 절대경로는 payload 어디에도 넣지 않는다 (repository_key는 git remote owner/repo만)
  *  - 도구 input 원문은 절대 전송하지 않는다
  */
@@ -146,6 +151,68 @@ function extractHumanPromptText(content) {
     raw = '';
   }
   return (raw || '').replace(/\s+/g, ' ').trim();
+}
+
+// ── summary 전송 직전 스크러빙 (단일 지점) ─────────────────────────────────
+// summary는 사용자가 코드/에러 로그/설정 조각을 그대로 붙여넣은 프롬프트일 수 있어, 아래 패턴에
+// 해당하는 크리덴셜류와 사용자 홈 절대경로(실명 계정명 노출)를 전송 전에 마스킹한다.
+// - 각 패턴은 "흔한 일반 단어를 오탐하지 않을 만큼 충분히 구체적인 형태"만 골랐다(과잉 마스킹으로
+//   세션 제목이 통째로 의미 없어지는 것을 피하기 위함) — 단, kv-secret/hex32 두 패턴은 보안을
+//   우선해 약간의 과잉 마스킹(예: 무해한 커밋해시·MD5가 같이 가려짐)을 감수한다. summary는 통계
+//   집계에 쓰이는 필드가 아니라 사람이 읽는 "세션 제목"이므로 그 정도 손실은 안전 이득에 비해 작다.
+const SECRET_PATTERNS = [
+  // sk-... 류 (OpenAI/Anthropic API 키 형태). 최소 16자 이상만 대상으로 해 "sk-and-go" 같은 짧은
+  // 단어 조합을 오탐하지 않는다.
+  { name: 'sk-key', re: /\bsk-[A-Za-z0-9_-]{16,}\b/g },
+  // AWS Access Key ID (형태가 고정적이라 오탐 위험이 거의 없음)
+  { name: 'aws-access-key', re: /\bAKIA[0-9A-Z]{16}\b/g },
+  // GitHub 개인 액세스 토큰류 (ghp_/gho_/ghu_/ghs_/ghr_/github_pat_ 접두사 고정)
+  { name: 'github-token', re: /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}\b|\bgithub_pat_[A-Za-z0-9_]{20,}\b/g },
+  // Slack 토큰 (xoxb-/xoxp-/xoxa-/xoxr-/xoxs- 접두사 고정)
+  { name: 'slack-token', re: /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/g },
+  // JWT: header.payload.signature (base64url 세그먼트 3개, 각 10자 이상) — "ey"로 시작하는 헤더는
+  // JSON을 base64url 인코딩한 JWT의 사실상 불변 지문이라 오탐이 극히 드물다.
+  { name: 'jwt', re: /\bey[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g },
+  // Authorization: Bearer <token> — "Bearer" 키워드 자체가 명시적 신호
+  { name: 'bearer', re: /\bBearer\s+[A-Za-z0-9._-]{8,}\b/gi },
+  // api_key/secret/token/password/passwd/pwd/access_key 같은 크리덴셜 변수명 뒤에 '=' 또는 ':'로
+  // 실제 값이 붙는 형태만 마스킹한다(변수명은 남기고 값만 지움 — "token: " 같은 라벨 자체는 통계적
+  // 신호로 남겨도 안전하다).
+  { name: 'kv-secret', re: /\b(api[_-]?key|secret|token|passwd|password|pwd|access[_-]?key)\s*[:=]\s*['"]?[A-Za-z0-9._\-+/]{6,}['"]?/gi },
+  // 32자 이상 연속된 hex 문자열(세션 시크릿/해시류 흔한 형태). 커밋해시(7~12자)보다 길게 잡아
+  // 짧은 참조 문자열은 건드리지 않는다.
+  { name: 'hex32', re: /\b[a-f0-9]{32,}\b/gi },
+];
+
+/** 사용자 홈 절대경로(실명 계정명 노출)를 마스킹한다.
+ *  1) 이 스크립트를 실행 중인 계정의 실제 홈 경로(os.homedir())를 최우선으로 정확히 치환한다.
+ *  2) 다른 사람의 로그/에러 메시지를 붙여넣은 경우 등, 이 계정 홈이 아닌 일반적인 `/Users/<name>`·
+ *     `/home/<name>`·`C:\Users\<name>` 형태도 방어적으로 마스킹한다(계정명만 지우고 구조는 남김). */
+function maskHomePaths(text) {
+  let out = text;
+  const home = os.homedir();
+  if (home && home.length > 3) {
+    out = out.split(home).join('~');
+  }
+  out = out.replace(/\/(Users|home)\/([^/\s'"]+)/g, '/$1/~');
+  out = out.replace(/[A-Za-z]:\\Users\\([^\\\s'"]+)/g, 'C:\\Users\\~');
+  return out;
+}
+
+/** summary로 나갈 문자열에서 크리덴셜류와 홈 절대경로를 마스킹한다. buildPayload() 안에서만
+ *  호출되는 단일 지점 — 다른 코드 경로가 summary를 만들더라도 이 함수를 거치지 않으면 절대
+ *  payload.summary에 값을 넣지 않는다(호출부 규율, buildPayload 참고).
+ *  실패(예외) 시에는 절대 원문을 그대로 반환하지 않고 그대로 throw한다 — 호출부(run())가 이
+ *  세션 전체를 건너뛰게 해 "마스킹 실패인데 조용히 원문이 전송"되는 경로를 원천 차단한다. */
+function scrubSecrets(text) {
+  if (!text) return text;
+  if (typeof text !== 'string') throw new TypeError('scrubSecrets: 문자열이 아닌 입력');
+  let out = text;
+  for (const { re } of SECRET_PATTERNS) {
+    out = out.replace(re, '[REDACTED]');
+  }
+  out = maskHomePaths(out);
+  return out;
 }
 
 /** 세션 제목 — 첫 사용자 프롬프트를 120자로 truncate (malgnai-public sessions.summary CHECK(length<=120)와 동일 캡).
@@ -313,7 +380,10 @@ function buildPayload(agg, pluginVersion, repoKeyFor) {
   // 세션 제목: 첫 사용자 프롬프트를 120자로 truncate해 전송 (2026-08-19 사용자 최종 결정 —
   // "세션ID만으론 무슨 세션인지 식별 불가" 지적에 따른 국소 예외).
   // 프롬프트 전문/도구 input 원문은 여전히 전송하지 않는다.
-  payload.summary = truncateSummary(agg.firstPrompt);
+  // scrubSecrets()를 truncate보다 먼저 거친다 — truncate가 먼저면 120자 경계에서 시크릿 패턴이
+  // 중간에 잘려 정규식이 더는 매치하지 못한 채(예: sk-키의 뒷부분만 잘려나간 상태) 앞쪽 조각이
+  // 그대로 전송될 수 있다. 전체 원문에 대해 먼저 마스킹한 뒤 마지막에 120자로 자른다.
+  payload.summary = truncateSummary(scrubSecrets(agg.firstPrompt));
 
   return payload;
 }
@@ -402,7 +472,22 @@ async function run() {
   const failures = [];
 
   for (const agg of candidates) {
-    const payload = buildPayload(agg, pluginVersion, repoKeyFor);
+    // payload 생성(내부에서 scrubSecrets 실행)을 전송 시도와 분리된 try/catch로 감싼다 — 스크럽이
+    // 예외를 던지면(마스킹 실패) 이 세션은 원문 그대로도, 마스킹 없이도 절대 내보내지 않고
+    // 안전하게 건너뛴다(fail closed). 다른 세션의 전송에는 영향을 주지 않는다.
+    let payload;
+    try {
+      payload = buildPayload(agg, pluginVersion, repoKeyFor);
+    } catch (err) {
+      const msg = `payload 생성 실패(summary 마스킹 등) — 이 세션은 전송하지 않고 건너뜁니다: ${err && err.message ? err.message : String(err)}`;
+      if (opts.dryRun) {
+        console.error(`[dry-run] ${agg.sessionId}: ${msg}`);
+      } else {
+        sentFail++;
+        failures.push({ sessionId: agg.sessionId, error: msg });
+      }
+      continue;
+    }
 
     if (opts.dryRun) {
       console.log(JSON.stringify(payload));
