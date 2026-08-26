@@ -41,6 +41,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import readline from 'node:readline';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import {
   resolveApiBase,
@@ -570,7 +571,29 @@ async function run() {
   }
 }
 
-run().catch((err) => {
-  console.error('전송 중 예기치 않은 오류가 발생했습니다:', err && err.message ? err.message : err);
-  process.exit(1);
-});
+// ESM main-module 가드: import만 될 때는 run()을 실행하지 않는다(부작용 없는 import 보장).
+// import.meta.url은 Node 로더가 realpath까지 해석한 이 모듈의 실제 경로를 가리키지만,
+// process.argv[1]은 호출에 쓰인 경로 문자열을 그대로 담는다 — 심볼릭 링크를 통해 이 스크립트를
+// 직접 실행하면(예: 심볼릭 링크 경로로 `node <link>.mjs` 호출) 두 값의 문자열이 어긋나 아래
+// 가드가 "import된 것"으로 오판해 run()을 스킵한다(재현 확인됨). 이 비교가 어긋나 CLI 직접
+// 실행에서도 run()이 스킵되면 전 직원의 자동 수집이 조용히 멈추므로(더 위험한 실패 모드),
+// process.argv[1]도 fs.realpathSync로 동일하게 실제 경로로 정규화한 뒤 URL 형태로 비교한다
+// (realpathSync가 실패하면 — 존재하지 않는 경로 등 — 기존의 단순 문자열 비교로 안전하게 폴백).
+// install-usage-agent.mjs가 launchd(plist)/schtasks에 등록하는 경로는 자신의 fileURLToPath로
+// 만든 절대경로라 심볼릭 링크를 거치지 않지만, 이 가드 자체는 "그 등록 경로로만 호출된다"는
+// 전제에 기대지 않고 임의의 직접 실행 경로(심볼릭 링크 포함)에서도 항상 성립하도록 한다.
+function isMainModule() {
+  if (!process.argv[1]) return false;
+  try {
+    return pathToFileURL(fs.realpathSync(process.argv[1])).href === import.meta.url;
+  } catch {
+    return fileURLToPath(import.meta.url) === process.argv[1];
+  }
+}
+
+if (isMainModule()) {
+  run().catch((err) => {
+    console.error('전송 중 예기치 않은 오류가 발생했습니다:', err && err.message ? err.message : err);
+    process.exit(1);
+  });
+}
