@@ -46,14 +46,14 @@ model: sonnet
 ### API 연동 패턴 (vue-zero 프로젝트인 경우)
 ℹ️ 상세는 `${CLAUDE_PLUGIN_ROOT}/knowledge/architecture/vue-zero-architecture.md` 참조.
 
-**vue-zero 표준**: `utils.js`의 `useApi()` 헬퍼로 fetch 래핑, `{ data, error }` 튜플 반환. 에러는 화면에 노출합니다. Composables는 금지, 모든 공유 로직은 `window.*`로 등록합니다.
+**vue-zero 표준**: `utils.js`의 `useApi()` 헬퍼로 fetch 래핑, `{ data, error }` 튜플 반환. 에러는 화면에 노출합니다. Composables는 금지이고, 공유 로직은 `app/assets/js/utils.js` 한 파일에 `export` 없이 모읍니다 — 최상위 `function` 선언은 그 자체로 전역이라 별도 등록이 필요 없고, `const`/`let`/`class`로 선언한 값만 `window` 접근이 필요할 때 `utils.js` 맨 끝에서 등록합니다.
 
 ### Blob URL 패턴 (vue-zero 프로젝트인 경우, 규칙 5 ★ 필수)
 ℹ️ 상세는 `${CLAUDE_PLUGIN_ROOT}/knowledge/architecture/vue-zero-architecture.md` 참조.
 
-**vue-zero의 `.vue` 파일 `<script>`는 Blob URL**로 변환되어 상대 경로 `import`가 작동하지 않습니다. 절대 `import { useAuth } from '../composables'` 금지. 대신 `window.useAuth()` 전역 호출만 사용하세요. 새 함수는 `composables/index.js`에서 `window.*` 등록 → `.vue` 파일에서 `window.*` 호출. (상세: 위 knowledge 파일의 "utils.js에 함수 추가하는 절차" 참조)
+**vue-zero의 `.vue` 파일 `<script>`는 Blob URL**로 변환되어 상대 경로 `import`가 작동하지 않습니다. 절대 `import { useAuth } from '../composables'` 금지 — `composables/` 폴더 자체가 금지입니다. 새 함수는 `app/assets/js/utils.js`에 `export` 없이 선언하면 그대로 전역이 되므로, `.vue`에서 `useAuth()` 또는 `window.useAuth()`로 바로 호출합니다(두 표기 모두 유효). 등록 전용 파일(`index.js` 등)은 만들지 않습니다. (상세: 위 knowledge 파일의 "utils.js에 함수 추가하는 절차" 참조)
 
-**빌드 스텝 없는 Vue CDN 프로젝트의 완료 기준 = index.html 등록까지**: 빌드 스텝 없이 CDN으로 Vue를 로드하는 프로젝트에서 신규 composable/유틸 파일을 만드는 것만으로는 동작하지 않습니다 — `index.html`의 전역 `<script>` 태그로 등록해야 실제로 로드됩니다. 파일 생성을 "완료"로 보고하기 전에 등록까지 마쳤는지 확인하세요.
+**빌드 스텝 없는 Vue CDN 프로젝트의 완료 기준 = index.html 등록까지**: 빌드 스텝 없이 CDN으로 Vue를 로드하는 프로젝트에서 신규 공유 유틸 파일을 만드는 것만으로는 동작하지 않습니다 — `index.html`의 전역 `<script>` 태그로 등록해야 실제로 로드됩니다. 파일 생성을 "완료"로 보고하기 전에 등록까지 마쳤는지 확인하세요.
 
 ### Nuxt/Next.js 프로젝트인 경우
 위 vue-zero 특유 규칙(Composables 금지, Blob URL 우회, `utils.js`+`window.*` 등록)은 적용하지 않습니다. 대신 각 프레임워크의 표준 관례를 따르세요: **Nuxt**는 `composables/`와 서버 라우트(`server/api/`)를 정상적으로 사용, **Next.js**는 App Router 구조와 API Routes(`app/api/`)를 정상적으로 사용합니다. 이 플러그인에는 아직 Nuxt/Next.js 전용 knowledge 문서가 없으므로, 세부 패턴은 프레임워크 공식 문서와 프로젝트 기존 컨벤션을 기준으로 판단하세요(과도한 신규 규칙 제정 금지 — 표준 관례를 따르는 것으로 충분). **UI 컴포넌트 라이브러리는 Nuxt UI를 기본 원칙으로 사용합니다**(조직 표준) — 프로젝트에 이미 다른 라이브러리(예: Vuetify)가 도입돼 있으면 기존 관례를 우선하고, 신규 프로젝트에서 임의로 다른 라이브러리를 고르지 않습니다.
@@ -92,7 +92,7 @@ vendored/수정불가 런타임이 전역 동작(예: `document.title` 대입)�
 - [ ] 이전 세션/보고서의 "검증 완료(grep 0건)" 주장을 이어받아 작업을 시작하기 전에, `git status`/`diff`로 실제 커밋 여부와 grep 패턴 재실행으로 0건인지 실물 재확인했는가(미커밋 상태에서 완료로 오인되거나 grep 패턴이 오탐이었던 사례)?
 - [ ] 도메인 전환(용어·i18n 치환) 작업 재검증 시 카테고리어 키워드 grep만으로 끝내지 않고, 도메인 특유 고유명사(과목명·건물명 등 구체 사례)까지 나열해 함께 grep했는가(카테고리어만으론 고유명사 잔존을 놓침)?
 - [ ] i18n/텍스트 전환 작업의 "전량 완료" 보고 전, 테이블·배지형 짧은 상태 텍스트(v-if/v-else 조건부 라벨)까지 잔여 한글 grep으로 재검증했는가 — 특히 조건부 배지를 우선 점검한다?
-- [ ] (vue-zero 프로젝트인 경우) 신규 composable/유틸을 만들었다면 `index.html`의 전역 `<script>` 태그 등록까지 완료했는가 — 파일 생성만으론 동작하지 않는다?
+- [ ] (vue-zero 프로젝트인 경우) 신규 공유 유틸 파일을 만들었다면 `index.html`의 전역 `<script>` 태그 등록까지 완료했는가 — 파일 생성만으론 동작하지 않는다?
 - [ ] (vue-zero 프로젝트인 경우) 신규 공유 로직 파일의 폴더 위치를 정할 때, 프로젝트 내 기존 폴더명 선례(예: `composables/`)를 그대로 따르지 않고 먼저 `${CLAUDE_PLUGIN_ROOT}/knowledge/architecture/vue-zero-architecture.md` 정책을 재확인해 결정했는가?
 - [ ] 착수 전 레퍼런스 스크린샷과 완성 후 결과 스크린샷이 `docs/design/reference/`에 대조 가능한 형태로 존재하는가(ls로 확인)?
 - [ ] 착수 전 `docs/design/wireframes.md`(또는 설계 산출물)에서 `visual-designer 필요:` 필드를 확인했는가? 필드가 없다면 스스로 판단해 채우지 않고 PM/ux-designer에게 보완을 요청했는가?
