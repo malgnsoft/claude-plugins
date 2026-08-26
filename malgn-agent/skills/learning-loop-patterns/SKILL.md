@@ -154,7 +154,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
   - "이 기술은 다른 기능에도 쓸 수 있을까?" (일반화)
   - 재사용 가능하면 → 공유 스킬/guide로 추상화
 - [ ] **팀 공유:**
-  - 중요 패턴 → 공용 스킬(skills/common-* 또는 skills/domain-*, §2.4 승격 기준 참조)로 추상화해 편입
+  - 중요 패턴 → 공용 스킬(`skills/common-*` 또는 `skills/domain-*`)로 추상화해 편입 — Skill로 신설할지 Knowledge로 둘지의 판정 기준은 `agents/trainer.md` 핵심 원칙의 "신설 판정"이 정본이다
   - 프로젝트 특수 → STATUS.md 또는 learning-report
   - 개인 참고 → malgnai-hub `decision_record`/`work_record`에 녹여 기록 (별도 메모리 도구 없음)
 

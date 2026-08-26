@@ -37,7 +37,7 @@
 - `screen-reuse-consistency-verification.md` — 화면 재사용/재렌더 시 시각적 일관성 diff 절차 (설계→구현→리뷰 공통)
 
 ### review/
-- `reviewer-personas.md` — (핵심 절차 정본은 `skills/reviewer-persona-panel-standard/SKILL.md`) 발산형 페르소나 배경, 선택 강화 패턴 A/B/C, 문서·설계서 다차수 검증 패턴 D~G
+- `reviewer-personas.md` — (핵심 절차 정본은 `skills/reviewer-persona-panel-standard/SKILL.md`이며, 그 절차 본문 — 6대 필수요소·심각도 표준·보고서 형식·패널 운영·산출물 게이트 — 이 이 문서에도 함께 실려 있다) 그 밖에 발산형 페르소나 배경, 선택 강화 패턴 A/B/C, 문서·설계서 다차수 검증 패턴 D~G
 - `screenshot-capture-guide.md` — (절차 본문 정본은 `skills/common-screen-verification-and-capture`) 하드 게이트 원칙 + 상태별 캡처 체크리스트만 남음
 
 ### proposal/

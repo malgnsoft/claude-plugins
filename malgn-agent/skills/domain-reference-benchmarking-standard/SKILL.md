@@ -1,6 +1,6 @@
 ---
 name: domain-reference-benchmarking-standard
-description: 레퍼런스 벤치마킹 착수전/완성후 스크린샷 대조 산출물 표준 — GDWEB/dbcut/Awwwards(관리자 화면은 ThemeForest)에서 참고 화면을 착수 전에 캡처하고, 완성 후 결과 스크린샷과 나란히 대조 문서(before/after)로 남긴다. frontend-dev·ux-designer·visual-designer가 화면 설계/구현 착수 전 레퍼런스를 참고하고, 그 반영 여부를 evaluator가 눈으로 판정할 수 있는 근거를 남길 때 사용한다.
+description: 레퍼런스 벤치마킹 착수전/완성후 스크린샷 대조 산출물 표준 — GDWEB/dbcut/Awwwards(관리자 화면은 ThemeForest)에서 참고 화면을 착수 전에 캡처하고, 완성 후 결과 스크린샷과 나란히 대조 문서(before/after)로 남긴다. frontend-dev·ux-designer·visual-designer가 화면 설계/구현 착수 전 레퍼런스를 참고하고, 그 반영 여부를 reviewer가 눈으로 판정할 수 있는 근거를 남길 때 사용한다.
 ---
 
 # 레퍼런스 벤치마킹 표준 (frontend-dev / visual-designer / ux-designer 공용)
@@ -17,12 +17,12 @@ description: 레퍼런스 벤치마킹 착수전/완성후 스크린샷 대조 �
 
 화면 성격(공개 마케팅 화면 vs 관리자 화면)에 맞는 카테고리를 고른다. 관리자/기능 중심 화면에 Awwwards류 실험적 레퍼런스를 강요하지 않는다.
 
-## 산출물 형식 (evaluator 판정 대상)
+## 산출물 형식 (reviewer 판정 대상)
 
 1. **착수 전**: 참고할 레퍼런스 화면 스크린샷 1~3장을 `docs/design/reference/<화면명>-before-ref.png` 등으로 저장. 캡처 도구(`bin/capture.mjs`)는 로컬 렌더링 전용이 아니라 외부 URL도 그대로 지원한다(예: `node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" https://gdweb.co.kr/... docs/design/reference/xxx-before-ref.png`) — 별도 도구가 필요하다고 오인하지 않는다(상세: Skill `common-screen-verification-and-capture`).
 
 2. **완성 후**: 구현/설계 결과 스크린샷을 `docs/design/reference/<화면명>-after.png`로 저장.
-3. 두 이미지를 나란히 배치한 대조 문서(`docs/design/reference/<화면명>-benchmark.md`)에 `![before](...)  ![after](...)` 형태로 삽입. evaluator는 이 파일을 열어 실제로 참고 흔적이 결과물에 반영됐는지 눈으로 판정한다 — 텍스트 주장만으로는 통과되지 않는다.
+3. 두 이미지를 나란히 배치한 대조 문서(`docs/design/reference/<화면명>-benchmark.md`)에 `![before](...)  ![after](...)` 형태로 삽입. reviewer는 이 파일을 열어 실제로 참고 흔적이 결과물에 반영됐는지 눈으로 판정한다 — 텍스트 주장만으로는 통과되지 않는다.
 
 > 이 커맨드가 실패하거나(특히 `MODULE_NOT_FOUND`) 새 실행 지시를 쓸 때의 규약 — 따옴표, 이 변수가 치환되는 자리와 안 되는 자리, 맨 명령어를 쓰지 않는 이유 — 은 Skill `common-output-storage-and-path-management` §1-1이 정본이다.
 
@@ -43,7 +43,7 @@ description: 레퍼런스 벤치마킹 착수전/완성후 스크린샷 대조 �
 - [ ] **(양쪽, 관점 분리)** 빈 상태(empty state) 디자인 — ux-designer는 메시지·CTA 유무/동선, visual-designer는 시각적 톤·아이콘 크기
 - [ ] **(양쪽, 관점 분리)** 에러 상태 디자인 — ux-designer는 복구 경로 유무, visual-designer는 시각적 톤·강조 방식
 
-## evaluator 판정 기준 (참고)
+## reviewer 판정 기준 (참고)
 
 - before-ref/after 스크린샷 쌍이 실제로 존재하는가 (ls로 확인 가능)
 - after 스크린샷이 before-ref의 구체 요소(레이아웃 or 비주얼 디테일)를 실제로 반영했는가 — 육안 대조

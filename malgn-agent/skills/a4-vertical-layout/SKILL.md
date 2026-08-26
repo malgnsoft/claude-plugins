@@ -5,7 +5,7 @@ description: A4 세로형(210×297mm) HTML/PDF 인쇄 문서 페이지 배치 �
 
 # A4 세로형 HTML 문서 페이지 배치 Skill
 
-**When to Use**: A4 세로형 인쇄 문서(297mm×210mm)의 HTML/PDF를 생성할 때. 슬라이드(가로형) 아님.
+**When to Use**: A4 세로형 인쇄 문서(210mm×297mm)의 HTML/PDF를 생성할 때. 슬라이드(가로형) 아님.
 
 **Inputs**:
 - 원본 마크다운 또는 콘텐츠 블록들 (섹션, 단락, 표, 코드 등)

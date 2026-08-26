@@ -134,7 +134,7 @@ GitHub: https://github.com/malgnsoft/claude-plugins (이 저장소 자체가 마
 ## Commands
 ```bash
 pnpm run check-assets  # agents/skills frontmatter + 참조 경로 정적 검증 (ERROR 0 유지가 기준선)
-pnpm run check-docs    # PM 오케스트레이션 관리구역 정합성 상시 점검 + 구조 드리프트 대조(⚠️ 매니페스트 부재로 후자만 no-op)
+pnpm run check-docs    # PM 오케스트레이션 관리구역 정합성 상시 점검 + 구조 드리프트 대조(`.claude/doc-drift.json`의 agents·skills·knowledge 개수 대조)
 ```
 
 ## Architecture

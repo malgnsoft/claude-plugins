@@ -292,7 +292,7 @@ Chrome headless:
 결과: 벡터 PDF (텍스트 선택 가능, 용량 작음, ~100KB)
 
 또는 스크린샷 조립:
-  각 .slide screenshot → base64 → 임시 HTML → PDF
+  각 .page screenshot → base64 → 임시 HTML → PDF
   
 결과: 래스터 PDF (텍스트 미선택, 용량 큼, ~5MB for 16p)
 ```

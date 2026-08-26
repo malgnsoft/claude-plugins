@@ -145,7 +145,7 @@ description: 리뷰 페르소나 패널 설계·운영과 통합 보고서 작�
 - [재작업 필요 항목 / 통과 가능 여부 / 우선순위]
 ```
 
-## 2.5 다차수 재검토 (동일 target_id, 2차 이상)
+## 5.5 다차수 재검토 (동일 target_id, 2차 이상)
 
 동일 target_id로 짧은 기간 내 재위임되면 풀패널을 반복하지 않는다. 판정 기준(동일대상 조건·풀패널 강제승격 조건)은 Skill `common-task-grading-and-verification-depth`를 따른다. 모드는 3단계:
 
