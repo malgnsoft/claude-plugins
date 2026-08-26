@@ -1,6 +1,6 @@
 ---
 name: frontend-vue-zero-patterns
-description: Vue-Zero 플랫폼 특화 패턴 — Blob URL, window 전역 등록, Options API, utils.js 활용 규칙. vue-zero 프로젝트에서 Vue 컴포넌트 작업 시 사용.
+description: Vue-Zero 플랫폼 특화 패턴 — 인증 리소스의 객체 URL(Blob) 처리, import 없는 전역 유틸 노출, Options API, utils.js 활용 규칙. vue-zero 프로젝트에서 Vue 컴포넌트 작업 시 사용.
 ---
 
 # Vue-Zero Platform Patterns
@@ -9,68 +9,101 @@ Vue-Zero 플랫폼 기반 프로젝트에서 반드시 따라야 할 필수 패�
 
 ## 핵심 패턴
 
-### 1. Blob URL 패턴 (이미지/파일 다운로드)
+### 1. 객체 URL 패턴 (인증이 걸린 이미지·파일)
 
-**원칙**: 동적으로 생성된 이미지나 파일은 Blob URL로 관리하며, 메모리 누수를 방지하기 위해 사용 후 즉시 해제합니다.
+**원칙**: 인증이 필요한 바이너리는 `fetch`로 직접 받아 `URL.createObjectURL(blob)`로 임시 URL을 만들어 물리고, 다 쓰면 즉시 해제합니다.
+
+**왜 필요한가**: API 호출은 `Authorization: Bearer <토큰>` 헤더로 인증하는데, `<img src>`·`<video src>`·`<a href>`는 브라우저가 알아서 요청을 보내는 자리라 **커스텀 헤더를 실을 수 없습니다.** 인증이 걸린 API URL을 이 속성에 그냥 넣으면 토큰 없이 요청이 나가 **401**이 됩니다. 그래서 헤더를 붙일 수 있는 `fetch`로 받아 온 Blob을 임시 URL로 바꿔 물려야 합니다.
+
+**언제 쓰지 않는가**: `/assets/images/logo.png` 같은 **정적·비인증 자산은 그냥 `<img src="/assets/images/logo.png">`로 씁니다.** 애초에 토큰이 필요 없으므로 이 패턴을 쓰면 코드만 늘고 브라우저 캐시도 못 쓰게 됩니다. 판단 기준은 "파일이냐 이미지냐"가 아니라 **"그 URL이 인증을 요구하느냐"**입니다.
+
+또 하나 정당한 경우가 있습니다 — **브라우저에서 만들어 낸 데이터**(CSV 내보내기 등)는 받아올 서버 URL 자체가 없으므로, 객체 URL로 만들어 `<a download>`에 넘깁니다.
 
 **구현 규칙**:
-- [ ] Blob 생성 후 `URL.createObjectURL(blob)` 호출
-- [ ] 이미지 src 또는 다운로드 링크 href에 할당
-- [ ] 컴포넌트 언마운트 또는 파일 다운로드 완료 시 `URL.revokeObjectURL(url)` 호출
-- [ ] Blob URL은 전역 변수가 아니라 컴포넌트 data/ref에 저장
+- [ ] 인증 API 바이너리는 `fetch`(+`Authorization` 헤더) 헬퍼로 받는다 — API URL을 `src`/`href`에 직접 넣지 않는다
+- [ ] 그 바이너리 헬퍼가 이 프로젝트 `utils.js`에 **실제로 있는지 먼저 확인**한다 — 아래 예제의 `useApiBlob`은 vue-zero 내장이 아니라 프로젝트마다 직접 만들어 두는 헬퍼라 없는 프로젝트도 많다. 없으면 `utils.js`에 먼저 만든 뒤 쓴다(`useApi`와 달리 `res.json()`이 아니라 `res.blob()`으로 받고, 파일명이 필요하면 `Content-Disposition`에서 꺼낸다)
+- [ ] Blob 확보 후 `URL.createObjectURL(blob)` 호출
+- [ ] 컴포넌트 언마운트·화면 전환·다운로드 완료 시 `URL.revokeObjectURL(url)` 호출
+- [ ] 객체 URL은 전역이 아니라 컴포넌트 `data`에 저장
+- [ ] 정적 자산에는 적용하지 않는다
 
 **구현 예**:
 ```javascript
-// ✅ 권장 패턴
+// ✅ 인증이 걸린 영상 스트림 — 헤더를 실을 수 있는 fetch로 받아 객체 URL로 재생
 export default {
   data() {
-    return { blobUrl: null };
+    return { videoUrl: null };
   },
   methods: {
-    async generateImage() {
-      const blob = await this.createImageBlob();
-      this.blobUrl = URL.createObjectURL(blob);
-      // src에 this.blobUrl 할당
+    async playVideo() {
+      // useApiBlob: 토큰을 헤더에 붙여 fetch하고 { blob, filename, error }를 반환하는 utils.js 헬퍼.
+      // 표준 제공 함수가 아니다 — 이 프로젝트 utils.js에 있는지 확인하고, 없으면 먼저 만든다.
+      const { blob, error } = await useApiBlob(`/api/lectures/${this.lid}/stream`);
+      if (error) { this.error = error; return; }
+      this.videoUrl = URL.createObjectURL(blob);
     }
   },
   beforeUnmount() {
-    if (this.blobUrl) URL.revokeObjectURL(this.blobUrl);
+    if (this.videoUrl) URL.revokeObjectURL(this.videoUrl);  // 해제 필수
   }
 };
 
-// ❌ 피할 것: 전역 window에 저장
-window.blobUrl = URL.createObjectURL(blob); // 메모리 누수 위험
+// ❌ 401이 난다: 브라우저가 이 요청에 Authorization 헤더를 붙이지 않는다
+// <video :src="`/api/lectures/${lid}/stream`">
+
+// ❌ 불필요: 정적 자산은 인증이 없으므로 그대로 쓴다
+// <img :src="staticLogoBlobUrl">   →   <img src="/assets/images/logo.png">
+
+// ❌ 피할 것: 전역 window에 저장 (해제 시점을 잃어 메모리 누수)
+window.blobUrl = URL.createObjectURL(blob);
 ```
 
 ---
 
-### 2. Window 전역 등록 패턴 (공유 유틸 노출)
+### 2. 전역 유틸 노출 패턴 (import 없이 공유하기)
 
-**원칙**: 페이지에서 `import`가 작동하지 않으므로, 공유 유틸은 등록 스크립트에서 `window`에 올려 페이지가 `window.*`로 직접 호출합니다.
+**원칙**: 페이지에서 `import`가 작동하지 않으므로, 공유 유틸은 `utils.js`에 **`export` 없이** 선언하고 `index.html`이 이를 **일반 `<script>`로 로드**합니다. 일반 스크립트의 최상위 `function` 선언은 그대로 전역이 되므로 페이지가 바로 호출합니다.
 
 **구현 규칙**:
-- [ ] 유틸 본체는 `app/assets/js/utils.js`에 작성
-- [ ] 등록 시점은 `app/assets/js/index.js` 한 곳으로 고정 (빌드 스텝이 없으므로 `main.js`·`App.vue`는 존재하지 않음)
-- [ ] 등록된 함수는 JSDoc 주석으로 용도·입출력 타입 명시
-- [ ] 페이지에서는 `import` 없이 `window.함수명`으로 호출
+- [ ] 유틸 본체는 `app/assets/js/utils.js`에 작성 (빌드 스텝이 없으므로 `main.js`·`App.vue`는 존재하지 않음)
+- [ ] `utils.js`에 **`export`를 쓰지 않는다** — 모듈이 아닌 스크립트에서 `export`는 `SyntaxError`라 파일 전체가 실행되지 않는다
+- [ ] `index.html`에서 `type="module"` **없이** `<script src="/assets/js/utils.js">`로 로드 (모듈로 로드하면 선언이 모듈 안에 갇혀 페이지에서 안 보인다)
+- [ ] 그 `<script>` 태그에 `defer`·`async`를 붙이지 않는다 — 로드 순서가 조용히 깨져 `createApp()`이 유틸보다 먼저 돈다
+- [ ] 최상위 선언 이름이 `window` 내장 속성과 겹치지 않는다 — `top`·`document`·`location`처럼 바꿀 수 없는 속성과 겹치면 오류가 나 `utils.js`가 한 줄도 실행되지 않고, `name`·`status`와 겹치면 값이 문자열로 변질된다
+- [ ] 별도의 등록 전용 파일을 만들지 않는다
+- [ ] 각 함수에 JSDoc 주석으로 용도·입출력 타입 명시
+- [ ] 페이지에서는 `import` 없이 함수명으로 직접 호출
 
 **구현 예**:
 ```javascript
-// app/assets/js/index.js — 등록 스크립트
-import { formatDate, rotateImage } from './utils.js'
-
+// app/assets/js/utils.js — export 없이 선언한다
 /**
  * 날짜 포맷팅 — 'YYYY-MM-DD' 문자열 반환
- * @see utils.js
  */
-window.formatDate = formatDate
+function formatDate(date) { /* ... */ }
 
 /**
  * 이미지 회전 — (File, 0|90|180|270) => Promise<Blob>
- * @see utils.js
  */
-window.rotateImage = rotateImage
+async function rotateImage(file, angle) { /* ... */ }
+```
 
+```html
+<!-- index.html — type="module" 없이 로드 -->
+<script src="/assets/js/utils.js"></script>
+```
+
+페이지에서는 `formatDate(...)`로 바로 부릅니다. `window.formatDate(...)`도 동일하게 동작하니(일반 스크립트의 `function` 선언은 `window` 속성이기도 함) 프로젝트에서 쓰던 표기에 맞추면 됩니다.
+
+**함수가 아닌 값을 공유할 때**: 최상위 `function`·`var`는 `window` 속성이 되지만, `const`·`let`·`class`로 선언한 것(상수 매핑, `Vue.ref()` 공유 상태)은 **이름으로는 보여도** `window` 속성이 되지는 않습니다. `window.이름`으로 접근할 계획이라면 `utils.js` **맨 끝에서** 명시적으로 등록합니다.
+
+```javascript
+// utils.js 맨 끝 — window 접근이 필요한 것만
+window.DEAL_STAGE_LABELS = DEAL_STAGE_LABELS
+window.authUser = authUser
+```
+
+```javascript
 // ❌ 피할 것: 페이지 .vue 안에서 utils.js를 import
 // import { formatDate } from '../assets/js/utils.js'  // 작동하지 않음
 ```
@@ -119,7 +152,8 @@ export default {
   methods: {
     async rotateImage() {
       this.isProcessing = true;
-      const rotated = await window.rotateImage(
+      // utils.js의 전역 함수를 import 없이 호출 (window.rotateImage로 써도 동일)
+      const rotated = await rotateImage(
         this.sourceFile,
         this.angle
       );
@@ -162,7 +196,7 @@ export default {
 
 **구현 예**:
 ```javascript
-// utils.js
+// utils.js — 전부 export 없이 선언한다
 /**
  * 이미지 Blob을 회전
  * @param {Blob} imageBlob - 원본 이미지
@@ -170,7 +204,7 @@ export default {
  * @returns {Promise<Blob>} 회전된 이미지 Blob
  * @throws {Error} 지원하지 않는 각도
  */
-export async function rotateImageBlob(imageBlob, angle) {
+async function rotateImageBlob(imageBlob, angle) {
   if (![0, 90, 180, 270].includes(angle)) {
     throw new Error(`Invalid angle: ${angle}`);
   }
@@ -184,7 +218,7 @@ export async function rotateImageBlob(imageBlob, angle) {
  * @param {Object} options - { locale: 'ko-KR', ... }
  * @returns {string} 포맷된 날짜
  */
-export function formatDate(date, options = {}) {
+function formatDate(date, options = {}) {
   const { locale = 'en-US' } = options;
   return new Intl.DateTimeFormat(locale).format(date);
 }
@@ -193,7 +227,7 @@ export function formatDate(date, options = {}) {
  * 토큰 저장 (localStorage 접근도 utils.js에 둔다)
  * @param {string} token
  */
-export function setToken(token) {
+function setToken(token) {
   localStorage.setItem('token', token);
 }
 
@@ -244,17 +278,21 @@ export default {
 - [ ] Props, data, computed, methods 섹션 분리되었는가?
 - [ ] 공유 로직은 `utils.js` 한 곳에 작성하는가?
 
-### 파일 처리 기능 추가 시
+### 파일·이미지 처리 기능 추가 시
 
-- [ ] Blob 생성 후 URL.createObjectURL() 호출하는가?
-- [ ] 컴포넌트 언마운트 시 URL.revokeObjectURL() 호출하는가?
-- [ ] Blob URL을 window 전역이 아닌 컴포넌트 data에 저장하는가?
+- [ ] 그 URL이 인증을 요구하는가? (아니면 객체 URL 없이 `src`에 직접 넣는다)
+- [ ] 인증이 필요하면 `fetch` 헬퍼로 받아 URL.createObjectURL() 호출하는가?
+- [ ] 컴포넌트 언마운트·다운로드 완료 시 URL.revokeObjectURL() 호출하는가?
+- [ ] 객체 URL을 window 전역이 아닌 컴포넌트 data에 저장하는가?
 
-### window 전역 API 등록 시
+### 전역 유틸 추가 시
 
 - [ ] 유틸 본체를 `app/assets/js/utils.js`에 두었는가?
-- [ ] 등록을 `app/assets/js/index.js`에서 하는가?
-- [ ] 페이지에서 `import` 없이 `window.함수명`으로 호출하는가?
+- [ ] `utils.js`에 `export`가 하나도 없는가?
+- [ ] `index.html`에서 `type="module"` 없는 `<script>`로, `defer`·`async` 없이 로드하는가?
+- [ ] 최상위 선언 이름이 `window` 내장 속성(`name`·`status`·`top`·`open`·`length`·`origin` 등)과 겹치지 않는가?
+- [ ] 페이지에서 `import` 없이 함수명으로 호출하는가?
+- [ ] 함수가 아닌 값(`const`·`let`·`class`)을 `window.*`로 쓸 거라면 `utils.js` 끝에서 등록했는가?
 - [ ] 각 함수에 JSDoc 주석으로 용도·입출력 타입 명시하는가?
 
 ### 컴포넌트 재사용성 검증
