@@ -93,7 +93,12 @@ try {
       note = '\n\n⚠️ **문서 드리프트 감지** (문서가 코드와 불일치 — 코드가 진실):\n' +
         r.drift.map((d) => '  - ' + d).join('\n') +
         '\n오리엔테이션 시 실측값을 신뢰하고, 여유 될 때 `pnpm run check-docs` 후 문서를 갱신하라.'
-    } else if (r && !r.empty && r.results.length === 0 && r.skipped.length > 0) {
+    } else if (r && r.corrupted) {
+      // "매니페스트 없음"과 뚜렷이 다른 상태다 — JSON 문법 자체가 깨진 것이라 glob/file 경로를
+      // 아무리 점검해도 원인이 아니다(doc-drift.mjs의 CLI 실행 블록과 동일하게 별도 분기로 뗀다).
+      note = '\n\n⚠️ 문서 드리프트 매니페스트(.claude/doc-drift.json) JSON 파싱 실패: ' + r.error +
+        ' — 파일 문법을 고쳐라(glob/file 경로 문제가 아니다).'
+    } else if (r && !r.corrupted && !r.empty && r.results.length === 0 && r.skipped.length > 0) {
       // 매니페스트는 있는데(checks 비어있지 않음) 전부 측정불가라 drift 판정 자체가 불가능한
       // 상태. checks:[] (신규 스캐폴딩)까지 매번 경고하면 상시 노이즈가 되므로 !r.empty로
       // 제외하고, 이 경우만 1줄로 알린다(토큰 비용 최소화).
