@@ -419,7 +419,7 @@ function checkClaudePluginRootHooksRefs(relPath, body, pluginRoot) {
 // 스킬 개명 라운드 뒤 죽은 스킬 참조 16건이 ERROR 0 초록불 아래에서 약 2주간 생존했다.
 // 참조 대상이면서 동시에 참조 원천인 영역을 한쪽으로만 다룬 것이 그 구멍이었다.
 function checkBodyReferences(relPath, body, ctx) {
-  const { skillNames, knowledgeFiles, pluginRoot, referencedSkills } = ctx;
+  const { skillNames, knowledgeFiles, pluginRoot, referencedSkills, referencedKnowledge } = ctx;
 
   // 스킬을 가리키는 표기형은 두 가지다: ``Skill `name` `` 호출형과 `skills/name/SKILL.md` 경로형.
   // 개명 라운드에서 죽은 참조가 두 형태에 섞여 남았으므로 둘 다 본다.
@@ -440,6 +440,7 @@ function checkBodyReferences(relPath, body, ctx) {
   }
   for (const m of liveReferences(body, /\bknowledge\/[A-Za-z0-9_\-/]+\.md/g)) {
     const target = m[0].replace(/^.*?knowledge\//, 'knowledge/');
+    if (referencedKnowledge) referencedKnowledge.add(target);
     if (!knowledgeFiles.has(target)) {
       error('REF_KNOWLEDGE_MISSING', relPath, `본문이 참조하는 knowledge 파일이 없다: ${target}`);
     }
@@ -927,11 +928,12 @@ function main() {
     ? fs.readdirSync(agentsDir).filter((f) => f.endsWith('.md')).sort()
     : [];
   const referencedSkills = new Set();
+  const referencedKnowledge = new Set();
   // 제3자 주어 후보: 다른 에이전트 이름 + 사람/PM 호칭. 도구 지시의 행위자를 가르는 데 쓴다.
   const AGENT_BASENAMES = agentFiles.map((f) => f.replace(/\.md$/, ''));
   const TOOL_SUBJECTS = [...AGENT_BASENAMES, 'PM', '사용자', '사람'];
   const sizes = [];
-  const refCtx = { skillNames, knowledgeFiles, pluginRoot, referencedSkills };
+  const refCtx = { skillNames, knowledgeFiles, pluginRoot, referencedSkills, referencedKnowledge };
 
   for (const file of agentFiles) {
     const abs = path.join(agentsDir, file);
@@ -1165,6 +1167,65 @@ function main() {
     if (referencedSkills.has(dir)) continue;
     if (haystack.includes(dir)) continue;
     warn('SKILL_ORPHAN', `${opts.plugin}/skills/${dir}/SKILL.md`, '어떤 Agent/Skill/Knowledge도 이 Skill을 참조하지 않는다 (사용자 직접 호출 전용이면 무시)');
+  }
+
+  // orphan knowledge: 어떤 agent/skill/knowledge도 참조하지 않는 knowledge 파일.
+  // referencedKnowledge는 checkBodyReferences가 REF_KNOWLEDGE_MISSING과 같은 지점에서 모은다
+  // (같은 정규식 · 같은 liveReferences 필터라 이력/이관 서술은 이미 걸러져 있다).
+  // knowledge/README.md는 제외한다 — 그 안의 "파일 목록"은 폴더 접두 없는 맨 파일명
+  // (예: `team-composition-patterns.md`)이라 이 정규식(`knowledge/<폴더>/<파일>`)에 애초에
+  // 안 잡힌다. 즉 README에 실렸다는 사실만으로 "참조됨"이 되지 않는다 — 실측대로다.
+  for (const k of knowledgeFiles) {
+    if (k === 'knowledge/README.md') continue;
+    if (referencedKnowledge.has(k)) continue;
+    // Skill과 달리 사용자가 슬래시 커맨드로 직접 부르는 우회로가 없다 — 연결점이 없으면
+    // 이 파일을 여는 경로 자체가 malgn-agent 안에 존재하지 않는다(사용률이 0이 아니라
+    // "0일 수도 있다"가 아니라 정말 0). 그래서 WARN이 아니라 ERROR다.
+    error('KNOWLEDGE_ORPHAN', `${opts.plugin}/${k}`, '어떤 Agent/Skill/Knowledge도 이 knowledge 파일을 참조하지 않는다 — 이 파일을 여는 경로가 malgn-agent 안에 없다');
+  }
+
+  // orphan bin·hooks 스크립트: malgn-agent 안 어디에서도(hooks.json 커맨드·agent/skill/knowledge
+  // 본문·다른 bin·hooks 스크립트의 import/require) 이름이 등장하지 않는 스크립트.
+  // 저장소 루트 scripts/는 배포되지 않는 저장소 전용 도구라 대상이 아니다.
+  //
+  // 정규식 기반 참조 검사(REF_BIN_MISSING 등)를 재사용하지 않는다 — 그 검사는 백틱이나
+  // ${CLAUDE_PLUGIN_ROOT} 접두가 붙은 "인용형" 표기만 잡는데, 실측상 스크립트 간 참조는
+  // `import { x } from './usage-agent-lib.mjs'`, `from '../hooks/lib/find-pm-block-path.mjs'`,
+  // `join(dirname(...), 'doc-drift.mjs')` 처럼 백틱도 접두도 없는 맨 상대경로/문자열이
+  // 대부분이다. 그 형태까지 잡으려면 SKILL_ORPHAN과 같은 "파일명이 어딘가 문자열로
+  // 등장하는가"(느슨한 포함 검사)가 유일하게 실효 있는 방법이다 — 정밀 정규식은 이 셋을
+  // 전부 놓쳐 실제로 쓰이는 스크립트를 오탐으로 고아 처리한다.
+  {
+    const scriptFiles = [];
+    for (const sub of ['bin', 'hooks']) {
+      const dir = path.join(pluginRoot, sub);
+      if (!fs.existsSync(dir)) continue;
+      const walkScripts = (d) => {
+        for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+          const p = path.join(d, e.name);
+          if (e.isDirectory()) { walkScripts(p); continue; }
+          if (!/\.(mjs|cjs|js)$/.test(e.name)) continue;
+          scriptFiles.push({
+            rel: path.relative(pluginRoot, p).replace(/\\/g, '/'),
+            name: e.name,
+            body: fs.readFileSync(p, 'utf8'),
+          });
+        }
+      };
+      walkScripts(dir);
+    }
+    const hooksJsonPath = path.join(pluginRoot, 'hooks', 'hooks.json');
+    const hooksJsonRaw = fs.existsSync(hooksJsonPath) ? fs.readFileSync(hooksJsonPath, 'utf8') : '';
+    const scriptHaystackBase = `${haystack}\n${hooksJsonRaw}`;
+    for (const sf of scriptFiles) {
+      const others = scriptFiles.filter((o) => o !== sf).map((o) => o.body).join('\n');
+      if (`${scriptHaystackBase}\n${others}`.includes(sf.name)) continue;
+      // knowledge와 같은 이유로 ERROR다 — bin·hooks 스크립트는 사용자가 직접 여는 진입점이
+      // 아니라 hooks.json·agent/skill 본문·다른 스크립트의 import/require로만 도달한다.
+      // 그 도달 경로가 하나도 없으면 사용률은 0이다.
+      error('SCRIPT_ORPHAN', `${opts.plugin}/${sf.rel}`,
+        '어떤 Agent/Skill/Knowledge/hooks.json/다른 bin·hooks 스크립트도 이 스크립트를 참조하지 않는다 — 이 스크립트를 실행하는 경로가 malgn-agent 안에 없다');
+    }
   }
 
   // ── 문서 개수 표기 ↔ 실물 대조 ────────────────────────────────────
