@@ -123,7 +123,8 @@
 - 로컬 서버를 띄울 수 없는 환경 — 단, 이때는 **"화면 미확인, 코드 기반 추정"임을 보고서에 명시**한다 (정직 보고).
 
 ### 가장 가벼운 표준 절차 (vue-zero 제로빌드 / 로컬 dev 서버)
-이 프로젝트 스택에서 화면을 재현 가능하게 캡처하는 최소 방법. Playwright가 이미 깔려 있다고 전제하지 않는다 — 브라우저 바이너리는 전역 공유 캐시에 의존하지 않으므로 프로젝트마다 `pnpm add -D @playwright/test && pnpm exec playwright install chromium`을 1회 거친다(플러그인 루트 기준 `knowledge/quality/e2e-testing-guide.md`의 설치 단계).
+이 프로젝트 스택에서 화면을 재현 가능하게 캡처하는 최소 방법. Playwright가 이미 깔려 있다고 전제하지 않는다 — 브라우저 바이너리는 전역 공유 캐시에 의존하지 않으므로 캡처 대상 프로젝트 루트에서 `pnpm add -D playwright && pnpm exec playwright install chromium`을 1회 거친다(사전 조건 정본: Skill `common-screen-verification-and-capture`).
+> 캡처용 `playwright`와 E2E 러너용 `@playwright/test`는 **다른 패키지**다. 아래 절차가 쓰는 `bin/capture.mjs`는 최상위 `playwright`를 해석하므로 `@playwright/test`만 설치하면 실패한다(pnpm은 node_modules를 격리한다). E2E 테스트를 함께 돌린다면 두 패키지를 각각 설치한다(E2E 쪽 설치 단계는 플러그인 루트 기준 `knowledge/quality/e2e-testing-guide.md`).
 
 1. **로컬 서버 기동 확인**: `pnpm run dev` (예: http://127.0.0.1:9000). 떠 있지 않으면 먼저 띄운다.
 2. **캡처 실행**: 이 플러그인의 `bin/capture.mjs`로 라우트별 캡처. 실행 커맨드 정본(플러그인 절대경로가 채워진 형태)과 플래그(`--full/--vp/--wait/--click/--sel/--dark/--responsive`), 위험도별 캡처 깊이는 Skill `common-screen-verification-and-capture` 참조 — 이 문서에 커맨드를 다시 싣지 않는다(경로가 두 벌이 되면 어긋난다).

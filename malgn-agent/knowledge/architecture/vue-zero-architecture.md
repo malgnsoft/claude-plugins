@@ -178,8 +178,8 @@ export default {
 
 **우리가 사용 중인 `useApi` 함수**:
 ```javascript
-// app/assets/js/utils.js (window에 등록됨)
-async function useApi(url, options = {}) {
+// app/assets/js/utils.js — export로 선언하고, index.js에서 window.useApi로 등록한다
+export async function useApi(url, options = {}) {
   const { method = 'GET', body } = options
   const headers = { 'Content-Type': 'application/json' }
   
@@ -230,9 +230,9 @@ export default {
 
 **utils.js에 함수 추가하는 절차**:
 
-1. `app/assets/js/utils.js`에 함수 작성:
+1. `app/assets/js/utils.js`에 함수 작성 — **반드시 `export`를 붙인다**(2단계에서 import 하므로, export 없이 선언하면 등록 스크립트가 `SyntaxError`로 죽는다):
    ```javascript
-   function formatDate(date) {
+   export function formatDate(date) {
      return new Date(date).toLocaleDateString('ko-KR')
    }
    ```
