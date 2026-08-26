@@ -43,7 +43,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" http://localhost:9000 sidebar.png -
 ### 인증이 필요한 화면
 `capture.mjs`는 로그인 세션을 자동으로 저장·재사용하지 않는다(전역 레시피·전역 인증 캐시 없음). 인증이 필요한 화면은 `${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/`의 Playwright 표준 `storageState` 방식을 그 프로젝트의 인증 재사용 표준으로 채택한다:
 
-1. `${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/auth.setup.js`를 프로젝트의 `e2e/` 디렉터리로 복사하고 실제 로그인 폼 셀렉터·성공 판정 조건으로 고친다(`templates/e2e-template/README.md`의 6단계 참조).
+1. `${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/auth.setup.js`를 프로젝트의 `e2e/` 디렉터리로 복사하고 실제 로그인 폼 셀렉터·성공 판정 조건으로 고친다(`${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/README.md`의 6단계 참조).
 2. 로그인을 1회만 수행해 세션을 프로젝트 로컬 `e2e/.auth/user.json`에 저장한다(전역 경로 아님 — 프로젝트끼리 세션이 섞이지 않는다).
 3. 인증이 필요한 화면을 검증할 때는 그 화면을 이 storageState 기반 E2E 테스트 안에서 `page.screenshot()`으로 함께 캡처하거나, 별도 스크립트에서 `browser.newContext({ storageState: 'e2e/.auth/user.json' })`으로 그 세션을 직접 로드해 재사용한다. `capture.mjs` 자신은 이 옵션을 플래그로 내장하지 않는다 — 향후 확장 시 이 표준 포맷을 그대로 소비하면 된다(지금은 없음, 과장 금지).
 

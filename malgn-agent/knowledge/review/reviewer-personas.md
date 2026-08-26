@@ -50,7 +50,7 @@
 - 프로젝트 공통: `docs/product-principles.md`, `docs/requirements.md`, `docs/prd.md`
 - 리뷰 대상 산출물 (해당 단계의 코드/문서/디자인)
 - 직전 단계 산출물 (일관성 검증용)
-- **화면 리뷰가 필요한 페르소나**(UX·비주얼·접근성 등)는 `docs/screenshots/`의 캡처 이미지를 참고파일에 명시한다. 이미지가 없으면 캡처 가이드(`screenshot-capture-guide.md`)에 따라 먼저 확보한다.
+- **화면 리뷰가 필요한 페르소나**(UX·비주얼·접근성 등)는 `docs/screenshots/`의 캡처 이미지를 참고파일에 명시한다. 이미지가 없으면 캡처 가이드(플러그인 루트 기준 `knowledge/review/screenshot-capture-guide.md`)에 따라 먼저 확보한다.
 - 도메인 지식: `docs/reviewer/` 또는 `knowledge/`의 관련 문서
 
 ### 6. 출력포맷 (Output Format)
@@ -244,10 +244,10 @@
 
 > "N개 페르소나 패널로 리뷰했다"고 보고하면서 정작 `docs/reviewer/`에 페르소나 정의 파일이 없거나, UI/UX 리뷰인데 화면 캡처가 없는 경우가 있다. 페르소나·화면은 **머릿속이 아니라 파일로** 존재해야 한다.
 
-리뷰 완료를 보고하기 전에 아래를 **파일 존재로** 확인한다 (공통 원칙: `common/verifiable-output-and-honesty.md`).
+리뷰 완료를 보고하기 전에 아래를 **파일 존재로** 확인한다 (공통 원칙: 플러그인 루트 기준 `knowledge/common/verifiable-output-and-honesty.md`).
 
 - [ ] **페르소나 실체화** — "N개 페르소나로 리뷰"라고 보고할 거면, `docs/reviewer/personas/persona-*.md`가 **N개 실제로 존재**한다. 머릿속으로만 관점을 나눴고 파일이 없으면, 보고서에 "단일 리뷰" 또는 "N개 관점(파일 미작성)"이라고 **정직하게** 적는다. 없는 패널을 있는 것처럼 보고하지 않는다.
-- [ ] **화면 근거** — UI/UX 리뷰면 `docs/screenshots/`에 캡처 이미지가 존재하고, 그 이미지를 Read로 봤다. (`screenshot-capture-guide.md`) 화면을 못 봤으면 보고서에 "화면 미확인, 코드 기반 추정"이라고 명시한다.
+- [ ] **화면 근거** — UI/UX 리뷰면 `docs/screenshots/`에 캡처 이미지가 존재하고, 그 이미지를 Read로 봤다. (플러그인 루트 기준 `knowledge/review/screenshot-capture-guide.md`) 화면을 못 봤으면 보고서에 "화면 미확인, 코드 기반 추정"이라고 명시한다.
 - [ ] **근거 경로** — 보고서의 모든 지적에 위치(파일·라인) 또는 이미지 경로가 붙어 있다.
 - [ ] **수정 추적** — 리뷰 중 수정이 일어났다면(보통 reviewer는 수정 안 하지만 수정자가 함께 일했다면) before/after 또는 diff 근거가 남아 있다.
 - [ ] **생략 명시** — 시간/도구 제약으로 빠뜨린 관점·화면이 있으면 "생략함, 사유 X"로 적는다.
