@@ -178,7 +178,16 @@ const SECRET_PATTERNS = [
   // api_key/secret/token/password/passwd/pwd/access_key 같은 크리덴셜 변수명 뒤에 '=' 또는 ':'로
   // 실제 값이 붙는 형태만 마스킹한다(변수명은 남기고 값만 지움 — "token: " 같은 라벨 자체는 통계적
   // 신호로 남겨도 안전하다).
-  { name: 'kv-secret', re: /\b(api[_-]?key|secret|token|passwd|password|pwd|access[_-]?key)\s*[:=]\s*['"]?[A-Za-z0-9._\-+/]{6,}['"]?/gi },
+  // `.env`/셸 export 관용 표기(AWS_SECRET_ACCESS_KEY=, DB_PASSWORD=, STAGING_TOKEN= 등)를 잡기
+  // 위해 키워드 앞뒤에 `_`/`-`로 이어붙는 대문자 스네이크 세그먼트를 옵션으로 허용한다 — `\b`는
+  // `_`·영숫자 사이에서 성립하지 않아(둘 다 word 문자) 원래 패턴은 접두어가 붙은 키를 전혀
+  // 못 잡았다(예: `AWS_SECRET_ACCESS_KEY=`에서 `SECRET` 앞의 `_`가 경계를 깨 매치 실패, 값 뒤에
+  // 붙는 `_ACCESS_KEY`도 키워드와 `=` 사이를 갈라놔 매치 실패). 전체 시작 위치는 여전히 `\b`로
+  // 고정해 진짜 알파벳/숫자 바로 뒤에 낀 경우(false negative 확대 없음)만 넓힌다.
+  {
+    name: 'kv-secret',
+    re: /\b(?:[A-Za-z0-9]+[_-])*(?:api[_-]?key|secret|token|passwd|password|pwd|access[_-]?key)(?:[_-][A-Za-z0-9]+)*\s*[:=]\s*['"]?[A-Za-z0-9._\-+/]{6,}['"]?/gi,
+  },
   // 32자 이상 연속된 hex 문자열(세션 시크릿/해시류 흔한 형태). 커밋해시(7~12자)보다 길게 잡아
   // 짧은 참조 문자열은 건드리지 않는다.
   { name: 'hex32', re: /\b[a-f0-9]{32,}\b/gi },
