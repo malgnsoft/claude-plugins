@@ -76,7 +76,7 @@ description: 전 에이전트 필수 참조 — docs/product-principles.md로 �
 
 ### 루프 종료 (다음 회고)
 
-- [ ] 기록된 issue/memory/decision 검토?
+- [ ] 기록된 `issue_record`/`decision_record`/`work_record` 검토?
 - [ ] 원칙 갱신/추가 필요한가?
 - [ ] 회고 결과를 `docs/product-principles.md`에 반영?
 

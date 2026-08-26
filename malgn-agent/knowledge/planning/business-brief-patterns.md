@@ -1,6 +1,6 @@
 # 비즈니스 브리프 / 전략 리서치 고급 기법 (우수 산출물 역추출)
 
-> 출처: `coaching` 프로젝트 Coach Connect Business Brief (`docs/specs/00-business-brief.md`, 2026-06) — 벤치마킹 기반 전략 문서의 우수 사례에서 역추출. trainer 모드 7로 추출.
+> 출처: `coaching` 프로젝트 Coach Connect Business Brief (`docs/specs/00-business-brief.md`, 2026-06) — 벤치마킹 기반 전략 문서의 우수 사례에서 역추출. 산출물 기반 진단으로 추출.
 
 이 문서는 시장조사를 "검색 결과 나열"에서 **의사결정으로 이어지는 전략 브리프**로 끌어올리는 기법을 다룬다.
 

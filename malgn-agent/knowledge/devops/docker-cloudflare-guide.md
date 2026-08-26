@@ -6,8 +6,9 @@
 ```dockerfile
 # Build stage
 FROM node:20-alpine AS builder
+RUN corepack enable          # node 이미지에 pnpm이 깔려 있지 않다 — 없으면 `pnpm: not found`
 WORKDIR /app
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./   # `package*.json` 글롭은 pnpm-lock.yaml을 담지 못해 --frozen-lockfile이 실패한다
 RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build
@@ -103,9 +104,11 @@ pnpm dlx wrangler secret put API_KEY
 ### Workers 제약사항
 - CPU 시간: 무료 10ms, 유료 30초
 - 메모리: 128MB
-- 번들 크기: 무료 1MB, 유료 10MB
-- D1: 읽기 무제한(무료), 쓰기 10만/일(무료)
-- 서브리퀘스트: 50개/요청(무료), 1000개(유료)
+- 번들 크기(압축 후): 무료 3MB, 유료 10MB
+- D1(무료): 읽기 5백만 행/일, 쓰기 10만/일
+- 서브리퀘스트: 50개/요청(무료), 10,000개/요청(유료)
+
+> 수치는 Cloudflare가 예고 없이 상향/변경한다. 인용 전 공식 문서(`developers.cloudflare.com/workers/platform/limits/`, `developers.cloudflare.com/d1/platform/pricing/`) 원문을 열어 대조한다.
 
 ## CI/CD (GitHub Actions)
 

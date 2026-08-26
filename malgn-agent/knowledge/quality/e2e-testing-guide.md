@@ -72,10 +72,10 @@ E2E에서 로그인 코드를 매 테스트 새로 짜지 않는다. `e2e/auth.s
 ## 좋은 E2E의 기준
 - **사용자 시나리오** 단위로 짠다(로그인→목록→상세→액션→결과 확인). 페이지 존재 확인만 하는 얕은 테스트는 지양.
 - 셀렉터는 `getByRole`/`getByText`/`data-testid` 우선(클래스명 의존 최소화 — 스타일 변경에 안 깨지게).
-- **실패 재현**: config에 `trace: 'on-first-retry'`. 실패 시 `npx playwright show-trace test-results/.../trace.zip`.
-- 반응형이 중요하면 config의 mobile project 주석을 해제해 iPhone 뷰포트로도 돌린다.
+- **실패 재현**: 프로젝트 `playwright.config.js`에 `trace: 'on-first-retry'`를 설정해 둔다. 실패 시 `npx playwright show-trace test-results/.../trace.zip`.
+- 반응형이 중요하면 같은 config에 iPhone 등 mobile project를 추가해 함께 돌린다.
 - 네트워크·비동기는 `await expect(...).toBeVisible()` 등 web-first assertion으로 자동 대기시킨다(임의 `waitForTimeout` 남발 금지).
 
 ## CI
-- `retries: 2`(CI), `forbidOnly`가 config에 이미 설정됨. 앱을 먼저 기동(`webServer` 옵션을 config에 추가하거나 CI 스텝에서 서버 실행 후 테스트).
+- 프로젝트 `playwright.config.js`에 `retries: 2`(CI), `forbidOnly: !!process.env.CI`를 설정한다. 앱을 먼저 기동(`webServer` 옵션을 config에 추가하거나 CI 스텝에서 서버 실행 후 테스트).
 - 브라우저 설치는 로컬과 동일하게 `pnpm exec playwright install chromium`을 CI 스텝에 명시한다(전역 공유 설치를 전제하지 않으므로 CI 환경에서도 이 스텝이 반드시 필요하다). 반복 실행 속도를 위해 `~/.cache/ms-playwright`(또는 CI 도구의 캐시 경로)를 CI 캐시 키에 넣는 것은 무방하나, 캐시가 없거나 무효화된 최초 실행에서도 이 install 스텝이 항상 성공해야 한다는 전제는 바뀌지 않는다.

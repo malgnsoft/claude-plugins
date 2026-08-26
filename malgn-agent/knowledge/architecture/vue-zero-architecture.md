@@ -263,7 +263,10 @@ vue-zero 프로젝트 착수 전:
 - [ ] utils.js 함수가 window에 등록돼 있는가 → `app/assets/js/index.js`에서 확인
 - [ ] 신규 공유 로직 파일의 폴더 위치를 정할 때, 프로젝트 내 기존 폴더명 선례(예: `composables/`)를 그대로 따르지 않고 이 문서의 정책을 재확인해 결정했는가?
 
+## 왜 페이지에서 `import`가 작동하지 않는가 (Blob URL 패턴)
+
+vue-zero는 빌드 스텝 없이 `.vue` 파일을 런타임에 읽어 `<script>` 부분을 **Blob URL로 변환해** 실행한다. Blob URL은 원본 파일의 경로 맥락을 잃으므로 `import { formatDate } from './utils.js'` 같은 **상대 경로 import가 해석되지 않는다.** 그래서 공유 로직은 `app/assets/js/index.js`에서 `window.*`로 등록하고 페이지는 `window.formatDate(...)`처럼 전역으로 호출한다(위 규칙 3).
+
 ## 관련 참고 자료
 
 - 이 플러그인에 함께 번들된 `knowledge/frontend/vue-zero-patterns.md` — **패턴 상세**(위 "역할 분담" 참조): 범용 UX 교훈, 실전 패턴 (API 연동, 폼, 레이아웃). 이 문서의 규칙과 모순되면 이 문서가 우선한다.
-- 프로젝트 `CLAUDE.md` — 규칙 5 "Blob URL 패턴" (왜 import가 작동 안 하는지)

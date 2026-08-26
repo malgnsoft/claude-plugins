@@ -1,6 +1,6 @@
 # PRD 작성 고급 기법 (우수 산출물 역추출)
 
-> 출처: `coaching` 프로젝트 Coach Connect PRD (`docs/specs/10~13`, 2026-06) — 실전 우수 사례에서 역추출한 재사용 가능 기법. trainer 모드 7(산출물 기반 진단)로 추출.
+> 출처: `coaching` 프로젝트 Coach Connect PRD (`docs/specs/10~13`, 2026-06) — 실전 우수 사례에서 역추출한 재사용 가능 기법. 산출물 기반 진단으로 추출.
 
 이 문서는 "PRD 구조 템플릿"(requirements-analysis.md)을 넘어, **무엇이 평범한 PRD와 상용 수준 PRD를 가르는가**를 다룬다.
 

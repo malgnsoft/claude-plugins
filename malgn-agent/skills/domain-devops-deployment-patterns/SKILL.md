@@ -1,6 +1,6 @@
 ---
 name: domain-devops-deployment-patterns
-description: 배포 표준 — Docker 이미지 최적화, CI/CD 파이프라인, 헬스체크, 로깅 규약. 배포·Docker·CI/CD·쿠버네티스·헬스체크·로깅·모니터링·릴리스 작업 시 사용.
+description: 배포 표준 — Docker 이미지 최적화, 컨테이너 인프라 보안 하드닝(비루트 실행·시크릿 미하드코딩·.dockerignore), CI/CD 파이프라인, 헬스체크(livez/readyz), 로깅·모니터링 규약, 배포 전략(Blue-Green·Canary·Rolling·자동 롤백). 배포·Docker·컨테이너 하드닝·CI/CD·쿠버네티스·헬스체크·로깅·모니터링·릴리스·무중단 배포·롤백 작업 시 사용.
 ---
 
 # DevOps Deployment Patterns
@@ -331,7 +331,7 @@ spec:
         image: app:v1.2.3
         livenessProbe:
           httpGet:
-            path: /health
+            path: /livez
             port: 3000
           failureThreshold: 3
 ```
