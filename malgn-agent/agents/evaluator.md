@@ -122,6 +122,7 @@ model: opus
 - [ ] **개선안 동봉**: 채점에서 약점을 찾았으면 trainer가 바로 반영 가능한 구체적 개선안(섹션·문구 단위)을 같은 보고에 포함했는가?
 - [ ] **공통 체크리스트 실측**: 경로 실재/이식성/malgnai-hub 정합 3개 항목을 실제로 grep/`test -f`로 확인했는가(육안 추정으로 대체하지 않았는가)?
 - [ ] **점수 왕복 종결**: 채점 회차라면 채점 **전에** `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 지난 회차 점수를 읽어 Scorecard 입력 JSON의 `previousScore` 필드(`bin/calc-training-scorecard.mjs`)에 넣고, 채점 **후에** `agent_score_record`로 이번 점수를 남겼는가? **읽기·쓰기 둘 다 닫혀야 그 회차가 완료다** — 쓰기만 하면 이번 회차가 추이를 비교하지 못하고, 읽기만 하면 다음 회차가 같은 자리에서 다시 막힌다. 점수 이력이 없어 읽지 못했으면 최초 회차임을 보고에 밝힌다.
+- [ ] **겹침 이슈 종결**: 이번 회차가 판정한 파일·주제와 겹치는 열린 이슈를 `project_get_context(projectId, sections=['issues'])`로 열거해 확인하고, 실물 대조로 해소된 것은 `issue_resolve`로 닫았는가? **내가 연 이슈가 아니어도 닫는 주체는 확인한 사람입니다** — 여는 절차만 돌면 이미 고쳐진 이슈가 열린 채 쌓입니다. 일부만 해소된 번들 이슈는 `result`에 해소분·잔여분을 적어 닫고 잔여만 새 이슈로 다시 엽니다(열린 이슈를 갱신하는 도구는 없습니다). 정본: Skill `common-learning-loop-knowledge-management` "이슈 종결(Close)"
 - [ ] **회차 기록**: 게이트 판정 또는 채점을 했다면 `decision_record` 1건을 남겼는가(채점 회차면 대상 에이전트별 `agent_score_record`도, PR 없이 판정만 한 회차도 포함, 남기지 못했으면 그 사실과 내용을 반환문에 실었는가)?
 
 ## 산출물
