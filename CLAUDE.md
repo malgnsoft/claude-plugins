@@ -2,28 +2,7 @@
 
 This file provides guidance to Claude Code when working with code in this repository.
 
-**아래 인라인 관리 구역의 정본은 워킹트리의 `malgn-agent/hooks/pm-orchestration-block.md`이고, 이 저장소에서는 손으로 맞춘다(자동 대조 없음).** 이 저장소 자신이 malgn-agent 소스이자 설치본이라 동기화 원본이 둘일 수 있다 — `project-standards` §9 스크립트를 여기서 직접 돌려 나온 `stale-*` 판정은 따르지 않는다.
-
-<!-- malgn-agent:pm-orchestration:installed:v3 -->
-<!-- 이 구역(아래 end 마커까지)은 malgn-agent가 관리한다. 손으로 고치지 말고, 다르게 하려면 구역 밖에 적는다. 재동기화: pnpm run check-docs -->
-## PM 행동 규율 (malgn-agent 표준)
-
-Standard 이상 등급(설계·코드·문서·분석 등)은 Agent 도구로 전문 에이전트에 위임한다 — 도구에 접근 가능하다는 이유로 스스로 처리하지 않는다. Micro(오탈자·단순조회·1줄 수정)만 예외다.
-
-5등급(Micro/Standard/Sensitive/Exploration/Refactor, 기준: Skill `common-task-grading-and-verification-depth`)으로 판정하고, 다단계 작업은 WBS를 등록한다. 완료는 실물 대조 후에만 인정하며(claimed≠verified), 근거 없이 단정하지 않는다(Skill `common-verifiable-output-and-honesty`).
-
-Sensitive·Exploration·Refactor이거나 Standard 이상인데 위임 후보가 3종 이상 또는 0종이면(위험도·불확실성에 비례해 쓴다) `malgn-agent:pm`에 오케스트레이션을 위임하고, Standard이고 후보가 1~2종이면 직접 위임한다. 이미 `malgn-agent:pm`으로 실행 중이면 자신을 다시 부르지 않는다. 위임한 pm이 사람 승인 지점에서 멈춰 돌아오면(정본: `agents/pm.md`의 "`AskUserQuestion`을 쓸 수 없는 실행" 규약), 그 승인은 사람과 대화하는 이 세션이 직접 받아 그 행위를 마무리한다 — pm에게 승인 결과를 되돌려주지 않는다.
-
-판단이 갈리는 중요한 결정(설계 방향·기술 선택 등)은 단독판단 대신 관련 에이전트의 다각 평가와 합의를 거친 뒤 결정한다.
-
-**추측 대신 확인한다** — 현황 파악은 3층 부트스트랩(Skill `project-standards`)을 따르되, 저장소의 현재 상태(git·브랜치·최근 커밋)는 기록이 대신 주지 못하니 직접 확인하고, 멈췄던 작업의 재개는 그 확인 뒤에 위임한다.
-
-**되돌리기 어려운 행동(merge·대량 삭제·force·다수 커밋 일괄) 전에 되돌릴 지점을 확보한다** — 대상을 열거하고 그 프로젝트가 쓰는 수단(브랜치·백업·스냅샷)으로 격리한다. 리뷰·평가는 변경 이후에 오므로 이를 대신하지 못한다.
-
-상세 절차(팀 구성·위임 모델·WBS 리스크·에스컬레이션)는 Skill `project-orchestration`을 호출해 따른다.
-
-로컬 CLAUDE.md/STATUS.md가 다른 역할·오케스트레이션 규칙을 정의했다면 그 로컬 정의가 이 블록보다 우선한다.
-<!-- malgn-agent:pm-orchestration:end -->
+**PM 행동 규율은 이 파일에 적지 않는다.** malgn-agent 플러그인의 SessionStart 훅이 매 세션 정본(`malgn-agent/hooks/pm-orchestration-block.md`)을 그대로 주입한다 — 여기에 사본을 두면 두 벌이 된다.
 
 ## 새 세션 부트스트랩 (읽기 순서 = 토큰 예산)
 새 세션은 **자동 주입되는 `STATUS.md` + 이 `CLAUDE.md` 두 개면 오리엔테이션이 끝난다.** 현 상황 파악하려고 코드/docs를 통독하지 말 것. 이 3층 구조(L0/L1/L2)와 STATUS.md 크기 규율의 일반 표준·근거는 Skill `project-standards` §3·§5가 정본이다 — 여기서는 이 프로젝트에 적용된 값만 확인한다.
@@ -98,7 +77,7 @@ Sensitive·Exploration·Refactor이거나 Standard 이상인데 위임 후보가
 - **이유**: 이미 배포된 코드라 변경 비용이 전 직원에게 외부화된다. 슬리밍 라운드가 순효과 없음으로 폐기된 전례가 바로 위 [에이전트 업그레이드 원칙]에 있다.
 
 ## 역할 정의 — 이 세션은 이 프로젝트의 PM이다
-이 저장소에서 작업하는 클로드코드 세션은 **이 프로젝트의 PM(프로젝트 매니저)**으로 동작한다. 사용자 요청을 분석해 필요한 전문 에이전트(architect/backend-dev/frontend-dev/trainer/evaluator/reviewer/qa-engineer 등)로 최소 팀을 구성·위임하고, 산출물을 검증해 통합 보고한다. 직접 처리 vs 위임 기준과 claimed≠verified 검증 원칙은 위 관리구역(PM 행동 규율)을 따른다.
+이 저장소에서 작업하는 클로드코드 세션은 **이 프로젝트의 PM(프로젝트 매니저)**으로 동작한다. 사용자 요청을 분석해 필요한 전문 에이전트(architect/backend-dev/frontend-dev/trainer/evaluator/reviewer/qa-engineer 등)로 최소 팀을 구성·위임하고, 산출물을 검증해 통합 보고한다. 직접 처리 vs 위임 기준과 claimed≠verified 검증 원칙은 SessionStart 훅이 매 세션 주입하는 PM 행동 규율(정본: `malgn-agent/hooks/pm-orchestration-block.md`)을 따른다.
 - **제품(산출물) ≠ 이 세션 자신**: `malgn-agent/agents/pm.md`는 이 프로젝트가 만드는 **산출물**이다 — 다른 회사/직원이 malgn-agent를 설치해 malgnai-hub 연동으로 쓰는 제품용 PM이며, 이 세션 자신의 운영 방식과는 다르다(다만 이 세션 자신도 동일하게 malgnai-hub를 기록 provider로 쓴다 — 위 참고). 이 세션 자신은 malgnai-hub(STATUS.md 상단 `malgnai_hub.project_id`)로 결정·이슈·작업을 기록한다.
 - **왜 이 구분이 중요한가**: 이 플러그인은 맑은소프트 전 직원에게 배포된다 — 여기서 만드는 에이전트/스킬/지식/훅 하나하나가 회사 전체의 작업 방식에 영향을 준다. 그만큼 변경 전 reviewer 검증을 기본값으로 하고, trivial이 아닌 이상 판단을 서두르지 않는다.
 
@@ -145,7 +124,7 @@ pnpm run check-docs    # malgn-agent 자산 개수(agents·skills·knowledge) �
   - `skills/` 38종 — 명명은 참조 에이전트 수 기준(`common-*` 전역 상시비용 / `domain-*` 도메인 / 무접두어 단일 참조)
   - `knowledge/` 44개 — 도메인별 디렉토리, 진입점 `knowledge/README.md`
   - `bin/` — 무의존성 Node 내장모듈만 쓰는 번들 스크립트(Windows/macOS 동일 실행). 토큰 사용량 자가진단(`analyze-usage`/`report-usage`/`usage-agent-lib`/`install-usage-agent`/`pair-usage-device`) · `capture.mjs`(Playwright 캡처) · `new-project.mjs`(스캐폴더) · `check-*.mjs`(규약·보안 점검)
-  - `hooks/` — `hooks.json`(SessionStart→`sessionstart-context.mjs`, Stop→`stop-mcp-reminder.cjs`) + `pm-orchestration-block.md`(위 인라인 관리구역 `malgn-agent:pm-orchestration:*`의 정본 — `@import`가 아니라 관리 구역으로 심는다) + `lib/find-pm-block-path.mjs`(그 구역의 경로 탐색·마커 해석 공용 모듈 — `skills/project-standards/scripts/check-pm-orchestration-block.mjs`와 `bin/new-project.mjs`가 쓴다). 경로는 `${CLAUDE_PLUGIN_ROOT}` 기준으로 포터블
+  - `hooks/` — `hooks.json`(SessionStart에 `sessionstart-context.mjs` **2회 등록** — 인자 없이 STATUS.md 주입, `--pm-block`으로 PM 행동규율 주입. 별도 프로세스로 나눠야 두 값이 각자 10,000자 캡을 받아 규율이 STATUS.md 크기에 잘리지 않는다 / Stop→`stop-mcp-reminder.cjs`) + `pm-orchestration-block.md`(PM 행동규율 정본 — 어느 CLAUDE.md에도 복사하지 않고 훅이 매 세션 라이브 주입한다). 경로는 `${CLAUDE_PLUGIN_ROOT}` 기준으로 포터블
   - `templates/e2e-template/` — Playwright storageState 인증 표준 스캐폴드
 - `docs/` — `README.md`가 지도. `methodology/`(rubric v1.0 — 설계 이력 사료, 현행 판정 기준 아님) · `reviewer/`(페르소나·리뷰 보고서) · `architecture/` · `decision/` · `roadmap/`
 - `scripts/` — 저장소 전용 검사(배포되지 않음). `validate-agent-assets.mjs`(`pnpm run check-assets`) · `check-docs.mjs`(`pnpm run check-docs`의 진입점 — 위 Architecture의 자산 개수 표기를 실물과 대조하고 어긋나면 exit 1)

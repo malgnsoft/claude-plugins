@@ -68,12 +68,15 @@ const BUDGET_SKILL_KB = 25;
 // 그 변호분을 이미 넘었다). 복구했다면 실재하지 않는 본문을 변호하는 문서가 되므로 등록을 지웠다 —
 // 해당 4개는 BUDGET_UNJUSTIFIED(근거 없는 초과)로 정직하게 남는다. 기제 자체는 유지한다.
 const BUDGET_RATIONALE = {
-  // PM 행동규율 블록이 @import에서 CLAUDE.md 인라인 관리 구역으로 바뀌면서 §9 판정 절차가 커졌다.
-  // 늘어난 분량이 전부 "남의 CLAUDE.md를 고치기 전에 거쳐야 하는 거부 조건·동의 게이트"라 감축 대상이 아니다.
-  'skills/project-standards/SKILL.md': {
-    doc: 'docs/refactor/project-standards-skill-budget-rationale.md',
-    bytes: 29286,
-  },
+  // 'skills/project-standards/SKILL.md' 등록은 여기서 뺐다(실측: PM 행동규율 블록이 CLAUDE.md
+  // 인라인 관리 구역에서 SessionStart 훅 실시간 주입으로 바뀌면서 그 절차를 다루던 §9가 통째로
+  // 없어졌고, 실측 파일 크기가 18.5 KB로 떨어져 권고 예산(25 KB) 안에 다시 들어왔다 — 그 예산
+  // 초과를 변호하던 사유서의 전제 자체가 사라져 그 문서도 같은 커밋에서 삭제했다(실재하지 않는
+  // 크기를 변호하는 문서가 되므로). checkContextBudget()은 예산 이내면 사유서를 조회하지도 않으므로(위 kb <=
+  // budgetKb 조기 반환) 등록을 남겨둬도 ERROR/WARN을 내지는 않지만, "CLAUDE.md 인라인 관리
+  // 구역이라 커졌다"는 지금은 틀린 서술을 코드에 남겨두는 것이 되어 지운다. 다시 25 KB를
+  // 넘으면 그때의 실측 사유로 새로 등록한다.
+  //
   // 승인된 결함 5건(agent-md-defects-20260825) + reviewer 재검증 라운드에서 나온 잔여 연쇄 수정,
   // 그리고 판정 체크리스트의 공백 4건(등급고정 merge권한 분기·실행력도메인 게이트·스킬중복·Knowledge역참조).
   // 늘어난 내용은 전부 실행 지시(스크립트 사용범위 분리·판정 회차 기록 의무·hub 필수 필드·게이트 판정축)라
@@ -460,9 +463,10 @@ function checkBodyReferences(relPath, body, ctx) {
   //     상대경로면 cwd(사용자 프로젝트)에서 찾다가 실패한다 → 검사 대상.
   //   · 스크립트 소스(bin/·hooks/의 .mjs·.cjs) → **코드**가 자기 루트와 path.join으로 해소한다.
   //     거기 적힌 'knowledge/x.md'는 맨 상대경로인 것이 정상이라 오탐이 된다 → 제외.
-  // hooks/*.md를 넣는 근거: pm-orchestration-block.md는 루트 CLAUDE.md의 관리 구역(managed
-  // region)에 인라인되는 상시 주입물이라, 세션(cwd=사용자 프로젝트)이 읽는다는 점에서 agents
-  // 본문과 조건이 똑같다.
+  // hooks/*.md를 넣는 근거: pm-orchestration-block.md는 SessionStart 훅(hooks/sessionstart-context.mjs
+  // --pm-block)이 매 세션 그대로 읽어 additionalContext로 주입하는 상시 주입물이라, 세션(그 훅을
+  // 실행하는 프로세스가 아니라 최종적으로 그 본문을 읽는 모델)이 읽는다는 점에서 agents 본문과
+  // 조건이 똑같다.
   if (/(^|\/)(?:agents|skills)\//.test(relPath) || /(^|\/)hooks\/.*\.md$/.test(relPath)) {
     const FORM = /(?<!\$\{CLAUDE_PLUGIN_ROOT\}\/)(?<!malgn-agent\/)\bknowledge\/[A-Za-z0-9_-]+\/[^\s`)*|]*/g;
     for (const m of liveReferences(body, FORM)) {
@@ -1052,8 +1056,9 @@ function main() {
   // 참조 검사(checkBodyReferences)도 같이 건다 — 2026-08-24까지 이 두 디렉터리는 위 식별자
   // 검사만 받고 참조는 통째로 사각이었다. 그래서 hooks/pm-orchestration-block.md에 없는 Skill을
   // 심어도 ERROR 0으로 통과했다(같은 줄을 agents/pm.md에 심으면 REF_SKILL_MISSING이 났다).
-  // 하필 그 파일이 루트 CLAUDE.md 관리 구역에 인라인되는 상시 주입물이라, 참조가 썩으면 매 세션
-  // 전 직원에게 물린다 — 이 트리에서 사각이 가장 비싼 자리였다.
+  // 하필 그 파일이 SessionStart 훅(hooks/sessionstart-context.mjs --pm-block)이 매 세션 그대로
+  // 주입하는 상시 주입물이라, 참조가 썩으면 매 세션 전 직원에게 물린다 — 이 트리에서 사각이
+  // 가장 비싼 자리였다.
   //
   // 대상을 .md로 좁히지 않는다. 실측하니 bin/의 스크립트가 정본 Skill을 가리키는 포인터를
   // 6줄 갖고 있었고(헤더 주석 4건 + printUsage()가 실제로 인쇄하는 런타임 문자열 2건),
@@ -1086,31 +1091,70 @@ function main() {
     walk(dir);
   }
 
-  // ── PM 행동규율 블록 본문 안전 게이트 (권고, 저장소 CI 단계) ───────────────
-  // hooks/pm-orchestration-block.md 본문은 CLAUDE.md 관리 구역(managed region)에 그대로
-  // 인라인된다(docs/decision/pm-orchestration-block-inline-design.md §3 "본문 인라인 전 안전
-  // 게이트"). 그 게이트(renderManagedBlock())는 스캐폴딩·재동기화 실행 시점에야 던지므로,
-  // trainer가 본문에 무심코 `^@` 줄이나 마커 접두 문자열을 넣어도 이 정적 검사 없이는 배포 전에
-  // 드러나지 않는다. 검사 대상은 "본문"뿐이다 — 파일 자신의 버전 마커 줄(1~2행)은 그 문자열을
-  // 정당하게 담고 있으므로 제외해야 한다(readBlockFile()과 동일한 방식으로 마커 줄 다음부터를
-  // 본문으로 자른다).
+  // ── PM 행동규율 블록 본문 안전 게이트 (저장소 CI 단계) ───────────────
+  // hooks/pm-orchestration-block.md 본문은 SessionStart 훅(hooks/sessionstart-context.mjs
+  // --pm-block)이 매 세션 additionalContext로 그대로 주입한다. 그 훅 출력 문자열은 플랫폼이
+  // "값 하나"당 10,000자에서 캡하고, 넘으면 파일로 저장되고 미리보기+경로로 조용히 대체된다
+  // (docs/anthropic/hooks/hooks.md:892,:971). 그 훅 자신의 PM_BLOCK_SAFE_LIMIT(9,500자, 배너
+  // 여유분 포함)가 런타임 1차 방어선이지만, trainer가 본문을 키우다 그 임계값을 넘겨도 런타임
+  // systemMessage로만 드러나 배포 전에는 아무도 못 본다 — 이 정적 검사가 배포 전 조기 경보다.
+  // 본문 추출 규칙은 그 훅의 extractPmBlockBody()와 동일해야 한다: 파일 맨 앞의 한 줄짜리 HTML
+  // 주석(`<!-- ... -->`)을 몇 개가 있든(0개 포함) 건너뛰고 그 다음부터를 본문으로 본다 — 이
+  // 파일은 이제 버전 마커를 포함하지 않을 수도 있다(버전 관리가 폐지됐다).
+  //
+  // 이 블록은 CLAUDE.md 인라인 서술이 아니라 SessionStart 훅 배선(hooks.json → 이 훅 →
+  // additionalContext)에만 의존한다 — 배선이 사람 눈에 보이지 않으므로 파일 부재도, 훅 등록
+  // 누락도 조용히 통과시키지 않는다. 둘 다 ERROR다: 파일이 없으면 규율 자체가 없는 것이고,
+  // hooks.json에 --pm-block 등록이 없으면 파일이 멀쩡해도 아무도 규율을 못 받는다(파일 존재
+  // 검사만으로는 이 경로를 잡지 못한다 — 실측: 등록을 지워도 파일 검사는 그대로 통과했다).
   {
     const blockPath = path.join(pluginRoot, 'hooks', 'pm-orchestration-block.md');
-    if (fs.existsSync(blockPath)) {
+    const blockRel = path.relative(REPO_ROOT, blockPath);
+    if (!fs.existsSync(blockPath)) {
+      error('PM_BLOCK_MISSING', blockRel,
+        '이 플러그인의 필수 자산인 PM 행동규율 블록 파일이 존재하지 않는다 — SessionStart 훅(--pm-block)이 이번 세션에 아무 규율도 주입하지 못한다.');
+    } else {
       const raw = fs.readFileSync(blockPath, 'utf8');
-      const rel = path.relative(REPO_ROOT, blockPath);
-      const versionMatch = raw.match(/<!--\s*malgn-agent:pm-orchestration:version:(\d+)\s*-->/);
-      if (!versionMatch) {
-        error('PM_BLOCK_NO_VERSION_MARKER', rel, '버전 마커(`<!-- malgn-agent:pm-orchestration:version:N -->`)를 찾을 수 없다 — readBlockFile()이 null을 반환해 신선도 비교가 불가능해진다.');
-      } else {
-        const markerLineEnd = raw.indexOf('\n', versionMatch.index);
-        const body = (markerLineEnd === -1 ? '' : raw.slice(markerLineEnd + 1)).trim();
-        if (/^@/m.test(body)) {
-          error('PM_BLOCK_UNSAFE_BODY', rel, '본문(버전 마커 다음 줄부터)에 `@`로 시작하는 줄이 있다 — CLAUDE.md 관리 구역에 인라인되면 새 import 줄로 오인될 수 있다.');
+      const lines = raw.split('\n');
+      let i = 0;
+      while (i < lines.length && /^<!--.*-->\s*$/.test(lines[i])) i++;
+      const body = lines.slice(i).join('\n').trim();
+      const PM_BLOCK_SAFE_LIMIT = 9500; // hooks/sessionstart-context.mjs의 동명 상수와 반드시 같이 맞춘다.
+      if (!body) {
+        error('PM_BLOCK_EMPTY_BODY', blockRel, '본문이 비어 있다 — SessionStart 훅이 이번 세션에 아무 규율도 주입하지 못한다.');
+      } else if (body.length > PM_BLOCK_SAFE_LIMIT) {
+        error('PM_BLOCK_BODY_TOO_LARGE', blockRel,
+          `본문이 ${body.length}자로 안전 임계값(${PM_BLOCK_SAFE_LIMIT}자)을 넘는다 — 훅 출력 캡(10,000자)에 근접해 세션에서 잘리거나 파일 경로로 강등될 위험이 있다. 본문을 줄여야 한다.`);
+      }
+    }
+
+    // hooks.json에 `--pm-block` 실행 등록이 실제로 있는지도 검사한다(읽기만 한다 — 이 파일을
+    // 고치지 않는다). 등록이 빠지면 위 파일 검사를 통과해도 아무 세션에도 주입되지 않는다.
+    const hooksJsonPathForBlock = path.join(pluginRoot, 'hooks', 'hooks.json');
+    const hooksJsonRelForBlock = path.relative(REPO_ROOT, hooksJsonPathForBlock);
+    if (!fs.existsSync(hooksJsonPathForBlock)) {
+      error('PM_BLOCK_HOOK_NOT_REGISTERED', hooksJsonRelForBlock,
+        'hooks.json 자체가 없다 — PM 행동규율(--pm-block)을 실행할 SessionStart 등록이 존재하지 않는다.');
+    } else {
+      const hooksJsonRawForBlock = fs.readFileSync(hooksJsonPathForBlock, 'utf8');
+      let registered = false;
+      try {
+        const parsed = JSON.parse(hooksJsonRawForBlock);
+        const sessionStartHooks = parsed?.hooks?.SessionStart || [];
+        for (const group of sessionStartHooks) {
+          for (const h of group?.hooks || []) {
+            if (typeof h?.command === 'string' && h.command.includes('sessionstart-context.mjs') && h.command.includes('--pm-block')) {
+              registered = true;
+            }
+          }
         }
-        if (body.includes('malgn-agent:pm-orchestration:')) {
-          error('PM_BLOCK_UNSAFE_BODY', rel, '본문에 "malgn-agent:pm-orchestration:" 문자열이 있다 — 관리 구역 시작/종료 마커와 충돌해 구역 경계가 잘못 잡힐 수 있다.');
-        }
+      } catch {
+        // JSON 파싱 실패 — 문자열 검색으로 대체(구조가 깨져도 등록 문자열 자체는 잡을 수 있다).
+        registered = hooksJsonRawForBlock.includes('sessionstart-context.mjs') && hooksJsonRawForBlock.includes('--pm-block');
+      }
+      if (!registered) {
+        error('PM_BLOCK_HOOK_NOT_REGISTERED', hooksJsonRelForBlock,
+          'SessionStart 훅에 `sessionstart-context.mjs --pm-block` 등록이 없다 — pm-orchestration-block.md 파일이 있어도 어떤 세션에도 주입되지 않는다.');
       }
     }
   }
@@ -1190,11 +1234,10 @@ function main() {
   //
   // 정규식 기반 참조 검사(REF_BIN_MISSING 등)를 재사용하지 않는다 — 그 검사는 백틱이나
   // ${CLAUDE_PLUGIN_ROOT} 접두가 붙은 "인용형" 표기만 잡는데, 실측상 스크립트 간 참조는
-  // `import { x } from './usage-agent-lib.mjs'`, `from '../hooks/lib/find-pm-block-path.mjs'`,
-  // `path.join(SCRIPT_DIR, 'report-usage.mjs')` 처럼 백틱도 접두도 없는 맨 상대경로/문자열이
-  // 대부분이다. 그 형태까지 잡으려면 SKILL_ORPHAN과 같은 "파일명이 어딘가 문자열로
-  // 등장하는가"(느슨한 포함 검사)가 유일하게 실효 있는 방법이다 — 정밀 정규식은 이 셋을
-  // 전부 놓쳐 실제로 쓰이는 스크립트를 오탐으로 고아 처리한다.
+  // `import { x } from './usage-agent-lib.mjs'`, `path.join(SCRIPT_DIR, 'report-usage.mjs')`
+  // 처럼 백틱도 접두도 없는 맨 상대경로/문자열이 대부분이다. 그 형태까지 잡으려면 SKILL_ORPHAN과
+  // 같은 "파일명이 어딘가 문자열로 등장하는가"(느슨한 포함 검사)가 유일하게 실효 있는 방법이다 —
+  // 정밀 정규식은 이런 사례를 놓쳐 실제로 쓰이는 스크립트를 오탐으로 고아 처리한다.
   {
     const scriptFiles = [];
     for (const sub of ['bin', 'hooks']) {
