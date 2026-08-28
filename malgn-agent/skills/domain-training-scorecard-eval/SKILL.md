@@ -94,7 +94,7 @@ echo '{ ...JSON... }' | node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.
 }
 ```
 
-`previousScore`만은 이 단계에서 판단하거나 추정하지 않는다 — malgnai-hub `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 그 에이전트의 점수 이력을 조회해 **최신 기록의 `overallScore`**를 그대로 넣는다. 조회 결과에 점수 이력이 없으면(첫 채점 등) 이 필드를 생략한다 — 스크립트가 `N/A(전월 점수 없음)`으로 처리한다.
+`previousScore`만은 이 단계에서 판단하거나 추정하지 않는다 — malgnai-hub `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 그 에이전트의 점수 이력을 조회해 **이 에이전트(`agentName`)의 회사 전체 최신 기록인 `latestScore.overallScore`**를 그대로 넣는다(응답 최상위는 `{agentName, latestScore, scoreHistory, recentLearnings}`이라 `overallScore`는 `latestScore` 객체 안에 있다). 다른 평가자가 남긴 회차일 수 있으며, 그것이 정상이다 — 이 지표는 개인별이 아니라 `agentName` 단위 공용이다. 조회 결과에 점수 이력이 없으면(첫 채점 등) 이 필드를 생략한다 — 스크립트가 `N/A(전월 점수 없음)`으로 처리한다.
 
 스크립트가 결정론적으로 계산해 출력하는 것:
 - 기본수행 7항목 합산(배점 상한 검증 포함) → 기본수행 점수
@@ -151,9 +151,9 @@ Scorecard 결과는 **파일로 저장하지 않는다** — 이 스킬만을 �
    - `impact` 필드에 "다음 액션" bullet 목록(어떤 MD를 어떻게 고칠지, 재평가 일정)을 채운다.
    - `importance`는 습관적으로 3을 쓰지 않고 판단한다 — 하락폭이 크거나 대상 MD의 "역할 경계"/권한 서술에 영향을 주는 개선안이면 4~5, 일반적인 섹션 보강이면 2~3.
 2. **malgnai-hub `agent_score_record`**(evaluator가 기록, 채점을 한 회차에만): 대상 에이전트 1명당 1건을 남긴다. 1번의 산문 요약만으로는 다음 회차가 "지난회 점수"를 구조화된 형태로 조회할 수 없어 위 점수 요약표(지난회↔이번회·변화)를 채우지 못한다.
-   - 필수 4개 — `agentName`, `overallScore`(Phase 1의 3) 총점 계산에서 스크립트가 산출한 가중 총점, 0~100), `raterType`(evaluator의 채점은 항상 `'evaluator'` 고정), `idempotencyKey`(회차 규칙은 `agents/evaluator.md`의 판정 회차 기록을 상속한다).
+   - 필수 4개 — `agentName`, `overallScore`(Phase 1의 '3) 총점 계산'에서 스크립트가 산출한 가중 총점, 0~100), `raterType`(evaluator의 채점은 항상 `'evaluator'` 고정), `idempotencyKey`(회차 규칙은 `agents/evaluator.md`의 판정 회차 기록을 상속한다).
    - `dimensionScores`: 구성요소 4개(기본수행/Eval Set/실전 성공률/비용 효율) 또는 기본수행 7항목 점수. `note`: 약점 진단과 개선안을 한 필드에 함께 담는다 — 진단만 적고 개선안을 빼면 다음 회차가 무엇을 고쳤어야 하는지 복원하지 못한다.
-   - 점수의 스코프는 **`agentName`(카탈로그 최신 버전) 단위의 회사 공용 품질 지표**다 — 누가 호출했는지가 아니라 그 에이전트에 대한 기록이므로, 추이는 "내가 매긴 점수의 변화"가 아니라 "이 에이전트가 회사 전체에서 지금 어느 수준인가"로 읽는다. 다른 회차·다른 평가자가 남긴 점수와 같은 축에서 비교되는 만큼, 한 회차의 자의적 가감점이 공용 지표를 흔든다 — 배점표(Phase 1) 밖의 임의 조정을 넣지 않는다.
+   - 점수의 스코프는 **`agentName` 단위의 회사 공용 품질 지표**다 — 에이전트 버전이 올라가도 같은 이름이면 같은 축에 쌓이고, 누가 호출했는지가 아니라 그 에이전트에 대한 기록이므로, 추이는 "내가 매긴 점수의 변화"가 아니라 "이 에이전트가 회사 전체에서 지금 어느 수준인가"로 읽는다. 다른 회차·다른 평가자가 남긴 점수와 같은 축에서 비교되므로, 한두 회차 표본만으로 그 에이전트의 역량을 단정하지 않는다.
 3. **개선안 실행**: 실제 MD/knowledge 파일 반영은 이 스킬의 범위가 아니다 — evaluator→trainer 인계 절차를 그대로 따른다(등급별 git 반영·merge 조건은 `agents/evaluator.md`에 이미 정의돼 있으므로 여기서 중복 서술하지 않는다).
 
 **decision_record 기록 예시**(형식 참고용 — 파일이 아니라 그대로 도구 필드에 채워 넣는다):
