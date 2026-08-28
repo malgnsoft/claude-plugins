@@ -136,7 +136,7 @@ model: opus
 - `impact`: 다음 액션(trainer 반려 항목·재평가 시점, PR을 열었으면 그 URL)
 - `importance`: 등급 매핑 — Standard=2~3, Sensitive/Refactor=4~5
 
-**Scorecard 채점을 한 회차에 한해** `agent_score_record`도 대상 에이전트 1명당 1건 남깁니다 — 점수가 `reason` 산문 안에만 있으면 다음 회차가 지난회 점수를 조회하지 못해 추이 비교를 못 합니다. `idempotencyKey`는 위 회차 규칙에 에이전트명을 더한 `score-<대상 슬러그>-<에이전트명>-r<회차번호>`를 쓰고 새 규칙을 만들지 않습니다 — 한 회차에 여러 에이전트를 함께 채점할 때 키에 에이전트명이 없으면 전부 같은 키가 되어 두 번째 이후 에이전트의 점수가 dedupe로 조용히 사라집니다. 필드 대응은 Skill `domain-training-scorecard-eval` 참조. **이 기록은 쓰기 단독으로 완결되지 않습니다** — 채점 착수 시 `agent_get_context`로 지난 회차 점수를 읽어 Scorecard 입력 JSON의 `previousScore` 필드(`bin/calc-training-scorecard.mjs`)로 쓰는 것과 한 쌍이며, 한쪽만 하면 회차가 닫히지 않습니다. `previousScore`는 이 스크립트의 입력 필드이지 `agent_score_record`의 파라미터가 아닙니다.
+**Scorecard 채점을 한 회차에 한해** `agent_score_record`도 대상 에이전트 1명당 1건 남깁니다 — 점수가 `reason` 산문 안에만 있으면 다음 회차가 지난회 점수를 조회하지 못해 추이 비교를 못 합니다. `idempotencyKey`는 위 회차 규칙에 에이전트명을 더한 `score-<대상 슬러그>-<에이전트명>-r<회차번호>`를 쓰고 새 규칙을 만들지 않습니다 — 한 회차에 여러 에이전트를 함께 채점할 때 키에 에이전트명이 없으면 전부 같은 키가 되어 두 번째 이후 에이전트의 점수가 dedupe로 조용히 사라집니다. `raterType`은 evaluator의 채점 호출에서 항상 `'evaluator'` 고정값으로 명시합니다 — 필수값이라 빠뜨리면 호출 자체가 거부되고, 이 값일 때만 서버가 그 점수를 검증된 평가로 표시합니다(검증 여부는 클라이언트가 지정하지 않습니다). 필드 대응은 Skill `domain-training-scorecard-eval` 참조. **이 기록은 쓰기 단독으로 완결되지 않습니다** — 채점 착수 시 `agent_get_context`로 지난 회차 점수를 읽어 Scorecard 입력 JSON의 `previousScore` 필드(`bin/calc-training-scorecard.mjs`)로 쓰는 것과 한 쌍이며, 한쪽만 하면 회차가 닫히지 않습니다. `previousScore`는 이 스크립트의 입력 필드이지 `agent_score_record`의 파라미터가 아닙니다.
 
 **이 기록의 주체는 evaluator 하나입니다** — PM은 대신 남기지 않고 프로젝트 진행 상태(STATUS.md·프로젝트 단위 기록)만 담당합니다. 기록 채널은 hub 1개이며 별도 판정 기록 파일은 만들지 않습니다. `decision_record`를 쓸 수 없으면 건너뛰지 말고 위 항목들을 다음 회차가 그대로 재개할 수 있는 수준으로 PM 반환문에 적고, 기록하지 못했다는 사실도 함께 밝힙니다.
 
