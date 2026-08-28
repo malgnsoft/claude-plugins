@@ -28,19 +28,6 @@ import { mkdirSync, writeFileSync, existsSync, readFileSync, appendFileSync } fr
 import { join, basename } from 'node:path'
 import { homedir } from 'node:os'
 import { execSync } from 'node:child_process'
-import { readBlockFile, renderManagedBlock } from '../hooks/lib/find-pm-block-path.mjs'
-
-// PM 행동규율 블록 로드 — 스캐폴딩 시점 1회. readBlockFile()은 이 모듈(hooks/lib/) 기준 상대경로로
-// pm-orchestration-block.md를 찾는다 — new-project.mjs가 마켓플레이스 clone 경로에서 직접
-// 실행되므로(${CLAUDE_PLUGIN_ROOT} 방식이 아님) 별도 글롭 스캔이 필요 없다. 인라인 전환 이후
-// CLAUDE.md에 심는 것은 경로 문자열이 아니라 본문 그 자체이므로, 홈 디렉토리 이식성 처리
-// (toHomeRelative 등)는 이 스캐폴딩 경로에서는 더 이상 필요 없다(§6).
-const pmBlock = (() => {
-  try { return readBlockFile() } catch { return null }
-})()
-if (!pmBlock) {
-  console.warn('⚠️  pm-orchestration-block.md를 찾을 수 없어 PM 행동규율 블록을 스캐폴딩에 포함하지 못했습니다(배포 누락 가능성) — 스캐폴딩은 계속 진행합니다.')
-}
 
 function printUsage(emit = console.error) {
   const SELF = `node "${process.argv[1]}"`
@@ -97,19 +84,6 @@ const today = new Date().toISOString().slice(0, 10)
 mkdirSync(join(root, 'docs'), { recursive: true })
 mkdirSync(join(root, '.claude'), { recursive: true })
 
-// pmBlock이 있을 때만 CLAUDE.md에 관리 구역(managed region)을 삽입한다. 없으면(배포 누락 등)
-// 건너뛴다 — 스캐폴딩 자체를 실패시키지 않는다(위 콘솔 경고로 이미 알렸다). renderManagedBlock()의
-// 안전 게이트(§3)가 던지는 경우도(배포된 블록 본문 자체가 손상된 극단적 사고) 같은 fail-open
-// 원칙으로 건너뛴다 — 스캐폴딩을 막을 이유가 아니다.
-let pmBlockSection = ''
-if (pmBlock) {
-  try {
-    pmBlockSection = `\n${renderManagedBlock(pmBlock.version, pmBlock.body)}\n`
-  } catch (e) {
-    console.warn(`⚠️  PM 행동규율 블록 삽입을 건너뜁니다(${e.message}) — 배포된 블록 본문을 점검하세요.`)
-  }
-}
-
 const files = {
   'STATUS.md': `---
 provider: malgnai-hub
@@ -140,7 +114,7 @@ _최종 갱신: ${today} (초기 생성)_
   'CLAUDE.md': `# CLAUDE.md
 
 This file provides guidance to Claude Code when working with code in this repository.
-${pmBlockSection}
+
 ## 새 세션 부트스트랩 (읽기 순서 = 토큰 예산)
 - **L0 (자동 주입):** \`STATUS.md\`(라이브 상태, **3,000바이트 이내 유지** — 토큰은 세션에서 셀 수 없어 지킬 수단이 없지만 바이트는 셀 수 있다. 3,000바이트면 전부 한글이어도 1,000토큰 안에 들어온다. 고친 직후 크기를 검사한다 — 검사 커맨드는 malgn-agent의 \`project-standards\` 스킬 §3이 정본이고, 세션에 "STATUS.md 크기 확인해줘"라고 요청하면 그 스킬이 실행한다) + 이 \`CLAUDE.md\`(구조·규칙). → 대부분의 경우 이것만으로 충분.
 - **L1 (필요할 때만 호출):** malgnai-hub \`project_get_context\`(project_id) 등 — L0로 충분하면 호출하지 않는다. 불필요한 호출은 토큰 낭비.
@@ -230,4 +204,4 @@ console.log(useHere ? '  1. pnpm install' : `  1. cd ${root} && pnpm install`)
 console.log('  2. malgnai-hub project_bootstrap 호출 → 응답의 provider/project_id/repositoryKey를 STATUS.md frontmatter의 provider/project_id/repository_key에 채워 넣는다(repository_id/web_url은 응답에 포함되어도 저장하지 않는다).')
 console.log('  3. STATUS.md는 3,000바이트 이내로 유지하고(토큰은 세션에서 셀 수 없어 바이트로 잰다 — 검사 커맨드는 project-standards 스킬 §3이 정본이다), 재작성은 6가지 트리거(중요 작업 완료/WBS 단계변경/중요 설계결정/blocker 발생·해결/세션종료/context compact 직전)로 제한한다 — 평범한 진행 중에는 건드리지 않는다.')
 console.log('  4. STATUS.md는 .gitignore에 등록되어 git에 커밋되지 않는다(개인 로컬 캐시) — 팀과 공유할 내용은 malgnai-hub(work_record/decision_record/issue_record)에 남긴다.')
-console.log('  5. PM 행동규율이 CLAUDE.md 본문에 직접 들어 있다 — 승인 절차 없이 다음 세션부터 적용되고, 플러그인이 개정돼도 자동 갱신되지는 않는다. 나중에 재확인이 필요하면 project-standards 스킬에 "PM 행동규율 다시 확인해줘"로 요청한다(매 세션 자동 점검 아님).')
+console.log('  5. PM 행동규율은 CLAUDE.md 본문에 들어가지 않는다 — malgn-agent 플러그인의 SessionStart 훅이 매 세션 시작 시 그 정본(hooks/pm-orchestration-block.md)을 그대로 주입한다. 내용이 개정되면 `/plugin update`로 플러그인을 갱신한 다음 세션부터 최신 내용이 반영되고, 별도로 재확인을 요청할 필요가 없다.')
