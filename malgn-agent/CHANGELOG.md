@@ -9,6 +9,21 @@
 
 ---
 
+## [1.8.15] — 2026-08-28
+
+결함 수정 릴리스입니다.
+
+### 수정
+
+- malgnai-hub 이슈를 여는 절차(`issue_record`)만 있고 닫는 절차(`issue_resolve`)를 부르는 규칙이 없어,
+  다른 목적의 작업이 부수적으로 해소한 이슈가 열린 채로 방치되는 문제를 고쳤습니다.
+  `common-learning-loop-knowledge-management` 스킬에 "이슈 종결(Close)" 절차를 신설하고,
+  `pm`·`evaluator`·`trainer`·`project-orchestration`·`learning-loop-patterns`에서 그 절차를
+  따르도록 연결했습니다. 이슈를 연 사람이 아니라 해소를 확인한 사람이 그 자리에서 닫고, 검증
+  라운드를 마칠 때는 이번에 손댄 파일과 겹치는 기존 열린 이슈도 함께 재점검합니다.
+
+---
+
 ## [1.8.14] — 2026-08-26
 
 결함 수정 릴리스입니다.
