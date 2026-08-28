@@ -9,6 +9,21 @@
 
 ---
 
+## [미출시]
+
+아직 배포되지 않은 항목입니다. 다음 릴리스 항목에 합류합니다.
+
+### 수정
+
+- `agents/evaluator.md`·`skills/domain-training-scorecard-eval/SKILL.md`·
+  `knowledge/leadership/team-composition-patterns.md`를 malgnai-hub MCP 도구
+  `agent_score_record`의 새 입력 계약(`raterType` 필수 추가, `evaluatorNote`+
+  `improvementNote`→`note` 병합, `projectId` 제거, 스코프가 개인에서 `agentName` 단위
+  회사 공용 지표로 재정의)에 맞춰 갱신했습니다. malgnai-hub 쪽 신계약의 프로덕션 배포를
+  독립 확인한 뒤 반영했습니다.
+
+---
+
 ## [1.8.15] — 2026-08-28
 
 결함 수정 릴리스입니다.
