@@ -2,8 +2,8 @@
 
 - 대상: `malgn-agent/agents/evaluator.md`
 - 권고 예산: 15 KB (`AGENT_BUDGET_KB`)
-- 이 문서가 변호하는 실측 크기: **25,368 B (24.8 KB)**
-- 작성: PM, `agent-md-defects-20260825` 트랙(승인된 결함 5건 + reviewer 4라운드 재검증) + `audit-r2-score-record-20260825` 트랙(agent_score_record 배선) + `backlog-fix-round1` 트랙(접두어 게이트 판정축·점수 왕복 완료정의) + 이슈 종결(issue_resolve) 절차 보강 트랙(+677 B)
+- 이 문서가 변호하는 실측 크기: **26,434 B (25.8 KB)**
+- 작성: PM, `agent-md-defects-20260825` 트랙(승인된 결함 5건 + reviewer 4라운드 재검증) + `audit-r2-score-record-20260825` 트랙(agent_score_record 배선) + `backlog-fix-round1` 트랙(접두어 게이트 판정축·점수 왕복 완료정의) + 이슈 종결(issue_resolve) 절차 보강 트랙(+677 B) + `agent-score-record-contract-20260828` 트랙(hub 신계약 대응, reviewer·evaluator 각 2라운드 재검증 반영, +1,066 B)
 
 ## 1. 무엇 때문에 넘었나
 
@@ -20,6 +20,8 @@
 - **접두어 게이트 판정축 재정의(+2,236 B)**: 게이트가 "`agents/*.md`에서 스킬명이 몇 번 grep되는가"로 판정하는데, 스킬명이 아니라 공통 knowledge나 규율 대상 문자열을 타고 도달하는 상시 비용이 이 셈에서 통째로 빠졌다. 게이트를 문면대로 집행하면 **오판정 6건**이 나오고(evaluator가 38종 전수 대입으로 실측), 그 오판정의 처방은 "스킬 6종 개명"인데 개명은 모든 참조 경로를 한꺼번에 끊으면서 실제 상시 비용은 1B도 바꾸지 못한다. 판정축을 비용 구조로 바꾸고 도달 경로 3종(직접 참조 / knowledge 경유 / 규율 대상 고정 문자열)을 합산하도록 명시하니 6건이 전부 해소되고 신규 오FAIL은 0이었다. 경로마다 **실행할 grep을 적어야** 판정자가 매번 검색어를 발명하지 않는다 — 이 분량이 판정의 재현성을 만든다. 이 중 560 B는 검증 중에 드러난 **역방향 오판정**을 막는 데 쓰였다: 도달 검색어를 넓히자 `WebSearch` 같은 빌트인 도구명이 전 에이전트 frontmatter `tools:`에 걸려 도달 21로 세어져, 정상적인 `domain-` 스킬이 "과소표기"로 반려될 뻔했다. 검색어 자격(정본 지목 파일·번들 커맨드·스킬 고유 도구명)과 세는 자리(frontmatter가 아닌 본문), 그리고 "해당 문자열이 없는 스킬은 ③을 0으로 두고 ①②만으로 판정한다"는 공백 처리까지 적어야 판정이 양방향으로 닫힌다.
 - **점수 왕복 완료정의(+1,102 B)**: `agent_score_record` 쓰기만 게이트되고 읽기(직전 회차 점수 조달)는 체크 항목이 없어, 쓰기를 해도 다음 회차가 그 값을 꺼내 쓰지 않으면 추이 비교가 영구히 성립하지 않았다. "읽기·쓰기 둘 다 닫혀야 회차가 완료"를 자기검증 체크박스와 산출물 계약 두 자리에 명시했고, `previousScore`가 hub 파라미터가 아니라 Scorecard 입력 JSON 필드라는 귀속도 함께 적었다 — 귀속을 적지 않으면 스키마에 없는 파라미터를 찾다 호출이 한 번 헛돈다.
 - **겹침 이슈 종결 자기검증 항목(+677 B)**: `issue_record`로 여는 절차만 있고 `issue_resolve`로 닫는 절차가 evaluator 자기검증에 없어, 판정 라운드가 다른 목적으로 손댄 파일이 부수적으로 해소한 open 이슈가 방치됐다(claude-plugins 자신에서 실물로 재현). 라운드 종료 시 겹치는 open 이슈를 재점검해 해소분을 닫는 체크박스 1줄을 추가했다 — 절차 본문은 정본(Skill `common-learning-loop-knowledge-management`)을 가리키는 포인터라 대부분은 참조 문구다.
+
+- **`agent_score_record` 신계약 대응(+1,066 B, 25,368→26,434 B)**: hub 쪽 `agent_score_record` 입력 계약이 바뀌면서(`raterType` 신규 필수, `evaluatorNote`+`improvementNote`→`note` 병합, `projectId` 제거, 스코프가 개인→`agentName` 단위 회사 공용 지표로 재정의) §139의 채점 지시가 구계약을 그대로 안내하는 상태가 됐다 — 방치하면 hub 배포 즉시 evaluator의 점수 기록 호출이 스키마 검증에서 전부 거부된다. `raterType` 고정값 지시, `projectId` 비해당 명시(바로 위 `decision_record`용 `projectId`와 인접해 혼동 소지가 있어 병기), 읽기 쪽(§124 "지난 회차 점수") 스코프를 새 계약과 정합하도록 재서술, §52 malgnai-hub 정합 체크리스트의 총칭("기록·조회 도구는 projectId")을 실제 스키마 기준 닫힌 열거로 교체(이 총칭이 이미 `agent_get_context`에서도 반례였다)했다. reviewer 2라운드 재검증에서 Major 3건(읽기/쓰기 스코프 불일치, projectId 혼동, 총칭 반례)을 잡아 전부 해소했고, evaluator는 1차 FAIL(연계 knowledge 파일의 반대 방향 서술) 후 2차 PASS로 게이트를 닫았다. **릴리스 조건**: hub 신계약이 실제 배포되기 전에는 병합하지 않는다(`CHANGELOG.md` [미출시] 참조) — 그 전에 병합하면 evaluator가 `raterType`을 실어 호출하는 순간 구계약 서버가 `additionalProperties:false`로 거부한다.
 
 ## 2. 잘라낼 것을 찾았는가 — 찾았고, 일부 정리했다
 
