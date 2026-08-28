@@ -1238,6 +1238,11 @@ function main() {
   // knowledge/README.md까지 포함한 .md 전수이지만, 문서가 세는 "참고자료 N종"은 그
   // 진입점을 뺀 수다. 세는 규칙을 코드에 못박아 두는 것이 이 검사의 핵심이다 —
   // 규칙이 어디에도 없으면 다음 사람이 55로 "고치는" 역방향 드리프트가 난다.
+  //
+  // 상호참조: 저장소 루트 `CLAUDE.md`의 같은 개수 표기(`agents/`·`skills/`·`knowledge/`)는 이
+  // 검사가 아니라 `scripts/check-docs.mjs`가 대조한다(여기가 보는 문서는 설치자가 읽는
+  // README·plugin.json·marketplace.json뿐이다). 대상 문서만 다를 뿐 **세는 규칙은 같아야 한다** —
+  // 세는 규칙을 바꾸면 그 파일과 이 블록을 함께 고친다.
   const COUNT_CLAIMS = [
     { re: /에이전트\s*(\d+)\s*종/g, actual: agentFiles.length },
     { re: /스킬\s*(\d+)\s*종/g, actual: skillDirNames.length },

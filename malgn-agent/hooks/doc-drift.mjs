@@ -12,7 +12,7 @@
  *       { "label": "DB 테이블", "expected": 20, "file": "server/dao/init.js", "regex": "CREATE TABLE IF NOT EXISTS \\w+" },
  *       { "label": "페이지",   "expected": 15, "jsonLength": "app/pages/pages.json" },
  *       { "label": "러너",     "expected": 7,  "homeGlob": "Library/LaunchAgents/com.malgnai.*.plist" },
- *       { "label": "skills",  "glob": "malgn-agent/skills/**\/SKILL.md", "docFile": "CLAUDE.md", "docRegex": "`skills/`\\s+(\\d+)종" }
+ *       { "label": "라우트",   "glob": "server/api/**\/*.ts", "docFile": "CLAUDE.md", "docRegex": "라우트\\s+(\\d+)개" }
  *   ] }
  *
  * expected 의 두 조달 방식(택1, 체크 단위로 결정):

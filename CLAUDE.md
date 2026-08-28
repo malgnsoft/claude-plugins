@@ -36,7 +36,7 @@ Sensitive·Exploration·Refactor이거나 Standard 이상인데 위임 후보가
 - **여기에 두지 않는 것**: 규칙(→ 이 `CLAUDE.md`) · 지나간 라운드 서술(→ `docs/archive/`) · 결정·이슈 원문(→ malgnai-hub). 항목은 **제목 한 줄 + 포인터**로 적고 상세는 링크 뒤에 둔다.
 - 상한을 넘기면 새 내용을 줄이는 게 아니라 **오래된 항목을 아카이브로 내보내** 자리를 만든다.
 
-**필수 규율:** ①진행 상태는 `STATUS.md` 단일 소스(끝내기 전 갱신). ②주요 결정/이슈/교훈은 malgnai-hub에 기록(`decision_record`/`issue_record`/`work_record`). ③구조를 바꾸면 `.claude/doc-drift.json`과 아래 서술을 함께 갱신.
+**필수 규율:** ①진행 상태는 `STATUS.md` 단일 소스(끝내기 전 갱신). ②주요 결정/이슈/교훈은 malgnai-hub에 기록(`decision_record`/`issue_record`/`work_record`). ③구조를 바꾸면 아래 Architecture 서술의 수치를 함께 갱신(`pnpm run check-docs`가 실물과 대조한다).
 
 **이 프로젝트(claude-plugins) 자신의 기록 provider는 malgnai-hub(원격)다.** projectId는 여기 적지 않는다 — `STATUS.md` 상단 `project_id`가 단일 소스다(고정값을 여기 박아두면 실제 프로젝트와 어긋나는 드리프트가 난다).
 
@@ -134,7 +134,7 @@ GitHub: https://github.com/malgnsoft/claude-plugins (이 저장소 자체가 마
 ## Commands
 ```bash
 pnpm run check-assets  # agents/skills frontmatter + 참조 경로 정적 검증 (ERROR 0 유지가 기준선)
-pnpm run check-docs    # PM 오케스트레이션 관리구역 정합성 상시 점검 + 구조 드리프트 대조(`.claude/doc-drift.json`의 agents·skills·knowledge 개수 대조)
+pnpm run check-docs    # malgn-agent 자산 개수(agents·skills·knowledge) ↔ 이 문서 서술 대조 + PM 오케스트레이션 관리구역 정합성 점검
 ```
 
 ## Architecture
@@ -145,7 +145,7 @@ pnpm run check-docs    # PM 오케스트레이션 관리구역 정합성 상시 
   - `skills/` 38종 — 명명은 참조 에이전트 수 기준(`common-*` 전역 상시비용 / `domain-*` 도메인 / 무접두어 단일 참조)
   - `knowledge/` 44개 — 도메인별 디렉토리, 진입점 `knowledge/README.md`
   - `bin/` — 무의존성 Node 내장모듈만 쓰는 번들 스크립트(Windows/macOS 동일 실행). 토큰 사용량 자가진단(`analyze-usage`/`report-usage`/`usage-agent-lib`/`install-usage-agent`/`pair-usage-device`) · `capture.mjs`(Playwright 캡처) · `new-project.mjs`(스캐폴더) · `check-*.mjs`(규약·보안 점검)
-  - `hooks/` — `hooks.json`(SessionStart→`sessionstart-context.mjs`, Stop→`stop-mcp-reminder.cjs`) + `doc-drift.mjs` + `pm-orchestration-block.md`(위 인라인 관리구역 `malgn-agent:pm-orchestration:*`의 정본 — `@import`가 아니라 `check-docs`로 재동기화). 경로는 `${CLAUDE_PLUGIN_ROOT}` 기준으로 포터블
+  - `hooks/` — `hooks.json`(SessionStart→`sessionstart-context.mjs`, Stop→`stop-mcp-reminder.cjs`) + `doc-drift.mjs`(설치 프로젝트의 `.claude/doc-drift.json` 매니페스트를 읽는 범용 문서-코드 드리프트 체커 + PM 관리구역 신선도 점검 — 설치 프로젝트에서는 그 매니페스트가 여전히 정상 경로이고, 이 저장소만 자기 자산 개수 대조를 `scripts/`에서 직접 한다) + `pm-orchestration-block.md`(위 인라인 관리구역 `malgn-agent:pm-orchestration:*`의 정본 — `@import`가 아니라 `check-docs`로 재동기화). 경로는 `${CLAUDE_PLUGIN_ROOT}` 기준으로 포터블
   - `templates/e2e-template/` — Playwright storageState 인증 표준 스캐폴드
 - `docs/` — `README.md`가 지도. `methodology/`(rubric v1.0 — 설계 이력 사료, 현행 판정 기준 아님) · `reviewer/`(페르소나·리뷰 보고서) · `architecture/` · `decision/` · `roadmap/`
-- `scripts/` — 저장소 전용 검사(`validate-agent-assets.mjs`, 배포되지 않음)
+- `scripts/` — 저장소 전용 검사(`validate-agent-assets.mjs`, 배포되지 않음). `check-docs.mjs`가 `pnpm run check-docs`의 진입점 — 위 Architecture의 자산 개수 표기를 실물과 대조하고, 이어서 배포 드리프트 CLI를 실행해 PM 관리구역을 점검한다(둘 중 하나라도 실패하면 exit 1)

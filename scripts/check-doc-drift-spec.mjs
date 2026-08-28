@@ -19,9 +19,16 @@
  *     - `(§ 이름)` 형태의 내부 앵커가 실재하는 섹션 마커(`// ===== § 이름 =====`)를 가리킴
  *       (`(§ 아래 "..." 단락)`·`(§ 상단 docstring)` 같은 산문형 위치 지시와 `§6`(외부 문서 절
  *        번호)은 섹션 앵커가 아니므로 대상이 아니다)
- *   [런타임 픽스처] 헤더가 단정한 동작이 실제 실행에서 재현되는가 — 픽스처 2종
+ *   [런타임 픽스처] 헤더가 단정한 동작이 실제 실행에서 재현되는가 — 픽스처 4종
  *     - 전량 측정불가: 헤더가 인용한 경고 문면 출력 + 헤더가 단정한 exit 코드
  *     - 부분 측정: 하나라도 측정되면 그 규칙 대상이 아니다 → 경고 없음 + exit 0
+ *     - docFile+docRegex 정상 캡처: 문서 원문에서 읽은 값으로 대조가 성립 → 일치 시 exit 0
+ *     - docFile+docRegex 미매치: skip이 아니라 **drift로 승격** → exit 1
+ *
+ * 뒤 2종이 왜 여기 있나: 이 저장소는 자기 자산 개수 대조를 `scripts/check-docs.mjs`가 직접 하므로
+ * 루트에 `.claude/doc-drift.json`이 없다. 그래서 배포 기능인 docFile+docRegex 경로(문서 원문 캡처와
+ * 그 실패의 drift 승격)를 이 저장소에서 실행하는 자리가 이 픽스처들 말고는 없다 — 빠지면 그 기능은
+ * 아무도 돌려보지 않는 코드가 된다.
  *
  * 사용법: node scripts/check-doc-drift-spec.mjs
  * 종료 코드: 전부 통과 0, 하나라도 실패 1.
@@ -71,6 +78,25 @@ if (quoted.length !== 1 || !exitMatch) {
 }
 const specWarning = quoted[0];
 const specExitCode = Number(exitMatch[1]);
+
+// docFile+docRegex 단락 — "문서 쪽을 못 읽으면 skip 이 아니라 drift 로 승격"이 적힌 자리.
+// 이 단락이 사라지거나 문구가 뒤집히면(승격이 아니라 skip 이라고 쓰이면) 아래 픽스처③④의 기대값이
+// 근거를 잃으므로, 기대값을 스크립트에 박는 대신 여기서 헤더가 여전히 그렇게 단정하는지 먼저 읽는다.
+const docParaStart = header.indexOf('문서 쪽이 측정 불가');
+if (docParaStart < 0) {
+  console.error('FAIL [header-parse] 헤더에서 "문서 쪽이 측정 불가..." 단락을 찾지 못했다 — docFile+docRegex 실패의 drift 승격 규칙이 사라졌거나 문구가 바뀌었다.');
+  process.exit(1);
+}
+const docParaEndMatch = /\n[ \t]*\*[ \t]*\n/.exec(header.slice(docParaStart));
+const docPara = docParaEndMatch
+  ? header.slice(docParaStart, docParaStart + docParaEndMatch.index)
+  : header.slice(docParaStart);
+// 강조 표기(`**`)와 줄바꿈·주석 접두(` * `)를 걷어낸 평문에서 판정한다.
+const docParaPlain = docPara.replace(/\*/g, ' ').replace(/\s+/g, ' ');
+if (!/skip 이 아니라 drift/.test(docParaPlain) || !/승격/.test(docParaPlain)) {
+  console.error(`FAIL [header-parse] 헤더의 docFile+docRegex 단락이 "skip 이 아니라 drift 로 승격"을 더 이상 단정하지 않는다 — 아래 픽스처의 기대값 근거가 사라졌다. 단락:\n${docPara}`);
+  process.exit(1);
+}
 
 // ── 검사 1: 헤더 정합 (소비자 열거 + 앵커 실재) ──────────────────────
 // 판정식을 실제로 구현한 파일 = "checks 비어있지 않음 + results 0건 + skipped 1건 이상"을 모두
@@ -154,6 +180,41 @@ if (f2.code === 0 && !f2.out.includes(specWarning) && f2.out.includes('✅ B: �
   pass('픽스처② 부분 측정', 'exit 0 + 전량 측정불가 경고 없음 — "하나라도 정상 측정됐으면 이 규칙 대상이 아니다"대로');
 } else {
   fail('픽스처② 부분 측정', `헤더는 하나라도 측정되면 이 규칙 대상이 아니라고 단정하는데, 실제는 exit ${f2.code} / 전량측정불가 경고 ${f2.out.includes(specWarning) ? '출력됨' : '없음'}. 출력:\n${f2.out.trim()}`);
+}
+
+// docFile+docRegex 픽스처 공용 재료: 실측 2건(server/api/*.ts)과 그 수를 말하는 문서 1장.
+const DOC_CAPTURE_FILES = {
+  'server/api/a.ts': 'export default 1\n',
+  'server/api/b.ts': 'export default 2\n',
+  '.claude/doc-drift.json': JSON.stringify({
+    checks: [
+      { label: 'R', glob: 'server/api/*.ts', docFile: 'CLAUDE.md', docRegex: '라우트\\s+(\\d+)개' },
+    ],
+  }),
+};
+
+const f3 = runFixture('문서 캡처 정상', {
+  ...DOC_CAPTURE_FILES,
+  // 문서가 스스로 "2개"라고 말한다 → expected 는 매니페스트가 아니라 이 문장에서 나온다.
+  'CLAUDE.md': '# 픽스처\n\n이 프로젝트는 라우트 2개를 제공한다.\n',
+});
+if (f3.code === 0 && f3.out.includes('✅ R: 문서=2 실측=2') && !f3.out.includes('문서 캡처 실패')) {
+  pass('픽스처③ 문서 캡처 정상', 'exit 0 + `문서=2 실측=2` — expected 를 매니페스트가 아니라 문서 원문에서 캡처해 대조했다');
+} else {
+  fail('픽스처③ 문서 캡처 정상', `헤더는 docFile+docRegex 가 문서 원문에서 expected 를 캡처한다고 단정하는데, 실제는 exit ${f3.code}. 출력:\n${f3.out.trim()}`);
+}
+
+const f4 = runFixture('문서 캡처 실패', {
+  ...DOC_CAPTURE_FILES,
+  // 같은 문서인데 숫자 서술이 사라졌다(문구가 바뀐 상황) → docRegex 가 매치하지 않는다.
+  'CLAUDE.md': '# 픽스처\n\n이 프로젝트는 라우트를 제공한다.\n',
+});
+// 핵심은 exit 1 자체가 아니라 "skip 으로 조용히 빠지지 않는다"는 것 — skip 이면 다른 체크가 없는 이
+// 픽스처에서 CLI 가 그대로 통과(✅)를 찍는다. 그래서 skip 표기 부재까지 함께 단정한다.
+if (f4.code === 1 && f4.out.includes('문서 캡처 실패') && !f4.out.includes('(skip, 측정불가') && !f4.out.includes('✅ 문서가 코드와 일치')) {
+  pass('픽스처④ 문서 캡처 실패 → drift 승격', 'exit 1 + `문서 캡처 실패` drift 항목 + skip 표기·통과 문구 없음 — 헤더의 "skip 이 아니라 drift 로 승격"대로');
+} else {
+  fail('픽스처④ 문서 캡처 실패 → drift 승격', `헤더는 skip 이 아니라 drift 로 승격된다고 단정하는데, 실제는 exit ${f4.code} / drift 항목 ${f4.out.includes('문서 캡처 실패') ? '있음' : '없음'} / skip 표기 ${f4.out.includes('(skip, 측정불가') ? '있음' : '없음'}. 출력:\n${f4.out.trim()}`);
 }
 
 // ── 리포트 ──────────────────────────────────────────────────────────

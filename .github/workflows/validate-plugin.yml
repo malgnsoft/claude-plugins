@@ -74,24 +74,15 @@ jobs:
       - name: 에이전트/스킬 자산 정적 검증
         run: pnpm run check-assets
 
-      # `pnpm run check-docs`는 여기에 단계로 넣지 않는다. 넣지 않는 이유가 예전과
-      # 달라졌으므로 기록을 갱신해 둔다.
+      # `pnpm run check-docs`는 여기에 단계로 넣지 않는다 — 편입 여부는 별도 판단이며,
+      # 이 주석은 지금 그 명령이 무엇을 하는지만 기록해 둔다.
       #
-      # 예전 이유(해소됨): package.json이 개인 전역 경로($HOME/.claude/hooks/)를
-      # 실행하고 있었다. 지금은 저장소 안의 malgn-agent/hooks/doc-drift.mjs를 쓴다.
+      # 이 명령의 진입점은 scripts/check-docs.mjs이고 두 가지를 이어서 돌린다.
+      #  1. malgn-agent 자산 개수(agents·skills·knowledge) ↔ 루트 CLAUDE.md 서술 대조.
+      #     이 스크립트가 저장소 안 파일만 세고 읽어서 직접 수행한다.
+      #  2. PM 행동규율 관리 구역 점검. 배포 CLI(malgn-agent/hooks/doc-drift.mjs)에 위임하며,
+      #     대조 기준이 되는 블록 원문은 그 CLI가 자기 옆(hooks/pm-orchestration-block.md)에서
+      #     읽는다.
       #
-      # 지금 이유(둘 다 실측 확인): 이 러너에서 돌리면 검사하는 것은 없고 빌드만 깨진다.
-      #  1. 빈 깡통 — 이 스크립트의 드리프트 대조는 프로젝트 루트 `.claude/doc-drift.json`
-      #     매니페스트를 읽는데, 그 파일은 이 저장소에 커밋돼 있지 않다(`git ls-files
-      #     .claude/`가 project.json 하나만 낸다). 깨끗한 체크아웃에서 computeDrift()는
-      #     null을 반환하고 "드리프트 체크 대상 아님"만 인쇄한다 — 대조 항목 0건.
-      #  2. 거짓 빨간불 — 나머지 검사 checkPmBlockImport()는 루트 CLAUDE.md의 @import
-      #     경로를 "실제 malgn-agent 설치 경로"와 대조하고, 그 경로를 $HOME 아래
-      #     .claude/plugins/marketplaces/에서 찾는다. CI 러너에는 마켓플레이스 설치가
-      #     없으므로(이 워크플로는 CLI만 npm 설치한다) 항상 plugin-missing → exit 1.
-      #     빈 HOME으로 시뮬레이션해 exit 1을 직접 확인했다.
-      #
-      # 넣으려면 먼저 둘 다 풀려야 한다: (a) `.claude/doc-drift.json`을 실제 대조 항목과
-      # 함께 커밋하고, (b) 플러그인 설치본이 없는 환경에서 @import 검사가 실패가 아니라
-      # 스킵이 되도록 고친다. 그 전까지 이 검사는 플러그인이 설치된 개발자 PC에서
-      # 로컬로 돌리는 용도다.
+      # 둘 다 저장소 안 파일만 읽는다 — 마켓플레이스 설치본이나 $HOME 아래 경로에 의존하지
+      # 않는다. 넣기로 한다면 깨끗한 러너에서 먼저 실측하고 판단한다.

@@ -1,7 +1,0 @@
-{
-  "checks": [
-    { "label": "agents", "glob": "malgn-agent/agents/*.md", "docFile": "CLAUDE.md", "docRegex": "`agents/`\\s+(\\d+)종" },
-    { "label": "skills", "glob": "malgn-agent/skills/**/SKILL.md", "docFile": "CLAUDE.md", "docRegex": "`skills/`\\s+(\\d+)종" },
-    { "label": "knowledge", "glob": "malgn-agent/knowledge/*/**/*.md", "docFile": "CLAUDE.md", "docRegex": "`knowledge/`\\s+(\\d+)개" }
-  ]
-}
