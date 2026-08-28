@@ -1191,7 +1191,7 @@ function main() {
   // 정규식 기반 참조 검사(REF_BIN_MISSING 등)를 재사용하지 않는다 — 그 검사는 백틱이나
   // ${CLAUDE_PLUGIN_ROOT} 접두가 붙은 "인용형" 표기만 잡는데, 실측상 스크립트 간 참조는
   // `import { x } from './usage-agent-lib.mjs'`, `from '../hooks/lib/find-pm-block-path.mjs'`,
-  // `join(dirname(...), 'doc-drift.mjs')` 처럼 백틱도 접두도 없는 맨 상대경로/문자열이
+  // `path.join(SCRIPT_DIR, 'report-usage.mjs')` 처럼 백틱도 접두도 없는 맨 상대경로/문자열이
   // 대부분이다. 그 형태까지 잡으려면 SKILL_ORPHAN과 같은 "파일명이 어딘가 문자열로
   // 등장하는가"(느슨한 포함 검사)가 유일하게 실효 있는 방법이다 — 정밀 정규식은 이 셋을
   // 전부 놓쳐 실제로 쓰이는 스크립트를 오탐으로 고아 처리한다.

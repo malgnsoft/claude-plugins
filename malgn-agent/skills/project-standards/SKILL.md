@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: 맑은소프트 프로젝트 운영 표준 — 패키지 매니저(pnpm 전용), 프로젝트 구조(~/workspace/<이름>/ 독립 프로젝트), STATUS.md/CLAUDE.md/docs 3층 부트스트랩, 드리프트 가드, 신규 프로젝트 스캐폴딩, 기존 폴더 초기화·환경 점검(PM 행동규율 블록·docs 지도·CLAUDE.md·malgnai-hub 연동), STATUS.md 크기 검사. 새 프로젝트를 시작하거나, 사용자가 이미 만들어 둔 폴더 안에서 "초기화 해줘/이 프로젝트 초기화"라고 요청하거나, "STATUS.md 크기 확인해줘/STATUS.md 용량 검사해줘"처럼 STATUS.md가 상한 안에 있는지 확인해달라고 하거나, 프로젝트 구조/진행 상태 관리 방식을 판단할 때 사용.
+description: 맑은소프트 프로젝트 운영 표준 — 패키지 매니저(pnpm 전용), 프로젝트 구조(~/workspace/<이름>/ 독립 프로젝트), STATUS.md/CLAUDE.md/docs 3층 부트스트랩, 구조 서술의 정확성 유지, 신규 프로젝트 스캐폴딩, 기존 폴더 초기화·환경 점검(PM 행동규율 블록·docs 지도·CLAUDE.md·malgnai-hub 연동), STATUS.md 크기 검사. 새 프로젝트를 시작하거나, 사용자가 이미 만들어 둔 폴더 안에서 "초기화 해줘/이 프로젝트 초기화"라고 요청하거나, "STATUS.md 크기 확인해줘/STATUS.md 용량 검사해줘"처럼 STATUS.md가 상한 안에 있는지 확인해달라고 하거나, 프로젝트 구조/진행 상태 관리 방식을 판단할 때 사용.
 ---
 
 # Malgn Project Standards
@@ -62,22 +62,16 @@ description: 맑은소프트 프로젝트 운영 표준 — 패키지 매니저(
 
 **현 상황 파악을 위해 코드·docs를 통독하지 않는다** (토큰 낭비 + 옛 정보 오독 위험). L0(`STATUS.md`) 자체의 재작성 트리거는 §3의 6가지로 제한된다 — 매 턴 갱신 관성으로 되돌아가지 않는다.
 
-CLAUDE.md **본문에 어떤 내용을 남기고 무엇을 다른 자리로 내보낼지**(배치 결정·크기 규율·비파괴 리팩터링)는 Skill `claude-md-architecture`가 정본이다. 반대로 CLAUDE.md에 **무엇을 스탬프하고 어떤 배선을 넣는지**는 이 스킬 소관이다 — 스캐폴딩 뼈대(§7), 구조 서술의 드리프트 검증 계약(§6), PM 행동규율 블록 관리 구역의 삽입·점검(§9).
+CLAUDE.md **본문에 어떤 내용을 남기고 무엇을 다른 자리로 내보낼지**(배치 결정·크기 규율·비파괴 리팩터링)는 Skill `claude-md-architecture`가 정본이다. 반대로 CLAUDE.md에 **무엇을 스탬프하고 어떤 배선을 넣는지**는 이 스킬 소관이다 — 스캐폴딩 뼈대(§7), 구조 서술을 낡지 않게 유지하는 계약(§6), PM 행동규율 블록 관리 구역의 삽입·점검(§9).
 
-## 6. 정확성 보증 — 드리프트 가드
+## 6. 정확성 보증 — 구조 서술은 실측으로 확인한다
 
-- 프로젝트에 `.claude/doc-drift.json` 매니페스트가 있으면, 문서 서술(파일 수·테이블·라우트 수 등)을 코드 실측과 대조해 **어긋날 때만 경고**한다(일치 시 0토큰).
-- 수동 확인: `pnpm run check-docs`
-- **등록 방법**: 매니페스트의 `checks` 배열에 수치 하나당 `{ "label", "expected", <측정법 하나> }`를 넣는다. `expected`는 문서가 주장하는 값이고, 측정법이 코드에서 잰 실측과 다르면 그 줄만 경고로 뜬다(경로가 없어 재지 못하면 드리프트가 아니라 skip).
-  ```json
-  { "checks": [
-    { "label": "API 라우트", "expected": 12, "glob": "server/routes/*.ts" },
-    { "label": "DB 테이블", "expected": 20, "file": "server/db/init.sql", "regex": "CREATE TABLE \\w+" }
-  ] }
-  ```
-  측정법은 넷뿐이다 — `glob`(프로젝트 기준 파일 수) · `homeGlob`($HOME 기준 파일 수) · `jsonLength`(JSON 배열 길이 또는 객체 키 수) · `file`+`regex`(파일 안 정규식 전역 매치 수). **여기서 잴 수 없는 수치는 애초에 문서에 적지 않는다.** 전체 사양은 `${CLAUDE_PLUGIN_ROOT}/hooks/doc-drift.mjs` 상단 주석이 정본이다.
-  - 스캐폴더(§7)가 만드는 매니페스트는 `checks`가 **빈 배열**이다 — 구조를 잡고 CLAUDE.md에 수치를 처음 적는 시점에 직접 채운다. 비어 있는 동안 `check-docs`는 ✅ 통과로 보고하지 않고 `ℹ️ checks가 비어 있다 — 아직 아무것도 검사하지 않았다(통과가 아니다)`로 구분해 알린다. 다만 이 상태에서도 명령 자체는 실패하지 않으므로, 매니페스트를 채우기 전까지 이 가드는 꺼져 있는 것과 같다.
-- CLAUDE.md에 구조를 서술할 때는 반드시 이 매니페스트로 검증 가능하게 쓴다(수치는 doc-drift.json에 등록). 검증에 걸지 못하는 구조 서술은 반드시 코드와 갈라지므로, 매니페스트에 걸 수 없고 판단(책임·이유·함정)도 담지 않은 나열이라면 CLAUDE.md에 적지 않는다 — **무엇을 서술로 남기고 무엇을 지울지의 판정은 Skill `claude-md-architecture` §1이 정본이고, 이 §6은 남기기로 한 것을 낡지 않게 거는 방법이다.**
+문서에 적힌 수치(파일 수·테이블 수·라우트 수 등)는 코드가 바뀌면 **조용히** 낡는다. 틀렸다고 알려주는 장치는 없고, 낡은 수치는 다음 세션이 그대로 믿고 판단의 근거로 쓴다. 그래서 수치는 **누구든 그 자리에서 다시 셀 수 있는 형태로만** 적는다.
+
+- **셀 수 있게 적는다**: 수치 옆에 무엇을 세면 그 값이 나오는지를 함께 남긴다 — `routes/ 12개`가 아니라 `server/routes/*.ts 12개`, `테이블 20개`가 아니라 `server/db/init.sql의 CREATE TABLE 20개`. 세는 대상이 문장에 없으면 다음 사람은 확인할 방법이 없어 그냥 믿는다.
+- **셀 수 없으면 적지 않는다**: 다시 세어 확인할 수 없고 판단(책임·이유·함정)도 담지 않은 나열이라면 CLAUDE.md에 적지 않는다 — **무엇을 서술로 남기고 무엇을 지울지의 판정은 Skill `claude-md-architecture` §1이 정본이고, 이 §6은 남기기로 한 것을 낡지 않게 유지하는 방법이다.**
+- **구조를 바꾼 그 작업 안에서 함께 고친다**: 파일·라우트·테이블을 추가·삭제·이동했다면 CLAUDE.md의 해당 서술 갱신을 같은 변경에 포함시킨다. 나중으로 미루면 그 시점이 오지 않는다.
+- **마감·정리 시점에는 실측 대조한다**: 남긴 수치·경로 서술을 `ls`/`grep`으로 실제와 하나씩 맞춰본다. 어긋나면 **코드가 진실이고 문서를 고친다.**
 
 ## 7. 신규 프로젝트 생성 — 표준 스캐폴드
 
@@ -91,10 +85,11 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs" <프로젝트명> ["한 줄 설
 
 `~/workspace/<이름>/`에 다음을 스탬프하고 git init까지 수행한다:
 - `STATUS.md` — 부트스트랩 포인터를 포함한 라이브 상태 단일 소스
-- `CLAUDE.md` — 부트스트랩 3층 계약 + 구조(빈 뼈대) + 드리프트 안내
+- `CLAUDE.md` — 부트스트랩 3층 계약 + 구조(빈 뼈대)
 - `docs/README.md` — 문서 지도(진입점)
-- `.claude/doc-drift.json` — 드리프트 매니페스트(빈 checks)
-- `package.json` — pnpm, `type: module`, `check-docs` 스크립트
+- `.claude/settings.json` — malgn-agent 마켓플레이스·플러그인 자동 신뢰 등록
+- `package.json` — pnpm, `type: module`
+- `.gitignore` — `STATUS.md` 항목 등록(git 추적 제외 — 개인 로컬 캐시). 파일이 이미 있으면 그 항목만 덧붙인다
 
 스캐폴딩 후에는 malgnai-hub `project_bootstrap`을 호출해 `repositoryKey`를 발급받고(첫 호출 시 자동 프로비저닝 — 별도 project_create 불필요), `STATUS.md` 상단 YAML frontmatter의 `provider`/`project_id`/`repository_key` 필드를 채운다.
 
@@ -113,7 +108,8 @@ cwd에 `STATUS.md`가 있는지 확인한다.
   ```bash
   node "${CLAUDE_PLUGIN_ROOT}/bin/new-project.mjs" --here ["한 줄 설명"]
   ```
-  - cwd에 STATUS.md/CLAUDE.md/docs/README.md/.claude/doc-drift.json/package.json 중 **없는 파일만** 스탬프한다. 이미 코드가 있는 폴더(기존 `package.json` 등)라도 기존 파일은 덮어쓰지 않고 건너뛴다 — 실행 후 출력의 "건너뜀" 목록을 사용자에게 보고한다.
+  - cwd에 STATUS.md/CLAUDE.md/docs/README.md/.claude/settings.json/package.json 중 **없는 파일만** 스탬프한다. 이미 코드가 있는 폴더(기존 `package.json` 등)라도 기존 파일은 덮어쓰지 않고 건너뛴다 — 실행 후 출력의 "건너뜀" 목록을 사용자에게 보고한다.
+  - `.gitignore`는 위 "없는 파일만" 규칙의 예외다 — 이미 있어도 건너뛰지 않고 `STATUS.md` 항목이 없으면 그 한 줄만 덧붙인다(기존 항목은 건드리지 않는다).
   - `.git`이 없으면 `git init`까지 수행한다. 홈 디렉토리 자체에서는 실행되지 않는다(안전장치).
   - 이어서 **`pnpm install`**을 실행한다(package.json이 새로 생겼거나 이미 있던 경우 모두).
   - **스탬프를 돌렸다고 배선이 갖춰졌다고 보지 않는다** — CLAUDE.md가 이미 있으면 스캐폴더가 그 파일을 통째로 건너뛰므로 PM 행동규율 관리 구역도 심지 못한다. 확인은 2단계에서 한다.
@@ -128,7 +124,7 @@ cwd에 `STATUS.md`가 있는지 확인한다.
 2. **PM 행동규율 블록** — §9 절차를 그대로 실행한다(`check-pm-orchestration-block.mjs`를 돌리고 `status`별 대응). 판정 로직은 §9가 정본이라 여기에 복제하지 않는다.
    - 1번을 먼저 하는 이유: 이 블록은 CLAUDE.md 안에 사는 배선이라, CLAUDE.md가 없으면 스크립트가 `no-claude-md`로 빠져 점검 자체가 성립하지 않는다.
    - §9의 "사용자가 명시적으로 요청할 때만" 제약과 충돌하지 않는다 — 그 제약은 §9를 **매 세션 자동으로 돌리지 않는다**는 뜻이고, "초기화 해줘"는 사용자의 명시적 요청이다. 이 흐름 안에서 호출한다고 상시 감시가 생기는 것은 아니다.
-3. **문서 지도** — `docs/README.md`가 있는지 확인한다. 있으면 내용을 다시 쓰지 않는다. 없으면 스캐폴더(`bin/new-project.mjs`)가 스탬프하는 지도 형식이 뼈대의 정본이므로 그 형식으로 만든다 — 진입점 선언 + "먼저 읽을 것"(`STATUS.md` → `CLAUDE.md` → malgnai-hub `project_get_context`) + `docs/` 하위 폴더 목록 + 드리프트 가드 안내. (§4는 이 지도를 **쓰는** 원칙이지 만들 뼈대가 아니다.)
+3. **문서 지도** — `docs/README.md`가 있는지 확인한다. 있으면 내용을 다시 쓰지 않는다. 없으면 스캐폴더(`bin/new-project.mjs`)가 스탬프하는 지도 형식이 뼈대의 정본이므로 그 형식으로 만든다 — 진입점 선언 + "먼저 읽을 것"(`STATUS.md` → `CLAUDE.md` → malgnai-hub `project_get_context`) + `docs/` 하위 폴더 목록. (§4는 이 지도를 **쓰는** 원칙이지 만들 뼈대가 아니다.)
 4. **malgnai-hub 연동** — `STATUS.md` 상단 YAML frontmatter의 `project_id`를 본다.
    - 비어 있으면 `project_bootstrap`을 호출해 동기화하고 `provider`/`project_id`/`repository_key`를 채운다. `repositoryKey`는 폴더명 기반으로 제안하고 사용자 확인 후 확정한다.
    - 이미 채워져 있으면 `project_get_context`로 최신 상태만 확인하고 그대로 진행한다.
@@ -143,7 +139,7 @@ cwd에 `STATUS.md`가 있는지 확인한다.
 
 **대상 상황**: 이미 스캐폴딩된 프로젝트에서 나중에 재확인/재설치가 필요할 때 — PM 블록 버전이 올라갔거나, 심긴 관리 구역이 손대져 깨졌거나, 사용자가 처음에 거절했다가 나중에 설치하고 싶을 때.
 
-**트리거: 사용자가 명시적으로 요청할 때만**(예: "PM 행동규율 다시 확인해줘", "마켓플레이스 옮겼는데 PM 블록 깨졌나 봐줘"). **매 세션 자동 실행이 아니다** — `new-project.mjs`가 스캐폴딩 시점 1회 관리 구역을 삽입하고(§7), 그 구역을 매 세션 다시 확인하는 SessionStart 훅은 두지 않는다. 상시 감시가 없는 대신 이 온디맨드 절차와, `pnpm run check-docs`(수동 드리프트 점검, §6)가 안전망이다.
+**트리거: 사용자가 명시적으로 요청할 때만**(예: "PM 행동규율 다시 확인해줘", "마켓플레이스 옮겼는데 PM 블록 깨졌나 봐줘"). **매 세션 자동 실행이 아니다** — `new-project.mjs`가 스캐폴딩 시점 1회 관리 구역을 삽입하고(§7), 그 구역을 매 세션 다시 확인하는 SessionStart 훅은 두지 않는다. 상시 감시가 없으므로 이 온디맨드 절차가 유일한 안전망이다 — 플러그인을 업데이트했거나 CLAUDE.md를 크게 손댄 뒤에는 사용자가 요청해 한 번 돌린다.
 
 절차:
 
@@ -175,7 +171,7 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestrat
    - **이미 `declined`인 경우**: 아무것도 바꾸지 않고 `{"decline": {"result": "noop", "reason": "already-declined"}}`로 멱등 보고한다 — 반복 호출해도 안전하다.
    - 이 전환은 사용자의 명시적 거절 의사가 있을 때만 실행한다. 점검기가 스스로 판단해 내리지 않는다.
 
-관리 구역의 표기·판정 로직(`readBlockFile()`/`extractManagedRegion()`/`renderManagedBlock()`)은 `hooks/lib/find-pm-block-path.mjs`가 단일 소스다 — 이 스크립트와 `new-project.mjs`, `hooks/doc-drift.mjs`(수동 드리프트 점검) 셋 모두 같은 모듈을 import해 동일한 표기와 판정을 공유한다. 구역 텍스트를 다른 곳에서 따로 조립하면 그 순간 두 벌이 된다.
+관리 구역의 표기·판정 로직(`readBlockFile()`/`extractManagedRegion()`/`renderManagedBlock()`)은 `hooks/lib/find-pm-block-path.mjs`가 단일 소스다 — 이 스크립트와 `new-project.mjs` 둘 다 같은 모듈을 import해 동일한 표기와 판정을 공유한다. 구역 텍스트를 다른 곳에서 따로 조립하면 그 순간 두 벌이 된다.
 
 ## 체크리스트
 
@@ -183,6 +179,6 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestrat
 - [ ] 프로젝트가 `~/workspace/<이름>/` 아래 독립적으로 있는가?
 - [ ] `STATUS.md`가 3,000바이트 이내인가? — `node "${CLAUDE_PLUGIN_ROOT}/bin/check-status-size.mjs" --require`가 OK여야 한다(`--require`를 빼면 STATUS.md가 없거나 엉뚱한 폴더에서 돌렸을 때 SKIP으로 통과해버린다). 완료 섹션은 3~5개로 정리되어 있는가? (재작성은 6가지 트리거 상황에서만 했는가?)
 - [ ] `docs/README.md` 지도가 있고, docs를 통째로 읽지 않고 지도를 거쳐 필요한 것만 읽었는가?
-- [ ] 구조 서술(CLAUDE.md)이 판단(책임·이유·함정)을 담았는가? 담은 서술 안에 수치(파일 수·테이블 수·라우트 수 등)가 있다면 `.claude/doc-drift.json`에 등록했는가? (판단도 없고 매니페스트에도 걸 수 없는 나열이면 지운다 — 판정 정본은 Skill `claude-md-architecture` §1)
+- [ ] 구조 서술(CLAUDE.md)이 판단(책임·이유·함정)을 담았는가? 담은 서술 안에 수치(파일 수·테이블 수·라우트 수 등)가 있다면 무엇을 세면 그 값이 나오는지까지 적어 다시 셀 수 있게 했는가(§6)? (판단도 없고 다시 셀 수도 없는 나열이면 지운다 — 판정 정본은 Skill `claude-md-architecture` §1)
 - [ ] 새 프로젝트라면 `new-project.mjs`로 스캐폴딩했는가? (기존 폴더라면 `--here`로, STATUS.md가 이미 있다면 재스탬프 없이 §8 2단계 환경 점검으로)
 - [ ] "초기화 해줘"를 처리했다면, STATUS.md 유무와 무관하게 환경 점검 4항목(CLAUDE.md 배치·크기 / PM 행동규율 블록 / `docs/README.md` / malgnai-hub 연동)을 모두 확인했는가? — STATUS.md 하나만 보고 "이미 초기화됨"으로 끝내지 않는다(§8)

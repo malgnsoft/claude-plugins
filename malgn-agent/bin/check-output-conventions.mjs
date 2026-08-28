@@ -90,7 +90,6 @@ const EXEMPT_BASENAMES = new Set([
   'pnpm-lock.yaml',
   '.gitignore',
   '.ds_store',
-  'doc-drift.json',
   'settings.json',
   'settings.local.json',
   'marketplace.json',

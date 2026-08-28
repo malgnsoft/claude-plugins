@@ -7,16 +7,16 @@
  * 트리거는 사용자의 명시적 요청뿐이다("PM 행동규율 다시 확인해줘" 류) — 매 세션 자동 실행이
  * 아니다.
  *
- * 기본은 읽기 전용이다. cwd의 CLAUDE.md를 읽어 §6 상태 어휘(13개, `no-claude-md` 포함)로 판정하고, 사람이 읽을 수
+ * 기본은 읽기 전용이다. cwd의 CLAUDE.md를 읽어 §9-1 상태 어휘(13개, `no-claude-md` 포함)로 판정하고, 사람이 읽을 수
  * 있는 안내문을 stdout에 JSON으로 출력한다. `--write` 플래그가 있을 때만 실제로 CLAUDE.md를
- * 고친다 — 자동 경로(SessionStart 훅 없음, `pnpm run check-docs`는 이 스크립트를 읽기 전용으로만
- * 부른다)에는 쓰기가 없다는 불변식은 유지된다. 그 실질을 지키는 것은 "코드가 파일을 쓰지 않는다"는
- * 글자 그대로의 문장이 아니라 "사용자가 명시적으로 요청하지 않으면 쓰지 않는다"는 것이다.
+ * 고친다 — 자동 경로(SessionStart 훅 없음)에는 쓰기가 없다는 불변식은 유지된다. 그 실질을 지키는
+ * 것은 "코드가 파일을 쓰지 않는다"는 글자 그대로의 문장이 아니라 "사용자가 명시적으로 요청하지
+ * 않으면 쓰지 않는다"는 것이다.
  *
  * 경로 계산·구역 파싱(readBlockFile/extractManagedRegion/renderManagedBlock/bodyMatches/
- * findStrayBodyCopy 등)은 ../../../hooks/lib/find-pm-block-path.mjs 로 위임한다 — 이 스크립트,
- * bin/new-project.mjs, hooks/doc-drift.mjs 세 소비자가 완전히 동일한 알고리즘을 공유해야 판정과
- * 설치 결과가 항상 일치한다.
+ * findStrayBodyCopy 등)은 ../../../hooks/lib/find-pm-block-path.mjs 로 위임한다 — 이 스크립트와
+ * bin/new-project.mjs 두 소비자가 완전히 동일한 알고리즘을 공유해야 판정과 설치 결과가 항상
+ * 일치한다.
  *
  * 사용:
  *   node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestration-block.mjs" [cwd] [--write] [--upgrade-to <n>]

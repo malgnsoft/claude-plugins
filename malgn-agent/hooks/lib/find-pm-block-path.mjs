@@ -7,10 +7,9 @@
  * 있어 같은 디렉토리를 봤지만, 이 파일은 hooks/lib/ 로 한 단계 옮겨졌으므로 부모 디렉토리를 본다
  * (findMalgnAgentBlockPath() 자체의 마켓플레이스 글롭스캔 로직은 원본과 완전히 동일하다).
  *
- * 세 소비자가 이 모듈을 공유한다:
+ * 두 소비자가 이 모듈을 공유한다:
  *   1. bin/new-project.mjs — 스캐폴딩 시점 1회 관리 구역 삽입(§4-2)
  *   2. skills/project-standards/scripts/check-pm-orchestration-block.mjs — 온디맨드 재확인(§4-3)
- *   3. hooks/doc-drift.mjs — `pnpm run check-docs` 수동 드리프트 점검(§4-5)
  *
  * 이 모듈 자신은 SessionStart 훅이 아니다 — 어떤 이벤트에도 자동으로 실행되지 않는다. import 되지
  * 않으면 아무 일도 하지 않는다(§4-1 "자동 없음, 온디맨드만" 원칙).
@@ -43,7 +42,7 @@ export const MARKER_PREFIX = 'malgn-agent:pm-orchestration:'
 
 // 관리 구역 2행(사람 유지보수자용 안내 주석)의 고정 문안. renderManagedBlock()의 단일 소유.
 export const MANAGED_REGION_NOTE =
-  '이 구역(아래 end 마커까지)은 malgn-agent가 관리한다. 손으로 고치지 말고, 다르게 하려면 구역 밖에 적는다. 재동기화: pnpm run check-docs'
+  '이 구역(아래 end 마커까지)은 malgn-agent가 관리한다. 손으로 고치지 말고, 다르게 하려면 구역 밖에 적는다. 재동기화: node "${CLAUDE_PLUGIN_ROOT}/skills/project-standards/scripts/check-pm-orchestration-block.mjs" --write'
 
 /**
  * STATE_MARKER_RE/END_MARKER_RE는 g 플래그가 없어 "몇 개 있는가"를 셀 수 없다(마지막 매치 하나만
@@ -260,10 +259,8 @@ export const AMBIGUOUS = Symbol('ambiguous-malgn-agent-marketplace-match')
  * 별칭 디렉토리 **바로 아래**에 플러그인 디렉토리가 온다 — 중간에 plugins/ 세그먼트가 없다.
  * (다른 마켓플레이스는 plugins/ 를 한 단계 더 두기도 하므로 눈대중으로 유추하지 말 것.)
  *
- * 이 두 상수가 그 레이아웃 규칙의 **단일 소유자**다. bin/new-project.mjs가 스캐폴딩하는 프로젝트의
- * check-docs 스크립트는 플러그인 밖에서 도는 독립 코드라 이 모듈을 import할 수 없지만, 사본을 따로
- * 관리하지는 않는다 — new-project.mjs가 스캐폴딩 시점에 이 상수들로 그 코드를 생성하므로 값을
- * 바꾸면 생성물도 같이 바뀐다. 생성 코드의 JS 리터럴에 그대로 박히므로 따옴표·역슬래시를 넣지 말 것.
+ * 이 두 상수가 그 레이아웃 규칙의 **단일 소유자**다. 이 파일 안의 findMalgnAgentBlockPath()가
+ * 유일한 소비자이며, 레이아웃이 바뀌면 이 두 상수만 고치면 된다 — 다른 파일에 사본이 없다.
  */
 export const MARKETPLACES_DIR_SEGMENTS = ['.claude', 'plugins', 'marketplaces']
 export const PLUGIN_DIR_NAME = 'malgn-agent'

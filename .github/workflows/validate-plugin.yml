@@ -77,12 +77,7 @@ jobs:
       # `pnpm run check-docs`는 여기에 단계로 넣지 않는다 — 편입 여부는 별도 판단이며,
       # 이 주석은 지금 그 명령이 무엇을 하는지만 기록해 둔다.
       #
-      # 이 명령의 진입점은 scripts/check-docs.mjs이고 두 가지를 이어서 돌린다.
-      #  1. malgn-agent 자산 개수(agents·skills·knowledge) ↔ 루트 CLAUDE.md 서술 대조.
-      #     이 스크립트가 저장소 안 파일만 세고 읽어서 직접 수행한다.
-      #  2. PM 행동규율 관리 구역 점검. 배포 CLI(malgn-agent/hooks/doc-drift.mjs)에 위임하며,
-      #     대조 기준이 되는 블록 원문은 그 CLI가 자기 옆(hooks/pm-orchestration-block.md)에서
-      #     읽는다.
-      #
-      # 둘 다 저장소 안 파일만 읽는다 — 마켓플레이스 설치본이나 $HOME 아래 경로에 의존하지
-      # 않는다. 넣기로 한다면 깨끗한 러너에서 먼저 실측하고 판단한다.
+      # 이 명령의 진입점은 scripts/check-docs.mjs이고, malgn-agent 자산 개수
+      # (agents·skills·knowledge) ↔ 루트 CLAUDE.md 서술을 대조한다. 저장소 안 파일만 읽는다 —
+      # 마켓플레이스 설치본이나 $HOME 아래 경로에 의존하지 않는다. 넣기로 한다면 깨끗한 러너에서
+      # 먼저 실측하고 판단한다.

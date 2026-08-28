@@ -4,13 +4,8 @@
  *
  * 새 세션에 L0 컨텍스트를 주입한다:
  *   1) cwd 의 STATUS.md (있으면) — 라이브 상태 단일 소스. **상한 안에서만** 주입한다(아래).
- *   2) 문서 드리프트 경고 — .claude/doc-drift.json 이 있고 코드와 어긋날 때만
- *      (일치하면 아무것도 안 붙임 = 0토큰. 최소 토큰으로 정확성 보증.)
- *      매니페스트의 checks가 비어있지 않은데 전부 측정불가(glob 루트 부재 등)라 드리프트
- *      판정 자체가 불가능한 상태도 1줄로 알린다 — checks:[] (신규 스캐폴딩)는 제외해 상시
- *      노이즈를 피한다.
  *
- * STATUS.md 도 매니페스트도 없는 프로젝트면 빈 컨텍스트(무해). 어떤 오류도 세션을 막지 않는다.
+ * STATUS.md 가 없는 프로젝트면 빈 컨텍스트(무해). 어떤 오류도 세션을 막지 않는다.
  *
  * ── 주입량 상한 (2026-08-24 추가) ─────────────────────────────────────────────
  * 이 훅은 전 직원의 **모든 프로젝트, 모든 세션**에 걸리므로 비용이 곱해진다. 그런데 종전에는
@@ -28,8 +23,7 @@
  *   - 상한이 안 맞는 프로젝트는 MALGN_STATUS_MAX_BYTES 환경변수로 조정한다(0 = 무제한).
  */
 import { readFileSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { join } from 'node:path'
 
 const DEFAULT_MAX_BYTES = 12000
 
@@ -81,31 +75,6 @@ try {
   let status = ''
   try { status = readFileSync(join(cwd, 'STATUS.md'), 'utf8') } catch {}
 
-  let note = ''
-  try {
-    // 절대경로를 그대로 넘기면 Windows에서 `C:`가 URL 스킴으로 해석돼
-    // ERR_UNSUPPORTED_ESM_URL_SCHEME으로 죽는다 — 아래 catch가 그 에러를 삼켜
-    // 드리프트 경고만 조용히 사라지므로, file:// URL로 변환해 넘긴다.
-    const driftUrl = pathToFileURL(join(dirname(fileURLToPath(import.meta.url)), 'doc-drift.mjs')).href
-    const { computeDrift } = await import(driftUrl)
-    const r = computeDrift(cwd)
-    if (r && r.drift.length) {
-      note = '\n\n⚠️ **문서 드리프트 감지** (문서가 코드와 불일치 — 코드가 진실):\n' +
-        r.drift.map((d) => '  - ' + d).join('\n') +
-        '\n오리엔테이션 시 실측값을 신뢰하고, 여유 될 때 `pnpm run check-docs` 후 문서를 갱신하라.'
-    } else if (r && r.corrupted) {
-      // "매니페스트 없음"과 뚜렷이 다른 상태다 — JSON 문법 자체가 깨진 것이라 glob/file 경로를
-      // 아무리 점검해도 원인이 아니다(doc-drift.mjs의 CLI 실행 블록과 동일하게 별도 분기로 뗀다).
-      note = '\n\n⚠️ 문서 드리프트 매니페스트(.claude/doc-drift.json) JSON 파싱 실패: ' + r.error +
-        ' — 파일 문법을 고쳐라(glob/file 경로 문제가 아니다).'
-    } else if (r && !r.corrupted && !r.empty && r.results.length === 0 && r.skipped.length > 0) {
-      // 매니페스트는 있는데(checks 비어있지 않음) 전부 측정불가라 drift 판정 자체가 불가능한
-      // 상태. checks:[] (신규 스캐폴딩)까지 매번 경고하면 상시 노이즈가 되므로 !r.empty로
-      // 제외하고, 이 경우만 1줄로 알린다(토큰 비용 최소화).
-      note = '\n\n⚠️ 문서 드리프트 매니페스트(.claude/doc-drift.json)가 전부 측정 불가 — glob/file 경로를 점검하라(`pnpm run check-docs`로 상세 확인).'
-    }
-  } catch {}
-
   let head = ''
   let userMsg = ''
   if (status) {
@@ -131,7 +100,7 @@ try {
         '상한 조정은 MALGN_STATUS_MAX_BYTES 환경변수.'
     }
   }
-  emit(head + note, userMsg)
+  emit(head, userMsg)
 } catch {
   emit('')
 }

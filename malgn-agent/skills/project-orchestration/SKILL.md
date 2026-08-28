@@ -193,7 +193,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-0
 
 ## 6. 운영 표준 보충 (project-standards 미포함분)
 - **WBS 그룹(부모) 노드는 status를 'done'으로 직접 못 바꾼다(설계, 버그 아님)**: `wbs_update`로 그룹 노드에 status='done'을 시도하면 STATUS_DONE_LEAF_ONLY 에러가 난다 — 그룹 노드는 리프의 진행률로 계산되는 bucket/computed_progress가 진짜 신호다. "진행상태 점검" 시 그룹 status='planned'인데 bucket='done'/computed_progress=100이면 정상이며, stale 여부는 리프 항목의 status/progress로만 판단한다.
-- **`docs/README.md` 문서지도 드리프트는 자동 doc-drift 가드가 못 잡는다**: `.claude/doc-drift.json`은 매니페스트에 등록된 수치·경로만 코드와 대조하며, 문서지도(`docs/README.md`)의 서술형 안내(어떤 문서가 어디 있다는 설명)는 검증 대상이 아니다 — 프로젝트 마감·정리 시점에는 `ls`/`find`로 실제 디렉토리 구조와 문서지도 서술을 수동 대조한다.
+- **`docs/README.md` 문서지도가 실제와 어긋나도 알려주는 장치는 없다**: 문서지도의 서술형 안내(어떤 문서가 어디 있다는 설명)는 문서가 옮겨지거나 지워져도 그대로 남아 다음 세션을 없는 파일로 보낸다 — 프로젝트 마감·정리 시점에는 `ls`/`find`로 실제 디렉토리 구조와 문서지도 서술을 대조한다(구조 서술 일반의 대조 규칙은 Skill `project-standards` §6).
 
 ## 7. 자율 학습·업데이트 경계
 **자율 경계** (사용자 승인 불필요): 국소 보강·교훈 추가 (4부 구조 충족), 기존 원칙 부담 없는 변경, 올바른 스코프 (공용=knowledge/MD).
