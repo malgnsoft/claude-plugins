@@ -33,3 +33,4 @@
 
 ## 적용 이력
 - 2026-08-12: project-orchestration SKILL.md §3.5 "산출물 지도" 신설 소절 Standard 등급 약식 검증(1인 단독 투입) — 신규 생성. 기존 `persona-script-skill-consistency-auditor.md`가 "문서 서술 vs 코드 일치"라는 유사 역할개념이나, 6대 요소 본문(참고파일·방법론)이 이전 라운드 대상(`token-usage-diagnosis`/`analyze-usage.mjs`)에 고정돼 있어 문자 그대로 재사용 시 엉뚱한 파일을 대조하게 됨 — INDEX.md 기존 선례(2026-08-10, 2026-08-11 사례)를 따라 신규 생성.
+- 2026-08-28 / target_id `issue-resolve-closure-20260828` / 1차(최초, Sensitive 풀패널) — 역할개념 수준 재사용(§5 참고파일은 직전 라운드 고정). 대상: `trainer/issue-resolve-closure-20260828`(`813f2a2`), 정본 1(common-learning-loop-knowledge-management) ↔ 트리거 4(pm/evaluator/trainer MD·project-orchestration §5) 대조. 결과: 정본의 카브아웃("파일을 고치지 않는 역할은 지목까지만")이 evaluator를 문자 그대로 포함해 evaluator.md:125 신규 필수의무와 충돌(RV-001, Major). 정본 새 H4가 도구별 필드매핑 목록 중간에 삽입돼 decision_record 이하가 "이슈 종결" 하위로 종속(RV-002). 부분해소 절차가 4자리에 복제되고 그중 pm.md만 정본 포인터 없음(RV-003·RV-004).
