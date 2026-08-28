@@ -45,6 +45,15 @@
   `ls`/`grep`으로 실측 대조합니다. 이 규칙을 인용하던 `claude-md-architecture`(§1 판정 3문·§4·§6·
   체크리스트)와 `project-orchestration` §6도 같은 기준으로 맞췄습니다.
 
+### 수정
+
+- `agents/evaluator.md`·`skills/domain-training-scorecard-eval/SKILL.md`·
+  `knowledge/leadership/team-composition-patterns.md`를 malgnai-hub MCP 도구
+  `agent_score_record`의 새 입력 계약(`raterType` 필수 추가, `evaluatorNote`+
+  `improvementNote`→`note` 병합, `projectId` 제거, 스코프가 개인에서 `agentName` 단위
+  회사 공용 지표로 재정의)에 맞춰 갱신했습니다. malgnai-hub 쪽 신계약의 프로덕션 배포를
+  독립 확인한 뒤 반영했습니다.
+
 ---
 
 ## [1.8.15] — 2026-08-28
