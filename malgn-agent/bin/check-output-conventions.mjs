@@ -123,7 +123,7 @@ function findAllFiles(baseDir) {
 
 const AREA_RULES = {
   decision: { dirs: ['docs', path.join('output', 'reports')], label: 'docs/ 또는 output/reports/' },
-  review: { dirs: [path.join('output', 'reports')], label: 'output/reports/' },
+  review: { dirs: [path.join('docs', 'reviewer')], label: 'docs/reviewer/' },
   'training-report': { dirs: ['docs'], label: 'docs/' },
   scratch: { dirs: ['scratchpad'], label: 'scratchpad/ (세션 후 삭제 대상)' },
 };
@@ -300,10 +300,14 @@ function scan(rootAbs, targetRel) {
     }
 
     // ── 헤더 메타데이터 (§4) — 알려진 영역 접두어 파일 + output/reports/ 하위 .md ──
+    // 리뷰 보고서(review-*.md)는 제외: YAML 프론트매터 대신 Skill `reviewer-persona-panel-standard`
+    // §5의 본문 머리말(패널·대상·리스크 범주·일자·판정)이 메타데이터 역할을 한다(SKILL §4 예외).
     if (ext === '.md') {
       const area = matchKnownArea(basename);
       const underReports = relPath.split(path.sep).includes('reports');
-      if (area || archiveScope || underReports) {
+      if (area === 'review') {
+        // 프론트매터 검사 대상 아님
+      } else if (area || archiveScope || underReports) {
         const fm = parseFrontmatterKeys(abs);
         if (!fm.found) {
           result.violations.push({

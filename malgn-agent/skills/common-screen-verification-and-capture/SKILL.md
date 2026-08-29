@@ -12,7 +12,7 @@ description: 화면 검증·캡처 표준 — UI 산출물을 실제 렌더링�
 
 ## 캡처 도구: `bin/capture.mjs`
 
-**프로젝트마다 캡처 스크립트를 새로 만들지 말고 플러그인 번들 스크립트를 쓴다.** (과거 서술이던 전역 `shot` CLI·`~/.claude/tools/`는 이 배포 환경에 실재하지 않는 개인 전역 설정 잔존이었다 — 폐기. `bin/capture-all.js`·`bin/capture-nav.js`처럼 프로젝트마다 캡처 스크립트를 새로 작성하던 방식도 여전히 폐기 대상이다.)
+**캡처는 플러그인 번들 스크립트 `bin/capture.mjs` 하나로 한다.** 프로젝트마다 캡처 스크립트를 새로 만들거나 전역 CLI·개인 전역 설정 디렉터리에 의존하지 않는다 — 그렇게 만든 스크립트는 다른 PC·다른 프로젝트에서 존재하지 않아 캡처가 조용히 실패한다.
 
 **사전 조건(캡처 대상 프로젝트 루트에서 1회)**: `pnpm add -D playwright && pnpm exec playwright install chromium`. `capture.mjs` 자신은 malgn-agent 플러그인 안에 있고 playwright는 대상 프로젝트에 설치되므로, 반드시 그 프로젝트 루트(cwd)에서 실행한다.
 
@@ -38,7 +38,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" http://localhost:9000/projects out.
 node "${CLAUDE_PLUGIN_ROOT}/bin/capture.mjs" http://localhost:9000 sidebar.png --sel "#sidebar"   # 요소 단위 before/after
 ```
 
-**capture.mjs가 지원하지 않는 것(정직하게 명시 — 과거 `shot` 서술을 그대로 옮기지 않는다)**: `-o` 출력 플래그(대신 두 번째 위치 인자가 output), `--console`(콘솔·페이지 에러 출력), `--header`(커스텀 헤더/토큰 API), 로그인 세션의 자동 저장·재사용. 이런 것이 필요하면 억지로 capture.mjs를 확장하지 않고, 프로젝트 안에 별도 Playwright 스크립트를 짜거나 아래 "인증이 필요한 화면" 절의 E2E 표준을 쓴다.
+**capture.mjs가 지원하지 않는 것(정직하게 명시 — 다른 캡처 도구의 플래그를 넘겨짚지 않는다)**: `-o` 출력 플래그(대신 두 번째 위치 인자가 output), `--console`(콘솔·페이지 에러 출력), `--header`(커스텀 헤더/토큰 API), 로그인 세션의 자동 저장·재사용. 이런 것이 필요하면 억지로 capture.mjs를 확장하지 않고, 프로젝트 안에 별도 Playwright 스크립트를 짜거나 아래 "인증이 필요한 화면" 절의 E2E 표준을 쓴다.
 
 ### 인증이 필요한 화면
 `capture.mjs`는 로그인 세션을 자동으로 저장·재사용하지 않는다(전역 레시피·전역 인증 캐시 없음). 인증이 필요한 화면은 `${CLAUDE_PLUGIN_ROOT}/templates/e2e-template/`의 Playwright 표준 `storageState` 방식을 그 프로젝트의 인증 재사용 표준으로 채택한다:

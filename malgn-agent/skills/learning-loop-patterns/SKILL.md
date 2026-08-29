@@ -19,7 +19,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 - **확인 범위:**
   - 같은 도메인의 이전 작업 (`project_search_history` 키워드: 기능명, 기술명, 문제명)
   - 공통 도구·패턴 (테스트 전략, 배포 프로세스, 권한 정책)
-  - 프로젝트별 교훈·주의사항 (STATUS.md, 프로젝트별 learning 파일)
+  - 프로젝트별 교훈·주의사항 (`project_get_context(projectId, sections=['issues','decisions','recentWork'])`, 프로젝트별 learning 보고서)
 - **결과:** "이전에 XXX 문제를 겪었으므로, 이번에는 YYY 접근법 사용" 근거 제시
 
 ### 2. 작업 중 의사결정 기록 (Mid-Execution)
@@ -38,9 +38,9 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
   - **도메인 지식:** "이 기능 개발할 때 주의할 점"
   - **환경·정책 업데이트:** 새로운 규칙, 제약, 권한, 승인 절차
 - **저장 위치:**
-  - 프로젝트별 `docs/training-report-<주제>.md` (구체적, 재사용 가능)
+  - 프로젝트별 `docs/training-report-<주제>-YYYY-MM-DD.md` (구체적, 재사용 가능)
   - malgnai-hub에는 별도 메모리 등록 도구가 없음 — 재사용 가능한 교훈은 `decision_record`의 `reason`/`impact`(결정형) 또는 `work_record`의 `result`/`nextAction`(작업형)에 녹여 기록한다
-  - 프로젝트 `STATUS.md` (진행 상태 갱신)
+  - **교훈 본문을 `STATUS.md`에 쌓지 않는다.** STATUS.md는 3,000바이트 상한의 "현재 스냅숏"이고 매 세션 통째로 주입되므로, 교훈이 쌓이면 모든 세션이 그 비용을 문다(형식·상한·재작성 트리거는 Skill `project-standards`가 정본). 교훈은 위 hub 기록에 남기고, STATUS.md는 그 트리거에 해당할 때만 건드린다
 
 ### 4. 교훈의 자산화 (Knowledge Asset)
 - **정보 구조:**
@@ -70,9 +70,10 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
   - `project_search_history` 키워드: 기술명 (예: "PostgreSQL", "Playwright")
   - `project_search_history` 키워드: 문제명 (예: "CORS 에러", "타이밍 이슈")
   - 결과 3-5개 읽고 적용 가능한 패턴 추출
-- [ ] **프로젝트 STATUS.md 검토:**
-  - "알려진 이슈" 섹션 (현재 프로젝트의 반복 문제)
-  - "근본 원인 분석" 섹션 (이전에 해결한 깊은 문제)
+- [ ] **열린 이슈·과거 판단 조회:**
+  - `project_get_context(projectId, sections=['issues'])` — 현재 프로젝트의 반복 문제·미해결 장애물
+  - `project_get_context(projectId, sections=['decisions'])` — 이전에 해결한 깊은 문제의 원인·판단 근거
+  - (STATUS.md는 자동 주입되는 현재 스냅숏이라 따로 열지 않는다. 지나간 이슈·원인분석은 위 조회가 정본이다)
 - [ ] **프로젝트 docs/training-report-*.md 검색:**
   - 파일명 키워드로 관련 보고서 찾기
   - "예방" 섹션에서 체크리스트 추출
@@ -85,7 +86,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
   - "이런 실수를 했는데 XX는 확인했나?" (주의사항 체크)
   - "이전에 XX 환경에서 문제가 있었으니, 이번에도 테스트하자"
 - [ ] **예방 체크리스트 작성:**
-  - malgnai-hub 이력 + STATUS.md 기반으로 "이 작업에서 피해야 할 것" 리스트
+  - malgnai-hub 이력(`project_search_history` + 위 열린 이슈) 기반으로 "이 작업에서 피해야 할 것" 리스트
   - 예: "CORS 설정 변경 시마다 로컬+스테이징 환경에서 테스트"
 
 #### 3. Learning Gap 식별
@@ -138,17 +139,18 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 
 #### 7. Knowledge Structuring & Storage
 - [ ] **프로젝트 learning 보고서 작성 (필요 시):**
-  - 파일: `docs/training-report-<기능또는문제>.md`
+  - 파일: `docs/training-report-<기능또는문제>-YYYY-MM-DD.md`
   - 크기: 500-1500 단어 (재사용 가능한 깊이)
   - 목차: Context → Problem → Solution → Prevention → Reference
 - [ ] **malgnai-hub 기록:**
   - 별도 메모리 등록 도구는 없음 — 교훈을 형태에 맞춰 기존 기록에 편입
     - 결정형 교훈 → `decision_record(projectId, title, decision, reason, ...)`의 `reason`/`impact`에 녹여 기록
     - 작업형 교훈 → `work_record(projectId, status, title, summary, ...)`의 `result`/`nextAction`에 녹여 기록
-- [ ] **STATUS.md 갱신:**
-  - "알려진 이슈" 섹션에 신규 발견 추가
-  - "근본 원인 분석" 섹션에 새로운 통찰 기록
-  - "주의사항" 섹션에 예방 체크리스트 추가
+- [ ] **신규 발견·통찰·예방책 기록 (STATUS.md 아님):**
+  - 신규 발견한 문제 → `issue_record`(미해결이면 열어둔 채)
+  - 근본 원인·새로운 통찰 → `decision_record`의 `reason`, 또는 `work_record`의 `result`
+  - 예방 체크리스트 → `work_record`의 `nextAction`, 반복 재사용할 것이면 learning 보고서 본문
+  - STATUS.md에 이 세 가지를 섹션으로 누적하지 않는다 — 상한(3,000바이트)과 재작성 트리거는 Skill `project-standards`가 정본이고, 태스크마다 append하면 두 규칙이 동시에 깨진다
 
 #### 8. Pattern Generalization
 - [ ] **일회성 해결책 → 재사용 가능 패턴 전환:**
@@ -156,7 +158,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
   - 재사용 가능하면 → 공유 스킬/guide로 추상화
 - [ ] **팀 공유:**
   - 중요 패턴 → 공용 스킬(`skills/common-*` 또는 `skills/domain-*`)로 추상화해 편입 — Skill로 신설할지 Knowledge로 둘지의 판정 기준은 `agents/trainer.md` 핵심 원칙의 "신설 판정"이 정본이다
-  - 프로젝트 특수 → STATUS.md 또는 learning-report
+  - 프로젝트 특수 → learning 보고서 또는 `work_record`
   - 개인 참고 → malgnai-hub `decision_record`/`work_record`에 녹여 기록 (별도 메모리 도구 없음)
 
 #### 9. Effectiveness Feedback
@@ -192,8 +194,8 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
      - 페이지 번호 위치
      - 배경 이미지 인라인화
 
-2. **STATUS.md 확인:**
-   - "알려진 이슈": "Safari에서 @page margin 미지원"
+2. **열린 이슈 확인:**
+   - `project_get_context(projectId, sections=['issues'])`: "Safari에서 @page margin 미지원"
    - 액션: "테스트 환경에서 Chrome만 검증, Safari는 수동 테스트 따로"
 
 3. **예방 체크리스트:**
@@ -219,7 +221,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 
 ### Post-Execution: 교훈 기록
 
-**파일:** `docs/training-report-pdf-export.md`
+**파일:** `docs/training-report-pdf-export-2025-07-10.md`
 
 **Content:**
 - Context: PDF 내보내기 기능, React 18, Puppeteer 13
@@ -239,9 +241,10 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 - `result`: "PDF 헤더는 Puppeteer 13에서 복수페이지 시 오프셋 버그. 임시: margin 수동 조정"
 - `nextAction`: "버전 14 출시 시 재테스트"
 
-**STATUS.md 갱신:**
-- "알려진 이슈" 추가: "PDF 헤더 오프셋 (Puppeteer 13, 임시 해결)"
-- "주의사항" 추가: "PDF 내보내기 개발 시 체크리스트 참고"
+**malgnai-hub 기록 (issue_record):**
+- `title`: "PDF 헤더 오프셋 (Puppeteer 13, 임시 해결)"
+- `summary`: "복수페이지 시 헤더 위치 오류. margin 수동 조정으로 우회 — 근본 해결 미완, 열어둔다"
+- `suspectedCause`: "Puppeteer 13 헤더 오프셋 버그"
 
 ---
 
@@ -256,7 +259,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 ```
 
 ## Integration Notes
-- **프로젝트 온보딩:** STATUS.md 상단에 "꼭 읽어야 할 learning report" 링크 (3-5개)
+- **프로젝트 온보딩:** "꼭 읽어야 할 learning report" 3~5개는 `docs/README.md`(문서 지도)에 링크한다 — STATUS.md는 매 세션 통째로 주입되는 현재 스냅숏이라 링크 목록을 두는 자리가 아니다
 - **스프린트 회고:** "이번 스프린트에서 새로운 교훈이 나왔나?" 체크
 - **신입 교육:** malgnai-hub `project_search_history`로 "이 기술/기능의 이전 문제" 한눈에 파악
 - **CI/CD:** 테스트 실패 시 관련 malgnai-hub 이력(project_search_history) 자동 제안 (AI 활용)

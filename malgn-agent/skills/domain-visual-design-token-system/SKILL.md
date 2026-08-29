@@ -1,6 +1,6 @@
 ---
 name: domain-visual-design-token-system
-description: 색상 체계·타이포그래피·간격·그림자·컴포넌트 스타일의 디자인 토큰 템플릿 + admin SaaS CSS 변수화 우수 사례(coaching 프로젝트 역추출). frontend-dev/ux-designer/visual-designer가 디자인 시스템·CSS 변수 체계를 설계·구현할 때 사용한다.
+description: 색상 체계·타이포그래피·간격·그림자·컴포넌트 스타일의 디자인 토큰 템플릿 + 실서비스 admin SaaS 코드에서 역추출한 CSS 변수화 우수 사례. frontend-dev/ux-designer/visual-designer가 디자인 시스템·CSS 변수 체계를 설계·구현할 때 사용한다.
 ---
 
 # 비주얼 디자인 시스템 가이드
@@ -115,7 +115,7 @@ Semantic    — 상태 표시
 
 ## 토큰화된 admin SaaS CSS 시스템 (산출물 역추출)
 
-> 출처: coaching 프로젝트 `style-guide.md` + `public/css/base.css` (Bootstrap 5 기반 admin SaaS). "Bootstrap 최대 활용 + 커스텀 최소화 + CSS 변수 토큰화"로 일관성과 유지보수성을 동시에 잡은 모범 사례다. visual-designer가 구현 단계 CSS/디자인 시스템을 만들 때 이 골격을 출발점으로 삼는다.
+> 출처: Bootstrap 5 기반 admin SaaS 실서비스의 스타일 가이드 + 단일 커스텀 CSS 파일에서 역추출. "Bootstrap 최대 활용 + 커스텀 최소화 + CSS 변수 토큰화"로 일관성과 유지보수성을 동시에 잡은 모범 사례다. visual-designer가 구현 단계 CSS/디자인 시스템을 만들 때 이 골격을 출발점으로 삼는다.
 
 ### 1. 디자인 토큰을 `:root` CSS 변수로 (단일 출처)
 색·간격·레이아웃 치수를 모두 `:root` 변수로 선언하고, 컴포넌트는 변수만 참조한다. 색을 바꿀 때 한 곳만 고치면 전체 반영(브랜드 커스터마이징 FR과 직결).

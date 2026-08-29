@@ -1,6 +1,6 @@
 ---
 name: common-output-storage-and-path-management
-description: 전 에이전트 인프라 규칙 — 산출물 추적성 확보, 경로 명시·저장 위계로 회수 불가 손실 방지. 파일 저장 위치·경로 관리 시, 그리고 플러그인 번들 `bin/` 스크립트를 실행하는 커맨드 규약(§1-1 정본)이나 `knowledge/` 등 플러그인 자원을 가리키는 참조 규약(§1-2 정본)이 필요할 때, 또는 그 실행·열기가 실패했을 때 사용.
+description: 산출물 저장·경로 인프라 규칙 — 추적성 확보, 경로 명시·저장 위계로 회수 불가 손실 방지. 파일 저장 위치·경로 관리 시, 그리고 플러그인 번들 `bin/` 스크립트를 실행하는 커맨드 규약(§1-1 정본)이나 `knowledge/` 등 플러그인 자원을 가리키는 참조 규약(§1-2 정본)이 필요할 때, 또는 그 실행·열기가 실패했을 때 사용.
 ---
 
 # Output Storage and Path Management
@@ -22,11 +22,12 @@ description: 전 에이전트 인프라 규칙 — 산출물 추적성 확보, �
   │   ├─ README.md            → 문서 지도(진입점) — "무엇을 어디서 읽을지" 안내, 통독 금지
   │   ├─ product-principles.md
   │   ├─ [도메인]/            → 주제별 가이드
+  │   ├─ reviewer/            → 리뷰 보고서(review-*.md) + personas/ (리뷰 페르소나)
   │   └─ archive/             → 폐기된 이전 문서 (참조용)
   │
   ├─ output/                  → 최종 산출물 (배포용)
   │   ├─ *.html / *.pdf       → 발표/배포 파일
-  │   └─ reports/             → 의사결정/검증 보고서
+  │   └─ reports/             → 의사결정 보고서
   │
   ├─ [src/, src-*/...]        → 프로젝트 소스 (git 추적)
   │
@@ -129,7 +130,7 @@ issue_record:
 | 영역 | 예시 | 보관 |
 |------|------|------|
 | 의사결정 | `decision-pnpm-monorepo-2025-07-10.md` | docs/ 또는 output/reports/ |
-| 검증/리뷰 | `review-code-auth-2025-07-10.md` | output/reports/ |
+| 검증/리뷰 | `review-code-auth-2025-07-10.md` | docs/reviewer/ |
 | 학습/교훈 | `training-report-pnpm-setup-2025-07-10.md` | docs/ |
 | 임시 분석 | `scratch-perf-analysis-2025-07-10.md` | scratchpad/ (세션 후 삭제) |
 
@@ -160,6 +161,11 @@ tags: [auth, security, decision]
 - [ ] 작성자/세션ID 포함?
 - [ ] 상태 명시? (최종/초안/폐기)
 - [ ] 관련 파일 경로 상호 참조?
+
+**예외 — 리뷰 보고서(`docs/reviewer/review-*.md`)는 YAML 프론트매터를 쓰지 않는다.** 대신 Skill
+`reviewer-persona-panel-standard` §5가 정한 본문 머리말(리뷰 페르소나 패널 / 리뷰 대상 / 리스크
+범주 / 리뷰 일자 / 종합 판정)이 같은 역할을 하며, 리뷰 고유의 판정·패널 정보까지 담아 더 많은
+것을 추적한다. 한 산출물에 메타데이터 서식을 두 벌 요구하면 둘 중 하나는 반드시 비어 있게 된다.
 
 ### 5. 폐기 및 아카이빙 규칙
 
@@ -197,7 +203,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-output-conventions.mjs" --strict
 나뉜다:
 
 - **하드 위반**: 정규식/파일시스템으로 명확히 결정되는 것만(예: `decision-` 파일에 날짜 없음,
-  `review-` 파일이 `output/reports/` 밖에 있음, `archive/` 안인데 `archived-` 접두어 없음,
+  `review-` 파일이 `docs/reviewer/` 밖에 있음, `archive/` 안인데 `archived-` 접두어 없음,
   프론트매터에 `created`/`author`/`status` 누락). 스크립트가 "위반"이라 표시해도 최종 확정은
   사람이 한다.
 - **확인 필요**: 의도적 예외일 수 있는 애매한 케이스(예: `related_files`/`tags` 둘 다 없음 —

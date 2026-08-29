@@ -1,6 +1,6 @@
 # 스크린샷 캡처 가이드 (배경)
 
-> **본문(캡처 절차·CLI 플래그·상태별 체크리스트)의 정본은 `skills/common-screen-verification-and-capture`다.** 캡처 실행은 `malgn-agent/bin/capture.mjs`(번들 스크립트, `--full/--vp/--wait/--click/--sel/--dark/--responsive`)를 쓴다 — 프로젝트별 `bin/capture-all.js`/`bin/capture-nav.js` 복사-커스터마이즈 템플릿과 전역 `shot` CLI는 더 이상 쓰지 않는다. 실행법(플러그인 절대경로가 채워진 커맨드 정본)은 Skill `common-screen-verification-and-capture` 참조.
+> **본문(캡처 절차·CLI 플래그·상태별 체크리스트)의 정본은 `skills/common-screen-verification-and-capture`다.** 캡처 실행은 번들 스크립트 `bin/capture.mjs`(`--full/--vp/--wait/--click/--sel/--dark/--responsive`) 하나로 한다 — 프로젝트마다 캡처 스크립트를 복사·커스터마이즈하거나 전역 CLI에 의존하지 않는다. 실행법(플러그인 절대경로가 채워진 커맨드 정본)은 Skill `common-screen-verification-and-capture` 참조.
 
 이 문서에는 절차가 바뀌어도 남는 배경(왜 이 규칙이 있는가)만 남긴다.
 

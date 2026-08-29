@@ -15,44 +15,50 @@ PM(`agents/pm.md`)이 작업을 위임한 **이후** 실행을 관리하는 절�
 
 ## 1. WBS 기반 프로젝트 관리
 
+**WBS 착수 — 항목 생성**
+- **초안 일괄 생성**: `wbs_bulk_add(projectId, items[])`로 Step+하위 작업을 트랜잭션 1개에 원자 생성한다(1~100개). 각 항목은 `tempId`·`title`이 필수이고, 자식은 `parentTempId`로 부모를 가리키며 **부모가 배열에서 자식보다 먼저 와야 한다**. 착수 시 WBS 전체 골격을 한 번에 세우는 기본 경로다.
+- **항목 1건 추가**: `wbs_add(projectId, title, idempotencyKey, [parentId])`. 진행 중 작업이 하나 늘어날 때 쓴다 — `parentId`를 생략하면 최상위 Step이 된다. `idempotencyKey`가 필수라 재시도해도 중복 생성되지 않는다.
+- 두 도구 모두 파라미터는 camelCase다(`assigneeAgentName`·`startDate`·`endDate`·`responsibleTeam`). 생성 이후의 상태 갱신은 `wbs_update`, 조회는 `wbs_list`가 담당한다.
+
 **WBS 진행상황 추적**
-- **정기 현황 수집** (주 1회 이상): `wbs_list(projectId)` 호출 → 전체 항목의 status/computed_progress/bucket 수집
-- **부모 노드는 rollup 신호만 본다**: WBS 그룹(Step/Group)의 status는 직접 변경 불가 — 리프 항목들의 progress로 자동 계산되는 computed_progress와 bucket('planned'/'in_progress'/'done'/'delayed')이 진짜 신호
-  - 예: 그룹 status='planned'인데 computed_progress=100·bucket='done' → 정상(리프 다 완료)
+- **정기 현황 수집** (주 1회 이상): `wbs_list(projectId)` 호출 → 전체 항목의 status/computedProgress/bucket 수집
+- **부모 노드는 rollup 신호만 본다**: WBS 그룹(Step/Group)의 status는 직접 변경 불가 — 리프 항목들의 progress로 자동 계산되는 computedProgress와 bucket('planned'/'in_progress'/'done'/'delayed')이 진짜 신호
+  - 예: 그룹 status='planned'인데 computedProgress=100·bucket='done' → 정상(리프 다 완료)
   - 예: 그룹 status='in_progress'인데 bucket='delayed' → 하위 항목 지연 상황 반영
 - **리프 항목만 실제 진행률**: progress는 리프 노드만 업데이트 가능(`wbs_update` 호출), 자식이 있는 노드에 progress를 주면 에러
 
 **병목·지연 항목 모니터링**
 - **지연 항목 식별**: `wbs_list(projectId, status='delayed')` → 계획 종료일 경과 + progress < 100인 항목 필터
+  - **`delayed`는 서버 파생값이다 — 직접 지정할 수 없다.** `wbs_update`의 status가 받는 값은 `planned`/`in_progress`/`done` 셋뿐이고, `delayed`는 종료일·진행률로 서버가 계산해 붙인다. 조회 필터(`wbs_list`)와 rollup bucket에서만 등장하므로, 지연을 "기록"하려 들지 말고 종료일·progress를 사실대로 갱신한다.
 - **진행 정체 신호**:
   - status='in_progress'인데 progress=0 지속(3일 이상) → 실제 착수 미확인, 담당자 확인 필수
   - progress 무변화 기간이 deadline까지 남은 일수보다 길면 → 가속화 필요
-- **롤업 추락 추적**: 부모 computed_progress가 이전 점검 대비 5% 이상 하락 → 하위 항목 연쇄 지연 신호
+- **롤업 추락 추적**: 부모 computedProgress가 이전 점검 대비 5% 이상 하락 → 하위 항목 연쇄 지연 신호
 
 **동적 우선순위 재조정**
 - **병렬 작업 상위 영향**: WBS에서 진행 중인 항목 중 deadline이 가장 가까운 항목(크리티컬 패스) 식별
 - **상위 항목 지연 시**: parentId 필터로 해당 그룹의 모든 자식 항목 조회 → 상위 완료 대기 중인 후속 작업 일정 재조정
 - **blocked 상태 추적**: 다른 팀/에이전트의 산출물 대기 중인 항목은 우선순위 맨 뒤로, 대기 해제 후 재상향
-  - malgnai issue와 연계: `project_get_context(projectId, sections=['issues'])`의 열린 이슈에서 해당 WBS 항목 참조 → issue 해결 시 자동 blocked 해제
+  - malgnai-hub issue와 연계: `project_get_context(projectId, sections=['issues'])`의 열린 이슈에서 해당 WBS 항목 참조 → issue 해결 시 자동 blocked 해제
 
 **마일스톤·단계별 진행 관리**
 - **Phase별 게이트**: 각 phase 완료를 "모든 리프 항목 progress=100 && status='done'"으로 정의
   - wbs_list(projectId, parentId=<phase_id>) → 해당 phase의 리프만 조회
   - 리프 중 하나라도 progress < 100이면 phase 미완료 선언
-- **Status 전이 추적**: 단계별 담당자가 wbs_update(status='done')할 때 completed_date 동시 기록
+- **Status 전이 추적**: 단계별 담당자가 `wbs_update(status='done')`할 때 `completedDate` 동시 기록
 - **STATUS.md와 동기**: 각 phase 완료 후 STATUS.md 완료섹션 갱신 + WBS 상태 일관성 확인
 
 ---
 
 ## 2. 리스크 판단 (WBS 신호 기반)
 
-**신호 판정은 스크립트, 원인 조사·대응은 PM.** 아래 8개 조기경고 신호는 전부 `wbs_list` 응답(JSON)에 대한 임계값 비교라, 매번 표를 눈으로 대조하면 놓치기 쉽다. `bin/check-wbs-warnings.mjs`(의존성 없는 Node 내장 모듈만 사용, `bin/analyze-usage.mjs`와 동일 스타일)가 이 판정을 대신한다 — PM은 스크립트 출력에서 걸린 항목만 골라 원인 조사·담당자 확인·재계획 같은 판단을 한다.
+**신호 판정은 스크립트, 원인 조사·대응은 PM.** 아래 8개 조기경고 신호 중 6개는 `wbs_list` 응답(JSON)에 대한 임계값 비교라, 매번 표를 눈으로 대조하면 놓치기 쉽다(나머지 2개가 왜 빠지는지는 체크리스트 표 아래 주석 참조). `bin/check-wbs-warnings.mjs`(의존성 없는 Node 내장 모듈만 사용, `bin/analyze-usage.mjs`와 동일 스타일)가 이 판정을 대신한다 — PM은 스크립트 출력에서 걸린 항목만 골라 원인 조사·담당자 확인·재계획 같은 판단을 한다.
 
 ```bash
 # wbs_list 결과를 JSON 파일로 저장(도구 응답을 그대로 파일로 떨어뜨리거나 붙여넣기)한 뒤:
 node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --current wbs-snapshot.json
 
-# "롤업 추락"(computed_progress 5%p 하락) 신호는 이전 시점 스냅샷이 있어야 판정된다.
+# "롤업 추락"(computedProgress 5%p 하락) 신호는 이전 시점 스냅샷이 있어야 판정된다.
 # 정기 점검(§1 "주 1회 이상") 때마다 wbs_list 결과를 날짜별 파일로 남겨두고 직전 스냅샷과 비교:
 node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-05.json --current wbs-2026-08-12.json
 
@@ -67,16 +73,16 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-0
 - **출력**: 항목별 신호·심각도·판정 근거(수치)·표준 대응 문구를 표로 출력(§ 아래 체크리스트와 1:1 대응). PM은 이 표를 받아 High부터 원인 조사에 들어간다.
 - 스크립트가 다루지 않는 것: 아래 "malgnai-hub Issue/Decision과 연계" 섹션(`project_get_context`의 issues/decisions 교차 확인)은 WBS 단일 소스가 아니라 별도 시스템 조회가 필요해 스크립트 범위 밖이다 — 이 부분은 계속 수동으로 확인한다.
 
-**WBS 신호 읽기 (조기 경고 패턴, 스크립트가 판정하는 근거 로직)**
-- **진행 정체**: progress=0 지속(3일 이상)
+**WBS 신호 읽기 (조기 경고 패턴의 근거 로직)**
+- **진행 정체** *(스크립트 미판정 — 아래 표 주석 참조)*: progress=0 지속(3일 이상)
   - 원인: 담당자 미할당, 의존성 미해결, 요구사항 불명확
-  - 대응: wbs_update(assignee_agent_name) 확인 후 담당자 1:1 확인 필수
+  - 대응: `wbs_update(assigneeAgentName)` 확인 후 담당자 1:1 확인 필수
 
 - **Status 불일치**: in_progress인데 progress=0 또는 planned인데 progress > 0
   - 원인: 상태 기록 누락, 또는 자동 착수 후 수동 미업데이트
   - 대응: 실제 진행 상태 재확인 + wbs_update로 status와 progress 동기화
 
-- **Computed_progress 추락**: 부모 노드의 computed_progress가 전일 대비 5% 이상 하락
+- **computedProgress 추락**: 부모 노드의 computedProgress가 전일 대비 5% 이상 하락
   - 원인: 자식 항목 중 하나 이상이 완료→미완료로 되돌려지거나(버그 fix), 또는 새 자식 항목이 added with progress=0
   - 대응: wbs_list(projectId, parentId=<부모_id>)로 자식들을 재조회해 변화 요인 식별
 
@@ -86,7 +92,8 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-0
   - 상위 항목(parent)이 delayed면 그 자식들도 실질적으로 시작 불가 → 의존성 블로킹
 
 - **크리티컬 패스 모니터링**:
-  - wbs_list(projectId, includeDone=false) → 모든 항목의 end_date 추출
+  - wbs_list(projectId, includeDone=false) → 모든 항목의 endDate 추출
+  - ⚠️ 이 필터된 결과는 **눈으로 볼 때만** 쓴다. `check-wbs-warnings.mjs`에는 넣지 말 것 — 스크립트는 전체 스냅샷(`includeDone=true`, 즉 필터 없는 `wbs_list(projectId)`)을 전제로 부모·자식 관계를 계산하므로, done 항목이 빠진 입력을 주면 자식이 전부 done인 그룹이 리프로 오판된다
   - 가장 가까운 deadline 항목들이 progress < 70% 이면 → critical path 리스크
   - 여러 항목의 deadline이 같은 주에 몰려 있으면 → 리소스 경합 리스크
 
@@ -101,23 +108,27 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-0
 
 - **의사결정 지연 추적**: `project_get_context(projectId, sections=['decisions'])`에서
   - 의사결정이 필요한 항목(description에 "의사결정 대기" 표기)인데 decision이 last 7일 동안 없으면 → 지연 위험
-  - WBS start_date 경과 후에도 관련 decision이 없으면 → 착수 전 명확화 부족
+  - WBS startDate 경과 후에도 관련 decision이 없으면 → 착수 전 명확화 부족
 
 - **기록 선택(옵션)**: 리스크 발견 시 issue_record로 기록
   - summary: "WBS:#item_id 지연 (3일 progress=0)" 형식으로 트레이서빌리티 확보
 
-**조기 경고 휴리스틱 체크리스트** (이 8행이 `check-wbs-warnings.mjs`가 그대로 구현한 판정 로직의 정본이다 — 조건·심각도·대응 문구를 바꿀 때는 스크립트도 함께 갱신한다)
+**조기 경고 휴리스틱 체크리스트** (이 8행이 판정 로직의 정본이고, 그중 **6행을 `check-wbs-warnings.mjs`가 구현한다** — 조건·심각도·대응 문구를 바꿀 때는 스크립트도 함께 갱신한다)
 
 | 신호 | 조건 | 심각도 | 대응 |
 |------|------|--------|------|
-| 진행 정체 | progress=0 > 3일 | Medium | 담당자 1:1, status 재확인 |
-| 착수 미확인 | status='in_progress' && progress=0 > 1일 | Medium | 실제 진행 상태 수집 |
-| 임박 기한 위반 | deadline ≤ today && progress < 100 | High | 즉시 에스컬레이션 + 일정 재계획 |
-| 기한 박박 | (end_date - today) ≤ 3일 && progress < 50% | Medium | 가속화 협의, 스코프 축소 검토 |
+| 진행 정체 *(스크립트 미판정)* | progress=0 > 3일 | Medium | 담당자 1:1, status 재확인 |
+| 착수 미확인 *(스크립트 미판정)* | status='in_progress' && progress=0 > 1일 | Medium | 실제 진행 상태 수집 |
+| 임박 기한 위반 | 리프 항목이 deadline ≤ today && progress < 100 | High | 즉시 에스컬레이션 + 일정 재계획 |
+| 기한 박박 | (endDate - today) ≤ 3일 && progress < 50% | Medium | 가속화 협의, 스코프 축소 검토 |
 | 크리티컬 패스 | earliest_deadline인데 progress < 70% | High | 리소스 추가, 병렬화 재검토 |
-| 롤업 추락 | parent.computed_progress ↓ 5% | Medium | 자식 상태 재조회, 변화 요인 식별 |
-| 의존성 블로킹 | parent.status='delayed' → children.start_date_passed | High | 상위 항목 가속화 또는 의존성 제거 검토 |
+| 롤업 추락 | parent.computedProgress ↓ 5% | Medium | 자식 상태 재조회, 변화 요인 식별 |
+| 의존성 블로킹 | parent.status='delayed' → children.startDate 경과 | High | 상위 항목 가속화 또는 의존성 제거 검토 |
 | 상태 불일치 | status ≠ inferred_status_from_progress | Low | wbs_update로 동기화 + 미래 기록 개선 |
+
+> **"스크립트 미판정" 두 행은 시간 경과를 봐야 하는 신호다.** 두 조건 모두 "얼마나 오래 그 상태였나"를 요구하는데, `wbs_list`·`project_get_context` 어느 응답에도 항목의 최종수정시각 필드가 없어 단일 스냅샷만으로는 판정할 수 없다 — 스크립트는 이 둘을 건너뛰고 그 사유를 리포트에 남긴다. **`--previous` 스냅샷 비교로 복원할 수 있다**("롤업 추락"과 같은 패턴: 직전 스냅샷과 대조해 무변화 기간을 계산). 그전까지 이 두 신호는 PM이 눈으로 확인한다.
+>
+> **임박 기한 위반·기한 박박은 리프 항목에만 적용된다.** 그룹 노드의 진행률은 자식 롤업이라 그룹까지 세면 같은 지연이 부모·자식 양쪽에서 중복 경고된다.
 
 **점검 주기**
 - **일일**: critical path 항목(deadline ≤ 1주) status/progress 단순 조회
@@ -192,7 +203,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-0
 **검증 사이클이 도는 중에는 설계를 바꾸지 않는다.** reviewer/evaluator가 검증 중인 산출물의 설계를 PM이 그 자리에서 손대면, 검증자는 이미 사라진 버전을 채점하게 되고 돌아온 지적과 실제 산출물이 서로 다른 것을 가리켜 사이클을 처음부터 다시 돌려야 한다. 검증 중에 떠오른 개선 아이디어는 실행하지 말고 적어두었다가, 사이클을 닫은 뒤 다음 사이클의 입력으로 판단한다. 범위·크기 초과 같은 문제도 그 자리에서 고치지 않고 사유서로 남긴다.
 
 ## 6. 운영 표준 보충 (project-standards 미포함분)
-- **WBS 그룹(부모) 노드는 status를 'done'으로 직접 못 바꾼다(설계, 버그 아님)**: `wbs_update`로 그룹 노드에 status='done'을 시도하면 STATUS_DONE_LEAF_ONLY 에러가 난다 — 그룹 노드는 리프의 진행률로 계산되는 bucket/computed_progress가 진짜 신호다. "진행상태 점검" 시 그룹 status='planned'인데 bucket='done'/computed_progress=100이면 정상이며, stale 여부는 리프 항목의 status/progress로만 판단한다.
+- **WBS 그룹(부모) 노드는 status를 'done'으로 직접 못 바꾼다(설계, 버그 아님)**: `wbs_update`로 그룹 노드에 status='done'을 시도하면 STATUS_DONE_LEAF_ONLY 에러가 난다 — 그룹 노드는 리프의 진행률로 계산되는 bucket/computedProgress가 진짜 신호다. "진행상태 점검" 시 그룹 status='planned'인데 bucket='done'/computedProgress=100이면 정상이며, stale 여부는 리프 항목의 status/progress로만 판단한다.
 - **`docs/README.md` 문서지도가 실제와 어긋나도 알려주는 장치는 없다**: 문서지도의 서술형 안내(어떤 문서가 어디 있다는 설명)는 문서가 옮겨지거나 지워져도 그대로 남아 다음 세션을 없는 파일로 보낸다 — 프로젝트 마감·정리 시점에는 `ls`/`find`로 실제 디렉토리 구조와 문서지도 서술을 대조한다(구조 서술 일반의 대조 규칙은 Skill `project-standards` §6).
 
 ## 7. 자율 학습·업데이트 경계

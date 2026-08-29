@@ -1,6 +1,6 @@
 ---
 name: common-product-principles-reference
-description: 전 에이전트 필수 참조 — docs/product-principles.md로 모든 의사결정의 기저 확보, 일관성 유지. 제품 방향과 관련된 판단이 필요할 때 사용.
+description: 제품 방향 판단의 공통 기저 — docs/product-principles.md로 의사결정 기준을 통일해 산출물마다 방향이 갈리는 것을 막는다. 제품 방향과 관련된 판단이 필요할 때 사용.
 ---
 
 # Product Principles Reference

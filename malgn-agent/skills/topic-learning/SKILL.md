@@ -25,7 +25,7 @@ description: 주제 기반 학습 — 기술/패턴 주제로 가이드 작성 �
 - 핵심 개념 추출 (예: Docker 보안 → image scanning, secrets management, network policies)
 
 **필터링**:
-- 2024년 이후 (최신성)
+- 최근 2년 이내 발행 (최신성) — 그보다 오래된 자료는 스택·권고가 이미 바뀌었을 수 있으니 현행 공식 문서와 대조한 뒤에만 쓴다
 - 업계 표준 (Docker Official, NIST, OWASP 등 신뢰 가능)
 - 실전 예시 포함 (개념만 있는 자료 제외)
 
