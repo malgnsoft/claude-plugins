@@ -16,7 +16,7 @@
 
 const fs = require("fs");
 
-const WRITE_TOOL_RE = /^(Edit|Write|NotebookEdit|Bash|Agent|Workflow)$/;
+const WRITE_TOOL_RE = /^(Edit|Write|NotebookEdit|Bash|PowerShell|Agent|Workflow)$/;
 
 // 기록 도구 판정은 "접두어 무관"이어야 한다 (2026-08-24 수리).
 // MCP 도구의 실제 이름은 `mcp__<서버등록명>__<도구명>` 이고, 서버등록명은 설치 형태마다 다르다:
@@ -154,10 +154,15 @@ process.stdin.on("end", () => {
   // "강제가 아니라 주입"). decision:"block"은 Stop hook을 재트리거해 추가 턴을
   // 강제하는 차단 메커니즘이므로 쓰지 않는다. systemMessage로 사용자에게만
   // 비차단으로 노출한다.
+  //
+  // 여기서 process.exit(0)을 쓰지 않는다: process.stdout이 파이프일 때(훅의 실제 stdout이
+  // 그렇다) write()는 비동기라, exit()로 즉시 프로세스를 죽이면 플러시 전에 출력이 잘릴 수
+  // 있다(파일 리다이렉트는 동기라 이 문제가 없어 실무에서는 안 드러난다). 형제 파일
+  // sessionstart-context.mjs가 이미 같은 이유로 --pm-block 모드에서 이 패턴을 걷어냈다 — 자연
+  // 종료 시점까지 stdout이 온전히 비워지게 두면, Node가 프로세스 종료 전에 표준출력을 드레인한다.
   process.stdout.write(
     JSON.stringify({
       systemMessage: reason,
     })
   );
-  process.exit(0);
 });

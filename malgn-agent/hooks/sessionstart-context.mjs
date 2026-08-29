@@ -97,6 +97,37 @@ function emit(ctx, systemMessage) {
 // 어떤 경우에도 자르지 않는다(넘치면 배너를 먼저 버린다. 그래도 넘치면 본문 자체가 문제다, 아래).
 const PM_BLOCK_SAFE_LIMIT = 9500
 
+// ── STATUS.md 모드의 문자 캡 안전장치 ──────────────────────────────────────
+// clip()은 바이트 기준이라 ASCII 위주 STATUS.md는 12,000B(DEFAULT_MAX_BYTES)가 10,000문자
+// 캡을 넘을 수 있다(파일 상단 헤더 주석 참조 — 실측: 11,944B 입력이 12,015자 출력이 됐다).
+// PM 블록 모드는 문자 길이 안전 임계값(PM_BLOCK_SAFE_LIMIT)으로 이미 이 문제를 막고 있으므로
+// STATUS.md 경로도 같은 값으로 최종 emit 직전에 문자 길이를 다시 잰다.
+const STATUS_CHAR_SAFE_LIMIT = PM_BLOCK_SAFE_LIMIT
+
+/**
+ * 최종 주입 문자열을 문자 수 안전 임계값 안으로 추가 절단한다(줄 경계 기준). clip()의 바이트
+ * 절단을 통과했어도(또는 애초에 절단이 필요 없었어도) 문자 캡은 별도로 넘을 수 있으므로 항상
+ * 다시 검사한다. 조용히 자르지 않는다 — 잘렸으면 그 사실을 알리는 꼬리말을 반드시 남긴다.
+ */
+function enforceCharSafeLimit(text, limit) {
+  if (text.length <= limit) return { text, truncated: false }
+  const footer =
+    '\n\n⚠️ **문자 수 안전 임계값(' + limit + '자)에서 추가로 잘렸다** — 훅 출력 캡(10,000자, ' +
+    'hooks.md:892)에 걸릴 위험 때문이다. ASCII 위주 내용은 바이트 상한을 통과해도 문자 캡을 ' +
+    '넘을 수 있다. STATUS.md 를 줄이거나(지나간 이력은 docs/archive/ 로) MALGN_STATUS_MAX_BYTES 를 낮춰라.'
+  const budget = limit - footer.length
+  const lines = text.split('\n')
+  const kept = []
+  let used = 0
+  for (const line of lines) {
+    const cost = line.length + 1 // 줄바꿈 1문자
+    if (used + cost > budget) break
+    kept.push(line)
+    used += cost
+  }
+  return { text: kept.join('\n') + footer, truncated: true }
+}
+
 /**
  * pm-orchestration-block.md 원문에서 본문만 추출한다. 파일 맨 앞에 있는 HTML 주석 줄
  * (`<!-- ... -->` 한 줄짜리, 예: 버전 규칙 설명·버전 마커)을 몇 개가 있든(0개·1개·2개) 건너뛰고
@@ -189,6 +220,17 @@ if (process.argv.includes('--pm-block')) {
           '(' + c.keptLines + '/' + c.totalLines + '줄, 상한 ' + maxBytes() + 'B). ' +
           '지나간 이력을 docs/archive/ 로 옮겨 STATUS.md 를 L0 크기로 줄이는 것을 권한다. ' +
           '상한 조정은 MALGN_STATUS_MAX_BYTES 환경변수.'
+      }
+
+      // clip()은 바이트 기준이라 여기까지 통과했어도(또는 애초에 안 잘렸어도) 문자 캡을 넘을 수
+      // 있다 — 최종 emit 직전에 한 번 더 문자 길이로 검사한다(위 STATUS_CHAR_SAFE_LIMIT 절 참조).
+      const charClip = enforceCharSafeLimit(head, STATUS_CHAR_SAFE_LIMIT)
+      if (charClip.truncated) {
+        head = charClip.text
+        const charMsg =
+          'STATUS.md 주입 본문이 문자 수 안전 임계값(' + STATUS_CHAR_SAFE_LIMIT + '자)을 넘어 ' +
+          '추가로 절단됐다 — 훅 출력 캡(10,000자)에 근접했었다. STATUS.md 를 줄이는 것을 권한다.'
+        userMsg = userMsg ? userMsg + ' ' + charMsg : charMsg
       }
     }
     emit(head, userMsg)
