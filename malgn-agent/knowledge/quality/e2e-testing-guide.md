@@ -1,11 +1,11 @@
 # E2E 테스트 가이드 (Playwright Test)
 
-E2E 테스트는 **각 프로젝트 repo 안**에 둔다(코드와 함께 버전관리·CI). 즉석 화면 확인은 E2E가 아니라 `malgn-agent/bin/capture.mjs`를 쓴다(→ Skill `common-screen-verification-and-capture`). 이 둘을 혼동하지 않는다.
+E2E 테스트는 **각 프로젝트 repo 안**에 둔다(코드와 함께 버전관리·CI). 즉석 화면 확인은 E2E가 아니라 플러그인 번들 스크립트 `bin/capture.mjs`를 쓴다(→ Skill `common-screen-verification-and-capture`). 이 둘을 혼동하지 않는다.
 
 | | `capture.mjs`(화면 검증) | E2E 테스트 |
 |---|---|---|
 | 성격 | 즉석·수동, 1회성 확인 | 반복·자동 회귀 |
-| 위치 | `malgn-agent/bin/`(공용 스크립트) | 프로젝트 repo 안(`e2e/`, 코드와 함께 버전관리) |
+| 위치 | 플러그인 번들 `bin/`(공용 스크립트) | 프로젝트 repo 안(`e2e/`, 코드와 함께 버전관리) |
 | 실행 | 개발 중 사람이 필요할 때 직접 | CI가 매번 자동 |
 | 브라우저 설치 | 대상 프로젝트에 `playwright` 설치 필요 | 대상 프로젝트에 `@playwright/test` 설치 필요 |
 

@@ -16,7 +16,7 @@
 | `backend/` | backend-dev | Hono/D1 구현 패턴, DAO |
 | `frontend/` | frontend-dev | vue-zero 패턴, Bootstrap 5 |
 | `quality/` | qa-engineer | 테스트 설계, Vitest 패턴 |
-| `review/` | reviewer | 페르소나 6대 요소, 패널 운영, 재사용 페르소나 자산 |
+| `review/` | reviewer | 발산형 페르소나 배경, 다차수 검증 심화 패턴, 캡처 하드게이트 배경 |
 | `proposal/` | rfp-analyst, capture-strategist, writer, reviewer | 제안/입찰 방법론(Shipley), 공공조달 실무, Compliance Matrix, 제안 집필 원칙 |
 | `devops/` | devops | Docker, Cloudflare, CI/CD |
 | `writing/` | writer | 문서 작성 가이드 |
@@ -36,7 +36,7 @@
 - `screen-reuse-consistency-verification.md` — 화면 재사용/재렌더 시 시각적 일관성 diff 절차 (설계→구현→리뷰 공통)
 
 ### review/
-- `reviewer-personas.md` — (핵심 절차 정본은 `skills/reviewer-persona-panel-standard/SKILL.md`이며, 그 절차 본문 — 6대 필수요소·심각도 표준·보고서 형식·패널 운영·산출물 게이트 — 이 이 문서에도 함께 실려 있다) 그 밖에 발산형 페르소나 배경, 선택 강화 패턴 A/B/C, 문서·설계서 다차수 검증 패턴 D~G
+- `reviewer-personas.md` — (절차 본문 정본은 `skills/reviewer-persona-panel-standard/SKILL.md`) 발산형 페르소나를 강제하는 배경, 선택 강화 패턴 A/B/C, 문서·설계서 다차수 검증 패턴 D~G만 남음
 - `screenshot-capture-guide.md` — (절차 본문 정본은 `skills/common-screen-verification-and-capture`) 하드 게이트 원칙 + 상태별 캡처 체크리스트만 남음
 
 ### proposal/
@@ -54,7 +54,7 @@
 - `autonomous-iteration-philosophy.md` — 자율 반복 상한(3~5회)·수확체감 우선 종료조건, 일일 토큰 예산 게이트와 한도 초과 시 대표 보고 절차 (`agents/pm.md` 실참조)
 - `coo-rule-rationale.md` — PM 핵심 운영 규칙의 근거 모음(orchestrator 흡수, 집필 위임 원칙, 공유 가정 주입, 경로 릴레이 순차 위임) — 각 규칙이 유래한 실제 사고 사례 포함 (`agents/pm.md` 실참조)
 - (STATUS.md 표준 포맷·크기 상한·아카이빙·헤더 교체 규칙 정본은 knowledge가 아니라 `skills/project-standards` §3)
-- `judgment-independence-patterns.md` — 판정 독립성 설계 3요소(선기대치 자술/blind 판정/합격에만 서명) 참고 노트, 타 AI 조직 사례 재정리. evaluator 판정 체크리스트 개선 논의의 참고 자료(evaluator.md 자체는 미수정)
+- `judgment-independence-patterns.md` — 판정 독립성 설계 3요소(선기대치 자술/blind 판정/합격에만 서명) 참고 노트, 타 AI 조직 사례 재정리. evaluator 판정 체크리스트를 설계·보강할 때 참고
 
 ### planning/
 - `requirements-analysis.md` — 요구사항 도출 프로세스, PRD 템플릿, 사용자 스토리
@@ -73,7 +73,7 @@
 
 ### architecture/
 - `system-design-patterns.md` — (C4모델·아키텍처패턴·REST API·데이터모델링·분산동기화 본문 정본은 `skills/domain-architecture-patterns-reference/SKILL.md`, 우수설계 7대기법 A~G는 `skills/domain-system-design-principles/SKILL.md`와 중복이라 별도) 배경·출처만 남음
-- `vue-zero-architecture.md` — vue-zero 플랫폼 **규칙 정본**(Composables 절대 금지, 페이지별 단일 `.vue` 파일, `utils.js` 중앙화+`window.*` 등록). `frontend/vue-zero-patterns.md`(패턴 상세)와 역할 분담, 모순 시 이 문서 우선. 실제 참조 대상은 frontend-dev(폴더는 architecture/이나 대상은 frontend — 물리적 이동은 별도 판단 필요)
+- `vue-zero-architecture.md` — vue-zero 플랫폼 **규칙 정본**(Composables 절대 금지, 페이지별 단일 `.vue` 파일, `utils.js` 중앙화+`window.*` 등록). `frontend/vue-zero-patterns.md`(패턴 상세)와 역할 분담, 모순 시 이 문서 우선. 실제 참조 대상은 frontend-dev다(폴더는 architecture/이지만 읽는 쪽은 frontend-dev)
 - `usage-collection-agent-architecture.md` — 토큰 사용량 자동 수집 에이전트(`bin/{usage-agent-lib,pair-usage-device,report-usage,install-usage-agent}.mjs`) 아키텍처 요약: 4개 스크립트 역할분담, malgnai-hub `POST /api/sessions` 계약, 핵심 설계결정(집계 수치만 전송·summary 120자 예외·turns/api_calls는 migration 0012), **설계 문서 대비 실제 구현이 단순화된 지점**(daily-aggregate 엔드포인트 없음/scope 없는 범용 device_token/세션ID 비해시 등) 명시. `skills/usage-agent-healthcheck`와 짝
 
 ### backend/
@@ -139,6 +139,6 @@ PM은 프로젝트 완료 시:
 
 ## 학습 자료 추가 방법
 
-1. 해당 폴더에 `.md` 파일 추가 — **신규 knowledge 문서는 파일 최상단(제목 바로 아래)에 `owner`(작성 에이전트 이름)와 `최종검토일`(YYYY-MM-DD) 메타 라인을 포함한다**(예: `> owner: trainer · 최종검토일: 2026-08-14`). 기존 문서에는 소급 적용하지 않는다 — 신설되는 문서부터 적용한다.
+1. 해당 폴더에 `.md` 파일 추가 — **신규 knowledge 문서는 파일 최상단(제목 바로 아래)에 `owner`(작성 에이전트 이름) 메타 라인을 포함한다**(예: `> owner: trainer`). 기존 문서에는 소급 적용하지 않는다 — 신설되는 문서부터 적용한다. 검토 날짜는 적지 않는다 — 제품 본문은 "지금 무엇이 참인가"만 담고, 언제 손봤는지는 git 이력의 몫이다.
 2. 이 README.md에 항목 추가
 3. 관련 에이전트 MD의 `## 학습 자료` 섹션에 경로 추가

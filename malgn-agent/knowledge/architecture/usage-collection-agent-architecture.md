@@ -2,7 +2,7 @@
 
 > owner: trainer
 
-> 이 문서의 사실 정본은 구현체 `malgn-agent/bin/{usage-agent-lib,pair-usage-device,report-usage,install-usage-agent}.mjs`다 — 필드명·엔드포인트·동작이 이 문서와 어긋나면 코드가 맞다.
+> 이 문서의 사실 정본은 구현체인 플러그인 번들 `bin/{usage-agent-lib,pair-usage-device,report-usage,install-usage-agent}.mjs`다 — 필드명·엔드포인트·동작이 이 문서와 어긋나면 코드가 맞다.
 
 이 문서는 나중에 이 기능을 유지보수하거나 비슷한 백그라운드 텔레메트리 파이프라인을 또 만들 사람이 "왜 이렇게 돼 있지"를 빠르게 파악하도록 돕는다.
 
