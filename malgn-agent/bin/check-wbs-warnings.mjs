@@ -206,7 +206,7 @@ function evaluate(currentItems, previousItems, today) {
         '진행 정체',
         'Medium',
         '담당자 미할당, 의존성 미해결, 요구사항 불명확',
-        'wbs_update(assignee_agent_name) 확인 후 담당자 1:1 확인 필수',
+        'wbs_update(assigneeAgentName) 확인 후 담당자 1:1 확인 필수',
         `progress=0, updated_at 이후 ${ageDays}일 경과(기준일 ${localDateStr(today)})`
       );
     }

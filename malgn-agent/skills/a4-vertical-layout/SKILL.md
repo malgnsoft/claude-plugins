@@ -23,9 +23,9 @@ pnpm add -D playwright && pnpm exec playwright install chromium
 ```
 이 스킬이 필요로 하는 것은 화면 캡처가 아니라 **블록별 렌더 높이 측정**이라 `bin/capture.mjs`를
 그대로 재사용하지는 않는다(성격이 다른 스크립트). 대신 아래 단계 2·4의 측정/검증 스크립트를
-`playwright`(전체 설치, `playwright-core` 아님) 표준 import로 그때그때 작성해 실행한다 — 과거
-버전의 `require('playwright-core')` 인라인 패턴(package.json 미선언 상태로 전역 캐시에 의존)은
-더 이상 쓰지 않는다.
+`playwright`(전체 설치, `playwright-core` 아님) 표준 import로 그때그때 작성해 실행한다.
+`playwright-core`를 package.json에 선언하지 않은 채 인라인 `require`로 끌어 쓰면 전역 캐시에
+의존하게 되어 다른 PC에서 그대로 깨진다.
 
 ---
 
@@ -233,7 +233,6 @@ pdftoppm -png -r 100 output.pdf /tmp/page  # 각 페이지 이미지화
 
 ## 참고
 
-- (원본 사고 분석·4부 교훈은 이 스킬의 단계 3~4에 이미 흡수됨)
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/design/html-style-guide/html-스타일가이드-세로형.html` — 정본 스타일
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/presentation/a4-document-fundamentals.md` — 기술 배경 (페이지 크기·여백·렌더 측정 원리)
 - `presenter.md` "세로형(A4) 페이지 채움 게이트" 섹션

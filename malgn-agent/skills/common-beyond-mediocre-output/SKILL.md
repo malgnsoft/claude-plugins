@@ -1,6 +1,6 @@
 ---
 name: common-beyond-mediocre-output
-description: 전 에이전트 산출물 품질 기준 — 프로젝트 고유성, 엣지케이스, 컨텍스트 의존성으로 평범함 제거. 모든 에이전트가 산출물을 작성·검토할 때 상시 참조.
+description: 산출물 품질 기준 — 프로젝트 고유성, 엣지케이스, 컨텍스트 의존성으로 평범함 제거. 산출물을 작성·검토할 때 참조한다(qa-engineer·security·trainer 필수 참조).
 ---
 
 # Beyond-Mediocre Output
