@@ -28,7 +28,9 @@
  *   - **조용히 자르지 않는다**: 잘렸을 때는 (a) 주입 본문 맨 앞과 잘린 지점에 경고를 넣어 모델이
  *     알게 하고 (b) systemMessage 로 사람에게도 보여준다. 남은 부분을 어떻게 읽는지도 같이 준다.
  *   - 줄 경계에서 자른다: 바이트 중간을 자르면 한글이 깨지고 표·코드펜스가 반쪽 난다.
- *   - 상한이 안 맞는 프로젝트는 MALGN_STATUS_MAX_BYTES 환경변수로 조정한다(0 = 무제한).
+ *   - 상한이 안 맞는 프로젝트는 MALGN_STATUS_MAX_BYTES 환경변수로 조정한다(0 = 바이트 상한만
+ *     무제한). 문자 안전 임계값(STATUS_CHAR_SAFE_LIMIT, 아래)은 플랫폼 훅 출력 캡(10,000자)
+ *     자체에서 오는 별개 제약이라 이 환경변수로는 못 끈다 — 0으로 둬도 문자 캡에는 여전히 걸린다.
  *
  * ── PM 블록 모드: 왜 STATUS.md 와 같은 값에 합치지 않는가 ─────────────────────
  * docs/anthropic/hooks/hooks.md:892 — 훅이 반환하는 출력 문자열(additionalContext 포함)은
@@ -53,35 +55,10 @@ function maxBytes() {
   if (raw === undefined || raw === '') return DEFAULT_MAX_BYTES
   const n = Number.parseInt(raw, 10)
   if (!Number.isFinite(n) || n < 0) return DEFAULT_MAX_BYTES // 오설정은 기본값으로 — 세션을 막지 않는다
-  return n // 0 = 무제한(종전 동작)
+  return n // 0 = 바이트 상한만 무제한(종전 동작). 문자 안전 임계값은 별개 — 위 헤더 주석 참조.
 }
 
 const bytes = (s) => Buffer.byteLength(s, 'utf8')
-
-/** 상한 이내가 되도록 줄 단위로 앞에서부터 담는다. { text, truncated, keptBytes, totalBytes, keptLines, totalLines } */
-function clip(status, limit) {
-  const total = bytes(status)
-  const lines = status.split('\n')
-  if (limit === 0 || total <= limit) {
-    return { text: status, truncated: false, keptBytes: total, totalBytes: total, keptLines: lines.length, totalLines: lines.length }
-  }
-  const kept = []
-  let used = 0
-  for (const line of lines) {
-    const cost = bytes(line) + 1 // 줄바꿈 1바이트
-    if (used + cost > limit) break
-    kept.push(line)
-    used += cost
-  }
-  return {
-    text: kept.join('\n'),
-    truncated: true,
-    keptBytes: used,
-    totalBytes: total,
-    keptLines: kept.length,
-    totalLines: lines.length,
-  }
-}
 
 function emit(ctx, systemMessage) {
   const out = {
@@ -96,6 +73,84 @@ function emit(ctx, systemMessage) {
 // 그 자체를 쓰지 않는 이유는 배너 텍스트를 더했을 때 본문 경계를 넘기지 않기 위해서다 — 본문은
 // 어떤 경우에도 자르지 않는다(넘치면 배너를 먼저 버린다. 그래도 넘치면 본문 자체가 문제다, 아래).
 const PM_BLOCK_SAFE_LIMIT = 9500
+
+// ── STATUS.md 모드: 바이트 상한 + 문자 안전 임계값 통합 절단 ────────────────
+// 예전에는 바이트 상한(옛 clip())으로 먼저 자르고, 그 결과 완성된 헤더 문자열을 문자 안전
+// 임계값으로 다시 잘랐다(2단계). 두 절단이 동시에 걸리면 완성된 안내 문구("N줄 중 M줄만
+// 들어왔다", "offset N부터 읽어라")가 1단계(바이트) 시점의 숫자를 그대로 인용한 채 2단계
+// (문자)에서 뒷부분이 통째로 잘려나갈 수 있었다 — 안내 문구가 주장하는 줄 수와 실제 주입된
+// 줄 수가 어긋나고, 심하면 "여기서 잘렸다" 꼬리말 자체가 사라지는 회귀였다.
+// 그래서 두 상한을 한 루프로 합친다: 후보 keptLines 를 바꿔가며 그 후보로 완성한 최종
+// 메시지 전체(배너+본문+꼬리말)를 매번 다시 만들고, 바이트 상한과 문자 안전 임계값을 모두
+// 만족하는 가장 큰 keptLines 를 찾는다(아래 buildStatusHead). 안내 문구 안의 숫자는 항상 그
+// 최종 메시지 자신을 근거로 계산되므로 두 상한이 동시에 걸려도 절대 어긋날 수 없다.
+// 문자 안전 임계값이 10,000(플랫폼 훅 출력 캡)이 아니라 여유를 둔 값인 이유는 PM_BLOCK_SAFE_LIMIT
+// 절 참조와 동일하다 — 안내 문구·배너 텍스트를 더해도 캡을 넘지 않기 위해서다.
+const STATUS_CHAR_SAFE_LIMIT = PM_BLOCK_SAFE_LIMIT
+
+const STATUS_BANNER = '프로젝트 진행 상태 (STATUS.md) — 세션 시작 시 자동 주입됨. 사용자가 부르면 이 내용을 먼저 요약해 보고할 것:'
+const kb = (n) => (n / 1024).toFixed(1) + 'KB'
+
+/** lines 중 keptLines 개만 남겼다고 가정하고 그 시점 기준으로 최종 head/userMsg를 완성한다. */
+function buildStatusMessage(lines, totalBytes, totalLines, keptLines, byteLimit) {
+  const text = lines.slice(0, keptLines).join('\n')
+  const keptBytes = bytes(text)
+  if (keptLines >= totalLines) {
+    return { head: STATUS_BANNER + '\n\n' + text, userMsg: '', keptBytes }
+  }
+  const head =
+    STATUS_BANNER + '\n\n' +
+    '⚠️ **이 STATUS.md 는 잘려서 주입됐다** — 전체 ' + totalBytes + 'B(' + kb(totalBytes) + ', ' + totalLines + '줄) 중 ' +
+    '앞 ' + keptBytes + 'B(' + kb(keptBytes) + ', ' + keptLines + '줄)만 들어왔다(바이트 상한 ' + byteLimit + 'B, 문자 안전 임계값 ' + STATUS_CHAR_SAFE_LIMIT + '자).\n' +
+    '아래 내용이 파일의 전부라고 가정하지 마라. 뒷부분이 필요하면 `Read` 로 `STATUS.md` 를 ' +
+    'offset ' + (keptLines + 1) + ' 부터 직접 열어라. 근본 해법은 파일을 줄이는 것이다 — ' +
+    '지나간 라운드 이력·완료 항목은 `docs/archive/` 로 옮기고 STATUS.md 에는 그 위치만 남긴다.\n\n' +
+    text +
+    '\n\n⚠️ **여기서 잘렸다** (' + keptLines + '/' + totalLines + '줄). 이 아래는 주입되지 않았다.'
+  const userMsg =
+    'STATUS.md 가 커서 잘라서 주입했다: ' + kb(totalBytes) + ' 중 앞 ' + kb(keptBytes) + '만 주입 ' +
+    '(' + keptLines + '/' + totalLines + '줄, 바이트 상한 ' + byteLimit + 'B / 문자 안전 임계값 ' + STATUS_CHAR_SAFE_LIMIT + '자). ' +
+    '지나간 이력을 docs/archive/ 로 옮겨 STATUS.md 를 L0 크기로 줄이는 것을 권한다. ' +
+    '상한 조정은 MALGN_STATUS_MAX_BYTES 환경변수(문자 안전 임계값은 플랫폼 훅 출력 캡에서 오는 별개 제약이라 이 환경변수로는 못 끈다).'
+  return { head, userMsg, keptBytes }
+}
+
+/** keptLines 로 자른 결과가 바이트 상한(byteLimit, 0=무제한)과 문자 상한(charLimit)을 모두 만족하는가. */
+function fitsBoth(lines, totalBytes, totalLines, keptLines, byteLimit, charLimit) {
+  const contentBytes = bytes(lines.slice(0, keptLines).join('\n'))
+  if (byteLimit !== 0 && contentBytes > byteLimit) return false
+  return buildStatusMessage(lines, totalBytes, totalLines, keptLines, byteLimit).head.length <= charLimit
+}
+
+/**
+ * STATUS.md 주입 메시지를 만든다. 바이트 상한과 문자 안전 임계값을 동시에 만족하는 가장 큰
+ * keptLines 를 이진 탐색으로 찾는다 — keptLines 가 늘수록 바이트·문자 사용량은 절대 줄지
+ * 않으므로(각 줄 길이 ≥ 0) fitsBoth 는 keptLines 에 대해 단조(참 구간 뒤에 거짓 구간)다.
+ * 조용히 자르지 않는다: 최선의 keptLines(0이어도)로 만든 메시지를 있는 그대로 낸다.
+ */
+function buildStatusHead(status, byteLimit, charLimit) {
+  const totalBytes = bytes(status)
+  const lines = status.split('\n')
+  const totalLines = lines.length
+
+  if (fitsBoth(lines, totalBytes, totalLines, totalLines, byteLimit, charLimit)) {
+    return buildStatusMessage(lines, totalBytes, totalLines, totalLines, byteLimit)
+  }
+
+  let lo = 0
+  let hi = totalLines - 1
+  let best = 0
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1
+    if (fitsBoth(lines, totalBytes, totalLines, mid, byteLimit, charLimit)) {
+      best = mid
+      lo = mid + 1
+    } else {
+      hi = mid - 1
+    }
+  }
+  return buildStatusMessage(lines, totalBytes, totalLines, best, byteLimit)
+}
 
 /**
  * pm-orchestration-block.md 원문에서 본문만 추출한다. 파일 맨 앞에 있는 HTML 주석 줄
@@ -169,27 +224,9 @@ if (process.argv.includes('--pm-block')) {
     let head = ''
     let userMsg = ''
     if (status) {
-      const c = clip(status, maxBytes())
-      const banner = '프로젝트 진행 상태 (STATUS.md) — 세션 시작 시 자동 주입됨. 사용자가 부르면 이 내용을 먼저 요약해 보고할 것:'
-      if (!c.truncated) {
-        head = banner + '\n\n' + c.text
-      } else {
-        const kb = (n) => (n / 1024).toFixed(1) + 'KB'
-        head =
-          banner + '\n\n' +
-          '⚠️ **이 STATUS.md 는 잘려서 주입됐다** — 전체 ' + c.totalBytes + 'B(' + kb(c.totalBytes) + ', ' + c.totalLines + '줄) 중 ' +
-          '앞 ' + c.keptBytes + 'B(' + kb(c.keptBytes) + ', ' + c.keptLines + '줄)만 들어왔다(주입 상한 ' + maxBytes() + 'B).\n' +
-          '아래 내용이 파일의 전부라고 가정하지 마라. 뒷부분이 필요하면 `Read` 로 `STATUS.md` 를 ' +
-          'offset ' + (c.keptLines + 1) + ' 부터 직접 열어라. 근본 해법은 파일을 줄이는 것이다 — ' +
-          '지나간 라운드 이력·완료 항목은 `docs/archive/` 로 옮기고 STATUS.md 에는 그 위치만 남긴다.\n\n' +
-          c.text +
-          '\n\n⚠️ **여기서 잘렸다** (' + c.keptLines + '/' + c.totalLines + '줄). 이 아래는 주입되지 않았다.'
-        userMsg =
-          'STATUS.md 가 커서 잘라서 주입했다: ' + kb(c.totalBytes) + ' 중 앞 ' + kb(c.keptBytes) + '만 주입 ' +
-          '(' + c.keptLines + '/' + c.totalLines + '줄, 상한 ' + maxBytes() + 'B). ' +
-          '지나간 이력을 docs/archive/ 로 옮겨 STATUS.md 를 L0 크기로 줄이는 것을 권한다. ' +
-          '상한 조정은 MALGN_STATUS_MAX_BYTES 환경변수.'
-      }
+      const result = buildStatusHead(status, maxBytes(), STATUS_CHAR_SAFE_LIMIT)
+      head = result.head
+      userMsg = result.userMsg
     }
     emit(head, userMsg)
   } catch {
