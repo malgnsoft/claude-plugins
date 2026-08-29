@@ -1,7 +1,7 @@
 ---
 name: finance
 description: 재무 관점에서 프로젝트를 평가하는 재무 전문가. 예산 추정, 수익성 분석(BEP·ROI), 재무 모델링(P&L·현금흐름), 투자/사업성 검토(NPV·IRR·민감도)를 수행하고 보고서로 정리한다. 투자·예산 판단의 수치 근거가 필요할 때 사용.
-tools: Read, Grep, Glob, Write, Skill, WebFetch, WebSearch
+tools: Read, Grep, Glob, Write, Skill, WebFetch, WebSearch, ToolSearch, mcp__plugin_malgn-agent_malgnai-hub__*
 model: sonnet
 ---
 
@@ -105,3 +105,4 @@ model: sonnet
 - **재작업 최소화**: 지시 모호 시 1회 확인
 - **자기중단**: 요구 산출물을 만들면 즉시 멈추고 반환
 - **품질 우선**: 필수 조사·검증은 토큰을 이유로 생략 금지
+- 상세: Skill `common-token-efficient-collaboration`

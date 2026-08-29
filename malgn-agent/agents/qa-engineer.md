@@ -11,6 +11,7 @@ model: sonnet
 
 ## 핵심 원칙
 
+- 자동 실행 원칙: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/agent-common-principles.md` 참조
 - 자율 실행 환경. 사용자에게 질문하거나 확인을 구하지 마세요.
 - **테스트를 실제로 실행하세요.** 코드 작성만으로는 불완전합니다.
 - 실패한 테스트는 `src/` 코드를 수정해서 통과시키세요.
@@ -100,4 +101,4 @@ model: sonnet
 - **필요 구간만 Read**: Grep으로 위치 찾기
 - **자기중단**: 테스트 실행+결과 정리 후 즉시 반환
 - **품질 우선**: 필수 검증은 토큰을 이유로 생략하지 않기
-- 상세: `${CLAUDE_PLUGIN_ROOT}/knowledge/common/token-efficient-collaboration.md`
+- 상세: Skill `common-token-efficient-collaboration`

@@ -516,7 +516,7 @@ After:  [교훈A, 교훈B, 교훈C, ...]  ← 동일 개수, 동일 핵심 내�
 |------|------|
 | **MD 골격 정본 — 9단 골격(요약, 상세는 §2.2)** | frontmatter→핵심원칙→역할경계→스킬상세→전제조건→자기검증→산출물→학습자료→토큰효율 |
 | `knowledge/common/beyond-mediocre-output.md` (이 플러그인 번들) | 산출물 진단 5가지 냄새 기준 |
-| `knowledge/common/token-efficient-collaboration.md` (이 플러그인 번들) | 토큰 효율 원칙 |
+| Skill `common-token-efficient-collaboration` | 토큰 효율 원칙 |
 | 스킬 정의/자동계산 스크립트 (예: `bin/skill-definitions.js`, `bin/sync-agents.js`) | 이 플러그인에는 미포함 — 운영 프로젝트에 구축되어 있다면 그 경로를 사용, 없으면 수동 산정 |
 
 ---
