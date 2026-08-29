@@ -8,7 +8,7 @@ description: 전 에이전트 운영 표준 — 조직 학습 체계, 교훈 기
 ## 정의
 
 팀 전체가 경험한 교훈·실수·성공을 기록하고, 그것을 다음 의사결정에 자동 반영하는 폐쇄 루프 시스템. malgnai-hub를 중심으로 메모리 → 판단 → 기록 → 갱신을 순환시킨다.
-- **역할 구분:** 이 스킬은 malgnai-hub 기록 규칙 자체(issue_record/decision_record/work_record를 언제·어떻게 쓰는지, 회고 주기, 기록 필수 필드)만 다룬다. 특정 태스크 하나를 실행하는 동안의 Pre/Mid/Post-Execution 체크리스트와 구체 실행 예시는 `learning-loop-patterns` 스킬을 참조하라 — 그 스킬이 이 규칙 위에서 동작하는 태스크 단위 실행 플레이북이다.
+- **역할 구분:** 이 스킬은 malgnai-hub 기록 규칙 자체(issue_record/decision_record/work_record를 언제·어떻게 쓰는지, 회고 주기, 기록에 반드시 담을 것)만 다룬다. 특정 태스크 하나를 실행하는 동안의 Pre/Mid/Post-Execution 체크리스트와 구체 실행 예시는 `learning-loop-patterns` 스킬을 참조하라 — 그 스킬이 이 규칙 위에서 동작하는 태스크 단위 실행 플레이북이다.
 
 ## 핵심 원칙
 

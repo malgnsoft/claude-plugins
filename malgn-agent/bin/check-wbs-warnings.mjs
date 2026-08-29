@@ -307,7 +307,7 @@ function evaluate(currentItems, previousItems, today) {
           '롤업 추락',
           'Medium',
           '자식 항목 중 하나 이상이 완료→미완료로 되돌려지거나, 새 자식 항목이 progress=0으로 추가됨',
-          'wbs_list(parent_id=<부모_id>)로 자식들을 재조회해 변화 요인 식별',
+          'wbs_list(parentId=<부모_id>)로 자식들을 재조회해 변화 요인 식별',
           `computed_progress: ${prev.computed_progress} → ${item.computed_progress} (${drop.toFixed(1)}%p 하락)`
         );
       }
