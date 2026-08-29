@@ -157,9 +157,12 @@ process.stdin.on("end", () => {
   //
   // 여기서 process.exit(0)을 쓰지 않는다: process.stdout이 파이프일 때(훅의 실제 stdout이
   // 그렇다) write()는 비동기라, exit()로 즉시 프로세스를 죽이면 플러시 전에 출력이 잘릴 수
-  // 있다(파일 리다이렉트는 동기라 이 문제가 없어 실무에서는 안 드러난다). 형제 파일
-  // sessionstart-context.mjs가 이미 같은 이유로 --pm-block 모드에서 이 패턴을 걷어냈다 — 자연
-  // 종료 시점까지 stdout이 온전히 비워지게 두면, Node가 프로세스 종료 전에 표준출력을 드레인한다.
+  // 있다 — 다만 이건 무조건 일어나는 게 아니라 파이프 버퍼(OS 기본 64KiB=65,536B)를 넘는
+  // 대용량 출력에서만 발생한다(파일 리다이렉트는 동기라 이 문제 자체가 없다). 이 파일의 실제
+  // reason 문자열은 보통 ~600B라 이 경로가 실제로 촉발될 가능성은 낮지만, 형제 파일
+  // sessionstart-context.mjs가 이미 같은 이유로 --pm-block 모드에서 이 패턴을 걷어냈으므로
+  // 예방적으로 맞춘다 — 자연 종료 시점까지 stdout이 온전히 비워지게 두면, Node가 프로세스
+  // 종료 전에 표준출력을 드레인한다.
   process.stdout.write(
     JSON.stringify({
       systemMessage: reason,
