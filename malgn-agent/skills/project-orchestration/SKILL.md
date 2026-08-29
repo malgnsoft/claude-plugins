@@ -73,8 +73,8 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-0
 - **출력**: 항목별 신호·심각도·판정 근거(수치)·표준 대응 문구를 표로 출력(§ 아래 체크리스트와 1:1 대응). PM은 이 표를 받아 High부터 원인 조사에 들어간다.
 - 스크립트가 다루지 않는 것: 아래 "malgnai-hub Issue/Decision과 연계" 섹션(`project_get_context`의 issues/decisions 교차 확인)은 WBS 단일 소스가 아니라 별도 시스템 조회가 필요해 스크립트 범위 밖이다 — 이 부분은 계속 수동으로 확인한다.
 
-**WBS 신호 읽기 (조기 경고 패턴, 스크립트가 판정하는 근거 로직)**
-- **진행 정체**: progress=0 지속(3일 이상)
+**WBS 신호 읽기 (조기 경고 패턴의 근거 로직)**
+- **진행 정체** *(스크립트 미판정 — 아래 표 주석 참조)*: progress=0 지속(3일 이상)
   - 원인: 담당자 미할당, 의존성 미해결, 요구사항 불명확
   - 대응: `wbs_update(assigneeAgentName)` 확인 후 담당자 1:1 확인 필수
 
