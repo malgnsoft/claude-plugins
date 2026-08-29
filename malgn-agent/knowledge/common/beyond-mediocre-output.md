@@ -34,7 +34,7 @@
 ## 역할별 적용
 
 이 골격은 공통이고, **각 역할은 자기 산출물 유형에 맞게 구체화**한다. 역할 MD의 해당 섹션 참조:
-- **reviewer** — 발산형 페르소나 최소 1명(🔵 Rethink). `review/reviewer-personas.md` "발산형 페르소나"
+- **reviewer** — 발산형 페르소나 최소 1명(🔵 Rethink). Skill `reviewer-persona-panel-standard` §3 (왜 강제하는가는 플러그인 루트 기준 `knowledge/review/reviewer-personas.md` "발산형 페르소나" 배경)
 - **architect** — 평범한 설계를 넘는 4대 의무(트레이드오프·고유성·비정상케이스·완결성). `agents/architect.md`
 - 그 외 역할 — 각 MD의 "평범함을 넘는 기준" 한 줄. (evaluator의 산출물 진단이 누적되면 reviewer·architect처럼 구체화된다.)
 
