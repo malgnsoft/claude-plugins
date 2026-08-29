@@ -39,7 +39,7 @@ PM(`agents/pm.md`)이 작업을 위임한 **이후** 실행을 관리하는 절�
 - **병렬 작업 상위 영향**: WBS에서 진행 중인 항목 중 deadline이 가장 가까운 항목(크리티컬 패스) 식별
 - **상위 항목 지연 시**: parentId 필터로 해당 그룹의 모든 자식 항목 조회 → 상위 완료 대기 중인 후속 작업 일정 재조정
 - **blocked 상태 추적**: 다른 팀/에이전트의 산출물 대기 중인 항목은 우선순위 맨 뒤로, 대기 해제 후 재상향
-  - malgnai issue와 연계: `project_get_context(projectId, sections=['issues'])`의 열린 이슈에서 해당 WBS 항목 참조 → issue 해결 시 자동 blocked 해제
+  - malgnai-hub issue와 연계: `project_get_context(projectId, sections=['issues'])`의 열린 이슈에서 해당 WBS 항목 참조 → issue 해결 시 자동 blocked 해제
 
 **마일스톤·단계별 진행 관리**
 - **Phase별 게이트**: 각 phase 완료를 "모든 리프 항목 progress=100 && status='done'"으로 정의
