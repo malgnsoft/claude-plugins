@@ -9,6 +9,50 @@
 
 ---
 
+## [1.8.17] — 2026-08-29
+
+v1.8.16 배포 이후 전 영역(agents 21종·skills 38종·knowledge 44종·hooks·bin) 냉혹 검증 라운드에서
+실물 실행·재현으로 확정된 결함을 수정한 릴리스입니다.
+
+### 수정
+
+- **PM 권한 자기모순 해소**: `agents/pm.md`의 "위험도 낮음/중간은 PM이 직접판단" 문구가 같은 문서의
+  등급 판정표·PM 권한 참조표와 반대로 읽혔습니다. Micro 등급만 승인 없이 직접 처리한다는 단일 기준으로
+  정리했습니다.
+- **비가역 행동 롤백 지점 규칙 보강**: 서브에이전트로 실행되는 PM(`agents/pm.md`,
+  `skills/project-orchestration/SKILL.md`) 경로에 "merge·대량 삭제 등 되돌리기 어려운 행동 전에
+  브랜치·백업·스냅샷으로 되돌릴 지점을 먼저 만든다"는 규칙이 빠져 있었습니다. 메인 세션 훅
+  (`hooks/pm-orchestration-block.md`)에는 있었지만 서브에이전트 실행 경로에는 없던 공백이었습니다.
+  로컬 프로젝트 정의 우선 조항에도 사람 승인 게이트를 낮출 수 없다는 카브아웃을 추가했습니다.
+- **SessionStart 훅의 STATUS.md 주입이 플랫폼 문자 캡(10,000자)을 조용히 넘던 결함**을 고쳤습니다
+  (`hooks/sessionstart-context.mjs`). 바이트 절단과 문자 절단 로직을 단일 함수로 통합해, 절단 시
+  안내 문구(몇 줄 중 몇 줄)가 실제 주입 내용과 항상 일치하도록 했습니다.
+- **Stop 훅(`hooks/stop-mcp-reminder.cjs`)이 대용량 stdin에서 출력을 파손시킬 수 있던 경로**와
+  **PowerShell 전용 세션에서 리마인더가 무음 종료되던 결함**을 고쳤습니다.
+- **`bin/check-wbs-warnings.mjs`가 malgnai-hub `wbs_list` 실응답과 다른 필드명(snake_case)을 읽어
+  지연·블로킹 신호가 항상 조용히 침묵하던 결함**을 고쳤습니다(camelCase로 정정, 그룹/리프 이중계상도
+  함께 해소). 필터된 스냅샷(`includeDone=false`)을 넣었을 때 그룹이 리프로 오판되는 경로에는 경고를
+  추가했습니다. 최종수정시각 필드가 hub 응답에 없어 판정 불가능한 신호 2종은 삭제 대신 사유를 남기고
+  건너뛰도록 했습니다.
+- **`skills/project-orchestration/SKILL.md`를 hub 실제 스키마·스크립트 구현에 맞춰 정정**했습니다
+  (파라미터 camelCase, WBS 생성 도구 사용법 보강, `delayed`가 서버 파생값임을 명시, 스크립트가
+  판정하지 않는 신호 표기 등).
+- **리뷰 보고서 저장 경로 정본을 `docs/reviewer/`로 통일**했습니다(`bin/check-output-conventions.mjs`,
+  `skills/common-output-storage-and-path-management/SKILL.md`).
+- **`skills/learning-loop-patterns/SKILL.md`가 매 작업 후 STATUS.md에 3개 섹션을 추가하라고
+  지시하던 것을, `project-standards`의 STATUS.md 3,000바이트 상한 규칙과 충돌하지 않도록
+  `work_record`/`decision_record` 기록으로 대체**했습니다.
+- 그 외 죽은 참조(존재하지 않는 `bin/capture-all.js`·`capture-nav.js`, 정본이 스킬로 이관된 뒤 남은
+  knowledge 스텁 등), 조회 불가능한 내부 프로젝트 근거(자사 프로젝트명·테이블명·파일경로), hub 도구
+  파라미터 표기 오류, agents/skills/knowledge 사이 소소한 참조 불일치를 다수 정정했습니다.
+
+### 제거
+
+- `malgn-agent/knowledge/common/token-efficient-collaboration.md` — 본문 정본이 스킬로 이관된 뒤
+  "배경만 남음"으로 선언된 스텁이었고 마지막 인바운드 참조가 사라져 삭제했습니다(knowledge 44→43).
+
+---
+
 ## [1.8.16] — 2026-08-29
 
 PM 행동규율 전달 방식을 전환하고(관리구역 사본 → SessionStart 훅 라이브 주입), 그에 딸려있던
