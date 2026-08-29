@@ -9,10 +9,14 @@
  * 순수 Node.js 내장 모듈만 사용 — 의존성 설치 없이 `node check-wbs-warnings.mjs` 로 실행된다.
  * (malgn-agent/bin/analyze-usage.mjs와 동일한 무의존성·크로스플랫폼 스타일)
  *
- * 입력 JSON은 wbs_list 툴 응답과 같은 배열 구조를 가정한다. 각 항목(item)이 가질 수 있는 필드:
- *   id, title, status('planned'|'in_progress'|'delayed'|'done'), progress(0-100, 리프만),
- *   computed_progress(0-100, 그룹 롤업), bucket, parent_id, start_date, end_date,
- *   updated_at(ISO), completed_date, assignee_agent_name
+ * 입력 JSON은 wbs_list 툴 응답과 같은 배열 구조를 가정한다(실제 wbs_list 도구 호출로 확인한 필드명 — camelCase).
+ * 각 항목(item)이 가질 수 있는 필드:
+ *   id, title, status('planned'|'in_progress'|'delayed'|'done'), computedProgress(0-100 —
+ *   리프 항목은 자신의 진행률, 그룹 항목은 자식 롤업 진행률을 담는다. wbs_list 응답에는 이 필드 하나만
+ *   있고, 리프 전용 progress 필드는 별도로 존재하지 않는다), bucket, parentId, startDate, endDate,
+ *   completedDate, assigneeAgentName
+ * wbs_list 응답에는 최종수정시각(updated_at/updatedAt) 필드가 없다 — 이 필드가 있어야 판정 가능한
+ * "진행 정체"·"착수 미확인" 신호는 구조적으로 판정 불가이며, 판정을 생략하고 리포트에 이유를 남긴다.
  * 모든 필드는 선택(optional) — 특정 신호 판정에 필요한 필드가 없는 항목은 그 신호만 조용히 건너뛴다.
  *
  * 사용법:
@@ -23,7 +27,7 @@
  *
  * 옵션:
  *   --current FILE   현재 스냅샷 JSON 경로. 생략하면 stdin에서 읽는다.
- *   --previous FILE  이전 스냅샷 JSON 경로. "롤업 추락"(computed_progress 5%p 하락) 신호는 이 옵션이
+ *   --previous FILE  이전 스냅샷 JSON 경로. "롤업 추락"(computedProgress 5%p 하락) 신호는 이 옵션이
  *                    있을 때만 판정한다 — 없으면 해당 신호는 건너뛰고 리포트에 이유를 남긴다.
  *   --today DATE     기준일(YYYY-MM-DD). 생략하면 오늘(로컬 타임존).
  *   --format FORMAT  text(기본, 콘솔 리포트) | json(findings 배열 그대로 출력, 후속 자동화용)
@@ -164,8 +168,8 @@ function byId(items) {
 function childrenByParent(items) {
   const m = new Map();
   for (const it of items) {
-    if (it.parent_id === undefined || it.parent_id === null) continue;
-    const key = String(it.parent_id);
+    if (it.parentId === undefined || it.parentId === null) continue;
+    const key = String(it.parentId);
     if (!m.has(key)) m.set(key, []);
     m.get(key).push(it);
   }
@@ -192,41 +196,24 @@ function evaluate(currentItems, previousItems, today) {
     });
   };
 
+  // 1·2. 진행 정체 / 착수 미확인: 둘 다 "최종수정시각 이후 N일 경과"가 판정 조건인데,
+  // wbs_list 응답에는 최종수정시각 필드(updated_at/updatedAt)가 없다 — 대체 가능한 다른 필드도
+  // 없으므로(startDate/endDate/completedDate는 최종수정시각을 의미하지 않는다) 이 두 신호는
+  // 구조적으로 판정 불가다. 조용히 건너뛰지 않고 이유를 명시적으로 남긴다.
+  skipped.push('진행 정체: wbs_list 응답에 최종수정시각(updated_at) 필드가 없어 판정 불가');
+  skipped.push('착수 미확인: wbs_list 응답에 최종수정시각(updated_at) 필드가 없어 판정 불가');
+
   for (const item of currentItems) {
     const status = item.status;
-    const progress = typeof item.progress === 'number' ? item.progress : null;
-    const updatedAt = toDateOnly(item.updated_at);
-    const ageDays = updatedAt ? daysDiff(updatedAt, today) : null;
+    // wbs_list 응답은 리프 전용 progress 필드를 따로 주지 않는다 — computedProgress가
+    // 리프에서는 자신의 진행률, 그룹에서는 롤업 진행률을 겸한다.
+    const progress = typeof item.computedProgress === 'number' ? item.computedProgress : null;
     const leaf = !isGroup(item);
 
-    // 1. 진행 정체: progress=0 지속(3일 이상) — Medium
-    if (progress === 0 && ageDays !== null && ageDays >= 3 && status !== 'done') {
-      push(
-        item,
-        '진행 정체',
-        'Medium',
-        '담당자 미할당, 의존성 미해결, 요구사항 불명확',
-        'wbs_update(assignee_agent_name) 확인 후 담당자 1:1 확인 필수',
-        `progress=0, updated_at 이후 ${ageDays}일 경과(기준일 ${localDateStr(today)})`
-      );
-    }
-
-    // 2. 착수 미확인: status='in_progress' && progress=0 > 1일 — Medium
-    if (status === 'in_progress' && progress === 0 && ageDays !== null && ageDays >= 1) {
-      push(
-        item,
-        '착수 미확인',
-        'Medium',
-        '상태 기록 누락, 또는 자동 착수 후 수동 미업데이트',
-        '실제 진행 상태 재확인 + wbs_update로 status와 progress 동기화',
-        `status=in_progress, progress=0, updated_at 이후 ${ageDays}일 경과`
-      );
-    }
-
-    // 3. 임박 기한 위반: deadline <= today && progress < 100 — High
-    const endDate = toDateOnly(item.end_date);
-    if (endDate && progress !== null && progress < 100) {
-      const daysToDeadline = daysDiff(today, endDate); // end_date - today
+    // 3. 임박 기한 위반: deadline <= today && progress < 100 — High (그룹은 자식 마감이 실제 원인이므로 리프만 판정)
+    const endDate = toDateOnly(item.endDate);
+    if (leaf && endDate && progress !== null && progress < 100) {
+      const daysToDeadline = daysDiff(today, endDate); // endDate - today
       if (daysToDeadline <= 0) {
         push(
           item,
@@ -234,17 +221,17 @@ function evaluate(currentItems, previousItems, today) {
           'High',
           '계획 종료일 경과 + 미완료',
           '즉시 에스컬레이션 + 일정 재계획',
-          `end_date=${localDateStr(endDate)}, 기준일 대비 ${-daysToDeadline}일 경과, progress=${progress}`
+          `endDate=${localDateStr(endDate)}, 기준일 대비 ${-daysToDeadline}일 경과, progress=${progress}`
         );
       } else if (daysToDeadline <= 3 && progress < 50) {
-        // 4. 기한 박박: (end_date - today) <= 3일 && progress < 50% — Medium
+        // 4. 기한 박박: (endDate - today) <= 3일 && progress < 50% — Medium
         push(
           item,
           '기한 박박',
           'Medium',
           '잔여 기한 대비 진행률 부족',
           '가속화 협의, 스코프 축소 검토',
-          `end_date까지 ${daysToDeadline}일 남음, progress=${progress}`
+          `endDate까지 ${daysToDeadline}일 남음, progress=${progress}`
         );
       }
     }
@@ -267,17 +254,24 @@ function evaluate(currentItems, previousItems, today) {
   }
 
   // 5. 크리티컬 패스: earliest_deadline인데 progress < 70% — High
-  // 그룹 노드는 progress 필드 자체가 없어(§1: progress는 리프만) 후보에 넣으면 진짜 리프의 마감을
-  // 가려버릴 수 있으므로, progress를 실제로 가진 리프 항목만 후보로 삼는다.
+  // wbs_list 응답은 리프 전용 progress 필드를 따로 주지 않으므로(computedProgress가 리프/그룹
+  // 겸용), 그룹 노드를 후보에서 배제하려면 필드 유무가 아니라 isGroup()으로 직접 걸러야 한다 —
+  // 그룹의 마감을 후보로 넣으면 진짜 리프의 마감을 가려버릴 수 있다.
   const openWithDeadline = currentItems
-    .filter((it) => it.status !== 'done' && typeof it.progress === 'number' && it.progress < 100)
-    .map((it) => ({ item: it, endDate: toDateOnly(it.end_date) }))
+    .filter(
+      (it) =>
+        !isGroup(it) &&
+        it.status !== 'done' &&
+        typeof it.computedProgress === 'number' &&
+        it.computedProgress < 100
+    )
+    .map((it) => ({ item: it, endDate: toDateOnly(it.endDate) }))
     .filter((x) => x.endDate);
   if (openWithDeadline.length > 0) {
     const minTime = Math.min(...openWithDeadline.map((x) => x.endDate.getTime()));
     for (const { item, endDate } of openWithDeadline) {
       if (endDate.getTime() !== minTime) continue;
-      const progress = typeof item.progress === 'number' ? item.progress : null;
+      const progress = typeof item.computedProgress === 'number' ? item.computedProgress : null;
       if (progress !== null && progress < 70) {
         push(
           item,
@@ -285,30 +279,30 @@ function evaluate(currentItems, previousItems, today) {
           'High',
           '전체 미완료 항목 중 가장 이른 마감인데 진행률이 낮음',
           '리소스 추가, 병렬화 재검토',
-          `end_date=${localDateStr(endDate)}(전체 중 최단), progress=${progress}`
+          `endDate=${localDateStr(endDate)}(전체 중 최단), progress=${progress}`
         );
       }
     }
   } else {
-    skipped.push('크리티컬 패스: end_date가 있는 미완료 항목이 없어 판정 대상 없음');
+    skipped.push('크리티컬 패스: endDate가 있는 미완료 리프 항목이 없어 판정 대상 없음');
   }
 
-  // 6. 롤업 추락: parent.computed_progress ↓ 5%p (이전 스냅샷 필요) — Medium
+  // 6. 롤업 추락: parent.computedProgress ↓ 5%p (이전 스냅샷 필요) — Medium
   if (previousItems) {
     const prevById = byId(previousItems);
     for (const item of currentItems) {
-      if (typeof item.computed_progress !== 'number') continue;
+      if (typeof item.computedProgress !== 'number') continue;
       const prev = prevById.get(String(item.id));
-      if (!prev || typeof prev.computed_progress !== 'number') continue;
-      const drop = prev.computed_progress - item.computed_progress;
+      if (!prev || typeof prev.computedProgress !== 'number') continue;
+      const drop = prev.computedProgress - item.computedProgress;
       if (drop >= 5) {
         push(
           item,
           '롤업 추락',
           'Medium',
           '자식 항목 중 하나 이상이 완료→미완료로 되돌려지거나, 새 자식 항목이 progress=0으로 추가됨',
-          'wbs_list(parent_id=<부모_id>)로 자식들을 재조회해 변화 요인 식별',
-          `computed_progress: ${prev.computed_progress} → ${item.computed_progress} (${drop.toFixed(1)}%p 하락)`
+          'wbs_list(parentId=<부모_id>)로 자식들을 재조회해 변화 요인 식별',
+          `computedProgress: ${prev.computedProgress} → ${item.computedProgress} (${drop.toFixed(1)}%p 하락)`
         );
       }
     }
@@ -316,15 +310,15 @@ function evaluate(currentItems, previousItems, today) {
     skipped.push('롤업 추락: --previous 미제공으로 이력 비교 불가 (이전 스냅샷 필요)');
   }
 
-  // 7. 의존성 블로킹: parent.status='delayed' → children.start_date_passed — High
+  // 7. 의존성 블로킹: parent.status='delayed' → children.startDate_passed — High
   for (const item of currentItems) {
-    if (item.parent_id === undefined || item.parent_id === null) continue;
-    const parent = curById.get(String(item.parent_id));
+    if (item.parentId === undefined || item.parentId === null) continue;
+    const parent = curById.get(String(item.parentId));
     if (!parent || parent.status !== 'delayed') continue;
-    const startDate = toDateOnly(item.start_date);
+    const startDate = toDateOnly(item.startDate);
     if (!startDate) continue;
     const passed = daysDiff(startDate, today) >= 0;
-    const progress = typeof item.progress === 'number' ? item.progress : null;
+    const progress = typeof item.computedProgress === 'number' ? item.computedProgress : null;
     if (passed && item.status !== 'done' && progress !== 100) {
       push(
         item,
@@ -332,7 +326,7 @@ function evaluate(currentItems, previousItems, today) {
         'High',
         '상위 항목(parent)이 delayed라 자식이 실질적으로 시작 불가',
         '상위 항목 가속화 또는 의존성 제거 검토',
-        `parent(${parent.id})=delayed, start_date=${localDateStr(startDate)} 경과, 현재 status=${item.status}`
+        `parent(${parent.id})=delayed, startDate=${localDateStr(startDate)} 경과, 현재 status=${item.status}`
       );
     }
   }
