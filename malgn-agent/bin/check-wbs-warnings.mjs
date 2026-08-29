@@ -19,6 +19,13 @@
  * "진행 정체"·"착수 미확인" 신호는 구조적으로 판정 불가이며, 판정을 생략하고 리포트에 이유를 남긴다.
  * 모든 필드는 선택(optional) — 특정 신호 판정에 필요한 필드가 없는 항목은 그 신호만 조용히 건너뛴다.
  *
+ * 필터된 스냅샷 경고: 이 스크립트는 --current 안의 parentId 관계만으로 그룹/리프를 판별한다
+ * (isGroup). wbs_list(status=... / includeDone=false 등)로 필터링된 스냅샷을 넣으면 자식이
+ * 전부 걸러진 그룹이 리프로 오판되어 "임박 기한 위반"·"기한 박박"·"크리티컬 패스"·"상태 불일치"에
+ * 오탐이 날 수 있다. wbs_list 응답의 top-level summary.total은 필터와 무관하게 항상 프로젝트
+ * 전체 개수를 반환하므로(items만 필터됨), summary.total !== items.length 로 필터 여부를 기계적으로
+ * 탐지해 리포트 상단에 경고를 남긴다(신호를 죽이지는 않는다 — 사람이 판단할 근거만 추가한다).
+ *
  * 사용법:
  *   node check-wbs-warnings.mjs --current curr.json
  *   node check-wbs-warnings.mjs --current curr.json --previous prev.json
@@ -122,18 +129,29 @@ function loadItems(filePath, label) {
     process.exit(1);
   }
   // wbs_list 응답이 { items: [...] } 형태로 감싸져 오는 경우도 허용
-  const items = Array.isArray(data) ? data : Array.isArray(data.items) ? data.items : null;
-  if (!items) {
+  const rawItems = Array.isArray(data) ? data : Array.isArray(data.items) ? data.items : null;
+  if (!rawItems) {
     console.error(`${label} JSON은 배열이거나 { items: [...] } 형태여야 합니다.`);
     process.exit(1);
   }
-  return items.filter((it) => {
+  // wbs_list는 status/parentId/includeDone 등으로 필터링해도 summary.total은 항상
+  // 프로젝트 전체 개수를 반환한다(items만 필터됨) — summary.total !== 실제 items 개수면
+  // 필터된 스냅샷이라는 뜻이다. 배열만 온 입력(래핑 없이 items만 붙여넣은 경우)은 summary가
+  // 없으므로 필터 여부를 판단할 수 없다(filtered: null).
+  const summaryTotal =
+    !Array.isArray(data) && data && data.summary && typeof data.summary.total === 'number'
+      ? data.summary.total
+      : null;
+  const filtered = summaryTotal === null ? null : summaryTotal !== rawItems.length;
+
+  const items = rawItems.filter((it) => {
     if (!it || it.id === undefined || it.id === null) {
       console.error(`경고: id 없는 ${label} 항목을 건너뜁니다.`, it);
       return false;
     }
     return true;
   });
+  return { items, filtered, summaryTotal, rawCount: rawItems.length };
 }
 
 // ── 날짜 유틸 ──────────────────────────────────────────────────────────────
@@ -348,6 +366,13 @@ function printTextReport(findings, skipped, meta) {
   push(`- 이전 스냅샷: ${meta.hasPrevious ? `제공됨(${meta.previousCount}건)` : '미제공'}`);
   push();
 
+  if (meta.filteredWarning) {
+    push(`## ⚠ 필터된 스냅샷 경고`);
+    push();
+    push(meta.filteredWarning);
+    push();
+  }
+
   if (findings.length === 0) {
     push(`위험 신호가 감지된 항목이 없습니다.`);
   } else {
@@ -381,11 +406,24 @@ function printTextReport(findings, skipped, meta) {
 
 // ── 메인 ───────────────────────────────────────────────────────────────────
 
+function buildFilteredWarning(currentLoad) {
+  if (!currentLoad.filtered) return null;
+  return (
+    `--current 스냅샷이 필터된 것으로 보입니다(summary.total=${currentLoad.summaryTotal}, ` +
+    `실제 items 개수=${currentLoad.rawCount}). 이 스크립트는 스냅샷 안의 parentId 관계만으로 ` +
+    `그룹/리프를 판별하므로(isGroup), 자식이 전부 걸러진 그룹은 리프로 오판될 수 있습니다 — ` +
+    `"임박 기한 위반"·"기한 박박"·"크리티컬 패스"·"상태 불일치" 신호에 오탐 가능성이 있습니다. ` +
+    `가능하면 필터 없는 전체 스냅샷으로 재조회해 대조하세요.`
+  );
+}
+
 function run() {
   const opts = parseArgs(process.argv.slice(2));
 
-  const currentItems = loadItems(opts.current, opts.current ? '--current' : 'stdin(current)');
-  const previousItems = opts.previous ? loadItems(opts.previous, '--previous') : null;
+  const currentLoad = loadItems(opts.current, opts.current ? '--current' : 'stdin(current)');
+  const currentItems = currentLoad.items;
+  const previousLoad = opts.previous ? loadItems(opts.previous, '--previous') : null;
+  const previousItems = previousLoad ? previousLoad.items : null;
 
   const today = opts.today ? toDateOnly(opts.today) : toDateOnly(new Date());
   if (!today) {
@@ -394,6 +432,7 @@ function run() {
   }
 
   const { findings, skipped } = evaluate(currentItems, previousItems, today);
+  const filteredWarning = buildFilteredWarning(currentLoad);
 
   if (opts.format === 'json') {
     console.log(
@@ -402,6 +441,7 @@ function run() {
           today: localDateStr(today),
           currentCount: currentItems.length,
           previousProvided: !!previousItems,
+          filteredSnapshotWarning: filteredWarning,
           findings,
           skipped,
         },
@@ -415,6 +455,7 @@ function run() {
       currentCount: currentItems.length,
       hasPrevious: !!previousItems,
       previousCount: previousItems ? previousItems.length : 0,
+      filteredWarning,
     });
   }
 
