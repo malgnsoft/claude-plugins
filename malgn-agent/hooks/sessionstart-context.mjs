@@ -76,7 +76,9 @@ function emit(ctx, systemMessage) {
 }
 
 // ── PM 블록 모드 ────────────────────────────────────────────────────────────
-// 훅 출력 캡(10,000자, hooks.md:892) 안에서 배너까지 여유 있게 담기 위한 안전 임계값. 10,000
+// 훅 출력 캡("capped at 10,000 characters" —
+// https://code.claude.com/docs/en/hooks#json-output) 안에서 배너까지 여유 있게 담기 위한
+// 안전 임계값. 10,000
 // 그 자체를 쓰지 않는 이유는 배너 텍스트를 더했을 때 본문 경계를 넘기지 않기 위해서다 — 본문은
 // 어떤 경우에도 자르지 않는다(넘치면 배너를 먼저 버린다. 그래도 넘치면 본문 자체가 문제다, 아래).
 const PM_BLOCK_SAFE_LIMIT = 9500
@@ -180,8 +182,9 @@ function runPmBlockMode() {
     raw = readFileSync(blockPath, 'utf8')
   } catch {
     // 파일을 못 읽음 — 규율이 통째로 사라진 채 세션이 정상으로 보이는 상태가 된다. SessionStart는
-    // 블로킹 불가하므로(hooks.md:852) 세션을 막을 수는 없지만, 조용히 넘어가지 않고 사람에게는
-    // 알린다.
+    // 블로킹 불가하므로("Can block? No" —
+    // https://code.claude.com/docs/en/hooks#exit-code-2-behavior-per-event) 세션을 막을 수는
+    // 없지만, 조용히 넘어가지 않고 사람에게는 알린다.
     emit('', 'PM 행동규율(hooks/pm-orchestration-block.md)을 읽지 못했다 — 이번 세션에는 규율이 주입되지 않았다. 플러그인 설치본이 손상됐을 수 있다.')
     return
   }
