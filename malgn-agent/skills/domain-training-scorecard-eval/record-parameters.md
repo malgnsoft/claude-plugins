@@ -21,7 +21,7 @@
 - `dimensionScores`: 구성요소 4개(기본수행/Eval Set/실전 성공률/비용 효율) 또는 기본수행 7항목 점수.
 - `note`: 약점 진단과 개선안을 한 필드에 함께 담는다 — 진단만 적고 개선안을 빼면 다음 회차가 무엇을 고쳤어야 하는지 복원하지 못한다.
 
-**이 기록은 쓰기 단독으로 완결되지 않는다.** 채점 착수 시 `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 지난 회차 점수를 읽어 Scorecard 입력 JSON의 `previousScore`로 쓰는 것과 한 쌍이며, 한쪽만 하면 회차가 닫히지 않는다 — 쓰기만 하면 이번 회차가 추이를 비교하지 못하고, 읽기만 하면 다음 회차가 같은 자리에서 다시 막힌다. `previousScore`는 `bin/calc-training-scorecard.mjs`의 입력 필드이지 `agent_score_record`의 파라미터가 아니다. 점수 이력이 없어 읽지 못했으면 최초 회차임을 보고에 밝힌다.
+**이 기록은 쓰기 단독으로 완결되지 않는다.** 채점 착수 시 `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 지난 회차 점수를 읽어 Scorecard 입력 JSON의 `previousScore`로 쓰는 것과 한 쌍이며(`previousScore`는 응답의 `latestScore`에서만 조달하므로 **`scoreHistoryLimit=1`이면 충분하다**), 한쪽만 하면 회차가 닫히지 않는다 — 쓰기만 하면 이번 회차가 추이를 비교하지 못하고, 읽기만 하면 다음 회차가 같은 자리에서 다시 막힌다. `previousScore`는 `bin/calc-training-scorecard.mjs`의 입력 필드이지 `agent_score_record`의 파라미터가 아니다. 점수 이력이 없어 읽지 못했으면 최초 회차임을 보고에 밝힌다.
 
 **점수의 스코프**는 `agentName` 단위의 회사 공용 품질 지표다 — 에이전트 버전이 올라가도 같은 이름이면 같은 축에 쌓이고, 누가 호출했는지가 아니라 그 에이전트에 대한 기록이므로, 추이는 "내가 매긴 점수의 변화"가 아니라 "이 에이전트가 회사 전체에서 지금 어느 수준인가"로 읽는다. 다른 회차·다른 평가자가 남긴 점수와 같은 축에서 비교되므로, 한두 회차 표본만으로 그 에이전트의 역량을 단정하지 않는다.
 
