@@ -27,6 +27,13 @@ This file provides guidance to Claude Code when working with code in this reposi
 - 작업이 끝난 로컬 브랜치는 병합 후 삭제한다(`git branch -d`). origin에 non-main 브랜치가 쌓이지 않게 한다.
 - 이유: 이 저장소는 다른 직원들이 `/plugin marketplace add`로 직접 설치하는 배포 주소다 — WIP 브랜치가 원격에 쌓이면 병렬 위임 시 얽힘 위험과 불필요한 노출이 생긴다.
 
+## 변경이력 관리 원칙 (이 프로젝트의 중요원칙)
+**같은 내용을 고쳤다가 되돌리고 다시 고치는 반복이 있어서는 안 된다.** 정본 하나만 고치고 그 절차를 인용·요약·중복 서술하는 다른 자리(특히 매 호출마다 통째로 로드되는 `agents/*.md`)를 놓치면, 몇 라운드 뒤 같은 영역이 새 결함처럼 재등장한다 — 실제로는 새 결함이 아니라 이전 수정이 다른 참조처에 전파되지 않은 것인데, 매번 새로 발견한 것처럼 다루면 왕복 사이클이 된다.
+- 정본 문서·설정의 절차를 바꿀 때는 그 절차를 인용·요약하는 다른 자리를 저장소 전체에서 grep해 같은 라운드·같은 커밋에서 함께 정정한다.
+- 기존 내용을 되돌리거나 지우기 전에는 왜 지금 이 상태인지(`git log`/`blame`, CHANGELOG, malgnai-hub 결정기록)를 먼저 확인한다 — 이유를 모르고 되돌리면 그 이유 때문에 나중에 다시 고치게 된다.
+- CHANGELOG·malgnai-hub 기록에 "왜 고쳤는지"를 남겨서, 다음에 같은 영역을 만질 때 이번이 재발인지 새 결함인지 구분되게 한다.
+- 위 [제품 본문은 최신 상태만 담는다] 원칙과는 층위가 다르다 — 그건 malgn-agent 제품 본문(`agents/`·`skills/`·`knowledge/`)에 날짜·경위를 안 남기는 규칙이고, 이건 이 저장소 자신의 변경 관리(CHANGELOG·git·hub 기록)로 왕복 자체를 막는 규칙이다.
+
 ## malgnai-hub 도구 사양은 스키마 원문이 정본이다
 **도구명·파라미터를 기억이나 기존 문서에서 베끼지 말고 세션에서 실제 스키마를 직접 열어 확인한다.** 오래된 도구명이 제품 본문에 남아 실행 불가 지시가 되는 사례가 있다.
 - hub에 대응이 **없는** 도구를 절차의 실행 단계로 쓰지 않는다: `lesson_add`/`lesson_list`/`lesson_classify` · `memory_add`/`memory_search` · `command_add`(웹 승인큐) · `project_autonomy_*` · `agent_learning_log_add`(→ `agent_learning_record`) · `decision_add`/`issue_add`(→ `decision_record`/`issue_record`). 확인: `git grep -nE 'lesson_add|lesson_list|lesson_classify|memory_add|memory_search|command_add|project_autonomy' -- malgn-agent/`
@@ -124,7 +131,7 @@ pnpm run check-docs    # malgn-agent 자산 개수(agents·skills·knowledge) �
   - `skills/` 38종 — 명명은 참조 에이전트 수 기준(`common-*` 전역 상시비용 / `domain-*` 도메인 / 무접두어 단일 참조)
   - `knowledge/` 43개 — 도메인별 디렉토리, 진입점 `knowledge/README.md`
   - `bin/` — 무의존성 Node 내장모듈만 쓰는 번들 스크립트(Windows/macOS 동일 실행). 토큰 사용량 자가진단(`analyze-usage`/`report-usage`/`usage-agent-lib`/`install-usage-agent`/`pair-usage-device`) · `capture.mjs`(Playwright 캡처) · `new-project.mjs`(스캐폴더) · `check-*.mjs`(규약·보안 점검)
-  - `hooks/` — `hooks.json`(SessionStart에 `sessionstart-context.mjs` **2회 등록** — 인자 없이 STATUS.md 주입, `--pm-block`으로 PM 행동규율 주입. 별도 프로세스로 나눠야 두 값이 각자 10,000자 캡을 받아 규율이 STATUS.md 크기에 잘리지 않는다 / Stop→`stop-mcp-reminder.cjs`) + `pm-orchestration-block.md`(PM 행동규율 정본 — 어느 CLAUDE.md에도 복사하지 않고 훅이 매 세션 라이브 주입한다). 경로는 `${CLAUDE_PLUGIN_ROOT}` 기준으로 포터블
+  - `hooks/` — `hooks.json`(SessionStart에 `sessionstart-context.mjs` **2회 등록** — `--pm-block`으로 PM 행동규율 주입, 인자 없이 STATUS.md 주입. 별도 프로세스로 나눠야 두 값이 각자 10,000자 캡을 받아 규율이 STATUS.md 크기에 잘리지 않는다 / Stop→`stop-mcp-reminder.cjs`) + `pm-orchestration-block.md`(PM 행동규율 정본 — 어느 CLAUDE.md에도 복사하지 않고 훅이 매 세션 라이브 주입한다). 경로는 `${CLAUDE_PLUGIN_ROOT}` 기준으로 포터블
   - `templates/e2e-template/` — Playwright storageState 인증 표준 스캐폴드
 - `docs/` — `README.md`가 지도. `methodology/`(rubric v1.0 — 설계 이력 사료, 현행 판정 기준 아님) · `reviewer/`(페르소나·리뷰 보고서) · `architecture/` · `decision/` · `roadmap/`
 - `scripts/` — 저장소 전용 검사(배포되지 않음). `validate-agent-assets.mjs`(`pnpm run check-assets`) · `check-docs.mjs`(`pnpm run check-docs`의 진입점 — 위 Architecture의 자산 개수 표기를 실물과 대조하고 어긋나면 exit 1)
