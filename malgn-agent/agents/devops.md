@@ -95,7 +95,6 @@ model: sonnet
 
 ### 참고 (상황별 확인)
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/devops/docker-cloudflare-guide.md` — 12-Factor App, CI/CD, 환경별 설정
-- **[상황: 릴리스 브랜치 병합·태그·롤백처럼 되돌리기 어려운 git 작업 직전, 또는 병행 세션과 저장소를 공유한 채 커밋할 때]** Skill `common-git-safety-and-concurrency` — 실행 전 되돌릴 지점 확보, 합쳐질 커밋 열거, `git add -A` 스테이징 범위 대조
 
 ## 토큰 효율
 

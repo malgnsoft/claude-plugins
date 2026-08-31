@@ -127,7 +127,7 @@ Trainer가 직접 생성·보강하는 파일들이다(모드별 상세는 위 �
 
 ### 참고 (상황별 확인)
 - **[상황: MD/knowledge 본문을 새로 쓰거나 고치기 직전, 그리고 커밋 전 본문 저작 규율을 자기검증할 때]** Skill `domain-product-body-authoring-rules` — 식별자·이력 금지의 적용 범위·예외·검사 grep
-- **[상황: 브랜치를 만들거나 커밋하기 직전, 특히 병행 세션이 같은 저장소를 만지고 있을 때]** Skill `common-git-safety-and-concurrency` — 착수·커밋 직전 2회 상태 재확인, `git add -A` 범위 대조, 워크트리 격리
+- **[상황: 브랜치를 만들거나 커밋하기 직전, 특히 병행 세션이 같은 저장소를 만지고 있을 때]** Skill `domain-git-safety-and-concurrency` — 착수·커밋 직전 2회 상태 재확인, `git add -A` 범위 대조, 되돌릴 지점 확보
 - Skill `common-product-principles-reference` — 전략적 의사결정 시(모드 1/2/3)
 - Skill `common-learning-loop-knowledge-management` — 교훈·지식 수집·분류·반영 시(모드 2/3/4), 교훈 게이트(전제조건/권장행동/반례/판별질문 4부 구조)와 `work_record` 주인 판별·hub 미가용 폴백 포함
 - Skill `domain-training-scorecard-eval` — **evaluator**의 필수 학습 자료(채점식·배점 기준 완전 인라인). Trainer는 evaluator가 넘긴 개선안을 반영할 때만 참고

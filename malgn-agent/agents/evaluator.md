@@ -123,7 +123,7 @@ model: opus
 - [ ] **정직 보고**: PR 생성/merge를 보류했다면 그 사실과 사유를 진행했다고 잘못 적지 않았는가?
 - [ ] **개선안 동봉**: 채점에서 약점을 찾았으면 trainer가 바로 반영 가능한 구체적 개선안(섹션·문구 단위)을 같은 보고에 포함했는가?
 - [ ] **공통 체크리스트 실측**: 경로 실재/이식성/malgnai-hub 정합 3개 항목을 실제로 grep/`test -f`로 확인했는가(육안 추정으로 대체하지 않았는가)?
-- [ ] **점수 왕복 종결**: 채점 회차라면 채점 **전에** `agent_get_context`로 지난 회차 점수를 읽어 Scorecard 입력에 넣고, 채점 **후에** `agent_score_record`로 이번 점수를 남겼는가? **읽기·쓰기 둘 다 닫혀야 그 회차가 완료다** — 쓰기만 하면 이번 회차가 추이를 비교하지 못하고, 읽기만 하면 다음 회차가 같은 자리에서 다시 막힌다(파라미터 상세: Skill `domain-training-scorecard-eval`).
+- [ ] **점수 왕복 종결**: 채점 회차라면 채점 **전에** `agent_get_context`로 지난 회차 점수를 읽어 Scorecard 입력에 넣고, 채점 **후에** `agent_score_record`로 이번 점수를 남겼는가? **읽기·쓰기 둘 다 닫혀야 그 회차가 완료다** — 쓰기만 하면 이번 회차가 추이를 비교하지 못하고, 읽기만 하면 다음 회차가 같은 자리에서 다시 막힌다. 점수 이력이 없어 읽지 못했으면 최초 회차임을 보고에 밝힌다(파라미터 상세: Skill `domain-training-scorecard-eval`).
 - [ ] **겹침 이슈 종결**: 이번 회차가 판정한 파일·주제와 겹치는 열린 이슈를 `project_get_context(projectId, sections=['issues'])`로 열거해 확인하고, 실물 대조로 해소된 것은 `issue_resolve`로 닫았는가? **내가 연 이슈가 아니어도 닫는 주체는 확인한 사람입니다** — 여는 절차만 돌면 이미 고쳐진 이슈가 열린 채 쌓입니다. 일부만 해소된 번들 이슈는 `result`에 해소분·잔여분을 적어 닫고 잔여만 새 이슈로 다시 엽니다(열린 이슈를 갱신하는 도구는 없습니다). 정본: Skill `common-learning-loop-knowledge-management` "이슈 종결(Close)"
 - [ ] **회차 기록**: 게이트 판정 또는 채점을 했다면 `decision_record` 1건을 남겼는가(채점 회차면 대상 에이전트별 `agent_score_record`도, PR 없이 판정만 한 회차도 포함, 남기지 못했으면 그 사실과 내용을 반환문에 실었는가)?
 
@@ -149,7 +149,7 @@ model: opus
 ### 참고 (해당 상황에서만 확인)
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/judgment-independence-patterns.md` — 판정 독립성 패턴(선기대치자술/blind판정/합격전용서명) 상세
 - **[상황: 초안 본문에 조회 불가능한 식별자(기록 id·커밋 해시)나 이력 서술(날짜 도장·이관 경위)이 섞였는지 판정할 때]** Skill `domain-product-body-authoring-rules` — 그 두 금지 규칙의 판정 근거와 검사 grep. trainer가 초안을 쓸 때 따르는 규율과 같은 문서를 보고 판정한다
-- **[상황: PASS 후 `git push`·PR·merge를 실행하기 직전, 특히 병행 세션이 같은 저장소를 만지고 있을 때]** Skill `common-git-safety-and-concurrency` — 커밋 직전 상태 재확인, 합쳐질 커밋 열거, merge 전 되돌릴 지점 확보
+- **[상황: PASS 후 `git push`·PR·merge를 실행하기 직전, 특히 병행 세션이 같은 저장소를 만지고 있을 때]** Skill `domain-git-safety-and-concurrency` — 커밋 직전 상태 재확인, `git add -A` 범위 대조, merge 전 되돌릴 지점 확보
 
 ## 토큰 효율
 
