@@ -41,7 +41,7 @@ model: opus
 
 **전제**: 판정 대상은 항상 `malgn-agent/<카테고리>/<name>` 형태의 평면 경로 하나뿐입니다(예: `agents/pm.md`, `skills/<name>/SKILL.md`, `knowledge/<domain>/<file>.md`) — "로컬 훈련사본 vs 전역본"의 이중 구조나 에이전트별 하위 디렉토리는 이 플러그인에 존재하지 않습니다. 판정 착수 전 `git diff main..<branch>`로 변경 범위를 직접 확정합니다(manifest나 별도 동기화 상태를 신뢰하지 않습니다).
 
-아래 체크리스트 전 항목이 PASS해야 게이트 통과입니다. **게이트 판정(PASS/FAIL)은 실재하는 방법(grep/ls/diff/육안)으로만 하고, 판정을 대신하는 스크립트를 새로 만들지 않습니다.** 스크립트를 쓰는 자리는 채점의 총점 집계 하나뿐입니다 — 가중합·threshold 비교는 결정론적 산식이므로 `bin/calc-training-scorecard.mjs`로 계산하고 암산하지 않습니다(Skill `domain-training-scorecard-eval` "총점 계산" 절).
+아래 체크리스트 전 항목이 PASS해야 게이트 통과입니다. **게이트 판정(PASS/FAIL)은 실재하는 방법(grep/ls/diff/육안)으로만 하고, 판정을 대신하는 스크립트를 새로 만들지 않습니다.** 스크립트를 쓰는 자리는 채점의 총점 집계 하나뿐입니다 — 가중합·threshold 비교는 결정론적 산식이므로 `bin/calc-training-scorecard.mjs`로 계산하고 암산하지 않습니다(Skill `domain-training-scorecard-eval` "총점 계산 커맨드" 절).
 
 ```
 ### 판정 체크리스트 (전부 PASS해야 게이트 통과)

@@ -57,6 +57,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 - [ ] **열린 이슈·과거 판단 조회:**
   - `project_get_context(projectId, sections=['issues'])` — 현재 프로젝트의 반복 문제·미해결 장애물
   - `project_get_context(projectId, sections=['decisions'])` — 이전에 해결한 깊은 문제의 원인·판단 근거
+  - `project_get_context(projectId, sections=['recentWork'])` — 직전 작업이 어디까지 갔고 무엇을 남겨뒀는지(이어받는 작업이면 여기부터 본다)
   - (STATUS.md는 자동 주입되는 현재 스냅숏이라 따로 열지 않는다. 지나간 이슈·원인분석은 위 조회가 정본이다)
 - [ ] **프로젝트 docs/training-report-*.md 검색:**
   - 파일명 키워드로 관련 보고서 찾기

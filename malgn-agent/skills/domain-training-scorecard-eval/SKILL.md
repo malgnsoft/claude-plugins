@@ -35,6 +35,8 @@ description: 에이전트 산출물 평가 + 피드백 통합 — Scorecard 채�
 node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs" --input scorecard.json
 # 또는
 echo '{ ...JSON... }' | node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs"
+# 전월 대비 상승/정체/하락 판정 기준(점)을 바꿀 때. 기본 5점
+node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs" --input scorecard.json --threshold 3
 # 입력 스키마·옵션 전체
 node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs" --help
 ```
