@@ -34,3 +34,5 @@ reviewer-persona-panel-standard §5 표준 형식 — 지적마다 파일·줄 �
 - 2026-08-10 / target_id: pm-orchestration-block-propagation / 3차 (review-pm-import-implementation-2026-08-10.md): @import 실제 구현의 배포 후 드리프트·조용한 열화 리스크 검증
 
 > 참고: 이 페르소나는 `persona-ops-maintainability-realist.md`와 역할개념이 사실상 동일하다(`docs/reviewer/personas/INDEX.md` 참조). 향후 재검토에서는 신규 파일을 만들지 말고 `persona-ops-maintainability-realist.md`를 재사용할 것.
+
+- 2026-08-28 / target_id: pm-block-sessionstart-injection / 1차(최초, Refactor 풀패널) / docs/reviewer/review-pm-block-sessionstart-injection-2026-08-28.md — 기존 설치본 이중주입·블록파일 소실 시 무경보 통과 등 조용한 열화 경로 점검.

@@ -28,3 +28,15 @@
 - 2026-08-10 / target_id: pm-orchestration-block-propagation / 3차 (review-pm-import-implementation-2026-08-10.md): @import+드리프트가드 3중 구조 자체의 타당성 재검증(발산형)
 
 > 참고: 이 페르소나는 `persona-zero-based-redesigner.md`와 역할개념이 사실상 동일하다(`docs/reviewer/personas/INDEX.md` 참조). 향후 재검토에서는 신규 파일을 만들지 말고 `persona-zero-based-redesigner.md`를 재사용할 것.
+
+- 2026-08-28 / target_id: pm-block-sessionstart-injection / 1차(최초, Refactor 풀패널) / docs/reviewer/review-pm-block-sessionstart-injection-2026-08-28.md — 훅 2회 등록 + 정적검사 + 런타임 임계값 3중 구조가 문제 크기에 비례하는지 재검토.
+
+- 2026-08-29 / target_id: `knowledge-hooks-full-audit-20260829` / 1차(최초, Refactor 풀패널) / docs/reviewer/review-knowledge-hooks-full-audit-2026-08-29.md — 역할개념 수준 재사용(발산형). 이번 대상은 "knowledge 44종 + skills 38종" 이중 레이어. 실측: knowledge 44개 중 최소 12개가 본문 없이 "정본은 skills/… , 배경만 남음" 포인터 문서이고(`README.md` 31~106행이 그 사실을 스스로 열거), 본문을 가진 문서 중 `review/reviewer-personas.md`는 정본 스킬의 절차를 통째로 이중 게재해 실제로 드리프트했다(RV-002). 레이어가 둘이라 "정본은 저기"라는 면책 한 줄로 사본의 낡음이 정당화되는 구조. 대안은 보고서 R-2에 기재.
+
+- 2026-08-29 / target_id `pm-md-consistency-20260829` / 1차(최초, Sensitive 풀패널) / 발산형 — 역할개념 수준 재사용. 이번 대상은 같은 PM 규율을 3중(훅 17줄 / pm.md 43.4KB / SKILL.md 29KB)으로 이고 있는 구조. 이 라운드가 드리프트 대책으로 택한 것이 "사람이 양쪽을 함께 열어보라"는 산문 지시라는 점을 제로베이스로 재검토.
+
+- 2026-08-29 / target_id `hooks-sessionstart-stop-defect-fix-20260829` / 1차(최초 취급, Sensitive 풀패널) / 발산형 — 역할개념 수준 재사용. 이번 대상은 하나의 절단 요구에 **바이트 상한(`DEFAULT_MAX_BYTES=12000`) + 문자 상한(`STATUS_CHAR_SAFE_LIMIT=9500`) 2중 레이어**를 얹은 구조. 직전 라운드가 M-1 개선안으로 두 갈래("문자 길이 재측정" 또는 "`DEFAULT_MAX_BYTES`를 제품 표준 3,000B로 하향")를 제시했는데 이번 수정은 앞의 것만 취했고, 그 결과 두 레이어가 각자 다른 단위로 같은 텍스트를 두 번 자르면서 앞 레이어가 써 둔 안내문(주입 줄 수·재개 offset·꼬리 마커)을 뒤 레이어가 무효화하는 신규 실패 모드가 생겼다(보고서 R-1). 실측으로 두 상한은 ASCII에서 9,500자가 항상 먼저 걸려 12,000B가 도달 불가능한 죽은 값이 된다.
+
+- 2026-08-31 / target_id `knowledge-skill-dedup-20260831` / 1차(최초, Refactor 풀패널) / docs/reviewer/review-knowledge-skill-dedup-2026-08-31.md — 역할개념 수준 재사용(발산형). 이번 대상은 이 페르소나가 직전 라운드에 R-2로 제기한 "knowledge/skills 이중 레이어"의 실행분이다. **제로베이스 재확인**: 실측상 레이어 정리는 사실상 완료됐다(25줄 이하 스텁 0건, "정본은 skills" 문구를 가진 knowledge 8건 전부 독립 본문 보유, `KNOWLEDGE_ORPHAN` 0건). 따라서 남은 질문은 "더 지울 것"이 아니라 **"이 상태를 무엇이 지키는가"** — 직전 R-2의 (c)안(check-assets에 skill↔knowledge 중복 WARN)은 미실행이고, 재유입을 막는 기계장치가 여전히 산문 규칙 한 줄뿐이다.
+
+- 2026-08-31 / target_id `agents-md-relocation-20260831` / 1차(최초, Refactor 풀패널) / docs/reviewer/review-agents-md-relocation-2026-08-31.md — 역할개념 수준 재사용(발산형). 이번 대상은 "MD에 트리거 문장 + 스킬에 확장본"이라는 2계층 구조를 12곳에 일괄 적용한 것. 물어야 할 것: 이 2계층이 정말 필요한가, 아니면 순수 포인터(압축본 미보유) 한 겹으로 같은 효과를 더 싸게 낼 수 있는가. 실측 근거로 영역 합계(agents -10,535B vs skills+knowledge +30,136B)와 라운드 내부 기준 불일치(work_record 주인 판별은 MD·스킬 양쪽에 전문 보유 / STATUS.md 6가지 시점은 MD에서 완전 제거)를 제시.
