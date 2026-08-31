@@ -2,7 +2,8 @@
 /**
  * check-wbs-warnings.mjs
  *
- * skills/project-orchestration/SKILL.md §2 "조기 경고 휴리스틱 체크리스트"(8개 신호)를
+ * skills/project-orchestration/risk-signals.md(= Skill project-orchestration §2의 본문)의
+ * "조기 경고 휴리스틱 체크리스트"(8개 신호)를
  * WBS 구조화 데이터(wbs_list 응답과 동일한 JSON 배열)에 대해 기계적으로 판정한다.
  * PM이 매번 표를 눈으로 대조하는 대신, 이 스크립트로 신호를 잡아낸 뒤 원인 조사·대응 판단만 사람이 한다.
  *
@@ -173,7 +174,7 @@ function localDateStr(d) {
   return d.toLocaleDateString('en-CA');
 }
 
-// ── 신호 판정 (SKILL.md §2 "조기 경고 휴리스틱 체크리스트" 8행 그대로) ─────
+// ── 신호 판정 (§2 본문 risk-signals.md의 "조기 경고 휴리스틱 체크리스트" 8행 그대로) ─────
 
 const SEVERITY_RANK = { High: 3, Medium: 2, Low: 1 };
 
@@ -359,7 +360,7 @@ function printTextReport(findings, skipped, meta) {
   const lines = [];
   const push = (s = '') => lines.push(s);
 
-  push(`# WBS 조기 경고 신호 판정 (skills/project-orchestration/SKILL.md §2 기준)`);
+  push(`# WBS 조기 경고 신호 판정 (skills/project-orchestration/risk-signals.md = §2 체크리스트 기준)`);
   push();
   push(`- 기준일: ${meta.todayStr}`);
   push(`- 현재 스냅샷 항목 수: ${meta.currentCount}`);

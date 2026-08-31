@@ -421,8 +421,11 @@ function checkClaudePluginRootHooksRefs(relPath, body, pluginRoot) {
 // knowledge를 참조 "원천"으로 돌리지 않았던 동안(인벤토리로만 수집하고 본문은 읽지 않았다),
 // 스킬 개명 라운드 뒤 죽은 스킬 참조 16건이 ERROR 0 초록불 아래에서 약 2주간 생존했다.
 // 참조 대상이면서 동시에 참조 원천인 영역을 한쪽으로만 다룬 것이 그 구멍이었다.
-function checkBodyReferences(relPath, body, ctx) {
+function checkBodyReferences(relPath, body, ctx, opts = {}) {
   const { skillNames, knowledgeFiles, pluginRoot, referencedSkills, referencedKnowledge } = ctx;
+  // 스킬 절별 파일(SKILL.md 밖의 보조 .md)인가. 참조 문법은 SKILL.md와 같지만 **해소 방식이
+  // 다르다** — 아래 형태 검사의 처방이 갈리는 유일한 지점이라 호출자가 알려준다.
+  const isSkillPart = opts.isSkillPart === true;
 
   // 스킬을 가리키는 표기형은 두 가지다: ``Skill `name` `` 호출형과 `skills/name/SKILL.md` 경로형.
   // 개명 라운드에서 죽은 참조가 두 형태에 섞여 남았으므로 둘 다 본다.
@@ -467,14 +470,35 @@ function checkBodyReferences(relPath, body, ctx) {
   // --pm-block)이 매 세션 그대로 읽어 additionalContext로 주입하는 상시 주입물이라, 세션(그 훅을
   // 실행하는 프로세스가 아니라 최종적으로 그 본문을 읽는 모델)이 읽는다는 점에서 agents 본문과
   // 조건이 똑같다.
+  //   · 스킬 절별 파일(skills/<dir>/ 아래 SKILL.md 밖의 .md) → 산문이라 검사 대상인 것은 같지만
+  //     **처방이 다르다**. 이 파일은 읽는 이가 Read로 여는데, `${CLAUDE_PLUGIN_ROOT}`는 SKILL.md
+  //     본문에서만 치환되고 Read로 연 파일 안에서는 문자 그대로 남는다 → 기본 처방("그 변수로
+  //     고쳐라")을 그대로 주면 열리지 않는 형태로 유도하게 된다. knowledge 본문을 아예 제외한 것과
+  //     같은 이유이나, 여기서는 침묵시키지 않고 그 자리에 맞는 처방으로 가른다.
   if (/(^|\/)(?:agents|skills)\//.test(relPath) || /(^|\/)hooks\/.*\.md$/.test(relPath)) {
     const FORM = /(?<!\$\{CLAUDE_PLUGIN_ROOT\}\/)(?<!malgn-agent\/)\bknowledge\/[A-Za-z0-9_-]+\/[^\s`)*|]*/g;
     for (const m of liveReferences(body, FORM)) {
       if (/[<…{]/.test(m[0])) continue; // 형태를 설명하는 자리 표시자는 대상이 아니다
-      error('REF_KNOWLEDGE_UNREACHABLE', relPath,
-        `knowledge 참조 '${m[0]}'가 맨 상대경로다 — 에이전트 cwd(사용자 프로젝트) 기준으로 해석돼 열리지 않는다. ` +
-        '읽기 대상이면 `${CLAUDE_PLUGIN_ROOT}/knowledge/…`, malgn-agent 소스 clone을 고치는 대상이면 ' +
-        '`malgn-agent/knowledge/…`로 적는다 (규약 정본: Skill `common-output-storage-and-path-management` §1-2).');
+      error('REF_KNOWLEDGE_UNREACHABLE', relPath, isSkillPart
+        ? `knowledge 참조 '${m[0]}'가 맨 상대경로다 — 에이전트 cwd(사용자 프로젝트) 기준으로 해석돼 열리지 않는다. ` +
+          '이 파일은 Read로 열리는 절별 본문이라 `${CLAUDE_PLUGIN_ROOT}/knowledge/…`로 고쳐도 그 변수가 ' +
+          '치환되지 않아 역시 열리지 않는다: 실제로 열라는 지시라면 SKILL.md(색인)에 두고, 정본 위치를 ' +
+          '가리키는 산문 인용이면 `malgn-agent/knowledge/…`로 적는다 ' +
+          '(규약 정본: Skill `common-output-storage-and-path-management` §1-2).'
+        : `knowledge 참조 '${m[0]}'가 맨 상대경로다 — 에이전트 cwd(사용자 프로젝트) 기준으로 해석돼 열리지 않는다. ` +
+          '읽기 대상이면 `${CLAUDE_PLUGIN_ROOT}/knowledge/…`, malgn-agent 소스 clone을 고치는 대상이면 ' +
+          '`malgn-agent/knowledge/…`로 적는다 (규약 정본: Skill `common-output-storage-and-path-management` §1-2).');
+    }
+  }
+  // 절별 파일에 리터럴 `${CLAUDE_PLUGIN_ROOT}`가 있으면 그 자체가 결함이다. 경로 뒷부분이 멀쩡해
+  // 부재·형태 검사 어느 쪽에도 걸리지 않은 채, 읽는 이에게는 열리지도 실행되지도 않는 문자열이
+  // 그대로 전달된다. 펜스 안까지 본다 — 실행 커맨드가 바로 그 자리에 산다.
+  if (isSkillPart) {
+    for (const m of liveReferences(body, /\$\{CLAUDE_PLUGIN_ROOT\}[^\s`)*|"']*/g, { includeFenced: true })) {
+      error('REF_PLUGIN_ROOT_UNSUBSTITUTED', relPath,
+        `절별 파일에 '${m[0]}'가 있다 — 이 변수는 SKILL.md 본문에서만 치환되고 Read로 연 파일 안에서는 ` +
+        '문자 그대로 남아 열리지도 실행되지도 않는다. 플러그인 자원을 실제로 열거나 실행하는 지시는 ' +
+        'SKILL.md(색인)에 두고 절별 파일에는 남기지 않는다.');
     }
   }
   // agents/ 참조는 knowledge/와 달리 두 형태를 다르게 다룬다. 맨 상대경로 `` `agents/x.md` ``는
@@ -1029,10 +1053,31 @@ function main() {
     scanAbsolutePaths(rel, body);
   }
 
+  // ── Skill 절별 파일(SKILL.md 밖의 보조 .md) 수집 ───────────────────
+  // 스킬 디렉터리에는 SKILL.md 말고도 본문을 나눠 담은 .md가 올 수 있다(공식 "supporting files"
+  // 패턴 — SKILL.md는 색인만 두고 긴 절은 필요할 때만 Read로 연다). 이 파일들은 frontmatter 규약
+  // 대상이 아니지만 **참조 원천이라는 점에서는 SKILL.md와 똑같다** — 같은 문법으로 Skill/
+  // knowledge/agent/bin을 가리키고 그 포인터도 똑같이 썩는다. 여기서 함께 훑지 않으면 절 본문을
+  // SKILL.md 밖으로 옮기는 것만으로 그만큼의 참조가 조용히 검사망을 빠져나간다.
+  // 하위 디렉터리까지 내려간다. 공식 예시 레이아웃이 `<skill>/reference/x.md`처럼 한 단계 더
+  // 들어간 자리를 쓰기 때문에, 최상위 1단계만 훑으면 그 아래의 참조가 통째로 검사망을 빠져나간다
+  // (양성 대조군: reference/ 아래에 죽은 참조를 심어도 ERROR 0으로 통과했다).
+  const skillPartFiles = [];
+  const collectSkillParts = (dir, depth) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, e.name);
+      if (e.isDirectory()) { collectSkillParts(abs, depth + 1); continue; }
+      if (!e.isFile() || !e.name.endsWith('.md')) continue;
+      if (depth === 0 && e.name === 'SKILL.md') continue; // 스킬 본문 자신은 skillFiles가 이미 훑는다
+      skillPartFiles.push({ rel: path.relative(REPO_ROOT, abs), body: fs.readFileSync(abs, 'utf8'), isPart: true });
+    }
+  };
+  for (const dir of skillDirNames) collectSkillParts(path.join(skillsDir, dir), 0);
+
   // ── Skill 본문의 참조 검증 ────────────────────────────────────────
-  for (const { rel, body } of skillFiles) {
+  for (const { rel, body, isPart } of [...skillFiles, ...skillPartFiles]) {
     if (!body) continue;
-    checkBodyReferences(rel, body, refCtx);
+    checkBodyReferences(rel, body, refCtx, { isSkillPart: Boolean(isPart) });
     checkCanonicalClaims(rel, body, disclaiming, skillDirNames);
     checkAnchors(rel, body, pluginRoot, skillDirNames, sectionCache);
     checkUnresolvableIds(rel, body);
@@ -1204,7 +1249,7 @@ function main() {
   // knowledge를 읽는 에이전트의 실제 진입 경로다.
   // 슬래시 커맨드로 직접 쓰는 Skill도 있으므로 WARN.
   const allAgentBodies = agentFiles.map((f) => fs.readFileSync(path.join(agentsDir, f), 'utf8')).join('\n');
-  const allSkillBodies = skillFiles.map((s) => s.body).join('\n');
+  const allSkillBodies = [...skillFiles, ...skillPartFiles].map((s) => s.body).join('\n');
   const allKnowledgeBodies = knowledgeBodies.map((k) => k.body).join('\n');
   const haystack = allAgentBodies + allSkillBodies + allKnowledgeBodies;
   for (const dir of skillDirNames) {
