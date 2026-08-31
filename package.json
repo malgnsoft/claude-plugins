@@ -6,6 +6,7 @@
   "scripts": {
     "check-docs": "node scripts/check-docs.mjs",
     "check-assets": "node scripts/validate-agent-assets.mjs",
+    "check-links": "node scripts/check-install-reachability.mjs",
     "check-status": "node scripts/check-status-size.mjs",
     "sync-docs": "node scripts/sync-anthropic-docs.mjs",
     "sync-docs:check": "node scripts/sync-anthropic-docs.mjs --check"
