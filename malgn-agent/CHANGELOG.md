@@ -9,6 +9,38 @@
 
 ---
 
+## [1.8.18] — 2026-08-31
+
+사용자 승인으로 변경동결을 부분 해제하고 진행한 백로그 3건. 각각 trainer/architect 초안 →
+reviewer·evaluator 병렬 검증(위반 시 재작업 1~2라운드) → PM 실물대조 순으로 진행했습니다.
+
+### 추가
+
+- **신규 자산 신설 판정 3지선다**: `skills/project-orchestration` §3.6이 "지식팩 vs 전담
+  에이전트" 이분법이라 Skill 신설 선택지가 없었고, knowledge 폴백이 "반복 발동 필요 절차는
+  Skill" 원칙과 충돌했습니다. Agent/Skill/Knowledge 3지선다로 개정하고, 애매한 경계에서는
+  Skill/Agent를 우선하는 기준을 `agents/trainer.md` "신설 판정"(정본)에 반영했습니다.
+- **설치본 도달성 검사기**: 제품 본문이 인용하는 경로가 실제 설치본에서 열리는지 목적 기준으로
+  검사하는 `scripts/check-install-reachability.mjs` 신설(`pnpm run check-links`). 기존
+  결함 6건(2026-08-29 라운드에서 백로그로 미룬 것)이 남아 있어 `check-assets`에는 아직
+  체이닝하지 않았습니다.
+
+### 변경
+
+- **knowledge/skills 이중 레이어 정리**: knowledge 44종 중 skills와 절차 본문이 중복되던
+  3개 문서(`architecture/system-design-patterns.md`·`review/screenshot-capture-guide.md`·
+  `common/permission-policy-compliance.md`)를 삭제하고 배경을 대응 skill로 흡수했습니다
+  (정보 손실 없음, 흡수처와 1:1 대조로 확인). knowledge 44→40종.
+
+### 수정
+
+- `agents/trainer.md:151`이 교훈 게이트 4부 구조를 `common-learning-loop-knowledge-management`
+  소속으로 오귀속했던 것을 `reflect-lessons`/`project-retrospective`로 정정.
+- `CLAUDE.md`의 knowledge 배치 기준 문구가 실제 적용 기준(스킬 상단에 흡수 가능한 분량인가)과
+  달랐던 것을 정정.
+
+---
+
 ## [1.8.17] — 2026-08-29
 
 v1.8.16 배포 이후 전 영역(agents 21종·skills 38종·knowledge 44종·hooks·bin) 냉혹 검증 라운드에서
