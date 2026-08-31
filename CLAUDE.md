@@ -128,8 +128,8 @@ pnpm run check-docs    # malgn-agent 자산 개수(agents·skills·knowledge) �
 - `malgn-agent/` — 마켓플레이스의 핵심이자 유일한 플러그인.
   - `.claude-plugin/plugin.json` — `mcpServers.malgnai-hub`(원격 HTTP `https://malgnai-hub.apiserver.kr/mcp`, OAuth 로그인이 정상 경로) + `userConfig.device_token`(OAuth가 안 되는 예외 상황의 탈출구 필드 — 값을 채워도 자동으로 쓰이지 않는다, 정상 설치는 비워둔다)
   - `agents/` 21종 — 전원 `pm.md` 기준 위임모델. ⚠️ `agents/pm.md`는 **이 프로젝트가 만드는 산출물**(설치사 직원이 쓰는 제품용 PM)이지 이 세션 자신의 운영 규칙이 아니다
-  - `skills/` 38종 — 명명은 참조 에이전트 수 기준(`common-*` 전역 상시비용 / `domain-*` 도메인 / 무접두어 단일 참조)
-  - `knowledge/` 40개 — 도메인별 디렉토리, 진입점 `knowledge/README.md`. 절차·체크리스트의 정본은 `skills/`다 — 그 배경이 스킬 본문 상단에 몇 줄로 흡수될 만큼 짧으면 knowledge를 두지 않고 흡수하며, 흡수 후에도 남는 것(도메인 레퍼런스·역추출 사례처럼 스킬 분량을 넘는 독립 내용)만 knowledge에 둔다
+  - `skills/` 40종 — 명명은 참조 에이전트 수 기준(`common-*` 전역 상시비용 / `domain-*` 도메인 / 무접두어 단일 참조)
+  - `knowledge/` 41개 — 도메인별 디렉토리, 진입점 `knowledge/README.md`. 절차·체크리스트의 정본은 `skills/`다 — 그 배경이 스킬 본문 상단에 몇 줄로 흡수될 만큼 짧으면 knowledge를 두지 않고 흡수하며, 흡수 후에도 남는 것(도메인 레퍼런스·역추출 사례처럼 스킬 분량을 넘는 독립 내용)만 knowledge에 둔다
   - `bin/` — 무의존성 Node 내장모듈만 쓰는 번들 스크립트(Windows/macOS 동일 실행). 토큰 사용량 자가진단(`analyze-usage`/`report-usage`/`usage-agent-lib`/`install-usage-agent`/`pair-usage-device`) · `capture.mjs`(Playwright 캡처) · `new-project.mjs`(스캐폴더) · `check-*.mjs`(규약·보안 점검)
   - `hooks/` — `hooks.json`(SessionStart에 `sessionstart-context.mjs` **2회 등록** — `--pm-block`으로 PM 행동규율 주입, 인자 없이 STATUS.md 주입. 별도 프로세스로 나눠야 두 값이 각자 10,000자 캡을 받아 규율이 STATUS.md 크기에 잘리지 않는다 / Stop→`stop-mcp-reminder.cjs`) + `pm-orchestration-block.md`(PM 행동규율 정본 — 어느 CLAUDE.md에도 복사하지 않고 훅이 매 세션 라이브 주입한다). 경로는 `${CLAUDE_PLUGIN_ROOT}` 기준으로 포터블
   - `templates/e2e-template/` — Playwright storageState 인증 표준 스캐폴드

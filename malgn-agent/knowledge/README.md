@@ -55,6 +55,7 @@
 - `coo-rule-rationale.md` — PM 핵심 운영 규칙의 근거 모음(orchestrator 흡수, 집필 위임 원칙, 공유 가정 주입, 경로 릴레이 순차 위임) — 각 규칙이 유래한 실제 사고 사례 포함 (`agents/pm.md` 실참조)
 - (STATUS.md 표준 포맷·크기 상한·아카이빙·헤더 교체 규칙 정본은 knowledge가 아니라 `skills/project-standards` §3)
 - `judgment-independence-patterns.md` — 판정 독립성 설계 3요소(선기대치 자술/blind 판정/합격에만 서명) 참고 노트, 타 AI 조직 사례 재정리. evaluator 판정 체크리스트를 설계·보강할 때 참고
+- `pm-verification-field-notes.md` — PM이 보고와 실물을 직접 대조할 때 검증이 헛도는 함정 모음(로그인 성공의 정의, 보고서 curl 예시 재사용, 인증 API 검증 수단 선택, 개발서버 포트 충돌, 로그 반복 에러 오탐, 점수의 측정 스코프) (`agents/pm.md` 실참조)
 
 ### planning/
 - `requirements-analysis.md` — 요구사항 도출 프로세스, PRD 템플릿, 사용자 스토리
