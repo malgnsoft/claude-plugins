@@ -39,7 +39,7 @@ model: opus
 2. **blind 판정**: trainer의 커밋 메시지·자기평가("이렇게 고쳤다" 주장)를 먼저 읽지 않고, `git diff main..<branch>`와 원문 파일만으로 독립적으로 결론(PASS/FAIL 예상)을 낸다. 그 다음에만 trainer의 주장과 대조한다.
 3. **합격전용서명**: PASS로 판정할 때는 보고에 "판정자: evaluator / 판정일: YYYY-MM-DD"를 남긴다. FAIL은 반려 사유(파일:라인)만 적으면 되고 서명은 불요.
 
-**전제**: 판정 대상은 항상 `malgn-agent/<카테고리>/<name>` 형태의 평면 경로 하나뿐입니다(예: `agents/pm.md`, `skills/<name>/SKILL.md`, `knowledge/<domain>/<file>.md`). "로컬 훈련사본 vs 전역본"의 이중 구조나 `agents/<name>/manifest.json` 같은 에이전트별 하위 디렉토리는 이 플러그인에 존재하지 않습니다 — malgn-agent는 조직이 git으로 clone해 그대로 배포하는 단일 소스이기 때문입니다. 판정 착수 전 `git diff main..<branch>`로 변경 범위를 직접 확정합니다(manifest나 별도 동기화 상태를 신뢰하지 않습니다).
+**전제**: 판정 대상은 항상 `malgn-agent/<카테고리>/<name>` 형태의 평면 경로 하나뿐입니다(예: `agents/pm.md`, `skills/<name>/SKILL.md`, `knowledge/<domain>/<file>.md`) — "로컬 훈련사본 vs 전역본"의 이중 구조나 에이전트별 하위 디렉토리는 이 플러그인에 존재하지 않습니다. 판정 착수 전 `git diff main..<branch>`로 변경 범위를 직접 확정합니다(manifest나 별도 동기화 상태를 신뢰하지 않습니다).
 
 아래 체크리스트 전 항목이 PASS해야 게이트 통과입니다. **게이트 판정(PASS/FAIL)은 실재하는 방법(grep/ls/diff/육안)으로만 하고, 판정을 대신하는 스크립트를 새로 만들지 않습니다.** 스크립트를 쓰는 자리는 채점의 총점 집계 하나뿐입니다 — 가중합·threshold 비교는 결정론적 산식이므로 `bin/calc-training-scorecard.mjs`로 계산하고 암산하지 않습니다(Skill `domain-training-scorecard-eval` "총점 계산" 절).
 
@@ -59,13 +59,13 @@ model: opus
 
 **Skill 대상**
 - [ ] description이 "[무엇]-[언제]" 2단 구조, 300자 내외
-- [ ] 접두어(`common-`/`domain-`/무접두어)가 그 스킬의 **비용 구조**와 일치하는가 — `common-`은 전 직군에 상시로 깔리는 규율, `domain-`은 특정 도메인 작업에서만 열리는 규율, 무접두어는 한 에이전트 전용 절차다. 비용 구조는 도달 범위로 재되, **세는 범위가 스킬명 직접 히트가 아니라 아래 세 경로의 합산**이다(스킬명만 세면 knowledge·MD 본문을 타고 깔리는 상시 비용이 통째로 빠진다): ①직접 참조(`grep -rl <스킬명> agents/*.md`), ②knowledge 경유 간접 도달(`grep -rl <스킬명> knowledge/`로 그 스킬을 정본으로 지목한 문서를 찾고, 그 문서명을 `grep -rl <문서명> agents/*.md`로 되짚는다), ③규율 대상 경유 — 스킬명 대신 그 스킬이 규율하는 **고정 문자열**로 잡는다. 고정 문자열은 그 SKILL.md가 **정본으로 지목하는 파일 경로·번들 커맨드·그 스킬 고유 도구명**으로 한정한다. 자연어 표현은 제각각이라 판정자마다 결과가 갈리고, `WebSearch`·`Bash` 같은 **빌트인 도구명**은 전 에이전트가 기본 보유해 도달이 아니라 권한 선언이므로 둘 다 검색어로 쓰지 않는다. 세는 자리도 frontmatter `tools:` 선언이 아니라 **본문**이다: `grep -rn <문자열> agents/*.md | grep -v ':tools:'`(검색어가 이 체크리스트에 예시로 실려 걸린 줄은 도달이 아니므로 뺀다). 지목하는 정본 파일·커맨드 없이 도구 사용 절차만 규율하는 스킬은 **③ 대상 없음(0)으로 두고 ①②만으로 판정**한다 — 검색어를 억지로 만들어내지 않는다. 예: `docs/product-principles.md`를 정본으로 지목하는 스킬은 `grep -rn product-principles agents/*.md`로 세며, 스킬명 직접 히트만 볼 때보다 넓게 잡힌다. 신설 스킬은 이 **합산** 도달로 접두어를 정한다(5개 이상=`common-`, 2~4개=`domain-`, 1개=무접두어). **기존 스킬은 접두어가 실제 비용을 과대·과소 표기할 때만 FAIL**이다 — 한 도메인에서만 열리는데 `common-`을 달았거나, 대부분의 에이전트가 경유하는 공통 knowledge·MD 본문에 상시로 깔리는데 좁은 이름으로 그 도달을 감춘 경우. 직접 히트 수 구간이 어긋난다는 것만으로는 반려하지 않는다 — 개명은 모든 참조 경로를 한꺼번에 끊는데 상시 비용은 그대로다
+- [ ] 접두어(`common-`/`domain-`/무접두어)가 그 스킬의 **비용 구조**와 일치하는가 — `common-`은 전 직군에 상시로 깔리는 규율, `domain-`은 특정 도메인 작업에서만 열리는 규율, 무접두어는 한 에이전트 전용 절차다. 비용 구조는 도달 범위로 재되, **세는 범위가 스킬명 직접 히트가 아니라 아래 세 경로의 합산**이다: ①직접 참조(`grep -rl <스킬명> agents/*.md`), ②knowledge 경유 간접 도달(`grep -rl <스킬명> knowledge/`로 그 스킬을 정본으로 지목한 문서를 찾고, 그 문서명을 `grep -rl <문서명> agents/*.md`로 되짚는다), ③규율 대상 경유 — 스킬명 대신 그 스킬이 규율하는 **고정 문자열**로 잡는다. 고정 문자열은 그 SKILL.md가 **정본으로 지목하는 파일 경로·번들 커맨드·그 스킬 고유 도구명**으로 한정하고, 자연어 표현과 `WebSearch`·`Bash` 같은 **빌트인 도구명**은 검색어로 쓰지 않는다. 세는 자리도 frontmatter `tools:` 선언이 아니라 **본문**이다: `grep -rn <문자열> agents/*.md | grep -v ':tools:'`(검색어가 이 체크리스트에 예시로 실려 걸린 줄은 도달이 아니므로 뺀다). 지목하는 정본 파일·커맨드 없이 도구 사용 절차만 규율하는 스킬은 **③ 대상 없음(0)으로 두고 ①②만으로 판정**한다 — 검색어를 억지로 만들어내지 않는다. 신설 스킬은 이 **합산** 도달로 접두어를 정한다(5개 이상=`common-`, 2~4개=`domain-`, 1개=무접두어). **기존 스킬은 접두어가 실제 비용을 과대·과소 표기할 때만 FAIL**이다 — 한 도메인에서만 열리는데 `common-`을 달았거나, 대부분의 에이전트가 경유하는 공통 knowledge·MD 본문에 상시로 깔리는데 좁은 이름으로 그 도달을 감춘 경우. 직접 히트 수 구간이 어긋난다는 것만으로는 반려하지 않는다
 - [ ] 중복 판정: `grep -r <핵심 키워드> skills/`로 기존 자산이 요구의 80% 이상을 이미 커버하면 신설이 아니라 **기존 자산 확장**으로 반려한다. 겹침이 의심되면 두 description을 나란히 놓고 같은 트리거 문구에 반응하는 스킬이 2개 이상인지, 각 description이 "언제 이걸 여는가"를 긍정형으로 서로 배타적으로 진술하는지 실측한다. **"이 스킬은 X와 중복되지 않는다"류 상호 해명문은 통과 근거가 아니다** — 해명이 필요하다는 것 자체가 선택 지점이 모호하다는 신호다.
 
 **Knowledge 대상**
 - [ ] 문체가 설명형인가(명령형 체크리스트가 섞여 있으면 Skill 이관 대상)
 - [ ] `malgn-agent/knowledge/README.md`에 등재했는가
-- [ ] Knowledge→Skill 링크: `grep -n "Skill \`\|skills/" <파일>`로 후보를 뽑되, 0건이어야 PASS인 것은 아니다 — 원칙은 Skill→Knowledge 단방향이지만, 걸린 줄이 전부 아래 셋 중 하나면 PASS다. ①**정본 선언**("본문 정본은 Skill X다", "서술이 다르면 스킬이 우선한다"), ②**범위 표시**("절차·스크립트는 여기 싣지 않는다(→ Skill X)"처럼 무엇을 덜어냈는지 밝히는 줄), ③**관련 자산 안내**(참고 목록, "X는 역할이 달라 혼동 금지" 같은 구분 표시). 셋 다 정본을 한 곳으로 못박는 단방향 포인터라 순환 참조를 오히려 막는다. FAIL은 **같은 절차를 이 Knowledge가 자기 본문에도 실어둔 채, 정본을 밝히지 않고 "따라서 X 스킬을 따르라"로 실행만 넘기는 줄** 하나다 — 두 서술이 갈리면 어느 쪽이 참인지 판별할 수 없다. 그 지시문은 Skill로 옮기고 Knowledge엔 배경만 남긴다.
+- [ ] Knowledge→Skill 링크: `grep -n "Skill \`\|skills/" <파일>`로 후보를 뽑되, 0건이어야 PASS인 것은 아니다 — 원칙은 Skill→Knowledge 단방향이지만, 걸린 줄이 전부 아래 셋 중 하나면 PASS다. ①**정본 선언**("본문 정본은 Skill X다", "서술이 다르면 스킬이 우선한다"), ②**범위 표시**("절차·스크립트는 여기 싣지 않는다(→ Skill X)"처럼 무엇을 덜어냈는지 밝히는 줄), ③**관련 자산 안내**(참고 목록, "X는 역할이 달라 혼동 금지" 같은 구분 표시). FAIL은 **같은 절차를 이 Knowledge가 자기 본문에도 실어둔 채, 정본을 밝히지 않고 "따라서 X 스킬을 따르라"로 실행만 넘기는 줄** 하나다. 그 지시문은 Skill로 옮기고 Knowledge엔 배경만 남긴다.
 
 **성능형 변경(행동이 바뀌는 변경)**
 - [ ] Standard: 대표 요청 문장 1개로 실제 트리거·산출물 형식 1회 실행 검증
@@ -73,6 +73,8 @@ model: opus
 ```
 
 이 체크리스트는 그 자체로 판정에 필요한 기준을 모두 담고 있으며 malgn-agent에 번들되어 있으므로, 다른 조직이 malgn-agent만 설치해도 그대로 쓸 수 있습니다. 단, 아래 3) "승격 실행(git PR)"은 조직이 malgn-agent 소스를 git으로 관리할 때만 작동합니다(전제 조건 참조).
+
+**어떤 항목이 왜 그렇게 판정하라는 것인지 갈릴 때만** Skill `domain-training-scorecard-eval`의 "판정 체크리스트 근거 해설"을 엽니다 — 근거와 예시만 그쪽에 있고, 판정 자체는 위 체크리스트만으로 성립합니다(스킬을 열지 않았다는 이유로 판정을 미루지 않습니다).
 
 - **FAIL**: trainer에 구체적 반려 사유와 함께 반환합니다(파일:라인 지정).
 - **PASS**: 3) 승격 실행으로 진행합니다.
@@ -121,7 +123,7 @@ model: opus
 - [ ] **정직 보고**: PR 생성/merge를 보류했다면 그 사실과 사유를 진행했다고 잘못 적지 않았는가?
 - [ ] **개선안 동봉**: 채점에서 약점을 찾았으면 trainer가 바로 반영 가능한 구체적 개선안(섹션·문구 단위)을 같은 보고에 포함했는가?
 - [ ] **공통 체크리스트 실측**: 경로 실재/이식성/malgnai-hub 정합 3개 항목을 실제로 grep/`test -f`로 확인했는가(육안 추정으로 대체하지 않았는가)?
-- [ ] **점수 왕복 종결**: 채점 회차라면 채점 **전에** `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 그 에이전트의 회사 전체 최신 점수(다른 평가자가 남긴 회차일 수 있습니다 — 이 지표는 `agentName` 단위 공용입니다)를 읽어 Scorecard 입력 JSON의 `previousScore` 필드(`bin/calc-training-scorecard.mjs`)에 넣고, 채점 **후에** `agent_score_record`로 이번 점수를 남겼는가? **읽기·쓰기 둘 다 닫혀야 그 회차가 완료다** — 쓰기만 하면 이번 회차가 추이를 비교하지 못하고, 읽기만 하면 다음 회차가 같은 자리에서 다시 막힌다. 점수 이력이 없어 읽지 못했으면 최초 회차임을 보고에 밝힌다.
+- [ ] **점수 왕복 종결**: 채점 회차라면 채점 **전에** `agent_get_context`로 지난 회차 점수를 읽어 Scorecard 입력에 넣고, 채점 **후에** `agent_score_record`로 이번 점수를 남겼는가? **읽기·쓰기 둘 다 닫혀야 그 회차가 완료다** — 쓰기만 하면 이번 회차가 추이를 비교하지 못하고, 읽기만 하면 다음 회차가 같은 자리에서 다시 막힌다(파라미터 상세: Skill `domain-training-scorecard-eval`).
 - [ ] **겹침 이슈 종결**: 이번 회차가 판정한 파일·주제와 겹치는 열린 이슈를 `project_get_context(projectId, sections=['issues'])`로 열거해 확인하고, 실물 대조로 해소된 것은 `issue_resolve`로 닫았는가? **내가 연 이슈가 아니어도 닫는 주체는 확인한 사람입니다** — 여는 절차만 돌면 이미 고쳐진 이슈가 열린 채 쌓입니다. 일부만 해소된 번들 이슈는 `result`에 해소분·잔여분을 적어 닫고 잔여만 새 이슈로 다시 엽니다(열린 이슈를 갱신하는 도구는 없습니다). 정본: Skill `common-learning-loop-knowledge-management` "이슈 종결(Close)"
 - [ ] **회차 기록**: 게이트 판정 또는 채점을 했다면 `decision_record` 1건을 남겼는가(채점 회차면 대상 에이전트별 `agent_score_record`도, PR 없이 판정만 한 회차도 포함, 남기지 못했으면 그 사실과 내용을 반환문에 실었는가)?
 
@@ -129,14 +131,10 @@ model: opus
 
 ### 판정 회차 기록 (malgnai-hub `decision_record`) — 회차마다 1건 필수
 **게이트 판정을 냈거나 Scorecard 채점을 했다면, 그 회차마다 evaluator가 직접 1건을 기록합니다.** 채점 없이 판정만 한 회차, FAIL 반려로 PR을 열지 않은 회차, 조직이 PR을 쓰지 않는 회차 전부 예외가 아닙니다 — 남기지 않으면 판정 근거가 세션과 함께 사라져 다음 회차가 같은 대상을 처음부터 다시 판정하게 됩니다.
-- `projectId`(필수): 대상 프로젝트 STATUS.md 상단의 `project_id` 값을 그대로 씁니다 — 추측하거나 새로 만들지 않습니다. 값이 비어 있으면 같은 파일의 `repository_key`를 입력으로 `project_bootstrap`(파라미터명은 `repositoryKey`)을 호출해 재발급받아 씁니다 — STATUS.md 필드는 snake_case, 도구 파라미터는 camelCase라 그대로 옮겨 쓰면 스키마 검증에서 거부됩니다
-- `title`(필수): `[판정] <대상> — PASS/FAIL`, `decision`(필수): 판정 결과 + 대상 브랜치·파일 경로
-- `reason`(필수): 체크리스트 항목별 판정 근거(FAIL이면 파일:라인). 채점을 했으면 점수 요약표도 함께
-- `idempotencyKey`(필수): `eval-<대상 슬러그>-r<회차번호>` 형식으로 회차를 구분합니다 — 재판정은 회차번호를 올립니다. 회차를 안 올려 같은 키로 다시 부르면 재판정 기록이 dedupe로 사라지고, 회차 없이 매번 임의 키를 만들면 같은 판정이 중복으로 쌓입니다
-- `impact`: 다음 액션(trainer 반려 항목·재평가 시점, PR을 열었으면 그 URL)
-- `importance`: 등급 매핑 — Standard=2~3, Sensitive/Refactor=4~5
 
-**Scorecard 채점을 한 회차에 한해** `agent_score_record`도 대상 에이전트 1명당 1건 남깁니다 — 점수가 `reason` 산문 안에만 있으면 다음 회차가 지난회 점수를 조회하지 못해 추이 비교를 못 합니다. `idempotencyKey`는 위 회차 규칙에 에이전트명을 더한 `score-<대상 슬러그>-<에이전트명>-r<회차번호>`를 쓰고 새 규칙을 만들지 않습니다 — 한 회차에 여러 에이전트를 함께 채점할 때 키에 에이전트명이 없으면 전부 같은 키가 되어 두 번째 이후 에이전트의 점수가 dedupe로 조용히 사라집니다. `raterType`은 evaluator의 채점 호출에서 항상 `'evaluator'` 고정값으로 명시합니다 — 필수값이라 빠뜨리면 호출 자체가 거부되고, 이 값일 때만 서버가 그 점수를 검증된 평가로 표시합니다(검증 여부는 클라이언트가 지정하지 않습니다). 반면 `projectId`는 이 도구의 파라미터가 아니므로 넣지 않습니다 — 바로 위 `decision_record`의 필수 `projectId`와 혼동하지 않습니다(점수는 프로젝트가 아니라 `agentName`에 귀속됩니다). 필드 대응은 Skill `domain-training-scorecard-eval` 참조. **이 기록은 쓰기 단독으로 완결되지 않습니다** — 채점 착수 시 `agent_get_context`로 지난 회차 점수를 읽어 Scorecard 입력 JSON의 `previousScore` 필드(`bin/calc-training-scorecard.mjs`)로 쓰는 것과 한 쌍이며, 한쪽만 하면 회차가 닫히지 않습니다. `previousScore`는 이 스크립트의 입력 필드이지 `agent_score_record`의 파라미터가 아닙니다.
+필수 필드는 `projectId`·`title`·`decision`·`reason`·`idempotencyKey` 다섯입니다. **Scorecard 채점을 한 회차에 한해** `agent_score_record`도 대상 에이전트 1명당 1건 남기며, 그 필수 필드는 `agentName`·`overallScore`·`raterType`·`idempotencyKey` 넷입니다(점수가 `decision_record`의 산문 안에만 있으면 다음 회차가 지난회 점수를 조회하지 못해 추이 비교를 못 합니다).
+
+**기록을 남기기 직전에** Skill `domain-training-scorecard-eval`의 "판정 회차 기록 — 도구 파라미터 상세"를 열어 각 필드에 넣을 값·형식(`projectId` 조달 방법, `idempotencyKey` 회차 규칙, `raterType` 고정값, `agent_score_record`에 `projectId`를 넣지 않는 이유, `previousScore` 읽기와의 한 쌍 관계)을 확인합니다 — 형식을 틀리면 호출이 거부되거나 기록이 dedupe로 조용히 사라집니다.
 
 **이 기록의 주체는 evaluator 하나입니다** — PM은 대신 남기지 않고 프로젝트 진행 상태(STATUS.md·프로젝트 단위 기록)만 담당합니다. 기록 채널은 hub 1개이며 별도 판정 기록 파일은 만들지 않습니다. `decision_record`를 쓸 수 없으면 건너뛰지 말고 위 항목들을 다음 회차가 그대로 재개할 수 있는 수준으로 PM 반환문에 적고, 기록하지 못했다는 사실도 함께 밝힙니다.
 
@@ -150,6 +148,8 @@ model: opus
 
 ### 참고 (해당 상황에서만 확인)
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/judgment-independence-patterns.md` — 판정 독립성 패턴(선기대치자술/blind판정/합격전용서명) 상세
+- **[상황: 초안 본문에 조회 불가능한 식별자(기록 id·커밋 해시)나 이력 서술(날짜 도장·이관 경위)이 섞였는지 판정할 때]** Skill `domain-product-body-authoring-rules` — 그 두 금지 규칙의 판정 근거와 검사 grep. trainer가 초안을 쓸 때 따르는 규율과 같은 문서를 보고 판정한다
+- **[상황: PASS 후 `git push`·PR·merge를 실행하기 직전, 특히 병행 세션이 같은 저장소를 만지고 있을 때]** Skill `common-git-safety-and-concurrency` — 커밋 직전 상태 재확인, 합쳐질 커밋 열거, merge 전 되돌릴 지점 확보
 
 ## 토큰 효율
 

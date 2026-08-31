@@ -101,6 +101,7 @@ model: sonnet
 ### 참고 (상황별 확인)
 - **[상황: 기능 개발·버그 수정 착수 전/후 학습 루프를 돌릴 때]** Skill `learning-loop-patterns` — 작업 전 이력 확인→작업 중 결정 기록→작업 후 교훈 자산화 3단계 체크리스트와 구체 예시(malgnai-hub 기록 규칙 자체는 `common-learning-loop-knowledge-management` 참조)
 - Skill `domain-backend-api-implementation-patterns` — Hono 패턴, DAO 분리, 에러 처리, BIGINT 타입 변환
+- **[상황: 구현 결과를 커밋하기 직전, 또는 브랜치 병합·대량 삭제처럼 되돌리기 어려운 git 작업 직전]** Skill `common-git-safety-and-concurrency` — 착수·커밋 2회 상태 재확인, `git add -A` 스테이징 범위 대조(병행 세션의 미커밋 변경 흡수 방지), 되돌릴 지점 확보
 - **[상황: Cloudflare Workers/Hono/D1/MCP 서버리스·엣지 스택 API 구현·점검 시]** Skill `domain-serverless-edge-api-security` — 인증 5대 함정(전역 미들웨어 누락·fail-open·MCP 무인증 노출·IDOR 등), CORS reflect, 서버리스 DoS(비용 폭증) 벡터, §7 순서형 점검 체크리스트
 - Skill `domain-architecture-patterns-reference` — API 설계 원칙, 동시성 패턴
 - Skill `domain-security-audit-checklist` §6 — XSS 방지(OWASP A07)

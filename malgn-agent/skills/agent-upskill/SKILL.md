@@ -18,7 +18,7 @@ description: 특정 에이전트 역량 강화 — MD/Knowledge 학습 자료 �
 5. **Knowledge 작성** (trainer, 4의 브랜치 위에서 Edit + `git commit`) → `malgn-agent/knowledge/[도메인]/` 신규 파일 추가
 6. **MD 보강** (trainer, 같은 브랜치, Edit + `git commit`) → 기존 에이전트 MD의 해당 섹션에 참조/체크리스트 추가
 7. **evaluator 판정 + PR** → `git diff main..<branch>`로 5~6의 변경 확인 → 판정 체크리스트(`agents/evaluator.md` 참조) PASS 시 `git push` + `gh pr create`(PR body는 아래 "PR 본문 템플릿"). FAIL이면 trainer에 파일:라인 지정 반려. 등급별 merge 조건은 `agents/evaluator.md` §승격 실행을 따른다(Standard=evaluator 단독 가능 여부는 조직 브랜치 보호 설정에 따름, Sensitive=사람 승인 필수)
-8. **학습 기록** → trainer가 **자신이 한 실행**을 malgnai-hub `work_record`(projectId, status: 'completed', title, summary, result 요약, artifacts에는 **trainer가 6단계까지 실제로 확보한 것만** — 브랜치명·변경 파일 경로). PR URL은 7단계에서 evaluator가 열기 때문에 trainer는 알 수 없으므로 적지 않는다(모르는 값을 채우려 재확인하러 돌아가지 않는다). 판정 회차는 evaluator가 `decision_record`로 직접 남기며 PR URL도 그 `impact`에 넣는다(`agents/evaluator.md`의 "판정 회차 기록" 절 참조). PM은 그 결과를 사이클 종결 `work_record`로 이력화하며 필요하면 PR URL을 여기서 보완한다(두 `work_record`를 가르는 기준은 `agents/trainer.md` 역할 경계의 "`work_record` 주인 판별"). 이번 회차로 그 에이전트의 역량으로 남길 교훈이 생겼으면 `agent_learning_record`(agentName, type='experience')로 함께 남긴다
+8. **학습 기록** → trainer가 **자신이 한 실행**을 malgnai-hub `work_record`(projectId, status: 'completed', title, summary, result 요약, artifacts에는 **trainer가 6단계까지 실제로 확보한 것만** — 브랜치명·변경 파일 경로). PR URL은 7단계에서 evaluator가 열기 때문에 trainer는 알 수 없으므로 적지 않는다(모르는 값을 채우려 재확인하러 돌아가지 않는다). 판정 회차는 evaluator가 `decision_record`로 직접 남기며 PR URL도 그 `impact`에 넣는다(`agents/evaluator.md`의 "판정 회차 기록" 절 참조). PM은 그 결과를 사이클 종결 `work_record`로 이력화하며 필요하면 PR URL을 여기서 보완한다(두 `work_record`를 가르는 기준은 Skill `common-learning-loop-knowledge-management`의 "`work_record` 주인 판별"). 이번 회차로 그 에이전트의 역량으로 남길 교훈이 생겼으면 `agent_learning_record`(agentName, type='experience')로 함께 남긴다
 
 ## 보강 범위
 
@@ -31,6 +31,8 @@ description: 특정 에이전트 역량 강화 — MD/Knowledge 학습 자료 �
 - 해당 섹션에 참조 링크 추가
 - 체크리스트 또는 사례 추가
 - 근거 제시 (출처 URL)
+
+**문서경로 참조는 실재 대조까지 한다**: 에이전트 MD를 감사·보강할 때 ``Skill `xxx` `` 표기 오타 검사에서 멈추지 않는다. 문서 안의 **모든** 파일경로 참조(Skill·Knowledge·docs 경로 전부)를 `ls`/`test -f`로 실재 대조한다 — 참조 문법이 맞아도 대상이 없으면 그 줄은 다음 세션을 없는 파일로 보낸다. 번들되지 않은 경로를 인용해야 한다면 반드시 "번들 안 됨" 각주를 붙인다.
 
 ## 산출물
 
