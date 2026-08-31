@@ -85,6 +85,20 @@ const BUDGET_RATIONALE = {
     doc: 'docs/refactor/evaluator-budget-rationale.md',
     bytes: 24362,
   },
+  // 재배치 라운드(de0eea9·0cfc736)로 45.1→39.9KB까지 줄었으나 권고 예산(15KB)을 여전히 넘는다.
+  // 남은 분량은 재배치 라운드가 "절대 훼손 금지"로 지정한 권한표·승인 게이트이거나 이미 조건부
+  // 비용으로 포인터화된 자리다 — 근거: docs/refactor/pm-budget-rationale.md.
+  'agents/pm.md': {
+    doc: 'docs/refactor/pm-budget-rationale.md',
+    bytes: 40818,
+  },
+  // 재배치 라운드(de0eea9)로 30.0→25.8KB까지 줄었으나 권고 예산(15KB)을 여전히 넘는다.
+  // 남은 분량은 핵심원칙·역할경계·실행모드표(trainer 정체성 정의) 중심이다 —
+  // 근거: docs/refactor/trainer-budget-rationale.md.
+  'agents/trainer.md': {
+    doc: 'docs/refactor/trainer-budget-rationale.md',
+    bytes: 26998,
+  },
 };
 // 사유서가 변호하는 크기에서 이만큼까지는 드리프트로 보지 않는다(오탈자·1줄 규칙 수정 여유).
 const RATIONALE_DRIFT_TOLERANCE_B = 512;
@@ -306,14 +320,22 @@ function checkCanonicalClaims(relPath, body, disclaiming, skillDirNames) {
 // 방법론 rubric의 §1.3이 그 SKILL.md의 절로 오인돼 없는 절 ERROR가 났다.
 // 백틱 안 경로 앞에 `${CLAUDE_PLUGIN_ROOT}/` 접두가 붙어도 같은 대상을 가리키므로 매칭한다
 // (CANONICAL_CLAIM과 동일 판단 — 접두는 캡처하지 않아 targetRel이 pluginRoot 기준 상대경로로 남는다).
-const ANCHOR_REF = /(?:`(?:\$\{CLAUDE_PLUGIN_ROOT\}\/)?((?:knowledge|agents|skills)\/[A-Za-z0-9_\-/.]+\.md)`|Skill\s+`([a-z0-9:\-]+)`)[ \t]{0,3}(?:의|,)?[ \t]{0,3}§\s*([0-9]+(?:\.[0-9]+)?)/g;
+// 절 번호는 숫자(§7·§3.5)뿐 아니라 문자형 라벨(§A~§F)로도 인용된다 — 실사례:
+// domain-backend-api-security/SKILL.md가 domain-backend-api-implementation-patterns의
+// "**A. 제목**" 같은 볼드 인라인 라벨을 §A·§B·§D·§F로 인용한다. 이 라벨은 `#{2,4}` 마크다운
+// 헤더가 아니라 문단 첫머리 볼드 텍스트라 숫자용 정규식으로는 anchor도 want도 못 잡는다 —
+// 그 항목이 재배치·삭제돼도 조용히 끊어진다(§7 pnpm 스큐 사고와 같은 종류).
+const ANCHOR_REF = /(?:`(?:\$\{CLAUDE_PLUGIN_ROOT\}\/)?((?:knowledge|agents|skills)\/[A-Za-z0-9_\-/.]+\.md)`|Skill\s+`([a-z0-9:\-]+)`)[ \t]{0,3}(?:의|,)?[ \t]{0,3}§\s*([0-9]+(?:\.[0-9]+)?|[A-F])/g;
 
 function sectionNumbers(absPath) {
   const nums = new Set();
   for (const line of fs.readFileSync(absPath, 'utf8').split(/\r?\n/)) {
     // "## 3.5 제목" / "### 7. 제목" / "### 3) 제목" 전부 허용
     const m = line.match(/^#{2,4}\s+([0-9]+(?:\.[0-9]+)?)[.)\s]/);
-    if (m) nums.add(m[1]);
+    if (m) { nums.add(m[1]); continue; }
+    // "**A. 제목**" 볼드 인라인 라벨(A~F) — 마크다운 헤더가 아니지만 §A류로 인용되는 실제 관례
+    const lm = line.match(/^\*\*([A-F])\.\s/);
+    if (lm) nums.add(lm[1]);
   }
   return nums;
 }
@@ -331,8 +353,8 @@ function checkAnchors(relPath, body, pluginRoot, skillDirNames, sectionCache) {
     const nums = sectionCache.get(targetRel);
     if (nums.size === 0) continue; // 번호 없는 문서는 검사 대상 아님
     const want = m[3];
-    // §7이 요청됐는데 7도 7.x도 없으면 깨진 앵커
-    const hit = nums.has(want) || [...nums].some((n) => n.startsWith(`${want}.`));
+    // §7이 요청됐는데 7도 7.x도 없으면 깨진 앵커. 문자형(§A)은 하위 절이 없으므로 정확히 일치해야 한다.
+    const hit = nums.has(want) || (/^[0-9]/.test(want) && [...nums].some((n) => n.startsWith(`${want}.`)));
     if (!hit) {
       error('REF_ANCHOR_MISSING', relPath,
         `${targetRel} §${want}을 인용하나 그 문서에 해당 절이 없다 (있는 절: ${[...nums].sort().join(', ') || '없음'})`);
@@ -1063,16 +1085,29 @@ function main() {
   // 들어간 자리를 쓰기 때문에, 최상위 1단계만 훑으면 그 아래의 참조가 통째로 검사망을 빠져나간다
   // (양성 대조군: reference/ 아래에 죽은 참조를 심어도 ERROR 0으로 통과했다).
   const skillPartFiles = [];
-  const collectSkillParts = (dir, depth) => {
+  // dir(디렉터리명) → 절 파일 바이트 합계. checkContextBudget(줄 938)은 SKILL.md 자신의 바이트만
+  // 재므로, 색인+절별 분할 스킬은 절 파일에 실린 총량이 예산 검사에 전혀 반영되지 않는다 —
+  // 아래에서 skillFiles 순회 후 합산해 INFO로 드러낸다(조건부 비용이라 결함은 아니다).
+  const skillDirPartBytes = new Map();
+  const collectSkillParts = (dir, depth, skillDir) => {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
       const abs = path.join(dir, e.name);
-      if (e.isDirectory()) { collectSkillParts(abs, depth + 1); continue; }
+      if (e.isDirectory()) { collectSkillParts(abs, depth + 1, skillDir); continue; }
       if (!e.isFile() || !e.name.endsWith('.md')) continue;
       if (depth === 0 && e.name === 'SKILL.md') continue; // 스킬 본문 자신은 skillFiles가 이미 훑는다
+      skillDirPartBytes.set(skillDir, (skillDirPartBytes.get(skillDir) || 0) + fs.statSync(abs).size);
       skillPartFiles.push({ rel: path.relative(REPO_ROOT, abs), body: fs.readFileSync(abs, 'utf8'), isPart: true });
     }
   };
-  for (const dir of skillDirNames) collectSkillParts(path.join(skillsDir, dir), 0);
+  for (const dir of skillDirNames) collectSkillParts(path.join(skillsDir, dir), 0, dir);
+  for (const { dir, rel, bytes } of skillFiles) {
+    const partBytes = skillDirPartBytes.get(dir);
+    if (!partBytes) continue; // 절 파일 없음 — 합산할 것이 없다
+    const totalKb = (bytes + partBytes) / 1024;
+    info('SKILL_DIR_TOTAL', rel,
+      `절별 분할 스킬 디렉터리 총량 ${totalKb.toFixed(1)} KB (색인 ${(bytes / 1024).toFixed(1)} KB + 절 파일 ${(partBytes / 1024).toFixed(1)} KB). ` +
+      '절 파일은 invoke 시에만 조건부로 열리므로 이 총량 자체가 결함은 아니다 — 참고용.');
+  }
 
   // ── Skill 본문의 참조 검증 ────────────────────────────────────────
   for (const { rel, body, isPart } of [...skillFiles, ...skillPartFiles]) {
