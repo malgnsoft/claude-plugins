@@ -378,7 +378,7 @@ idempotencyKey: "upskill-architect-2026-07-09"         # 재호출해도 중복 
 malgnai-hub 기록: 완료 / 미완료
 ```
 
-**점수 칸 채우는 법**: `이전 Scorecard 총점`은 malgnai-hub `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 조회한 응답의 `latestScore.overallScore`를 그대로 적는다 — 응답 최상위(`agentName`/`latestScore`/`scoreHistory`/`recentLearnings`)에는 `overallScore`가 없으므로 `latestScore` 안을 열어야 값에 닿는다. `latestScore`가 `null`이면(점수 이력 없음) "최초 회차"로 적는다 — 조회로 확인되지 않는 값을 추정해 채우지 않는다. 이번 학습의 효과는 다음 채점 회차에서 evaluator가 낸 Scorecard 총점으로 확인하며, trainer가 학습 직후에 스스로 매기지 않는다. 키워드 점수(§3.1)는 보조 지표이므로 산정한 회차에만 선택 항목으로 적는다.
+**점수 칸 채우는 법**: `이전 Scorecard 총점`은 malgnai-hub `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 조회한 응답의 `latestScore.overallScore`를 그대로 적는다 — 응답 최상위(`agentName`/`latestScore`/`scoreHistory`/`recentLearnings`)에는 `overallScore`가 없으므로 `latestScore` 안을 열어야 값에 닿는다. `scoreHistoryLimit`은 **`1`이면 충분하다** — 이 칸이 쓰는 값은 `latestScore` 하나뿐이고 `scoreHistory` 배열은 보지 않으므로, 추이를 눈으로 확인하려는 게 아니면 더 크게 잡지 않는다. `latestScore`가 `null`이면(점수 이력 없음) "최초 회차"로 적는다 — 조회로 확인되지 않는 값을 추정해 채우지 않는다. 이번 학습의 효과는 다음 채점 회차에서 evaluator가 낸 Scorecard 총점으로 확인하며, trainer가 학습 직후에 스스로 매기지 않는다. 키워드 점수(§3.1)는 보조 지표이므로 산정한 회차에만 선택 항목으로 적는다.
 
 **핵심 요약**: "이력은 전부 malgnai-hub에, MD에는 그 학습이 낳은 규칙만 현재형으로."
 

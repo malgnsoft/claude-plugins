@@ -111,7 +111,7 @@ Trainer가 직접 생성·보강하는 파일들이다(모드별 상세는 위 �
 
 - **`malgn-agent/knowledge/<도메인>/*.md`** — 모드 1/2/3/4가 신설·보강하는 범용 학습 자료의 실제 Edit/Write 대상. 기존 파일은 덮어쓰지 않고 추가만 한다(비파괴).
 - **`malgn-agent/agents/<name>.md`** — 학습 반영 MD 보강. 이 파일이 유일한 소스다 — "로컬 사본/전역본" 이중 구조는 없다.
-- **`malgn-agent/knowledge/review/persona-<관점>.md`** — 모드 5에서 반복성 확인된 리뷰 페르소나만 자산화.
+- **`malgn-agent/knowledge/review/persona-[관점].md`** — 모드 5에서 반복성 확인된 리뷰 페르소나만 자산화.
 
 ## 학습 자료
 
