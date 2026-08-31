@@ -9,6 +9,29 @@
 
 ---
 
+## [1.8.20] — 2026-09-01
+
+사용자 승인으로 변경동결을 부분 해제하고 진행한 구조개선 1건(Refactor 등급) +
+결함 수정 2건. trainer 초안 → reviewer 풀패널(조건부 Green, Minor 5) · evaluator
+병렬 판정(PASS) → trainer 반영 → PM 재검증 순으로 진행했습니다.
+
+### 변경
+
+- **스킬 3종 로딩 구조 개선**: `domain-backend-api-implementation-patterns`
+  (24KB) · `domain-training-scorecard-eval`(20KB) · `domain-devops-deployment-patterns`
+  (15KB)을 project-orchestration과 같은 패턴(색인+절별 파일)으로 분할했습니다.
+  프로젝트당 1회만 필요한 판단 절(DAO 도입 여부·배포 단계별 절차·기록 파라미터
+  상세)만 파일로 뺐고, 매번 걸리는 내용은 색인에 남겼습니다. 대표 시나리오 기준
+  로드량 최대 50~65% 감소(내용 손실 없음, 기존 교차참조 전부 유효).
+
+### 수정
+
+- `domain-backend-api-implementation-patterns`의 "DAO/Service 무관 — 모든
+  Hono 프로젝트에 적용" 우수 패턴 블록이 "DAO 유무 분기" 절 하위에 잘못
+  중첩되어 있던 것을 최상위 절로 이동했습니다.
+- `learning-loop-patterns`의 원칙과 실행 체크리스트에서 중복 서술되던 6개
+  항목을 병합했습니다.
+
 ## [1.8.19] — 2026-08-31
 
 사용자 승인으로 변경동결을 부분 해제하고 진행한 구조개선 1건(Refactor 등급).
