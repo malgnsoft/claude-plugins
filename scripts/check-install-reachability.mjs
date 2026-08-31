@@ -120,6 +120,13 @@ const PATH_TOKEN_RE = new RegExp(
   'gu',
 );
 
+// 닻 없이 "파일명:줄번호"만 적은 인라인 인용(`hooks.md:892`)은 PATH_TOKEN_RE가 애초에 안 잡는다 —
+// 슬래시가 없어 앵커 매칭 자체가 시작되지 않는다. 이 형태는 어느 디렉터리 파일인지 특정할 수
+// 없고 대상 파일이 재동기화되면 라인 핀 검증(checkPin)도 못 받으므로 별도로 잡는다.
+// 확장자는 이 저장소가 실제로 쓰는 것만 허용한다 — 임의 영숫자를 허용하면 `v1.8.21:6곳` 같은
+// 버전 표기의 숫자 조각이 확장자로 오인되어 오탐이 난다. 파일명이 문자로 시작하도록도 강제한다.
+const BARE_LINECITE_RE = /(?<![\p{L}\p{N}_./~-])([\p{L}][\p{L}\p{N}_-]*\.(?:md|mjs|cjs|js|json|html)):(\d+)\b/gu;
+
 // 유니코드를 허용한 대가: 한국어는 파일명 뒤에 조사가 공백 없이 붙는다(`…/x.md를 읽는다`).
 // 그대로 두면 토큰이 `x.md를`가 되어 확장자 판정에 실패하고, 유니코드를 허용한 의미가 없어진다.
 // 그래서 **뒤에 붙은 한글 덩어리를 떼어냈을 때 확장자·글로브로 끝나는 경우에만** 떼어낸다 —
@@ -319,6 +326,15 @@ function scanFile(repoRoot, pluginRoot, repoRel, opts) {
           '사용자 프로젝트의 새 표준 자리라면 이 스크립트의 USER_PROJECT_PREFIXES에 등록한다.');
         continue;
       }
+    }
+
+    BARE_LINECITE_RE.lastIndex = 0;
+    for (const m of line.matchAll(BARE_LINECITE_RE)) {
+      const whole = `${m[1]}:${m[2]}`;
+      const loc = `${repoRel}:${ln + 1}`;
+      warn('BARE_LINE_CITATION', loc,
+        `'${whole}'는 앵커(디렉터리) 없이 파일명만 적은 인용이다 — 어느 디렉터리 파일인지 특정할 수 없고, ` +
+        '대상 파일이 재동기화돼도 라인 핀 검증을 받지 못한다. 경로 전체를 적은 앵커 인용(예: `knowledge/…/파일.md:줄`)으로 바꾼다.');
     }
   }
 }
