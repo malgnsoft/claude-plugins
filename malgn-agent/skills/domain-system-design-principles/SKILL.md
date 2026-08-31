@@ -244,4 +244,6 @@ WHERE 규칙:
 
 ## 참고 자료
 
-- `${CLAUDE_PLUGIN_ROOT}/knowledge/architecture/system-design-patterns.md` — 배경·출처만 남은 스텁(실행형 상세 패턴은 이 Skill과 `skills/domain-architecture-patterns-reference/SKILL.md`가 정본)
+- Skill `domain-architecture-patterns-reference` — 아키텍처 패턴 비교·C4 모델·REST API 설계·ERD/데이터 모델링·분산 동기화 패턴의 실행형 상세
+
+> 위 7대 재사용 기법(A~G)은 실제 프로젝트 산출물 진단에서 역추출한 것이다. 우수 설계에도 흔히 빠지는 관점(동시성·TOCTOU·관측가능성·장애복구·재시도 멱등키)은 "③ 비정상 케이스 의무 — 자주 빠지는 것들"에 반영돼 있다.

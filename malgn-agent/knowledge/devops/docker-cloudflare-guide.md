@@ -1,6 +1,8 @@
 # Docker & Cloudflare 배포 가이드
 
-## Dockerfile 멀티스테이지 패턴
+> 이미지 최적화·보안 하드닝 규칙, CI/CD 파이프라인 표준, 헬스체크(livez/readyz), 로깅·모니터링, 배포 전략(Blue-Green·Canary·Rolling·롤백)의 정본은 Skill `domain-devops-deployment-patterns`다. 이 문서는 그 위에서 **pnpm·Cloudflare Workers/D1이라는 이 조직의 구체 스택**에서 반복해 걸린 함정과 설정 실물만 담는다.
+
+## Dockerfile 멀티스테이지 패턴 (pnpm 함정 포함)
 
 ### Node.js 앱
 ```dockerfile
@@ -26,12 +28,7 @@ HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:3000/heal
 CMD ["node", "dist/index.js"]
 ```
 
-### 이미지 최적화 원칙
-1. alpine 기반 이미지 사용
-2. 멀티스테이지 빌드 (빌드 도구 제외)
-3. .dockerignore로 불필요 파일 제외
-4. 레이어 캐싱 활용 (package.json 먼저 COPY)
-5. non-root 사용자로 실행
+> 위 예시가 담은 pnpm 고유 함정 두 가지: `corepack enable`이 없으면 node 이미지에 pnpm이 없어 `pnpm: not found`로 죽고, `package*.json` 글롭은 `pnpm-lock.yaml`을 담지 못해 `--frozen-lockfile`이 실패한다. 이미지 최적화·비루트 실행·`.dockerignore`·시크릿 하드코딩 금지 등 스택 무관 규칙과 체크리스트는 Skill `domain-devops-deployment-patterns` §1이 정본이다.
 
 ## docker-compose 패턴
 
