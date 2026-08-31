@@ -5,3 +5,9 @@ node_modules/
 malgn-agent.bak/
 STATUS.md
 참고자료/
+
+# 골든 태스크 벤치마크 원본 결과. history.jsonl(요약 1줄/회)만 커밋한다.
+# 이 저장소는 마켓플레이스 클론 대상이라 여기 쌓이는 report.html이 전 직원 내려받기 용량이 된다.
+docs/evaluation/golden-task/runs/
+# 하네스 기본 출력 위치(래퍼는 --output-dir로 밖으로 빼지만, 맨손 실행 시 대비)
+malgn-agent/evals/results/

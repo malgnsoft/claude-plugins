@@ -9,6 +9,7 @@
     "check-links": "node scripts/check-install-reachability.mjs",
     "check-status": "node scripts/check-status-size.mjs",
     "check-mcp-tools": "node scripts/sync-mcp-tool-usage-map.mjs",
+    "eval:golden": "node scripts/run-golden-eval.mjs",
     "sync-docs": "node scripts/sync-anthropic-docs.mjs",
     "sync-docs:check": "node scripts/sync-anthropic-docs.mjs --check"
   },

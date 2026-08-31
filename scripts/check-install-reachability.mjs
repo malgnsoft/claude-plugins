@@ -39,6 +39,9 @@ const DEFAULT_REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.ur
 // 설치본 루트에 실제로 올라가는 최상위 이름. 이 목록은 추측이 아니라 설치 캐시 실물이다.
 const BUNDLED_TOP = new Set([
   '.claude-plugin', 'agents', 'bin', 'hooks', 'knowledge', 'skills', 'templates',
+  // `evals/`는 배포되지만 플러그인 컴포넌트로 로드되지 않는다(골든 태스크 벤치마크 케이스).
+  // 즉 클론에는 포함돼도 세션 컨텍스트 비용은 0이다 — docs/architecture/golden-task-benchmark.md §1.
+  'evals',
   'README.md', 'CHANGELOG.md', 'LICENSE',
 ]);
 // 경로 토큰의 "닻"으로 인정하는 최상위 세그먼트. 여기 없는 것으로 시작하는 문자열은

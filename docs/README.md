@@ -11,7 +11,7 @@
 - `anthropic/` — Claude Code/Platform 공식 문서 마크다운 원문 미러 23건(에이전트·스킬·훅·플러그인·레퍼런스). 사양 확인은 모델 기억이나 검색 요약이 아니라 여기 원문으로 한다. 갱신 `pnpm run sync-docs`(변경 확인만 `sync-docs:check`)
 - `architecture/` — 설계·명세
 - `analysis/` — 노하우·구조 분석
-- `evaluation/` — 평가·감사 스펙 리포트
+- `evaluation/` — 평가·감사 스펙 리포트. `golden-task/history.jsonl`은 골든 태스크 벤치마크 실행 이력(실행 1회 = 1줄, 원본 결과는 `runs/`에 남고 커밋하지 않는다). 설계·운영 규약은 `architecture/golden-task-benchmark.md`, 실행은 `pnpm run eval:golden`
 - `guides/` — 현행 운영/개발 가이드. 단 `guides/agent-development-methodology.md`는 v0.1 초안 보존본이며 어느 쪽도 판정 기준 정본이 아니다(현행 판정 기준은 malgn-agent 번들 자산 — 아래 `methodology/` 항목 참조)
 - `methodology/` — malgn-agent 에이전트 개발방법론 설계 이력(rubric v1.0, 2026-08-07 작성 당시 사료)·전수감사·결정로그·최종검증보고서. 현행 판정 기준이 아니다 — 실제 판정은 malgn-agent 번들 자산(Skill `domain-training-scorecard-eval` · `agents/evaluator.md` · `knowledge/leadership/agent-training-guide.md` 등)이 담당한다
 - `refactor/` — 리팩터링 스펙·사유서

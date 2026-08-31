@@ -9,6 +9,23 @@
 
 ---
 
+## [1.8.24] — 2026-09-01
+
+골든 태스크 벤치마크 v1 파일럿 신설(사용자 승인). architect 초안 → reviewer 풀패널
+(Red → Critical 1·Major 3건 반영 후 재검증) 순으로 진행했습니다.
+
+### 추가
+
+- **골든 태스크 벤치마크**: `malgn-agent`의 개별 에이전트를 같은 과제로 반복 채점해
+  시간에 따른 변화를 추적하는 체계. `malgn-agent/evals/architect-design-obligations/`에
+  첫 파일럿(architect 1종)을 두었고, Claude Code 네이티브 `claude plugin eval`
+  하네스로 실행합니다. 실행은 `pnpm run eval:golden`(저장소 전용, 배포 안 됨) —
+  세션 시작 시 로드되지 않아 평소 컨텍스트 비용은 0이고, 유료 실행 전 비용 안내와
+  명시적 동의(`GOLDEN_EVAL_I_ACCEPT_COST=1`)를 요구합니다. 설계·리스크 전문:
+  `docs/architecture/golden-task-benchmark.md`.
+- 이 기능은 조직 단위 Anthropic 얼리액세스 승인이 필요합니다 — 미승인 상태에서는
+  하네스 자신의 안내 메시지와 함께 실행이 실패합니다(우회 없음).
+
 ## [1.8.23] — 2026-09-01
 
 백로그 재조사 라운드에서 확인된, 즉시 반영 가능한 결함 1건 정정. trainer 초안 →
