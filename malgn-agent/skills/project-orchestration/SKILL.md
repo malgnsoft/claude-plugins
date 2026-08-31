@@ -21,7 +21,7 @@ PM(`agents/pm.md`)이 작업을 위임한 **이후** 실행을 관리하는 절�
 
 ## 1. WBS 기반 프로젝트 관리
 
-WBS 항목 생성(`wbs_bulk_add`/`wbs_add`)·진행상황 추적(부모 rollup과 리프 progress를 가르는 법)·병목/지연 모니터링·동적 우선순위 재조정·마일스톤 게이트. **WBS를 세우거나 정기 현황을 수집·갱신할 때** `${CLAUDE_PLUGIN_ROOT}/skills/project-orchestration/wbs-management.md`를 Read한다.
+WBS 항목 생성·진행상황 추적(부모 rollup과 리프 progress를 가르는 법)·병목/지연 모니터링·동적 우선순위 재조정·마일스톤 게이트. **hub의 WBS 도구를 호출하기 전에**(항목을 세울 때든 현황을 수집·갱신할 때든) `${CLAUDE_PLUGIN_ROOT}/skills/project-orchestration/wbs-management.md`를 Read한다 — 일괄 생성 시 부모·자식의 배열 순서, 필수 필드, 파라미터 표기, 서버가 계산해 직접 지정할 수 없는 값 같은 호출 규약이 그 파일에만 있다. 도구 이름만 알고 호출하면 규약을 어겨 실패한다.
 
 ---
 
@@ -54,7 +54,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-0
 
 ## 3. 팀 구성 원칙
 
-업무 유형별 최소 팀 구성(과다팀 금지)과 단계 축소 기준, ux-designer 기본 투입 조건, 보안 단계 배치, 권위자 매핑, 전역 자산 승격 트랙의 evaluator·reviewer 병렬 소집, 공유 가정 주입. **누구를 부를지 정할 때** `${CLAUDE_PLUGIN_ROOT}/skills/project-orchestration/team-composition.md`를 Read한다.
+업무 유형별 최소 팀 구성과 단계 축소 기준, ux-designer 투입 판단, 보안 단계 배치, 권위자 매핑, 전역 자산 승격 트랙의 소집 범위, 공유 가정 주입. **누구를 부를지 정할 때** `${CLAUDE_PLUGIN_ROOT}/skills/project-orchestration/team-composition.md`를 Read한다.
 
 ## 3.5 산출물 지도 (누가 무엇을 읽고 만드는가)
 
