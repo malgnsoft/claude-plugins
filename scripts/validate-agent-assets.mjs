@@ -1029,8 +1029,24 @@ function main() {
     scanAbsolutePaths(rel, body);
   }
 
+  // ── Skill 절별 파일(SKILL.md 밖의 보조 .md) 수집 ───────────────────
+  // 스킬 디렉터리에는 SKILL.md 말고도 본문을 나눠 담은 .md가 올 수 있다(공식 "supporting files"
+  // 패턴 — SKILL.md는 색인만 두고 긴 절은 필요할 때만 Read로 연다). 이 파일들은 frontmatter 규약
+  // 대상이 아니지만 **참조 원천이라는 점에서는 SKILL.md와 똑같다** — 같은 문법으로 Skill/
+  // knowledge/agent/bin을 가리키고 그 포인터도 똑같이 썩는다. 여기서 함께 훑지 않으면 절 본문을
+  // SKILL.md 밖으로 옮기는 것만으로 그만큼의 참조가 조용히 검사망을 빠져나간다.
+  const skillPartFiles = [];
+  for (const dir of skillDirNames) {
+    const d = path.join(skillsDir, dir);
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      if (!e.isFile() || !e.name.endsWith('.md') || e.name === 'SKILL.md') continue;
+      const abs = path.join(d, e.name);
+      skillPartFiles.push({ rel: path.relative(REPO_ROOT, abs), body: fs.readFileSync(abs, 'utf8') });
+    }
+  }
+
   // ── Skill 본문의 참조 검증 ────────────────────────────────────────
-  for (const { rel, body } of skillFiles) {
+  for (const { rel, body } of [...skillFiles, ...skillPartFiles]) {
     if (!body) continue;
     checkBodyReferences(rel, body, refCtx);
     checkCanonicalClaims(rel, body, disclaiming, skillDirNames);
@@ -1204,7 +1220,7 @@ function main() {
   // knowledge를 읽는 에이전트의 실제 진입 경로다.
   // 슬래시 커맨드로 직접 쓰는 Skill도 있으므로 WARN.
   const allAgentBodies = agentFiles.map((f) => fs.readFileSync(path.join(agentsDir, f), 'utf8')).join('\n');
-  const allSkillBodies = skillFiles.map((s) => s.body).join('\n');
+  const allSkillBodies = [...skillFiles, ...skillPartFiles].map((s) => s.body).join('\n');
   const allKnowledgeBodies = knowledgeBodies.map((k) => k.body).join('\n');
   const haystack = allAgentBodies + allSkillBodies + allKnowledgeBodies;
   for (const dir of skillDirNames) {
