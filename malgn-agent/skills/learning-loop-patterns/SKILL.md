@@ -13,52 +13,36 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 
 ## Core Principles
 
-### 1. 작업 전 Knowledge 확인 (Pre-Execution)
+**원칙은 "왜·무엇을"만 담는다. "어떻게·언제"의 구체 절차는 아래 Execution Checklist가 정본이다** — 같은 내용을 두 곳에 두면 한쪽만 고쳐져 서로 어긋난다. 원칙마다 대응하는 체크리스트 단계를 표시해 두었으니, 실행할 때는 그 단계를 편다.
+
+### 1. 작업 전 Knowledge 확인 (Pre-Execution) → 체크리스트 #1~#3
 - **목적:** 이전 경험·학습·해결책을 현재 작업에 활용하여 시간 절약 + 실수 회피
 - **타이밍:** 주요 기능 개발, 버그 수정, 신규 기술 도입 **직전**
-- **확인 범위:**
-  - 같은 도메인의 이전 작업 (`project_search_history` 키워드: 기능명, 기술명, 문제명)
-  - 공통 도구·패턴 (테스트 전략, 배포 프로세스, 권한 정책)
-  - 프로젝트별 교훈·주의사항 (`project_get_context(projectId, sections=['issues','decisions','recentWork'])`, 프로젝트별 learning 보고서)
-- **결과:** "이전에 XXX 문제를 겪었으므로, 이번에는 YYY 접근법 사용" 근거 제시
+- **결과:** "이전에 XXX 문제를 겪었으므로, 이번에는 YYY 접근법 사용" 근거 제시 — 조회만 하고 근거로 쓰지 않으면 이 단계를 한 것이 아니다
 
-### 2. 작업 중 의사결정 기록 (Mid-Execution)
-- **기록 대상:**
-  - 경로 선택 (여러 해결책 중 선택한 이유)
-  - 기술적 장애물 (예상치 못한 문제, 해결 방법)
-  - 설계 트레이드오프 (속도 vs. 안정성, 단순함 vs. 기능)
-  - 외부 제약 (정책, 권한, 환경 제약에 대한 대응)
-- **도구:** 코드 주석, 커밋 메시지, PR 설명, malgnai-hub `decision_record`
+### 2. 작업 중 의사결정 기록 (Mid-Execution) → 체크리스트 #4~#5
+- **원칙:** 선택의 *이유*는 선택한 순간에만 온전히 남는다 — 나중에 복원하려 하면 결과만 남고 왜 그렇게 했는지가 사라진다
+- **도구:** 코드 주석, 커밋 메시지, PR 설명, malgnai-hub `decision_record`(결정형)·`issue_record`(미해결 장애물)
 
-### 3. 작업 후 교훈 기록 (Post-Execution)
+### 3. 작업 후 교훈 기록 (Post-Execution) → 체크리스트 #6~#7
 - **기록할 내용:**
   - **문제 해결 기록:** 동일한 문제를 다시 만나면 참고할 수 있는 단계별 해결책
   - **성공 패턴:** "이 기술/도구/접근법은 OOO 상황에서 효과적" (근거: 파일, 성능 메트릭)
   - **실패 패턴:** "XXX를 하면 안 됨. 이유는 YYY" (재발방지)
   - **도메인 지식:** "이 기능 개발할 때 주의할 점"
   - **환경·정책 업데이트:** 새로운 규칙, 제약, 권한, 승인 절차
-- **저장 위치:**
-  - 프로젝트별 `docs/training-report-<주제>-YYYY-MM-DD.md` (구체적, 재사용 가능)
-  - malgnai-hub에는 별도 메모리 등록 도구가 없음 — 재사용 가능한 교훈은 `decision_record`의 `reason`/`impact`(결정형) 또는 `work_record`의 `result`/`nextAction`(작업형)에 녹여 기록한다
-  - **교훈 본문을 `STATUS.md`에 쌓지 않는다.** STATUS.md는 3,000바이트 상한의 "현재 스냅숏"이고 매 세션 통째로 주입되므로, 교훈이 쌓이면 모든 세션이 그 비용을 문다(형식·상한·재작성 트리거는 Skill `project-standards`가 정본). 교훈은 위 hub 기록에 남기고, STATUS.md는 그 트리거에 해당할 때만 건드린다
 
-### 4. 교훈의 자산화 (Knowledge Asset)
-- **정보 구조:**
+### 4. 교훈의 자산화 (Knowledge Asset) → 체크리스트 #6~#8
+- **정보 구조 (5부 — 보고서·기록 공통 골격):**
   - 상황(Context): 언제 문제가 발생했는가? (프로젝트, 기능, 환경)
   - 문제(Problem): 구체적인 증상, 에러 메시지
   - 해결책(Solution): 단계별 해결 방법, 코드 예시
   - 예방(Prevention): 향후 같은 문제 피하기 위한 체크리스트
   - 참고(Reference): 관련 파일, 커밋, PR 링크
-- **접근성:**
-  - malgnai-hub `project_search_history` 키워드로 빠르게 찾기
-  - 프로젝트별 README에 중요 교훈 요약
-  - 온보딩 체크리스트에 "반드시 읽어야 할 학습 보고서" 링크
+- **접근성:** 남긴 교훈은 *찾을 수 있어야* 자산이다 — 검색 경로와 온보딩 링크는 아래 Integration Notes 참조
 
-### 5. 피드백 루프 (Continuous Improvement)
-- **관찰:** 같은 문제가 반복되면 교훈이 충분하지 않은 것
-- **평가:** "이 교훈이 실제로 도움이 되었는가?" (피드백)
-- **개선:** 교훈을 더 명확하게, 접근 가능하게 개선
-- **폐쇄:** 새로운 발견 → 교훈 갱신 → 다시 공유
+### 5. 피드백 루프 (Continuous Improvement) → 체크리스트 #9~#10
+- **관찰 → 평가 → 개선 → 폐쇄**: 교훈이 실제로 도움이 되었는지 확인하고, 부족하면 그 교훈 자체를 고쳐 다시 공유한다. 루프를 닫지 않으면 기록은 쌓이는데 실수는 그대로 반복된다.
 
 ## Execution Checklist
 
@@ -80,6 +64,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 - [ ] **팀 공유 자산 확인:**
   - 이 플러그인의 관련 공용 스킬(skills/common-*, skills/domain-*)이 이미 이 절차를 다루는지 확인
   - 관련 knowledge/ 문서(에이전트 MD가 참조하는 경로)를 확인
+  - 이 작업에 걸리는 공통 도구·패턴(테스트 전략, 배포 프로세스, 권한 정책)이 이미 정해져 있는지 확인 — 있으면 새로 정하지 않고 따른다
 
 #### 2. Risk Assessment with Lessons
 - [ ] **이전 교훈에서 위험 확인:**
@@ -103,6 +88,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 - [ ] **의사결정 기록:**
   - 여러 해결책 중 선택한 이유 (코드 주석, PR 설명)
   - 패턴: "XXX 접근법을 선택한 이유: YYY (성능 +5%, 복잡도 -3)"
+  - 설계 트레이드오프(속도 vs. 안정성, 단순함 vs. 기능)는 **버린 쪽까지** 적는다 — 무엇을 포기했는지가 없으면 나중에 그 선택을 재평가할 수 없다
 - [ ] **장애물 기록:**
   - 예상치 못한 문제 (에러 메시지, 상황, 임시 해결책)
   - malgnai-hub `issue_record`: "XXX 문제 발생, YYY로 우회 (근본 해결 필요)"
@@ -122,7 +108,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 
 #### 6. Problem-Solution Pairing
 - [ ] **해소된 이슈를 닫는다:** 이번 작업이 해소한 열린 이슈는 실물 대조 후 `issue_resolve`로 닫는다 — 내가 연 이슈가 아니어도 확인한 쪽이 닫는다. 여는 지시(#3·#4)만 돌면 이미 고쳐진 문제가 열린 채 쌓인다. 정본: Skill `common-learning-loop-knowledge-management` "이슈 종결(Close)"
-- [ ] **발견한 각 문제마다 해결책 문서화:**
+- [ ] **발견한 각 문제마다 5부 구조(Core Principles 4)로 문서화** — 아래는 그 구조를 채운 예시다:
   - **Context:** "로그인 기능 개발, Ubuntu 22.04, Node 18.12"
   - **Problem:** "CORS 에러: Access-Control-Allow-Origin 미설정"
   - **Solution:** 
@@ -141,7 +127,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 - [ ] **프로젝트 learning 보고서 작성 (필요 시):**
   - 파일: `docs/training-report-<기능또는문제>-YYYY-MM-DD.md`
   - 크기: 500-1500 단어 (재사용 가능한 깊이)
-  - 목차: Context → Problem → Solution → Prevention → Reference
+  - 목차: Core Principles 4의 5부 구조를 그대로 쓴다
 - [ ] **malgnai-hub 기록:**
   - 별도 메모리 등록 도구는 없음 — 교훈을 형태에 맞춰 기존 기록에 편입
     - 결정형 교훈 → `decision_record(projectId, title, decision, reason, ...)`의 `reason`/`impact`에 녹여 기록
@@ -150,7 +136,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
   - 신규 발견한 문제 → `issue_record`(미해결이면 열어둔 채)
   - 근본 원인·새로운 통찰 → `decision_record`의 `reason`, 또는 `work_record`의 `result`
   - 예방 체크리스트 → `work_record`의 `nextAction`, 반복 재사용할 것이면 learning 보고서 본문
-  - STATUS.md에 이 세 가지를 섹션으로 누적하지 않는다 — 상한(3,000바이트)과 재작성 트리거는 Skill `project-standards`가 정본이고, 태스크마다 append하면 두 규칙이 동시에 깨진다
+  - STATUS.md에 이 세 가지를 섹션으로 누적하지 않는다 — STATUS.md는 3,000바이트 상한의 "현재 스냅숏"이고 매 세션 통째로 주입되므로, 교훈이 쌓이면 모든 세션이 그 비용을 문다. 상한과 재작성 트리거는 Skill `project-standards`가 정본이고, 태스크마다 append하면 두 규칙이 동시에 깨진다
 
 #### 8. Pattern Generalization
 - [ ] **일회성 해결책 → 재사용 가능 패턴 전환:**

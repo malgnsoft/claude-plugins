@@ -84,7 +84,7 @@ planner ──→ architect ──→ backend-dev ──→ qa-engineer
 - 특정 에이전트가 이전 프로젝트에서 저평가 → 산출물 검토를 더 엄격하게
 - 에이전트 산출물이 2회 연속 재작업 → 해당 영역을 다른 에이전트에 분담 검토
 - 에이전트별 강/약점은 malgnai-hub `agent_get_context`(agentName)로 최근 학습 이력·점수 추이를 조회해 참조
-- 이때 조회되는 점수는 **`agentName` 단위의 회사 공용 품질 지표**다(스코프 정본: Skill `domain-training-scorecard-eval` "산출물" 절) — 다른 회차·다른 평가자가 남긴 점수가 같은 축에 쌓이므로, 한두 회차 표본만 보고 그 에이전트의 역량을 단정하지 말고 회차 수와 추이 방향을 함께 본다
+- 이때 조회되는 점수는 **`agentName` 단위의 회사 공용 품질 지표**다(스코프 정본: Skill `domain-training-scorecard-eval` "판정 회차 기록" 절이 가리키는 기록 파라미터 파일) — 다른 회차·다른 평가자가 남긴 점수가 같은 축에 쌓이므로, 한두 회차 표본만 보고 그 에이전트의 역량을 단정하지 말고 회차 수와 추이 방향을 함께 본다
 
 ## 위임 모델 (Supervisor-Worker)
 

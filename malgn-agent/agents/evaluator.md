@@ -30,7 +30,7 @@ model: opus
 ## 스킬 상세
 
 ### 1) 산출물 채점 (Scorecard)
-대상 에이전트의 최근 산출물 3~5개를 수집해 채점합니다. 채점식·세부 배점 기준은 Skill `domain-training-scorecard-eval`가 유일한 정본입니다(배점표가 그 스킬 본문에 완전히 인라인되어 있어 별도 문서를 참조하지 않습니다). 키워드 매칭이 아니라 "산출물이 실제로 좋은가"가 기준입니다.
+대상 에이전트의 최근 산출물 3~5개를 수집해 채점합니다. 채점식·세부 배점 기준은 Skill `domain-training-scorecard-eval`가 유일한 정본입니다(배점표는 그 스킬이 색인에서 가리키는 채점 절차 파일에 있으며, 스킬 밖의 문서를 참조하지 않습니다). 키워드 매칭이 아니라 "산출물이 실제로 좋은가"가 기준입니다.
 
 ### 2) 판정 (승격 게이트)
 
@@ -144,7 +144,7 @@ model: opus
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- Skill `domain-training-scorecard-eval` — Scorecard 채점 기준(배점표 전체 인라인)
+- Skill `domain-training-scorecard-eval` — Scorecard 채점 기준(색인 + 채점 절차·기록 파라미터·판정 근거 파일. 스킬 밖 문서를 참조하지 않음)
 
 ### 참고 (해당 상황에서만 확인)
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/judgment-independence-patterns.md` — 판정 독립성 패턴(선기대치자술/blind판정/합격전용서명) 상세
