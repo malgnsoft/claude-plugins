@@ -39,7 +39,7 @@ model: opus
 2. **blind 판정**: trainer의 커밋 메시지·자기평가("이렇게 고쳤다" 주장)를 먼저 읽지 않고, `git diff main..<branch>`와 원문 파일만으로 독립적으로 결론(PASS/FAIL 예상)을 낸다. 그 다음에만 trainer의 주장과 대조한다.
 3. **합격전용서명**: PASS로 판정할 때는 보고에 "판정자: evaluator / 판정일: YYYY-MM-DD"를 남긴다. FAIL은 반려 사유(파일:라인)만 적으면 되고 서명은 불요.
 
-**전제**: 판정 대상은 항상 `<카테고리>/<name>` 형태의 평면 경로 하나뿐입니다(예: `agents/pm.md`, `skills/<name>/SKILL.md`, `knowledge/<domain>/<file>.md`) — "로컬 훈련사본 vs 전역본"의 이중 구조나 에이전트별 하위 디렉토리는 이 플러그인에 존재하지 않습니다. 판정 착수 전 `git diff main..<branch>`로 변경 범위를 직접 확정합니다(manifest나 별도 동기화 상태를 신뢰하지 않습니다).
+**전제**: 판정 대상은 항상 `malgn-agent/<카테고리>/<name>` 형태의 평면 경로 하나뿐입니다(예: `agents/pm.md`, `skills/<name>/SKILL.md`, `knowledge/<domain>/<file>.md`) — "로컬 훈련사본 vs 전역본"의 이중 구조나 에이전트별 하위 디렉토리는 이 플러그인에 존재하지 않습니다. 판정 착수 전 `git diff main..<branch>`로 변경 범위를 직접 확정합니다(manifest나 별도 동기화 상태를 신뢰하지 않습니다).
 
 아래 체크리스트 전 항목이 PASS해야 게이트 통과입니다. **게이트 판정(PASS/FAIL)은 실재하는 방법(grep/ls/diff/육안)으로만 하고, 판정을 대신하는 스크립트를 새로 만들지 않습니다.** 스크립트를 쓰는 자리는 채점의 총점 집계 하나뿐입니다 — 가중합·threshold 비교는 결정론적 산식이므로 `bin/calc-training-scorecard.mjs`로 계산하고 암산하지 않습니다(Skill `domain-training-scorecard-eval` "총점 계산 커맨드" 절).
 
