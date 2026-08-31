@@ -8,7 +8,7 @@
 
 > 위치 규칙 · 작성 주체
 > - **배경·심화 기법(이 문서)** — 플러그인 번들 `knowledge/review/reviewer-personas.md`
-> - **재사용 페르소나 자산** — 플러그인 번들의 `${CLAUDE_PLUGIN_ROOT}/knowledge/review/`가 **trainer**가 반복·검증된 페르소나를 `persona-[관점].md` 이름으로 승격하는 자리다. 재활용할 자산이 있는지는 그 디렉터리를 열어 확인한다 — 승격된 자산이 없으면 실제 페르소나는 아래 프로젝트별 인스턴스로만 존재한다.
+> - **재사용 페르소나 자산** — 플러그인 번들의 `${CLAUDE_PLUGIN_ROOT}/knowledge/review/`가 **trainer**가 반복·검증된 페르소나를 `persona-[관점].md` 이름으로 승격하는 자리다. 승격된 자산이 없으면 실제 페르소나는 아래 프로젝트별 인스턴스로만 존재한다.
 > - **프로젝트별 페르소나(인스턴스)** — `<프로젝트 루트>/docs/reviewer/personas/persona-[관점].md` · **reviewer**가 그 자리에서 생성 (승격된 자산이 있으면 재활용). `personas/` 하위폴더에 모으는 이유: `docs/reviewer/` 루트의 보고서·판정서 등 이종 산출물과 분리해 누적·재활용을 쉽게 하기 위함
 > - **리뷰 결과 보고서** — `<프로젝트 루트>/docs/reviewer/review-[대상]-[날짜].md` · **reviewer**가 작성 → PM 보고
 
