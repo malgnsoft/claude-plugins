@@ -137,7 +137,6 @@ Skill `reviewer-persona-panel-standard`의 **6대 필수 요소**(정체성/관�
 - Skill `common-task-grading-and-verification-depth` — 패널 동원 여부의 등급별 기준
 - Skill `common-screen-verification-and-capture` — 화면 캡처 표준 (UI 리뷰 시)
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/review/reviewer-personas.md` — 발산형 페르소나 배경, 선택 강화 패턴 A~C, 문서·설계서 다차수 검증 패턴 D~G (다차수/반복 리뷰 시). 절차 본문은 이 문서에 없다 — 절차는 위 Skill이 정본이고 여기서는 배경과 위 패턴만 참조한다
-- `${CLAUDE_PLUGIN_ROOT}/knowledge/review/screenshot-capture-guide.md` — 상태별 캡처 체크리스트
 - Skill `domain-software-test-design-techniques` — 코드 리뷰 시 테스트 관점
 - Skill `domain-shipley-proposal-methodology` — 제안서 리뷰(컬러팀 + 평가위원 모의채점) 시
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/common/screen-reuse-consistency-verification.md` — 기존 화면 재사용/재렌더 신규 페이지의 시각적 일관성 diff 절차

@@ -16,7 +16,7 @@
 | `backend/` | backend-dev | Hono/D1 구현 패턴, DAO |
 | `frontend/` | frontend-dev | vue-zero 패턴, Bootstrap 5 |
 | `quality/` | qa-engineer | 테스트 설계, Vitest 패턴 |
-| `review/` | reviewer | 발산형 페르소나 배경, 다차수 검증 심화 패턴, 캡처 하드게이트 배경 |
+| `review/` | reviewer | 발산형 페르소나 배경, 다차수 검증 심화 패턴 |
 | `proposal/` | rfp-analyst, capture-strategist, writer, reviewer | 제안/입찰 방법론(Shipley), 공공조달 실무, Compliance Matrix, 제안 집필 원칙 |
 | `devops/` | devops | Docker, Cloudflare, CI/CD |
 | `writing/` | writer | 문서 작성 가이드 |
@@ -32,12 +32,12 @@
 - `beyond-mediocre-output.md` — 평범 vs 우수 산출물 판별 골격(5가지 냄새/4가지 표지/자가검증), 역할별 특화 연결 (전체 공통, evaluator 진단 잣대)
 - `cross-validation-and-collaboration.md` — 상호 협력·교차검증 원칙: 결정 권한, 트리거 기반 의견 청취, 의견 충돌 처리 (전체 공통, `agents/pm.md` 실참조)
 - `agent-common-principles.md` — 에이전트 MD가 자기 "핵심 원칙" 첫 줄에서 참조하는 공통 원칙의 배경("왜")만 남음, 실행 체크리스트는 각 대응 skill 정본 참조
-- `permission-policy-compliance.md` — 권한 정책 준수 배경(deny 규칙 우회 금지 사고사례), 실행 체크리스트는 `skills/common-permission-policy-compliance`
+- (권한 정책 준수 — 우회 판별 기준·반례·판별 질문·행동 순서 전부 `skills/common-permission-policy-compliance/SKILL.md`가 정본)
 - `screen-reuse-consistency-verification.md` — 화면 재사용/재렌더 시 시각적 일관성 diff 절차 (설계→구현→리뷰 공통)
 
 ### review/
 - `reviewer-personas.md` — (절차 본문 정본은 `skills/reviewer-persona-panel-standard/SKILL.md`) 발산형 페르소나를 강제하는 배경, 선택 강화 패턴 A/B/C, 문서·설계서 다차수 검증 패턴 D~G만 남음
-- `screenshot-capture-guide.md` — (절차 본문 정본은 `skills/common-screen-verification-and-capture`) 하드 게이트 원칙 + 상태별 캡처 체크리스트만 남음
+- (스크린샷 캡처 — 하드 게이트 원칙·캡처 절차·CLI 플래그·상태별 체크리스트 전부 `skills/common-screen-verification-and-capture/SKILL.md`가 정본)
 
 ### proposal/
 - (Shipley 라이프사이클·Bid/No-Bid·Win Theme/Discriminator/Ghosting·Storyboard·컬러팀 리뷰 정본은 knowledge가 아니라 `skills/domain-shipley-proposal-methodology/SKILL.md`. 출처 표기도 그 스킬 안에 있다)
@@ -50,7 +50,7 @@
 - `risk-escalation-guide.md` — 리스크 식별 체크리스트, 4가지 대응 전략(회피/완화/전가/수용), 에스컬레이션 기준/형식 (`agents/pm.md` 실참조)
 - `reporting-integration-guide.md` — 산출물 통합 절차, 최종 보고 템플릿, RAG 상태, 2분 규칙 (`agents/pm.md` 실참조)
 - `retrospective-framework.md` — Start/Stop/Continue + SWOT 회고, 교훈 문서화, 에이전트 성과 추적
-- `agent-training-guide.md` — 에이전트 훈련 시스템 전체 가이드(6가지 훈련 모드, 스킬/경험 점수 체계, knowledge 관리 체계, 학습 이력 기록 절차). 에이전트 MD 골격 정본은 이 문서 §2.2의 9단 골격이다(부록은 요약) (`agents/trainer.md` 실참조)
+- `agent-training-guide.md` — 에이전트 훈련 시스템의 배경·철학, MD 표준 포맷, 스킬/경험 점수 체계, knowledge 관리 체계, 학습 이력 기록 절차. 에이전트 MD 골격 정본은 이 문서 §2.2의 9단 골격이다(부록은 요약). 모드별 실행 절차는 담지 않고 정본 스킬만 가리킨다 (`agents/trainer.md` 실참조)
 - `autonomous-iteration-philosophy.md` — 자율 반복 상한(3~5회)·수확체감 우선 종료조건, 일일 토큰 예산 게이트와 한도 초과 시 대표 보고 절차 (`agents/pm.md` 실참조)
 - `coo-rule-rationale.md` — PM 핵심 운영 규칙의 근거 모음(orchestrator 흡수, 집필 위임 원칙, 공유 가정 주입, 경로 릴레이 순차 위임) — 각 규칙이 유래한 실제 사고 사례 포함 (`agents/pm.md` 실참조)
 - (STATUS.md 표준 포맷·크기 상한·아카이빙·헤더 교체 규칙 정본은 knowledge가 아니라 `skills/project-standards` §3)
@@ -72,7 +72,7 @@
 - `personal-data-masking-standards.md` — 화면(UI) 단위 개인정보 마스킹 기준(이름/휴대폰/이메일/주민번호/계좌/카드/주소 필드별 노출 자릿수 수치), 마스킹 해제 정책, 화면 설계 체크리스트. security·ux-designer 공용
 
 ### architecture/
-- `system-design-patterns.md` — (C4모델·아키텍처패턴·REST API·데이터모델링·분산동기화 본문 정본은 `skills/domain-architecture-patterns-reference/SKILL.md`, 우수설계 7대기법 A~G는 `skills/domain-system-design-principles/SKILL.md`와 중복이라 별도) 배경·출처만 남음
+- (C4모델·아키텍처패턴·REST API·데이터모델링·분산동기화 정본은 `skills/domain-architecture-patterns-reference/SKILL.md`, 우수설계 4대의무·7대기법 A~G는 `skills/domain-system-design-principles/SKILL.md`)
 - `vue-zero-architecture.md` — vue-zero 플랫폼 **규칙 정본**(Composables 절대 금지, 페이지별 단일 `.vue` 파일, `utils.js` 중앙화+`window.*` 등록). `frontend/vue-zero-patterns.md`(패턴 상세)와 역할 분담, 모순 시 이 문서 우선. 실제 참조 대상은 frontend-dev다(폴더는 architecture/이지만 읽는 쪽은 frontend-dev)
 - `usage-collection-agent-architecture.md` — 토큰 사용량 자동 수집 에이전트(`bin/{usage-agent-lib,pair-usage-device,report-usage,install-usage-agent}.mjs`) 아키텍처 요약: 4개 스크립트 역할분담, malgnai-hub `POST /api/sessions` 계약, 핵심 설계결정(집계 수치만 전송·summary 120자 예외·turns/api_calls는 migration 0012), **설계 문서 대비 실제 구현이 단순화된 지점**(daily-aggregate 엔드포인트 없음/scope 없는 범용 device_token/세션ID 비해시 등) 명시. `skills/usage-agent-healthcheck`와 짝
 
