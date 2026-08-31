@@ -2,7 +2,7 @@
 
 - 대상: `malgn-agent/agents/evaluator.md`
 - 권고 예산: 15 KB (`AGENT_BUDGET_KB`)
-- 이 문서가 변호하는 실측 크기: **26,434 B (25.8 KB)**
+- 이 문서가 변호하는 실측 크기: **24,362 B (23.8 KB)** — 판정 체크리스트의 판정근거 해설·파라미터 형식 상세를 `domain-training-scorecard-eval`로 재배치한 라운드(판정 문장·배점·기준선·등급별 merge 규칙은 본문에 그대로 유지) 이후 수치. 재배치 전 실측은 26,434 B였다.
 - 작성: PM, `agent-md-defects-20260825` 트랙(승인된 결함 5건 + reviewer 4라운드 재검증) + `audit-r2-score-record-20260825` 트랙(agent_score_record 배선) + `backlog-fix-round1` 트랙(접두어 게이트 판정축·점수 왕복 완료정의) + 이슈 종결(issue_resolve) 절차 보강 트랙(+677 B) + `agent-score-record-contract-20260828` 트랙(hub 신계약 대응, reviewer·evaluator 각 2라운드 재검증 반영, +1,066 B)
 
 ## 1. 무엇 때문에 넘었나
