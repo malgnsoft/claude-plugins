@@ -128,7 +128,7 @@ const TRAILING_HANGUL = /[가-힣]+$/;
 function stripJosa(rel) {
   if (!TRAILING_HANGUL.test(rel)) return rel;
   const stripped = rel.replace(TRAILING_HANGUL, '');
-  if (/\.[A-Za-z0-9]{1,6}$/.test(stripped) || stripped.endsWith('*')) return stripped;
+  if (/\.[A-Za-z0-9]{1,6}$/.test(stripped) || stripped.endsWith('*') || stripped.endsWith('/')) return stripped;
   return rel;
 }
 
@@ -242,9 +242,9 @@ function scanFile(repoRoot, pluginRoot, repoRel, opts) {
       // 잘린 플레이스홀더(`knowledge/lessons/[프로젝트명].md`)와 토큰 안의 플레이스홀더를 버린다.
       if (PLACEHOLDER_CHARS.test(rel)) continue;
       if (/^[[<{⟨]/.test(after)) continue;
+      rel = stripJosa(rel);
       const hadTrailingSlash = rel.endsWith('/');
       if (hadTrailingSlash) rel = rel.slice(0, -1);
-      rel = stripJosa(rel);
       if (!rel.includes('/')) continue;
       if (!isJudgeablePath(rel, hadTrailingSlash)) continue;
 
