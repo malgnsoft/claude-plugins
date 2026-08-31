@@ -9,6 +9,27 @@
 
 ---
 
+## [1.8.23] — 2026-09-01
+
+백로그 재조사 라운드에서 확인된, 즉시 반영 가능한 결함 1건 정정. trainer 초안 →
+reviewer(Amber, 병합 비차단) → evaluator PASS 순으로 진행했습니다.
+
+### 수정
+
+- **`project-retrospective` 모드 2 `work_record` 기록주체 미명시**:
+  `skills/project-retrospective/SKILL.md`의 "작업 진행형" 산출물 항목이 이
+  기록을 누가 남기는지 명시하지 않아 애매했던 것을, `skills/reflect-lessons`의
+  기존 선례와 동일한 방식으로 정본(`common-learning-loop-knowledge-management`의
+  "`work_record` 주인 판별" 절) 포인터 한 줄을 추가해 해소했습니다.
+
+### 보류
+
+- 같은 라운드에서 함께 검토한 `evaluator.md`의 경로 형식 표기(`malgn-agent/`
+  접두어 vs bare) 자기모순 건은, 이전 리뷰(2026-08-26 RV-203)가 이미 "grep
+  명령은 bare·경로 참조는 접두어"로 갈린 관례를 확인하고 동종 15개 사이트를
+  한 라운드로 묶으라고 결론 낸 바 있어 이번 단독 반영에서 제외하고 백로그로
+  되돌렸습니다.
+
 ## [1.8.22] — 2026-09-01
 
 변경동결 모드에서 사용자 승인으로 진행한 결함 소품 정정. trainer 초안 →
