@@ -9,6 +9,24 @@
 
 ---
 
+## [1.8.22] — 2026-09-01
+
+변경동결 모드에서 사용자 승인으로 진행한 결함 소품 정정. trainer 초안 →
+reviewer·evaluator 병렬 검증 → PM 재현검증 순으로 진행했습니다.
+
+### 수정
+
+- **`scoreHistoryLimit` 권장값 누락**: `knowledge/leadership/agent-training-guide.md`가
+  `agent_get_context` 호출법만 안내하고 `scoreHistoryLimit` 권장값(`1`이면 충분)을
+  빠뜨렸던 것을, 이미 같은 안내가 있는 다른 두 정본과 같은 취지로 보강했습니다.
+- **표기 불일치**: `agents/trainer.md`의 `persona-<관점>.md`를 다른 정본들과 같은
+  `persona-[관점].md` 표기로 통일했습니다.
+- **중첩 괄호 재발**: `skills/domain-training-scorecard-eval/scoring-procedure.md`의
+  이미 긴 문장 안에 괄호로 중첩됐던 부연설명을 별도 문장으로 분리했습니다.
+- **knowledge 설명형 규율 위반**: `knowledge/review/reviewer-personas.md`에 섞여
+  있던 명령형 실행 지시를 뺐습니다(같은 지시는 절차 정본인
+  `skills/reviewer-persona-panel-standard/SKILL.md`에 그대로 있어 정보 손실 없음).
+
 ## [1.8.21] — 2026-09-01
 
 변경동결 모드에서 사용자 승인으로 진행한 결함 정리 2라운드. 두 라운드 모두
