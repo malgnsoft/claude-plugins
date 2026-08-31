@@ -30,7 +30,7 @@ model: opus
 ## 스킬 상세
 
 ### 1) 산출물 채점 (Scorecard)
-대상 에이전트의 최근 산출물 3~5개를 수집해 채점합니다. 채점식·세부 배점 기준은 Skill `domain-training-scorecard-eval`가 유일한 정본입니다(배점표가 그 스킬 본문에 완전히 인라인되어 있어 별도 문서를 참조하지 않습니다). 키워드 매칭이 아니라 "산출물이 실제로 좋은가"가 기준입니다.
+대상 에이전트의 최근 산출물 3~5개를 수집해 채점합니다. 채점식·세부 배점 기준은 Skill `domain-training-scorecard-eval`가 유일한 정본입니다(배점표는 그 스킬이 색인에서 가리키는 채점 절차 파일에 있으며, 스킬 밖의 문서를 참조하지 않습니다). 키워드 매칭이 아니라 "산출물이 실제로 좋은가"가 기준입니다.
 
 ### 2) 판정 (승격 게이트)
 
@@ -41,7 +41,7 @@ model: opus
 
 **전제**: 판정 대상은 항상 `malgn-agent/<카테고리>/<name>` 형태의 평면 경로 하나뿐입니다(예: `agents/pm.md`, `skills/<name>/SKILL.md`, `knowledge/<domain>/<file>.md`) — "로컬 훈련사본 vs 전역본"의 이중 구조나 에이전트별 하위 디렉토리는 이 플러그인에 존재하지 않습니다. 판정 착수 전 `git diff main..<branch>`로 변경 범위를 직접 확정합니다(manifest나 별도 동기화 상태를 신뢰하지 않습니다).
 
-아래 체크리스트 전 항목이 PASS해야 게이트 통과입니다. **게이트 판정(PASS/FAIL)은 실재하는 방법(grep/ls/diff/육안)으로만 하고, 판정을 대신하는 스크립트를 새로 만들지 않습니다.** 스크립트를 쓰는 자리는 채점의 총점 집계 하나뿐입니다 — 가중합·threshold 비교는 결정론적 산식이므로 `bin/calc-training-scorecard.mjs`로 계산하고 암산하지 않습니다(Skill `domain-training-scorecard-eval` "총점 계산" 절).
+아래 체크리스트 전 항목이 PASS해야 게이트 통과입니다. **게이트 판정(PASS/FAIL)은 실재하는 방법(grep/ls/diff/육안)으로만 하고, 판정을 대신하는 스크립트를 새로 만들지 않습니다.** 스크립트를 쓰는 자리는 채점의 총점 집계 하나뿐입니다 — 가중합·threshold 비교는 결정론적 산식이므로 `bin/calc-training-scorecard.mjs`로 계산하고 암산하지 않습니다(Skill `domain-training-scorecard-eval` "총점 계산 커맨드" 절).
 
 ```
 ### 판정 체크리스트 (전부 PASS해야 게이트 통과)
@@ -144,7 +144,7 @@ model: opus
 ## 학습 자료
 
 ### 필수 (작업 전 항상 참조)
-- Skill `domain-training-scorecard-eval` — Scorecard 채점 기준(배점표 전체 인라인)
+- Skill `domain-training-scorecard-eval` — Scorecard 채점 기준(색인 + 채점 절차·기록 파라미터·판정 근거 파일. 스킬 밖 문서를 참조하지 않음)
 
 ### 참고 (해당 상황에서만 확인)
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/judgment-independence-patterns.md` — 판정 독립성 패턴(선기대치자술/blind판정/합격전용서명) 상세

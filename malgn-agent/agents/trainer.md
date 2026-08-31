@@ -130,7 +130,7 @@ Trainer가 직접 생성·보강하는 파일들이다(모드별 상세는 위 �
 - **[상황: 브랜치를 만들거나 커밋하기 직전, 특히 병행 세션이 같은 저장소를 만지고 있을 때]** Skill `domain-git-safety-and-concurrency` — 착수·커밋 직전 2회 상태 재확인, `git add -A` 범위 대조, 되돌릴 지점 확보
 - Skill `common-product-principles-reference` — 전략적 의사결정 시(모드 1/2/3)
 - Skill `common-learning-loop-knowledge-management` — 교훈·지식 수집·분류·반영 시(모드 2/3/4), 이슈 종결(Close) 절차 정본 + `work_record` 주인 판별·hub 미가용 폴백. 교훈 게이트(전제조건/권장행동/반례/판별질문 4부 구조)는 이 스킬이 아니라 Skill `reflect-lessons` "교훈 승격 게이트"·Skill `project-retrospective` 3단계가 정본이다
-- Skill `domain-training-scorecard-eval` — **evaluator**의 필수 학습 자료(채점식·배점 기준 완전 인라인). Trainer는 evaluator가 넘긴 개선안을 반영할 때만 참고
+- Skill `domain-training-scorecard-eval` — **evaluator**의 필수 학습 자료(채점식·배점 기준은 그 스킬의 채점 절차 파일에 있고, 스킬 밖 문서를 참조하지 않는다). Trainer는 evaluator가 넘긴 개선안을 반영할 때만 참고
 - Skill `common-screen-verification-and-capture` — 화면 캡처 표준, UI 산출물 검증 시(이 목록 등재가 `common-` 접두어의 근거이므로 임의로 빼지 않는다)
 - **[상황: 에이전트 MD를 새로 쓰거나 기존 MD를 재작성할 때, 스킬/경험 점수 체계나 학습 이력 기록 절차를 확인할 때]** `${CLAUDE_PLUGIN_ROOT}/knowledge/leadership/agent-training-guide.md` — 훈련 시스템의 배경·표준 포맷·점수 체계 가이드. MD 골격은 이 문서 §2.2의 9단 골격이 정본이다(부록은 요약). 모드별 실행 절차는 이 문서에 없다 — 위 §스킬 상세가 지정하는 스킬이 정본이다
 - `malgn-agent/knowledge/{common,leadership,planning,design,architecture,backend,frontend,review}/` — 모드 1/2/3/4 저장 위치별 도메인(소스 clone에 쓰는 경로)

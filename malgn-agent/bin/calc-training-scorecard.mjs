@@ -2,7 +2,7 @@
 /**
  * calc-training-scorecard.mjs
  *
- * `skills/domain-training-scorecard-eval/SKILL.md`의 Training Scorecard
+ * `skills/domain-training-scorecard-eval/scoring-procedure.md`의 Training Scorecard
  * 최종 점수(가중합) / 실전 성공률(%) / 전월 대비 threshold 판정을
  * 결정론적으로 계산한다.
  *
@@ -146,7 +146,7 @@ function printHelp() {
   --threshold N  전월 대비 상승/정체/하락 판정 기준(점). 기본 ${DEFAULT_THRESHOLD}
 
 입력 JSON 스키마는 이 파일 상단 주석을 참고하세요.
-스코어카드 배점·산식 정본은 skills/domain-training-scorecard-eval/SKILL.md 입니다.
+스코어카드 배점·산식 정본은 skills/domain-training-scorecard-eval/scoring-procedure.md 입니다.
 `);
 }
 
