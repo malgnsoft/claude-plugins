@@ -57,6 +57,7 @@ description: 프로젝트 완료 후 산출물·진행 이력을 분석하여 �
 추출한 교훈 4~8개를 성격에 따라 malgnai-hub에 기록한다(교훈 전용 저장소는 없으므로 아래 셋이 정본이다):
 - **결정/판단형** → `decision_record`(projectId, title, decision=권장행동, reason=전제조건+반례, impact=판별질문/영향, importance, idempotencyKey)
 - **작업 진행형** → `work_record`(projectId, status='completed', title, summary, result=4부 구조 요약, nextAction=다음 프로젝트에 적용할 행동, idempotencyKey)
+  - 이 `work_record`를 누가 남기는가는 기록의 주어가 무엇인지로 정해진다(기준: Skill `common-learning-loop-knowledge-management`의 "`work_record` 주인 판별").
 - **특정 에이전트의 역량으로 남길 것** → `agent_learning_record`(agentName, type='experience', title, content=4부 구조, source=산출물/커밋/STATUS.md 등 근거 경로, idempotencyKey)
 
 `agent_learning_record`로 남긴 항목은 모드 4가 `agent_get_context(agentName)`로 그대로 다시 꺼내 분류 대상으로 삼는다 — **에이전트 MD/knowledge에 반영할 가치가 있다고 본 교훈은 이 도구로 남기는 것이 기본값**이다.
