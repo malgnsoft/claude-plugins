@@ -10,7 +10,7 @@ description: 리뷰 페르소나 패널 설계·운영과 통합 보고서 작�
 > **위치 규칙**
 > - 프로젝트별 페르소나(인스턴스): `docs/reviewer/personas/persona-[관점].md` — reviewer가 그 자리에서 생성(자산이 있으면 재활용). `personas/` 하위폴더에 모으는 이유: `docs/reviewer/` 루트의 보고서·판정서 등 이종 산출물과 분리해 누적·재활용을 쉽게 하기 위함.
 > - 리뷰 결과 보고서: `docs/reviewer/review-[대상]-[날짜].md` — reviewer가 작성 → PM 보고.
-> - 재사용 페르소나 자산: `${CLAUDE_PLUGIN_ROOT}/knowledge/review/persona-*.md` — trainer가 반복·검증된 페르소나를 승격(agents/trainer.md 모드 5 참조).
+> - 재사용 페르소나 자산: `${CLAUDE_PLUGIN_ROOT}/knowledge/review/` — trainer가 반복·검증된 페르소나를 `persona-[관점].md` 이름으로 승격하는 자리(`agents/trainer.md` 모드 5 참조). 재활용할 자산이 있는지 이 디렉터리를 열어 확인하고, 없으면 위 프로젝트 자리에서 새로 만든다.
 
 ## 0. 페르소나 파일 구조 — 역할개념(고정) vs 적용이력(가변)
 

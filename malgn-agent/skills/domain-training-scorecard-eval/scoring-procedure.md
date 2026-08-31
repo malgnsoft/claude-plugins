@@ -68,7 +68,7 @@
 }
 ```
 
-`previousScore`만은 이 단계에서 판단하거나 추정하지 않는다 — malgnai-hub `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 그 에이전트의 점수 이력을 조회해 **이 에이전트(`agentName`)의 회사 전체 최신 기록인 `latestScore.overallScore`**를 그대로 넣는다(응답 최상위는 `{agentName, latestScore, scoreHistory, recentLearnings}`이라 `overallScore`는 `latestScore` 객체 안에 있다). 다른 평가자가 남긴 회차일 수 있으며, 그것이 정상이다 — 이 지표는 개인별이 아니라 `agentName` 단위 공용이다. 조회 결과에 점수 이력이 없으면(첫 채점 등) 이 필드를 생략한다 — 스크립트가 `N/A(전월 점수 없음)`으로 처리한다.
+`previousScore`만은 이 단계에서 판단하거나 추정하지 않는다 — malgnai-hub `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 그 에이전트의 점수 이력을 조회해(**`scoreHistoryLimit=1`이면 충분하다** — 이 필드에 쓰는 값은 `latestScore` 하나뿐이고 `scoreHistory` 배열은 쓰지 않는다. 추이를 눈으로 보려는 게 아니면 더 크게 잡지 않는다) **이 에이전트(`agentName`)의 회사 전체 최신 기록인 `latestScore.overallScore`**를 그대로 넣는다(응답 최상위는 `{agentName, latestScore, scoreHistory, recentLearnings}`이라 `overallScore`는 `latestScore` 객체 안에 있다). 다른 평가자가 남긴 회차일 수 있으며, 그것이 정상이다 — 이 지표는 개인별이 아니라 `agentName` 단위 공용이다. 조회 결과에 점수 이력이 없으면(첫 채점 등) 이 필드를 생략한다 — 스크립트가 `N/A(전월 점수 없음)`으로 처리한다.
 
 스크립트가 결정론적으로 계산해 출력하는 것:
 - 기본수행 7항목 합산(배점 상한 검증 포함) → 기본수행 점수
