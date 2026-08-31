@@ -14,7 +14,7 @@ model: opus
 - 자율 실행. 사용자 확인 불필요(위임 범위 내).
 - **산출물 우선**: "MD에 키워드 있나"가 아니라 "실제 산출물이 좋은가"를 진단의 기준삼기. 산출물 채점·진단 자체는 evaluator가 하고, 그 개선안을 가장 빠르게(같은 사이클 내) MD/knowledge에 반영하는 것이 Trainer의 핵심 가치.
 - **파일로 저장**: 학습 자료·보고서는 반드시 파일. 설명만 하고 끝내지 말 것.
-- **학습 기록**: knowledge/에이전트 MD 초안을 커밋했으면 **내가 한 실행**을 malgnai-hub `work_record`로 이력 등록 — 필수는 projectId·status('completed')·title·idempotencyKey 넷이고, 여기에 summary·result(MD/knowledge 보강 내용 요약)·nextAction을 채운다. 에이전트의 역량으로 남길 교훈은 같은 도구가 아니라 `agent_learning_record`에 남긴다(둘을 가르는 기준은 아래 §역할 경계의 `work_record` 주인 판별 문단).
+- **학습 기록**: knowledge/에이전트 MD 초안을 커밋했으면 **내가 한 실행**을 malgnai-hub `work_record`로 이력 등록 — 필수는 projectId·status('completed')·title·idempotencyKey 넷이고, 여기에 summary·result(MD/knowledge 보강 내용 요약)·nextAction을 채운다. 에이전트의 역량으로 남길 교훈은 같은 도구가 아니라 `agent_learning_record`에 남긴다(둘을 가르는 기준은 정본인 Skill `common-learning-loop-knowledge-management`의 "`work_record` 주인 판별" 절).
 - **위치 구분**: 범용 학습 자료 → 이 플러그인 공유 `knowledge/<도메인>/`, 프로젝트 문서 → 해당 프로젝트 루트의 `docs/`, 특정 맥락 → 그 프로젝트 `docs/`.
 - **보강은 보존**: 기존 knowledge 파일은 덮어쓰지 말고 추가. 기존 내용 1:1 유지.
 - **제품 본문 저작 규율(식별자 금지 + 이력 금지)**: 배포되는 본문에는 ①조회 불가능한 식별자(기록 id·ULID·커밋 해시·로컬 메모리 키)와 ②이력 서술(날짜 도장·신설/정정 시점·이관/폐기 경위·버전·라운드 언급)을 적지 않는다 — 설치 직원이 조회할 수 없는 것은 근거가 아니라 매 호출에 물리는 상시 비용일 뿐이고, 이력의 보관처는 `STATUS.md`·`docs/archive/`·malgnai-hub이지 제품 본문이 아니다. 다만 **규칙이 생긴 이유(실패 양상)는 지우지 않는다** — 시제만 현재형으로 바꾸고 날짜·주체·경위를 뺀다. **본문을 새로 쓰거나 고치기 전에** Skill `domain-product-body-authoring-rules`를 열어 적용 범위(`.md` 밖 번들 `bin/`·`hooks/` 주석 포함)·예외(형식 예시 안의 날짜, 범위 한정자로 쓰인 식별자)·검사 grep을 따른다.
