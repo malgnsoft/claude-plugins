@@ -238,38 +238,86 @@ function sortMetricOf(bucket) {
 const SUBAGENT_TOOL_NAMES = new Set(['Task', 'Agent']);
 
 /**
- * 사이드체인 비중 경고가 발동했을 때만 호출한다(조건부 I/O — 항상 순회하면 세션마다 디렉터리 스캔 비용이 붙는다).
- * 각 세션의 `<projectDir>/<sessionId>/subagents/*.meta.json`을 읽어 spawnDepth 값들을 모아 반환한다.
- * spawnDepth 1 = 메인 세션이 직접 호출, 2 이상 = 서브에이전트가 또 위임한 진짜 중첩.
- * 디렉터리 없음/권한 없음/깨진 JSON/spawnDepth 필드 없는 구버전 스키마는 모두 조용히 건너뛰고 에러로 죽지 않는다.
+ * subagents 디렉터리를 재귀적으로 훑어 *.meta.json 경로를 모두 모은다.
+ * 워크플로우로 뜬 서브에이전트는 `subagents/` 바로 아래가 아니라 `subagents/workflows/wf_<id>/`
+ * 한 단계 더 들어간 곳에 놓인다 — 1단계 readdirSync만 쓰면 이 몫이 통째로 누락된다.
  */
-function collectSpawnDepths(sessionAggs) {
-  const depths = [];
-  for (const agg of sessionAggs) {
-    if (!agg.sourceFile) continue;
-    const sessionDir = path.join(path.dirname(agg.sourceFile), agg.sessionId, 'subagents');
+function findMetaJsonFiles(baseDir) {
+  const results = [];
+  function walk(dir) {
     let entries;
     try {
-      entries = fs.readdirSync(sessionDir, { withFileTypes: true });
+      entries = fs.readdirSync(dir, { withFileTypes: true });
     } catch (err) {
-      continue; // subagents 디렉터리가 없거나 접근 불가 — 조용히 건너뛴다
+      return; // 디렉터리 없음/권한 없음 — 조용히 건너뛴다
     }
     for (const entry of entries) {
-      if (!entry.isFile() || !entry.name.endsWith('.meta.json')) continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (entry.isFile() && entry.name.endsWith('.meta.json')) {
+        results.push(full);
+      }
+    }
+  }
+  walk(baseDir);
+  return results;
+}
+
+/**
+ * 사이드체인 비중 경고가 발동했을 때만 호출한다(조건부 I/O — 항상 순회하면 세션마다 디렉터리 스캔 비용이 붙는다).
+ * 각 세션의 `<projectDir>/<sessionId>/subagents/**\/*.meta.json`을 재귀적으로 읽어 spawnDepth 값들을 모아 반환한다.
+ * spawnDepth 1 = 메인 세션이 직접 호출, 2 이상 = 서브에이전트가 또 위임한 진짜 중첩.
+ *
+ * meta.json에는 타임스탬프 필드가 없어(agentType/description/toolUseId/spawnDepth뿐) 리포트가 선언한
+ * 집계 기간과 스코프를 맞출 방법이 파일시스템 mtime뿐이다. 파일의 mtime을 날짜 프록시로 써서 cutoffStr(리포트
+ * 헤더가 선언한 "집계 기간"과 동일한 값)보다 오래된 meta 파일은 건수에서 제외한다 — 그래야 "집계 기간: 오늘"이라는
+ * 선언과 실제로 세는 숫자의 스코프가 어긋나지 않는다.
+ *
+ * 판별 불가의 원인을 셋으로 구분해 반환한다(중첩 유무와 혼동하지 않기 위해):
+ *  - outOfRange: 집계 기간보다 오래된 meta 파일 (스코프 밖일 뿐 결함이 아니다)
+ *  - noDepthField: JSON은 읽혔지만 spawnDepth 필드가 없는 구버전 스키마
+ *  - parseError: JSON 파싱 실패/파일 읽기 실패
+ * 세 경우 모두 에러로 죽지 않고 조용히 건너뛰지만, noDepthField는 호출부에서 사용자에게 노출한다 —
+ * 판별 불가로 건너뛴 값은 중첩의 증거만 사라지므로 스킵이 전부 "중첩 없음" 쪽으로 편향되기 때문이다.
+ */
+function collectSpawnDepths(sessionAggs, cutoffStr) {
+  const depths = [];
+  let outOfRange = 0;
+  let noDepthField = 0;
+  let parseError = 0;
+  for (const agg of sessionAggs) {
+    if (!agg.sourceFile) continue;
+    const subagentsDir = path.join(path.dirname(agg.sourceFile), agg.sessionId, 'subagents');
+    const metaFiles = findMetaJsonFiles(subagentsDir);
+    for (const metaPath of metaFiles) {
+      let stat;
+      try {
+        stat = fs.statSync(metaPath);
+      } catch (err) {
+        parseError++;
+        continue;
+      }
+      if (localDateStr(stat.mtime) < cutoffStr) {
+        outOfRange++;
+        continue; // 집계 기간 밖에서 생성된 meta 파일 — 리포트가 선언한 기간과 스코프를 맞추기 위해 제외
+      }
       let meta;
       try {
-        meta = JSON.parse(fs.readFileSync(path.join(sessionDir, entry.name), 'utf8'));
+        meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
       } catch (err) {
+        parseError++;
         continue; // 깨진 JSON/읽기 실패 — 조용히 건너뛴다
       }
       const d = meta && typeof meta === 'object' ? meta.spawnDepth : undefined;
       if (typeof d === 'number' && Number.isFinite(d)) {
         depths.push(d);
+      } else {
+        noDepthField++; // spawnDepth 필드가 없는 구버전 스키마 — 판별 불가
       }
-      // spawnDepth 필드가 없는 구버전 스키마는 판별 불가로 조용히 건너뛴다
     }
   }
-  return depths;
+  return { depths, outOfRange, noDepthField, parseError };
 }
 
 async function run() {
@@ -830,18 +878,42 @@ async function run() {
 
       // 비중이 높다는 것만으로는 병리적 중첩 위임인지 정상적인 대형 단일 위임인지 구분되지 않는다.
       // 조건이 참일 때만(=지금) 분석 대상 세션들의 spawnDepth를 실제로 들여다본다.
-      const spawnDepths = collectSpawnDepths([...sessions.values()]);
+      // cutoffStr을 넘겨 리포트가 선언한 집계 기간과 meta 파일 스코프를 맞춘다(기간 밖 meta는 제외).
+      const { depths: spawnDepths, outOfRange, noDepthField } = collectSpawnDepths(
+        [...sessions.values()],
+        cutoffStr
+      );
       const nestedCount = spawnDepths.filter((d) => d >= 2).length;
       if (nestedCount > 0) {
         guide.push(
           `- **실제 중첩 위임 ${nestedCount}건 발견** — 서브에이전트가 또 다른 서브에이전트를 호출한 사례(spawnDepth 2 이상)가 ` +
-            `\`~/.claude/projects/**/subagents/*.meta.json\`에서 확인됩니다. Task 체인이 여러 단계로 깊어지고 있는지 점검하세요.`
+            `\`~/.claude/projects/**/subagents/**/*.meta.json\`에서 확인됩니다(집계 기간: ${rangeLabel} 내 생성된 meta 파일 기준). ` +
+            `Task 체인이 여러 단계로 깊어지고 있는지 점검하세요.`
         );
       } else if (spawnDepths.length > 0) {
+        const allDepthOne = spawnDepths.every((d) => d === 1);
         guide.push(
-          `- **중첩 없음 — 사이드체인 비중은 개별 위임 작업 규모 때문일 가능성.** ` +
-            `확인된 위임 ${spawnDepths.length}건이 모두 spawnDepth 1(메인 세션이 직접 호출)입니다. ` +
-            `중첩 위임이 아니라 개별 서브에이전트 호출 자체가 크고 복잡했을 가능성이 높습니다.`
+          `- **집계 기간(${rangeLabel}) 내에서는 중첩 위임 근거가 없습니다.** ` +
+            `확인된 위임 ${spawnDepths.length}건 중 spawnDepth 2 이상인 사례가 없습니다` +
+            (allDepthOne ? '(전부 spawnDepth 1, 메인 세션이 직접 호출).' : '.') +
+            ` 중첩 위임이 아니라 개별 서브에이전트 호출 자체가 크고 복잡했을 가능성이 높습니다.`
+        );
+      } else {
+        guide.push(
+          `- **spawnDepth 판별 불가.** 집계 기간(${rangeLabel}) 내에 spawnDepth 필드를 가진 subagents meta 파일을 찾지 못했습니다 ` +
+            `(서브에이전트 위임이 없었거나, 구버전 스키마라 spawnDepth 필드가 없거나, 기간 밖의 오래된 meta 파일만 있을 수 있습니다). ` +
+            `중첩 여부를 판별할 수 없다는 뜻이며, 이를 "중첩 없음"으로 해석하지 마세요.`
+        );
+      }
+      if (noDepthField > 0) {
+        guide.push(
+          `  - (참고: spawnDepth 필드가 없어 판별에서 제외한 meta 파일 ${noDepthField}건 — 구버전 스키마로 보이며, ` +
+            `이 건들의 실제 중첩 여부는 알 수 없습니다. 스킵된 값은 전부 "중첩 없음" 쪽으로 편향되니 참고하세요.)`
+        );
+      }
+      if (outOfRange > 0) {
+        guide.push(
+          `  - (참고: 집계 기간(${rangeLabel}) 밖에서 생성된 meta 파일 ${outOfRange}건은 위 집계에서 제외했습니다.)`
         );
       }
     }
