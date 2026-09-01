@@ -9,6 +9,23 @@
 
 ---
 
+## [1.8.25] — 2026-09-01
+
+세션 종료 후에야 뜨는 Stop 훅 리마인더가 AI에게 전달되지 않는다는 사실이
+실사용 중 확인되어, 기록 책임을 세션 진행 중 지점으로 앞당겼습니다(사용자
+확인 후 trainer 초안 → reviewer 풀패널(Amber) → evaluator 조건부 통과, PM이
+경계 재현 테스트로 조건 종결).
+
+### 수정
+
+- **PM 행동 규율 블록**(`hooks/pm-orchestration-block.md`, 매 세션 자동 주입):
+  실질 작업(결정·이슈·작업 결과)을 마치면 malgnai-hub 기록과 STATUS.md
+  갱신을 세션 종료 리마인더를 기다리지 않고 그 자리에서 하도록 명시.
+- **기존 폴더 초기화 절차**(`skills/project-standards` §8): 신규 프로젝트
+  스캐폴딩에는 있던 "STATUS.md 재작성 트리거 + malgnai-hub 기록" CLAUDE.md
+  규율이 기존 폴더를 malgn-agent 프로젝트로 전환할 때는 빠지던 결함을
+  점검 항목으로 보완.
+
 ## [1.8.24] — 2026-09-01
 
 골든 태스크 벤치마크 v1 파일럿 신설(사용자 승인). architect 초안 → reviewer 풀패널
