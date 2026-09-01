@@ -129,6 +129,16 @@ function findJsonlFiles(baseDir) {
   return results;
 }
 
+/**
+ * 세션의 서브에이전트 트랜스크립트(`<projectDir>/<sessionId>/subagents/agent-*.jsonl`)는
+ * 최상위 세션 파일(`<projectDir>/<sessionId>.jsonl`)과 동일한 sessionId를 공유하며 findJsonlFiles가
+ * 함께 수집한다. spawnDepth 조회는 최상위 세션 파일 경로를 기준으로 subagents 디렉터리를 역산해야 하므로,
+ * 경로에 "subagents" 세그먼트가 섞인 파일은 최상위 세션 파일로 취급하지 않는다.
+ */
+function isUnderSubagentsDir(filePath) {
+  return filePath.split(path.sep).includes('subagents');
+}
+
 /** user 라인의 content가 "사람이 입력한 프롬프트"인지 판별 (tool_result만 있으면 아님) */
 function isHumanPromptContent(content) {
   if (content == null) return false;
@@ -177,6 +187,7 @@ function newSessionAgg(sessionId) {
   return {
     sessionId,
     cwd: null,
+    sourceFile: null, // 이 세션의 .jsonl 파일 경로 — subagents/*.meta.json 위치 역산용
     firstTs: null,
     lastTs: null,
     firstPrompt: null,
@@ -225,6 +236,41 @@ function sortMetricOf(bucket) {
 
 // 서브에이전트 위임에 쓰이는 도구명. 표준 Claude Code는 "Task", 이 조직의 커스텀 하네스는 "Agent"를 쓴다.
 const SUBAGENT_TOOL_NAMES = new Set(['Task', 'Agent']);
+
+/**
+ * 사이드체인 비중 경고가 발동했을 때만 호출한다(조건부 I/O — 항상 순회하면 세션마다 디렉터리 스캔 비용이 붙는다).
+ * 각 세션의 `<projectDir>/<sessionId>/subagents/*.meta.json`을 읽어 spawnDepth 값들을 모아 반환한다.
+ * spawnDepth 1 = 메인 세션이 직접 호출, 2 이상 = 서브에이전트가 또 위임한 진짜 중첩.
+ * 디렉터리 없음/권한 없음/깨진 JSON/spawnDepth 필드 없는 구버전 스키마는 모두 조용히 건너뛰고 에러로 죽지 않는다.
+ */
+function collectSpawnDepths(sessionAggs) {
+  const depths = [];
+  for (const agg of sessionAggs) {
+    if (!agg.sourceFile) continue;
+    const sessionDir = path.join(path.dirname(agg.sourceFile), agg.sessionId, 'subagents');
+    let entries;
+    try {
+      entries = fs.readdirSync(sessionDir, { withFileTypes: true });
+    } catch (err) {
+      continue; // subagents 디렉터리가 없거나 접근 불가 — 조용히 건너뛴다
+    }
+    for (const entry of entries) {
+      if (!entry.isFile() || !entry.name.endsWith('.meta.json')) continue;
+      let meta;
+      try {
+        meta = JSON.parse(fs.readFileSync(path.join(sessionDir, entry.name), 'utf8'));
+      } catch (err) {
+        continue; // 깨진 JSON/읽기 실패 — 조용히 건너뛴다
+      }
+      const d = meta && typeof meta === 'object' ? meta.spawnDepth : undefined;
+      if (typeof d === 'number' && Number.isFinite(d)) {
+        depths.push(d);
+      }
+      // spawnDepth 필드가 없는 구버전 스키마는 판별 불가로 조용히 건너뛴다
+    }
+  }
+  return depths;
+}
 
 async function run() {
   const opts = parseArgs(process.argv.slice(2));
@@ -301,6 +347,7 @@ async function run() {
         sessions.set(sessionId, agg);
       }
       if (cwd && !agg.cwd) agg.cwd = cwd;
+      if (!agg.sourceFile && !isUnderSubagentsDir(file)) agg.sourceFile = file;
       if (!agg.firstTs || ts < agg.firstTs) agg.firstTs = ts;
       if (!agg.lastTs || ts > agg.lastTs) agg.lastTs = ts;
 
@@ -780,6 +827,23 @@ async function run() {
         `- **사이드체인(서브에이전트/Task 호출) 비중이 ${pct(sidechainShare)}로 높습니다.** ` +
           `Task 도구로 서브에이전트를 과도하게 병렬/중첩 호출하고 있지 않은지 점검하세요.`
       );
+
+      // 비중이 높다는 것만으로는 병리적 중첩 위임인지 정상적인 대형 단일 위임인지 구분되지 않는다.
+      // 조건이 참일 때만(=지금) 분석 대상 세션들의 spawnDepth를 실제로 들여다본다.
+      const spawnDepths = collectSpawnDepths([...sessions.values()]);
+      const nestedCount = spawnDepths.filter((d) => d >= 2).length;
+      if (nestedCount > 0) {
+        guide.push(
+          `- **실제 중첩 위임 ${nestedCount}건 발견** — 서브에이전트가 또 다른 서브에이전트를 호출한 사례(spawnDepth 2 이상)가 ` +
+            `\`~/.claude/projects/**/subagents/*.meta.json\`에서 확인됩니다. Task 체인이 여러 단계로 깊어지고 있는지 점검하세요.`
+        );
+      } else if (spawnDepths.length > 0) {
+        guide.push(
+          `- **중첩 없음 — 사이드체인 비중은 개별 위임 작업 규모 때문일 가능성.** ` +
+            `확인된 위임 ${spawnDepths.length}건이 모두 spawnDepth 1(메인 세션이 직접 호출)입니다. ` +
+            `중첩 위임이 아니라 개별 서브에이전트 호출 자체가 크고 복잡했을 가능성이 높습니다.`
+        );
+      }
     }
   }
 
