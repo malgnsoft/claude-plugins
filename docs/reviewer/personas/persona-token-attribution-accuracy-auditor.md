@@ -29,3 +29,7 @@
 
 ## 6. 출력포맷 (Output Format)
 표: | 검증 항목 | 방법(코드/실행) | 결과 | 심각도 | 근거 |
+
+## 적용 이력 (Application Log)
+- 2026-09-01 / target_id `spawndepth-nesting-detection-20260901` / 1차(최초, Sensitive 풀패널) — 역할개념 수준 재사용. 대상: `bin/analyze-usage.mjs` 단일 커밋 +64/-0(사이드체인 경고에 spawnDepth 기반 중첩 판별 추가). 이번 라운드 집중: 새 수치("중첩 위임 N건")가 리포트 헤더가 선언한 집계 기간과 같은 모집단에서 나온 숫자인지. 실측 2건 적발 — ① `collectSpawnDepths`가 날짜 필터를 통과한 *세션*만 고르고 그 세션의 meta.json은 기간 무관 전량 계수(`--days 1`에서 보고 24 vs 실제 기간내 17, 계수 대상 60건 중 14건이 cutoff 이전) ② `readdirSync`가 비재귀라 `subagents/workflows/wf_*/` 하위 meta.json 202/935건(21.6%)을 누락. 두 결함 모두 장기 윈도(`--days 60`)에서는 leak 0이라 드러나지 않음 — 기본값 `--days 1`에서만 재현.
+- 2026-09-01 / target_id `sidechain-instream-nesting-count-20260901` / 1차(최초, Sensitive 풀패널) — 역할개념 수준 재사용(§2 "sidechain·동시 다중 tool_use에서도 산수가 깨지지 않는가"를 교체된 메커니즘에 그대로 대입). 대상: `bin/analyze-usage.mjs` 인스트림 계수 교체 + `SKILL.md` 정정. 이번 라운드 집중: 직전 라운드에 내가 진단한 근본 원인("모집단을 스트림이 아니라 파일시스템에서 길어왔다")이 실제로 제거됐는가. 확인 결과 두 카운터가 날짜·프로젝트 필터 하류에 위치해 기간 누설 경로가 코드상 소멸했고, 폐기 대상 식별자 6종이 전역 grep 0건이라 파일시스템 배치 의존도 0. 남은 정확성 지적은 분모 과소 1건(`toolUseId` 없는 meta 204/950 = 21.5%가 위임 건수에 미포함, 단 전부 depth 1이라 중첩 판정에는 영향 없음).

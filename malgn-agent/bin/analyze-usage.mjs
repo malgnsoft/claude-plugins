@@ -258,6 +258,12 @@ async function run() {
   let totalApiCalls = 0;
   let parseErrors = 0;
   let skippedByFilter = 0;
+  // 서브에이전트 위임(Task/Agent) 호출 총건수와, 그 중 sidechain(서브에이전트 내부) 라인이 스스로 발행한
+  // 건수. sidechain 라인이 Task/Agent를 또 호출했다는 것 자체가 곧 중첩 위임이므로, 이미 돌고 있는 이
+  // 파싱 루프(위 dateStr/opts.project 필터를 이미 통과한 라인만 본다)에 카운터만 얹으면 된다 — 별도 파일
+  // 스캔이 필요 없어 기간·프로젝트 스코프를 자동으로 물려받는다.
+  let totalDelegationCount = 0;
+  let nestedDelegationCount = 0;
 
   for (const file of files) {
     let stream;
@@ -365,6 +371,9 @@ async function run() {
             addSplitTokens(tAgg.tokens, usage, divisor);
 
             if (SUBAGENT_TOOL_NAMES.has(block.name)) {
+              totalDelegationCount++;
+              if (isSidechain) nestedDelegationCount++; // 서브에이전트 내부에서 또 위임 = 중첩
+
               const input = block.input || {};
               const label =
                 (typeof input.subagent_type === 'string' && input.subagent_type.trim()) ||
@@ -780,6 +789,44 @@ async function run() {
         `- **사이드체인(서브에이전트/Task 호출) 비중이 ${pct(sidechainShare)}로 높습니다.** ` +
           `Task 도구로 서브에이전트를 과도하게 병렬/중첩 호출하고 있지 않은지 점검하세요.`
       );
+
+      // 비중이 높다는 것만으로는 병리적 중첩 위임인지 정상적인 대형 단일 위임인지 구분되지 않는다.
+      // totalDelegationCount/nestedDelegationCount는 위 파싱 루프에서 이미 걸린 기간·프로젝트 필터를
+      // 그대로 물려받은 값이라 별도 스코프 보정이 필요 없다.
+      if (nestedDelegationCount > 0) {
+        guide.push(
+          `- **실제 중첩 위임 ${nestedDelegationCount}건 발견** — 서브에이전트가 스스로 또 다른 서브에이전트를 호출한 사례가 ` +
+            `확인됩니다(집계 기간: ${rangeLabel}). Task 체인이 여러 단계로 깊어지고 있는지 점검하세요.`
+        );
+      } else if (totalDelegationCount > 0) {
+        guide.push(
+          `- **집계 기간(${rangeLabel}) 내에서는 중첩 위임 근거가 없습니다.** ` +
+            `확인된 위임 ${totalDelegationCount}건 모두 메인 세션이 직접 호출했을 뿐, ` +
+            `서브에이전트가 스스로 또 위임한 사례는 없습니다. 중첩 위임이 아니라 개별 서브에이전트 호출 자체가 크고 복잡했을 가능성이 높습니다.`
+        );
+      } else if (opts.project) {
+        // 사이드체인 토큰 비중은 높은데(>=0.3) 위임 호출(Task/Agent) 자체는 이 기간 안에서 관측되지 않은 경우다.
+        // --project 필터가 걸려 있으면, 위임을 발행한 세션(부모)의 cwd와 그 위임으로 실행된 서브에이전트
+        // 세션(자식)의 cwd가 서로 다를 수 있다(예: 워크트리로 격리된 서브에이전트) — 그 경우 자식의 sidechain
+        // 라인만 필터를 통과하고 부모의 Task 호출 라인은 스코프 밖으로 걸러져, 사이드체인 토큰은 잡히는데
+        // 그걸 발행한 위임 호출 자체는 관측되지 않을 수 있다. 이 스크립트는 실제로 그 비대칭이 이번 경우의
+        // 원인인지까지는 알 수 없으므로(그 확인에는 --project 필터를 뺀 재실행이 필요하다) 원인을 확정하지
+        // 않고, 필터가 걸려 있다는 사실과 확인 방법만 안내한다.
+        guide.push(
+          `- **중첩 여부 판별 불가.** 집계 기간(${rangeLabel}) 내에서 서브에이전트 위임 호출(Task/Agent)이 관측되지 않았습니다. ` +
+            `\`--project "${opts.project}"\` 필터가 걸려 있습니다 — 위임을 발행한 세션의 cwd가 이 필터 문자열과 다르면(예: 워크트리로 ` +
+            `격리된 서브에이전트와 그 위임을 발행한 세션이 서로 다른 cwd를 쓰는 경우) 그 Task 호출 라인만 스코프 밖으로 제외되어, ` +
+            `사이드체인 토큰은 잡히는데 그걸 발행한 위임 호출은 관측되지 않을 수 있습니다. \`--project\` 없이(또는 다른 프로젝트 값으로) ` +
+            `다시 실행해 위임 호출이 나타나는지 확인하세요. 중첩 여부를 판별할 수 없다는 뜻이며, 이를 "중첩 없음"으로 해석하지 마세요.`
+        );
+      } else {
+        // 프로젝트 필터가 없는데도 위임 호출 자체가 관측되지 않는 경우 — 스크립트가 알 수 있는 구조적 원인이
+        // 없으므로(시간창 확대로 해결된다는 보장도 없다) 원인을 지어내지 않고 판별 불가로만 안내한다.
+        guide.push(
+          `- **중첩 여부 판별 불가.** 집계 기간(${rangeLabel}) 내에서 서브에이전트 위임 호출(Task/Agent)이 관측되지 않았습니다. ` +
+            `원인을 특정할 수 있는 데이터가 없습니다. 중첩 여부를 판별할 수 없다는 뜻이며, 이를 "중첩 없음"으로 해석하지 마세요.`
+        );
+      }
     }
   }
 
