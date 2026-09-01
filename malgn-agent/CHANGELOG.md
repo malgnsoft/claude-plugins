@@ -9,6 +9,20 @@
 
 ---
 
+## [1.8.26] — 2026-09-01
+
+golden task 벤치마크 로드맵 2단계 케이스 3종(`planner`·`qa-engineer`·`security`)을 신설했습니다
+(사용자 승인, Exploration 등급, trainer 초안 → reviewer 풀패널(Red→재작업) → PM 직접 재검증).
+디스크에만 실리고 세션 컨텍스트에는 로드되지 않는 `malgn-agent/evals/` 아래 추가 파일입니다.
+
+### 추가
+- `malgn-agent/evals/planner-prd-obligations/` · `qa-engineer-test-report-obligations/` ·
+  `security-dev-stage-discipline/` — 케이스 정의(prompt.md + graders/*.md)
+
+### 수정
+- `scripts/run-golden-eval.mjs` — 신설 3종의 위임 실패 하드게이트 등록, `Bash` 도구 승인 추가,
+  기본 비용 상한(`max-cost-usd`) 강제 제거(수동·저빈도 실행 용도로 사용자 결정)
+
 ## [1.8.25] — 2026-09-01
 
 세션 종료 후에야 뜨는 Stop 훅 리마인더가 AI에게 전달되지 않는다는 사실이
