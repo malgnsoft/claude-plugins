@@ -63,6 +63,9 @@ const ALLOW_TOOLS = ['Write'];
  */
 const HARD_GATES = {
   'architect-design-obligations': ['delegates-to-architect'],
+  'planner-prd-obligations': ['delegates-to-planner'],
+  'qa-engineer-test-report-obligations': ['delegates-to-qa-engineer'],
+  'security-dev-stage-discipline': ['delegates-to-security'],
 };
 
 // ── 인자 파싱: 사용자가 준 플래그가 기본값을 덮어쓴다 ─────────────────────────────
