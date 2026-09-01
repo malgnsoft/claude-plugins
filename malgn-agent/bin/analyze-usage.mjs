@@ -129,16 +129,6 @@ function findJsonlFiles(baseDir) {
   return results;
 }
 
-/**
- * 세션의 서브에이전트 트랜스크립트(`<projectDir>/<sessionId>/subagents/agent-*.jsonl`)는
- * 최상위 세션 파일(`<projectDir>/<sessionId>.jsonl`)과 동일한 sessionId를 공유하며 findJsonlFiles가
- * 함께 수집한다. spawnDepth 조회는 최상위 세션 파일 경로를 기준으로 subagents 디렉터리를 역산해야 하므로,
- * 경로에 "subagents" 세그먼트가 섞인 파일은 최상위 세션 파일로 취급하지 않는다.
- */
-function isUnderSubagentsDir(filePath) {
-  return filePath.split(path.sep).includes('subagents');
-}
-
 /** user 라인의 content가 "사람이 입력한 프롬프트"인지 판별 (tool_result만 있으면 아님) */
 function isHumanPromptContent(content) {
   if (content == null) return false;
@@ -187,7 +177,6 @@ function newSessionAgg(sessionId) {
   return {
     sessionId,
     cwd: null,
-    sourceFile: null, // 이 세션의 .jsonl 파일 경로 — subagents/*.meta.json 위치 역산용
     firstTs: null,
     lastTs: null,
     firstPrompt: null,
@@ -237,89 +226,6 @@ function sortMetricOf(bucket) {
 // 서브에이전트 위임에 쓰이는 도구명. 표준 Claude Code는 "Task", 이 조직의 커스텀 하네스는 "Agent"를 쓴다.
 const SUBAGENT_TOOL_NAMES = new Set(['Task', 'Agent']);
 
-/**
- * subagents 디렉터리를 재귀적으로 훑어 *.meta.json 경로를 모두 모은다.
- * 워크플로우로 뜬 서브에이전트는 `subagents/` 바로 아래가 아니라 `subagents/workflows/wf_<id>/`
- * 한 단계 더 들어간 곳에 놓인다 — 1단계 readdirSync만 쓰면 이 몫이 통째로 누락된다.
- */
-function findMetaJsonFiles(baseDir) {
-  const results = [];
-  function walk(dir) {
-    let entries;
-    try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch (err) {
-      return; // 디렉터리 없음/권한 없음 — 조용히 건너뛴다
-    }
-    for (const entry of entries) {
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-      } else if (entry.isFile() && entry.name.endsWith('.meta.json')) {
-        results.push(full);
-      }
-    }
-  }
-  walk(baseDir);
-  return results;
-}
-
-/**
- * 사이드체인 비중 경고가 발동했을 때만 호출한다(조건부 I/O — 항상 순회하면 세션마다 디렉터리 스캔 비용이 붙는다).
- * 각 세션의 `<projectDir>/<sessionId>/subagents/**\/*.meta.json`을 재귀적으로 읽어 spawnDepth 값들을 모아 반환한다.
- * spawnDepth 1 = 메인 세션이 직접 호출, 2 이상 = 서브에이전트가 또 위임한 진짜 중첩.
- *
- * meta.json에는 타임스탬프 필드가 없어(agentType/description/toolUseId/spawnDepth뿐) 리포트가 선언한
- * 집계 기간과 스코프를 맞출 방법이 파일시스템 mtime뿐이다. 파일의 mtime을 날짜 프록시로 써서 cutoffStr(리포트
- * 헤더가 선언한 "집계 기간"과 동일한 값)보다 오래된 meta 파일은 건수에서 제외한다 — 그래야 "집계 기간: 오늘"이라는
- * 선언과 실제로 세는 숫자의 스코프가 어긋나지 않는다.
- *
- * 판별 불가의 원인을 셋으로 구분해 반환한다(중첩 유무와 혼동하지 않기 위해):
- *  - outOfRange: 집계 기간보다 오래된 meta 파일 (스코프 밖일 뿐 결함이 아니다)
- *  - noDepthField: JSON은 읽혔지만 spawnDepth 필드가 없는 구버전 스키마
- *  - parseError: JSON 파싱 실패/파일 읽기 실패
- * 세 경우 모두 에러로 죽지 않고 조용히 건너뛰지만, noDepthField는 호출부에서 사용자에게 노출한다 —
- * 판별 불가로 건너뛴 값은 중첩의 증거만 사라지므로 스킵이 전부 "중첩 없음" 쪽으로 편향되기 때문이다.
- */
-function collectSpawnDepths(sessionAggs, cutoffStr) {
-  const depths = [];
-  let outOfRange = 0;
-  let noDepthField = 0;
-  let parseError = 0;
-  for (const agg of sessionAggs) {
-    if (!agg.sourceFile) continue;
-    const subagentsDir = path.join(path.dirname(agg.sourceFile), agg.sessionId, 'subagents');
-    const metaFiles = findMetaJsonFiles(subagentsDir);
-    for (const metaPath of metaFiles) {
-      let stat;
-      try {
-        stat = fs.statSync(metaPath);
-      } catch (err) {
-        parseError++;
-        continue;
-      }
-      if (localDateStr(stat.mtime) < cutoffStr) {
-        outOfRange++;
-        continue; // 집계 기간 밖에서 생성된 meta 파일 — 리포트가 선언한 기간과 스코프를 맞추기 위해 제외
-      }
-      let meta;
-      try {
-        meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
-      } catch (err) {
-        parseError++;
-        continue; // 깨진 JSON/읽기 실패 — 조용히 건너뛴다
-      }
-      const d = meta && typeof meta === 'object' ? meta.spawnDepth : undefined;
-      if (typeof d === 'number' && Number.isFinite(d)) {
-        depths.push(d);
-      } else {
-        noDepthField++; // spawnDepth 필드가 없는 구버전 스키마 — 판별 불가
-      }
-    }
-  }
-  return { depths, outOfRange, noDepthField, parseError };
-}
-
 async function run() {
   const opts = parseArgs(process.argv.slice(2));
 
@@ -352,6 +258,12 @@ async function run() {
   let totalApiCalls = 0;
   let parseErrors = 0;
   let skippedByFilter = 0;
+  // 서브에이전트 위임(Task/Agent) 호출 총건수와, 그 중 sidechain(서브에이전트 내부) 라인이 스스로 발행한
+  // 건수. sidechain 라인이 Task/Agent를 또 호출했다는 것 자체가 곧 중첩 위임이므로, 이미 돌고 있는 이
+  // 파싱 루프(위 dateStr/opts.project 필터를 이미 통과한 라인만 본다)에 카운터만 얹으면 된다 — 별도 파일
+  // 스캔이 필요 없어 기간·프로젝트 스코프를 자동으로 물려받는다.
+  let totalDelegationCount = 0;
+  let nestedDelegationCount = 0;
 
   for (const file of files) {
     let stream;
@@ -395,7 +307,6 @@ async function run() {
         sessions.set(sessionId, agg);
       }
       if (cwd && !agg.cwd) agg.cwd = cwd;
-      if (!agg.sourceFile && !isUnderSubagentsDir(file)) agg.sourceFile = file;
       if (!agg.firstTs || ts < agg.firstTs) agg.firstTs = ts;
       if (!agg.lastTs || ts > agg.lastTs) agg.lastTs = ts;
 
@@ -460,6 +371,9 @@ async function run() {
             addSplitTokens(tAgg.tokens, usage, divisor);
 
             if (SUBAGENT_TOOL_NAMES.has(block.name)) {
+              totalDelegationCount++;
+              if (isSidechain) nestedDelegationCount++; // 서브에이전트 내부에서 또 위임 = 중첩
+
               const input = block.input || {};
               const label =
                 (typeof input.subagent_type === 'string' && input.subagent_type.trim()) ||
@@ -877,43 +791,25 @@ async function run() {
       );
 
       // 비중이 높다는 것만으로는 병리적 중첩 위임인지 정상적인 대형 단일 위임인지 구분되지 않는다.
-      // 조건이 참일 때만(=지금) 분석 대상 세션들의 spawnDepth를 실제로 들여다본다.
-      // cutoffStr을 넘겨 리포트가 선언한 집계 기간과 meta 파일 스코프를 맞춘다(기간 밖 meta는 제외).
-      const { depths: spawnDepths, outOfRange, noDepthField } = collectSpawnDepths(
-        [...sessions.values()],
-        cutoffStr
-      );
-      const nestedCount = spawnDepths.filter((d) => d >= 2).length;
-      if (nestedCount > 0) {
+      // totalDelegationCount/nestedDelegationCount는 위 파싱 루프에서 이미 걸린 기간·프로젝트 필터를
+      // 그대로 물려받은 값이라 별도 스코프 보정이 필요 없다.
+      if (nestedDelegationCount > 0) {
         guide.push(
-          `- **실제 중첩 위임 ${nestedCount}건 발견** — 서브에이전트가 또 다른 서브에이전트를 호출한 사례(spawnDepth 2 이상)가 ` +
-            `\`~/.claude/projects/**/subagents/**/*.meta.json\`에서 확인됩니다(집계 기간: ${rangeLabel} 내 생성된 meta 파일 기준). ` +
-            `Task 체인이 여러 단계로 깊어지고 있는지 점검하세요.`
+          `- **실제 중첩 위임 ${nestedDelegationCount}건 발견** — 서브에이전트가 스스로 또 다른 서브에이전트를 호출한 사례가 ` +
+            `확인됩니다(집계 기간: ${rangeLabel}). Task 체인이 여러 단계로 깊어지고 있는지 점검하세요.`
         );
-      } else if (spawnDepths.length > 0) {
-        const allDepthOne = spawnDepths.every((d) => d === 1);
+      } else if (totalDelegationCount > 0) {
         guide.push(
           `- **집계 기간(${rangeLabel}) 내에서는 중첩 위임 근거가 없습니다.** ` +
-            `확인된 위임 ${spawnDepths.length}건 중 spawnDepth 2 이상인 사례가 없습니다` +
-            (allDepthOne ? '(전부 spawnDepth 1, 메인 세션이 직접 호출).' : '.') +
-            ` 중첩 위임이 아니라 개별 서브에이전트 호출 자체가 크고 복잡했을 가능성이 높습니다.`
+            `확인된 위임 ${totalDelegationCount}건 모두 메인 세션(또는 상위 세션)이 직접 호출했을 뿐, ` +
+            `서브에이전트가 스스로 또 위임한 사례는 없습니다. 중첩 위임이 아니라 개별 서브에이전트 호출 자체가 크고 복잡했을 가능성이 높습니다.`
         );
       } else {
+        // 사이드체인 토큰 비중은 높은데(>=0.3) 위임 호출(Task/Agent) 자체는 이 기간 안에서 관측되지 않은
+        // 경우다 — 위임이 시작된 시점이 집계 기간 밖이고 그 결과 토큰만 기간 안으로 걸쳐 있을 수 있다.
         guide.push(
-          `- **spawnDepth 판별 불가.** 집계 기간(${rangeLabel}) 내에 spawnDepth 필드를 가진 subagents meta 파일을 찾지 못했습니다 ` +
-            `(서브에이전트 위임이 없었거나, 구버전 스키마라 spawnDepth 필드가 없거나, 기간 밖의 오래된 meta 파일만 있을 수 있습니다). ` +
-            `중첩 여부를 판별할 수 없다는 뜻이며, 이를 "중첩 없음"으로 해석하지 마세요.`
-        );
-      }
-      if (noDepthField > 0) {
-        guide.push(
-          `  - (참고: spawnDepth 필드가 없어 판별에서 제외한 meta 파일 ${noDepthField}건 — 구버전 스키마로 보이며, ` +
-            `이 건들의 실제 중첩 여부는 알 수 없습니다. 스킵된 값은 전부 "중첩 없음" 쪽으로 편향되니 참고하세요.)`
-        );
-      }
-      if (outOfRange > 0) {
-        guide.push(
-          `  - (참고: 집계 기간(${rangeLabel}) 밖에서 생성된 meta 파일 ${outOfRange}건은 위 집계에서 제외했습니다.)`
+          `- **중첩 여부 판별 불가.** 집계 기간(${rangeLabel}) 내에서 서브에이전트 위임 호출(Task/Agent)이 관측되지 않았습니다 ` +
+            `(위임이 시작된 시점이 집계 기간 밖일 수 있습니다). 중첩 여부를 판별할 수 없다는 뜻이며, 이를 "중첩 없음"으로 해석하지 마세요.`
         );
       }
     }
