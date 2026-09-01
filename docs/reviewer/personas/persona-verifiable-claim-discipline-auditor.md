@@ -29,3 +29,6 @@
 ## 6. 출력포맷 (Output Format)
 표: | 위치(SKILL.md 줄) | 인용 문장 | verified/claimed 판정 | 문제 여부 | 근거 |
 심각도 태그(🔴/🟠/🟡/⚪)를 각 행에 부여.
+
+## 적용 이력 (Application Log)
+- 2026-09-01 / target_id `spawndepth-nesting-detection-20260901` / 1차(최초, Sensitive 풀패널) — 역할개념 수준 재사용. 대상은 SKILL.md가 아니라 스크립트가 직접 내보내는 "효율화 가이드" 신규 문구 2종. 판정: "확인된 위임 N건이 **모두 spawnDepth 1**"은 코드가 검증하지 않은 단정 — 분기 조건은 `nestedCount === 0`(=2 이상이 없음)일 뿐이라 0·음수·소수(`Number.isFinite` 통과)가 섞여도 같은 문장이 나온다. 또한 이 "중첩 없음" 안심 문구의 분모(`spawnDepths.length`)가 읽지 못한 것(비재귀 readdir 누락분·비숫자 스킵분)을 전혀 반영하지 않아, 오탐 방지용으로 넣은 문장이 근거보다 강한 확신을 준다.

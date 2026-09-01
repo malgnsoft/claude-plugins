@@ -29,3 +29,6 @@
 
 ## 6. 출력포맷 (Output Format)
 표: | 검증 항목 | 방법(코드/실행) | 결과 | 심각도 | 근거 |
+
+## 적용 이력 (Application Log)
+- 2026-09-01 / target_id `spawndepth-nesting-detection-20260901` / 1차(최초, Sensitive 풀패널) — 역할개념 수준 재사용. 대상: `bin/analyze-usage.mjs` 단일 커밋 +64/-0(사이드체인 경고에 spawnDepth 기반 중첩 판별 추가). 이번 라운드 집중: 새 수치("중첩 위임 N건")가 리포트 헤더가 선언한 집계 기간과 같은 모집단에서 나온 숫자인지. 실측 2건 적발 — ① `collectSpawnDepths`가 날짜 필터를 통과한 *세션*만 고르고 그 세션의 meta.json은 기간 무관 전량 계수(`--days 1`에서 보고 24 vs 실제 기간내 17, 계수 대상 60건 중 14건이 cutoff 이전) ② `readdirSync`가 비재귀라 `subagents/workflows/wf_*/` 하위 meta.json 202/935건(21.6%)을 누락. 두 결함 모두 장기 윈도(`--days 60`)에서는 leak 0이라 드러나지 않음 — 기본값 `--days 1`에서만 재현.

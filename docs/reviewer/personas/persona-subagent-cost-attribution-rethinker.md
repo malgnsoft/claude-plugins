@@ -23,3 +23,6 @@
 
 ## 6. 출력포맷 (Output Format)
 🔵 Rethink 항목으로 보고서 별도 섹션에 기록. "현재 구조 / 제안 구조(대안) / 왜 더 나은가 / 예상 비용·리스크" 4열 표 필수(대안 없는 지적은 무효). 상관키 발견의 확실성 수준(모든 케이스에서 보장 vs 일부 하네스에서만 관측)을 표 안에 명시.
+
+## 적용 이력 (Application Log)
+- 2026-09-01 / target_id `spawndepth-nesting-detection-20260901` / 1차(최초, Sensitive 풀패널, 발산형 슬롯) — 역할개념 수준 재사용(§2 두 번째 관심사 "sidechain 정보를 파일 밖이 아니라 스트림 안의 상관키로 복원할 수 있는가"를 이번 대상에 그대로 대입). 제안: `subagents/*.meta.json`을 파일시스템에서 되읽는 대신, 이미 도는 파싱 루프에서 `isSidechain === true`인 assistant 라인이 스스로 `Task`/`Agent` tool_use를 내는 경우를 세면 그게 곧 중첩 위임이다. 실측 교차검증에서 두 방식이 정확히 일치(`--days 1`: 17 vs 17, `--days 60 --project claude-plugins`: 123 vs 123)했고, 인스트림 방식은 기간·프로젝트 필터를 자동 상속하며 `spawnDepth` 스키마에도 의존하지 않는다.
