@@ -1,7 +1,7 @@
 ---
 type: tool_used
 tool: Agent
-input_match: security
+input_match: malgn-agent:security
 min: 1
 arm: with-only
 weight: 1
@@ -22,3 +22,19 @@ weight: 1
 하네스의 채점은 가중합뿐이고 "이 그레이더는 필수"라는 표시가 없다. 그래서 이 판정은 채점
 후처리로 한다 — 실행 결과에서 이 그레이더의 `passed`가 한 번이라도 false면 점수와 무관하게
 실패로 처리한다. `arm: with-only`라 ablation 실행에서 `scored: false`가 되더라도 `passed`만 본다.
+
+## `input_match`를 플러그인 이름까지 붙여 쓰는 이유
+
+이 케이스에서 `security`라는 낱말만으로는 위임을 식별할 수 없다. 산출물 경로
+(`docs/security-plan.md`·`docs/security-report.md`)와 프롬프트 지시문에 그 낱말이 이미 들어 있어서,
+부모 세션이 폴백해 **다른** 서브에이전트를 띄우면서 지시를 인용하기만 해도 게이트가 헛통과할 수
+있다. 그러면 나머지 점수는 security가 아니라 그 다른 실행을 채점한 값이 된다.
+`malgn-agent:security`는 산출물 경로에도 프롬프트의 일반 문장에도 나타나지 않고, 서브에이전트를
+지목할 때만 등장한다.
+
+**남은 불확실성**: 하네스가 `input_match`를 도구 입력의 어느 부분과 어떻게 대조하는지
+(부분문자열인지, 서브에이전트 타입 필드만인지, 이름을 플러그인 없이 정규화하는지)는 실행으로
+확인되지 않았다. 만약 하네스가 이름을 플러그인 접두어 없이 다루면 이 게이트는 **항상 실패**한다 —
+조용히 통과하는 쪽이 아니라 드러나는 쪽으로 틀리도록 고른 값이다. 첫 실행에서 게이트가 실패했는데
+실행 기록(trace)에는 security 서브에이전트가 실제로 뜬 것으로 보이면, 그 기록에 찍힌 실제 값으로
+`input_match`를 맞춘다.

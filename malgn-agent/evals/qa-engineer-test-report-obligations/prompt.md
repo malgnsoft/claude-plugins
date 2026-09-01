@@ -5,7 +5,12 @@ tags: [qa-engineer, quality, golden]
 runs: 2
 max_turns: 40
 timeout_seconds: 2700
-allowed_tools: [Read, Glob, Grep, Skill, Agent, TodoWrite, Write]
+# Bash는 이 케이스의 표제 의무(테스트를 실제로 실행한다)에 직접 필요한 도구다 — qa-engineer.md가
+# "모든 테스트가 Bash로 실행되고 통과하는가"를 자기 검증 항목으로 두고, 그레이더
+# records-execution-evidence가 그 실행 기록을 잰다. 선언하지 않으면 승인 목록과 무관하게
+# 돌아버려(하네스가 선언하지 않은 도구는 막지 않는다) 케이스가 무엇을 허용했는지가 파일에
+# 남지 않는다. 선언한 도구는 실행 시 운영자 승인(`--allow-tools`)이 있어야 열린다.
+allowed_tools: [Read, Glob, Grep, Skill, Agent, TodoWrite, Write, Bash]
 # expected_outcome은 사람이 읽는 설명이다 — 하네스는 채점에 쓰지 않는다(채점은 graders/*.md만).
 expected_outcome: >
   tests/ 아래에 실제 실행 가능한 테스트 파일과 tests/test-report.md가 생성되고,
