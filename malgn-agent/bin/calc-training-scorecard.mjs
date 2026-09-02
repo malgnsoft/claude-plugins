@@ -3,7 +3,7 @@
  * calc-training-scorecard.mjs
  *
  * `skills/domain-training-scorecard-eval/scoring-procedure.md`의 Training Scorecard
- * 최종 점수(가중합) / 실전 성공률(%) / 전월 대비 threshold 판정을
+ * 최종 점수(가중합) / 실전 성공률(%) / 지난 회차 대비 threshold 판정을
  * 결정론적으로 계산한다.
  *
  * 이 스크립트가 하지 않는 것 (LLM 판단 영역 — 스크립트로 대체하지 않는다):
@@ -16,7 +16,7 @@
  *   - 실전 성공률 = 1차승인건수 / 전체위임건수 × 100
  *   - 비용 효율 = 100 - (통독×10 + 반복재확인×5 + 전체재작성×15), 하한 0
  *   - 최종 점수 = 기본수행×0.6 + EvalSet×0.25 + 성공률×0.1 + 비용×0.05
- *   - 전월 대비 변화폭과 상승(+5↑)/정체(±5 이내)/하락(-5↓) 판정
+ *   - 지난 회차 대비 변화폭과 상승(+5↑)/정체(±5 이내)/하락(-5↓) 판정
  *
  * 순수 Node.js 내장 모듈만 사용 — 의존성 설치 없이 `node calc-training-scorecard.mjs` 로 실행된다.
  *
@@ -29,7 +29,7 @@
  * 옵션:
  *   --input FILE   입력 JSON 파일 경로. 생략하면 stdin에서 읽는다.
  *   --format F     text(기본, 사람이 읽기 쉬운 리포트) | json(프로그램용 원시 결과)
- *   --threshold N  전월 대비 상승/정체/하락 판정 기준(점). 기본 5 (SKILL.md 정의값).
+ *   --threshold N  지난 회차 대비 상승/정체/하락 판정 기준(점). 기본 5 (SKILL.md 정의값).
  *   --help, -h     도움말
  *
  * 입력 JSON 스키마 (단일 에이전트 1건):
@@ -56,7 +56,7 @@
  *     "repeatedConfirmCount": 2,       // 반복 재확인·재질문 (-5/건)
  *     "fullRewriteCount": 0            // evaluator 반려로 인한 전체 재작성 (-15/건)
  *   },
- *   "previousScore": 75                // 선택. 지난 회차 최종 점수 (전월 대비 판정용)
+ *   "previousScore": 75                // 선택. 지난 회차 최종 점수 (지난 회차 대비 판정용)
  * }
  *
  * 여러 에이전트를 한 번에 계산하려면 최상위를 배열로 감싸거나
@@ -143,7 +143,7 @@ function printHelp() {
 
   --input FILE   입력 JSON 파일 경로 (생략 시 stdin에서 읽음)
   --format F     text(기본, 사람이 읽는 리포트) | json(원시 계산 결과)
-  --threshold N  전월 대비 상승/정체/하락 판정 기준(점). 기본 ${DEFAULT_THRESHOLD}
+  --threshold N  지난 회차 대비 상승/정체/하락 판정 기준(점). 기본 ${DEFAULT_THRESHOLD}
 
 입력 JSON 스키마는 이 파일 상단 주석을 참고하세요.
 스코어카드 배점·산식 정본은 skills/domain-training-scorecard-eval/scoring-procedure.md 입니다.
@@ -303,7 +303,7 @@ function calcCostEfficiency(ce) {
 
 function judgeTrend(finalScore, previousScore, threshold) {
   if (previousScore === undefined || previousScore === null) {
-    return { previousScore: null, diff: null, status: 'N/A(전월 점수 없음)' };
+    return { previousScore: null, diff: null, status: 'N/A(지난 회차 점수 없음)' };
   }
   if (typeof previousScore !== 'number' || !Number.isFinite(previousScore)) {
     throw new ValidationError('previousScore 는 숫자여야 합니다.');
@@ -398,11 +398,11 @@ function printTextReport(result, threshold, previousScore) {
   push();
 
   const trend = judgeTrend(result.finalScore, previousScore, threshold);
-  push(`## 전월 대비 판정 (threshold ±${threshold}점)`);
+  push(`## 지난 회차 대비 판정 (threshold ±${threshold}점)`);
   if (trend.previousScore === null) {
     push(`- ${trend.status}`);
   } else {
-    push(`- 전월 ${trend.previousScore}점 → 이번달 ${result.finalScore}점 (${trend.diff >= 0 ? '+' : ''}${trend.diff}점)`);
+    push(`- 지난 회차 ${trend.previousScore}점 → 이번 회차 ${result.finalScore}점 (${trend.diff >= 0 ? '+' : ''}${trend.diff}점)`);
     push(`- 판정: **${trend.status}**`);
   }
   push();
