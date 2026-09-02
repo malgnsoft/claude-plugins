@@ -23,7 +23,7 @@ description: 에이전트 산출물 평가 + 피드백 통합 — Scorecard 채�
 ## 실행 흐름 (4~5시간)
 
 - **Phase 1: 산출물 수집 + Scorecard 채점** (2~3시간) — 대상 에이전트의 최근 산출물 3~5개를 모으고, 기본수행 60%(7항목 배점표)·Eval Set 25%·실전 성공률 10%·비용 효율 5%를 채점한 뒤 스크립트로 총점을 낸다.
-- **Phase 2: 약점 분석 + 즉시 피드백** (2시간, 같은 턴에) — 전월 대비 변화 추적, 항목별 약점 진단, trainer가 반영할 개선안 작성.
+- **Phase 2: 약점 분석 + 즉시 피드백** (2시간, 같은 턴에) — 지난 회차 대비 변화 추적, 항목별 약점 진단, trainer가 반영할 개선안 작성.
 
 **채점 회차를 실제로 수행할 때** `${CLAUDE_PLUGIN_ROOT}/skills/domain-training-scorecard-eval/scoring-procedure.md`를 Read한다 — 배점표·판정 기준·입력 JSON 스키마·스크립트 출력 해석이 그 파일에만 있다. 배점 정본이 그쪽이므로, 기억으로 채점하지 않는다.
 
@@ -35,7 +35,7 @@ description: 에이전트 산출물 평가 + 피드백 통합 — Scorecard 채�
 node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs" --input scorecard.json
 # 또는
 echo '{ ...JSON... }' | node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs"
-# 전월 대비 상승/정체/하락 판정 기준(점)을 바꿀 때. 기본 5점
+# 지난 회차 대비 상승/정체/하락 판정 기준(점)을 바꿀 때. 기본 5점
 node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs" --input scorecard.json --threshold 3
 # 입력 스키마·옵션 전체
 node "${CLAUDE_PLUGIN_ROOT}/bin/calc-training-scorecard.mjs" --help
