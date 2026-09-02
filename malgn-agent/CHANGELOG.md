@@ -9,6 +9,34 @@
 
 ---
 
+## [1.8.30] — 2026-09-02
+
+v1.8.26~v1.8.28 세 라운드(golden eval 신규 케이스 3종·scorecard 회차 표기 통일)를
+전체 재검증해 확정된 결함 9건을 정정했습니다. 공식 하네스가 얼리액세스 미승인으로
+아직 실행 불가한 동안, 수동 러너(`run-golden-eval-manual.mjs`)가 케이스를 채점하는
+유일한 경로인데 신규 3종의 하드게이트가 거기 등록되지 않아 위임이 죽어도 통과로
+기록될 수 있던 결함이 가장 중대했습니다.
+
+### 수정
+
+- `scripts/run-golden-eval-manual.mjs`: `HARD_GATES`에 신규 3종
+  (`planner-prd-obligations`·`qa-engineer-test-report-obligations`·
+  `security-dev-stage-discipline`) 등록 누락을 정정 — 이 러너가 승인 전 유일한
+  실행 경로라 위임 실패가 무경고로 통과하던 결함.
+- `scripts/run-golden-eval.mjs`: 비용 안내가 등록 케이스 수(4종)·`--runs` 실제값을
+  반영하지 못해 실제 비용(약 $62)의 1/4로 과소 안내하던 결함 정정. 결과 출력
+  디렉터리를 케이스로 잘못 세던 계수 오류도 함께 수정.
+- `docs/architecture/golden-task-benchmark.md`: `malgn-agent/evals/` 실측 바이트
+  수치가 여러 라운드에 걸쳐 실물과 어긋나 있던 것을 재측정해 정정하고, `HARD_GATES`
+  등록 예시를 신규 3종까지 반영.
+- `malgn-agent/skills/domain-training-scorecard-eval/checklist-rationale.md`:
+  예시 표의 판정 상태값이 `calc-training-scorecard.mjs`가 실제로 내는 값과
+  달랐던 것(존재하지 않는 라벨 + 산술 오류)을 정정.
+- `malgn-agent/evals/security-dev-stage-discipline/`: 하드게이트 그레이더의
+  정당화 서술이 실제 프롬프트 내용과 어긋나 있던 것을 정정하고, 개발 단계
+  산출물에 최종 단계 요건(코드 예시)을 요구하던 `expected_outcome` 불일치를
+  해소.
+
 ## [1.8.29] — 2026-09-02
 
 좁게 스코프된 재검증 위임에서 qa-engineer가 요청 밖 테스트 스위트까지 자발적으로
