@@ -38,10 +38,15 @@ const EVALS_DIR = path.join(PLUGIN_DIR, 'evals');
 const OUT_ROOT = path.join(REPO, 'docs', 'evaluation', 'golden-task');
 const MANUAL_HISTORY = path.join(OUT_ROOT, 'manual-history.jsonl');
 
-// 이 그레이더가 실패하면 가중 점수와 무관하게 그 회차는 FAIL이다.
-// 공식 스크립트(scripts/run-golden-eval.mjs)의 HARD_GATES와 동일한 근거 — §4-2 참조.
+// 이 그레이더가 실패하면 가중 점수와 무관하게 그 회차는 FAIL이다. 근거는 §4-2.
+// 공식 스크립트(scripts/run-golden-eval.mjs)의 HARD_GATES와 **내용까지 같아야 한다** —
+// 얼리액세스 승인 전에는 이 수동 러너가 케이스를 실제로 돌리는 유일한 경로라, 여기에
+// 등록이 빠진 케이스는 위임이 죽어도 통과로 집계된다. 케이스를 추가할 때 두 파일을 함께 고친다.
 const HARD_GATES = {
   'architect-design-obligations': ['delegates-to-architect'],
+  'planner-prd-obligations': ['delegates-to-planner'],
+  'qa-engineer-test-report-obligations': ['delegates-to-qa-engineer'],
+  'security-dev-stage-discipline': ['delegates-to-security'],
 };
 
 function parseArgs(argv) {

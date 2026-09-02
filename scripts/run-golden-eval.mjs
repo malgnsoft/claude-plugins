@@ -31,7 +31,9 @@ const OUT_ROOT = path.join(REPO, 'docs', 'evaluation', 'golden-task');
 const HISTORY = path.join(OUT_ROOT, 'history.jsonl');
 
 // ── 비용/판정 기본값 (근거는 docs/architecture/golden-task-benchmark.md §5) ──────────
-// ⚠ 실측: architect 케이스 1회 = 약 $7.8 · 33분. 기본값(runs 2)으로 한 번 돌리면 약 $16 · 1시간이다.
+// ⚠ 실측: architect 케이스 1회 = 약 $7.8 · 33분. 기본값(runs 2)이면 케이스 1종당 약 $16 · 1시간이고,
+//    케이스를 좁히지 않으면 등록된 전 케이스가 순차 실행돼 그만큼 곱해진다(4종이면 약 $62 · 4.4시간).
+//    나머지 케이스는 실측이 없어 architect 실측을 그대로 적용한 추정이다.
 //    PR마다 돌리는 도구가 아니라 릴리스 게이트 주기로 돌리는 도구다.
 // `--max-cost-usd`는 기본값으로 걸지 않는다. 하네스 자체 기본값도 없다(`--help`가 "Optional
 // hard cost ceiling"이라고만 적고 다른 옵션과 달리 default를 표기하지 않는다) → 미지정이면 무제한이다.
@@ -87,6 +89,13 @@ const given = new Set(
   passthrough.filter((a) => a.startsWith('--')).map((a) => a.replace(/^--(no-)?/, '').split('=')[0]),
 );
 
+// `--flag value` / `--flag=value` 양쪽 표기에서 값을 꺼낸다. 없으면 undefined.
+function flagValue(name) {
+  const i = passthrough.findIndex((a) => a === `--${name}` || a.startsWith(`--${name}=`));
+  if (i < 0) return undefined;
+  return passthrough[i].includes('=') ? passthrough[i].slice(`--${name}=`.length) : passthrough[i + 1];
+}
+
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 // 결과를 읽어들일 경로. 사용자가 --output-dir로 덮어쓰면 그 경로를 따라가야 한다
 // (안 그러면 override 시 회귀 이력이 조용히 기록되지 않는다).
@@ -117,11 +126,32 @@ if (!given.has('allow-tools') && !dryRun) args.push('--allow-tools', ...ALLOW_TO
 // 무심코 `pnpm run eval:golden`을 친 직원의 **자기 계정에** 비용이 청구되므로,
 // 비용을 알고 있다는 명시적 옵트인을 요구한다. `--dry-run`은 비용이 0이라 면제.
 if (!dryRun && process.env.GOLDEN_EVAL_I_ACCEPT_COST !== '1') {
+  // 기본 비용 상한을 두지 않으므로(위 DEFAULTS 주석) 이 안내가 예산 사고를 막는 유일한 장치다.
+  // 케이스를 좁히지 않으면 등록된 전 케이스가 순차 실행되므로 총액은 케이스 수만큼 곱해진다.
+  // 케이스 수는 디스크에서 세어 케이스가 늘어도 안내가 낡지 않게 한다. 단 `evals/` 아래에는
+  // 하네스 자신의 출력 디렉터리(`results/` 등)가 생길 수 있으므로, 케이스의 필수 파일인
+  // `prompt.md`를 가진 디렉터리만 센다 — 안 그러면 출력물이 케이스로 잡혀 총액이 부풀려진다.
+  const evalsDir = path.join(PLUGIN_DIR, 'evals');
+  const caseCount = fs
+    .readdirSync(evalsDir, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && fs.existsSync(path.join(evalsDir, e.name, 'prompt.md'))).length;
+  const narrowed = given.has('case') || given.has('tag');
+  // 사용자가 `--runs N`을 주면 그 값으로 계산한다. 기본값만 읽으면 사용자 지정 시 총액이 사라진다.
+  const runsN = Number(flagValue('runs') ?? DEFAULTS.runs);
+  const scope = narrowed ? 1 : caseCount;
+  const estimable = Number.isFinite(runsN) && runsN > 0;
   console.error(
     '골든 태스크 벤치마크는 유료 실행이다.\n' +
-      `  예상: 케이스당 약 $7.8 · 33분 × runs(현재 ${given.has('runs') ? '사용자 지정' : DEFAULTS.runs}회)\n` +
+      '  실측 기준선: 케이스 1종 1회 = 약 $7.8 · 33분(architect 실측. 나머지 케이스는 실측 없는 추정)\n' +
+      `  이번 실행 범위: ${narrowed ? '케이스 필터 지정됨(1종으로 계산)' : `등록된 전 케이스 ${caseCount}종`}` +
+      ` × runs ${runsN}회\n` +
+      (estimable
+        ? `  → 예상 ${narrowed ? '비용' : '총액'} 약 $${Math.round(7.8 * scope * runsN)}` +
+          ` · 약 ${(((33 * scope * runsN) / 60)).toFixed(1)}시간\n`
+        : '') +
       '  비용은 이 명령을 실행한 사람의 계정에 청구된다.\n\n' +
       '  실행하려면: GOLDEN_EVAL_I_ACCEPT_COST=1 pnpm run eval:golden\n' +
+      '  1종만 돌리려면: pnpm run eval:golden -- --case <이름>\n' +
       '  비용 없이 케이스 파일만 검증하려면: pnpm run eval:golden --dry-run',
   );
   process.exit(1);
