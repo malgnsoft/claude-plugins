@@ -45,7 +45,7 @@
 
 **3) 총점 계산 — 반드시 스크립트로 (암산 금지)**:
 
-집계·가중합·threshold 비교는 전부 결정론적 산식이다. 위 a)~d)에서 낸 정성 점수(0~100 하위점수, Pass/Partial/Fail 판정, 감점 사유 건수)만 LLM이 판단하고, 그 값을 `bin/calc-training-scorecard.mjs`(의존성 없는 Node 내장 스크립트, `bin/analyze-usage.mjs`와 동일 패턴)에 JSON으로 넘겨 최종 점수·성공률·전월 대비 판정을 계산한다 — **암산으로 가중합을 다시 계산하지 않는다.** 실행 커맨드는 색인(SKILL.md)의 "총점 계산 커맨드" 절에 있다.
+집계·가중합·threshold 비교는 전부 결정론적 산식이다. 위 a)~d)에서 낸 정성 점수(0~100 하위점수, Pass/Partial/Fail 판정, 감점 사유 건수)만 LLM이 판단하고, 그 값을 `bin/calc-training-scorecard.mjs`(의존성 없는 Node 내장 스크립트, `bin/analyze-usage.mjs`와 동일 패턴)에 JSON으로 넘겨 최종 점수·성공률·지난 회차 대비 판정을 계산한다 — **암산으로 가중합을 다시 계산하지 않는다.** 실행 커맨드는 색인(SKILL.md)의 "총점 계산 커맨드" 절에 있다.
 
 입력 JSON에 채워 넣는 값 (`previousScore`를 뺀 나머지는 전부 이 단계에서 LLM이 채점/관찰한 정성 판단 결과):
 ```json
@@ -68,7 +68,7 @@
 }
 ```
 
-`previousScore`만은 이 단계에서 판단하거나 추정하지 않는다 — malgnai-hub `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 그 에이전트의 점수 이력을 조회해 **이 에이전트(`agentName`)의 회사 전체 최신 기록인 `latestScore.overallScore`**를 그대로 넣는다(응답 최상위는 `{agentName, latestScore, scoreHistory, recentLearnings}`이라 `overallScore`는 `latestScore` 객체 안에 있다). 조회할 때 **`scoreHistoryLimit=1`이면 충분하다** — 이 필드에 쓰는 값은 `latestScore` 하나뿐이고 `scoreHistory` 배열은 쓰지 않는다. 추이를 눈으로 보려는 게 아니면 더 크게 잡지 않는다. 다른 평가자가 남긴 회차일 수 있으며, 그것이 정상이다 — 이 지표는 개인별이 아니라 `agentName` 단위 공용이다. 조회 결과에 점수 이력이 없으면(첫 채점 등) 이 필드를 생략한다 — 스크립트가 `N/A(전월 점수 없음)`으로 처리한다.
+`previousScore`만은 이 단계에서 판단하거나 추정하지 않는다 — malgnai-hub `agent_get_context`(`agentName`, `scoreHistoryLimit`)로 그 에이전트의 점수 이력을 조회해 **이 에이전트(`agentName`)의 회사 전체 최신 기록인 `latestScore.overallScore`**를 그대로 넣는다(응답 최상위는 `{agentName, latestScore, scoreHistory, recentLearnings}`이라 `overallScore`는 `latestScore` 객체 안에 있다). 조회할 때 **`scoreHistoryLimit=1`이면 충분하다** — 이 필드에 쓰는 값은 `latestScore` 하나뿐이고 `scoreHistory` 배열은 쓰지 않는다. 추이를 눈으로 보려는 게 아니면 더 크게 잡지 않는다. 다른 평가자가 남긴 회차일 수 있으며, 그것이 정상이다 — 이 지표는 개인별이 아니라 `agentName` 단위 공용이다. 조회 결과에 점수 이력이 없으면(첫 채점 등) 이 필드를 생략한다 — 스크립트가 `N/A(지난 회차 점수 없음)`으로 처리한다.
 
 스크립트가 결정론적으로 계산해 출력하는 것:
 - 기본수행 7항목 합산(배점 상한 검증 포함) → 기본수행 점수
@@ -76,7 +76,7 @@
 - 실전 성공률 = 1차승인건수 / 전체위임건수 × 100
 - 비용 효율 = 100 - (통독×10 + 반복재확인×5 + 전체재작성×15), 하한 0
 - 최종 점수 = 기본수행×0.6 + EvalSet×0.25 + 성공률×0.1 + 비용×0.05
-- 전월 대비 diff와 상승(+threshold 이상)/정체(±threshold 이내)/하락(-threshold 이하) 판정(기본 threshold=5점, `--threshold N`으로 조정 가능 — 커맨드 예시는 색인의 "총점 계산 커맨드" 절)
+- 지난 회차 대비 diff와 상승(+threshold 이상)/정체(±threshold 이내)/하락(-threshold 이하) 판정(기본 threshold=5점, `--threshold N`으로 조정 가능 — 커맨드 예시는 색인의 "총점 계산 커맨드" 절)
 
 여러 에이전트를 한 번에 계산하려면 입력을 배열(또는 `{"agents":[...]}`)로 감싸면 스크립트가 각 에이전트 리포트 + 요약표(에이전트|지난회|이번회|변화|상태)까지 함께 출력한다. 상세 입력 스키마·옵션은 색인의 커맨드에 도움말 플래그를 붙여 실행하거나 스크립트 상단 주석을 참고한다.
 
@@ -84,7 +84,7 @@
 
 ## Phase 2: 약점 분석 + 즉시 피드백 (2시간, 같은 턴에)
 
-**1) 지난달 대비 변화 추적**:
+**1) 지난 회차 대비 변화 추적**:
 - Phase 1에서 총점 계산 스크립트를 실행한 결과에 이미 diff·상태(상승/정체/하락)가 포함돼 있다 — 여기서 다시 계산하지 않고 그 출력을 그대로 사용한다.
 - **상승** (+5점 이상): 좋은 사례 정리
 - **정체** (±5점 이내): 현상유지
