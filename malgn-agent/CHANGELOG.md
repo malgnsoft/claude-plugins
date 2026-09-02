@@ -9,6 +9,20 @@
 
 ---
 
+## [1.8.28] — 2026-09-02
+
+`agent_score_record`가 agentName 단위 회사 공용 스코프로 바뀐 뒤에도 "전월/이번달"
+표현이 남아 있어, 직전 기록이 다른 평가자가 방금 남긴 회차일 수 있는 지금 전제와
+어긋나던 결함을 정정했습니다.
+
+### 수정
+
+- `bin/calc-training-scorecard.mjs`: CLI 출력 문자열·주석의 "전월/이번달"을
+  "지난 회차/이번 회차" 계열로 통일(로직·계산 변경 없음).
+- `skills/domain-training-scorecard-eval/`(SKILL.md·scoring-procedure.md·
+  checklist-rationale.md): 위 스크립트 실제 출력 문자열과 어긋나던 "전월/지난달"
+  인용을 정정.
+
 ## [1.8.27] — 2026-09-01
 
 토큰 사용량 진단(`token-usage-diagnosis`)의 사이드체인 비중 경고가 "비중이
