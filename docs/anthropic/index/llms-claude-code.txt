@@ -156,7 +156,7 @@
 - [Other LLM gateways](https://code.claude.com/docs/en/llm-gateway.md): Route Claude Code through an LLM gateway your organization already runs. Covers connecting Claude Code to a gateway, rolling one out for your organization, and what Claude Code sends to a gateway.
 - [Connect Claude Code to an LLM gateway](https://code.claude.com/docs/en/llm-gateway-connect.md): Point Claude Code at your organization's LLM gateway. Check whether your admin already configured it, or set the base URL and credential yourself, then verify the connection and fix gateway errors.
 - [Roll out an LLM gateway for your organization](https://code.claude.com/docs/en/llm-gateway-rollout.md): Deploy a gateway product for Claude Code: configure it to forward what Claude Code sends, issue developer credentials, distribute the configuration through managed settings, and verify the rollout.
-- [Gateway protocol reference](https://code.claude.com/docs/en/llm-gateway-protocol.md): The API contract between Claude Code and an LLM gateway: endpoints, headers and body fields to forward, feature degradation when fields are stripped, attribution headers for cost tracking, and model discovery.
+- [Claude Code gateway compatibility guide](https://code.claude.com/docs/en/llm-gateway-protocol.md): Keep an LLM gateway compatible with Claude Code: the endpoints it calls, the headers and body fields to forward, and what breaks when they're stripped.
 
 ### Usage and costs
 
@@ -251,7 +251,8 @@
 
 - [Agent SDK overview](https://code.claude.com/docs/en/agent-sdk/overview.md): Build production AI agents with Claude Code as a library
 - [Quickstart](https://code.claude.com/docs/en/agent-sdk/quickstart.md): Get started with the Python or TypeScript Agent SDK to build AI agents that work autonomously
-- [Troubleshooting](https://code.claude.com/docs/en/agent-sdk/troubleshooting.md): Fix Agent SDK errors by the exact message you see, with the cause and fix for each error in the TypeScript and Python SDKs.
+- [Migrate to Claude Agent SDK](https://code.claude.com/docs/en/agent-sdk/migration-guide.md): Guide for migrating the Claude Code TypeScript and Python SDKs to the Claude Agent SDK
+- [Troubleshoot the Agent SDK](https://code.claude.com/docs/en/agent-sdk/troubleshooting.md): Fix Agent SDK errors by the exact message you see, with the cause and fix for each error in the TypeScript and Python SDKs.
 
 ### Build agents
 
@@ -303,7 +304,6 @@
 - [Agent SDK reference - TypeScript](https://code.claude.com/docs/en/agent-sdk/typescript.md): Complete API reference for the TypeScript Agent SDK, including all functions, types, and interfaces.
 - [TypeScript SDK V2 session API (removed)](https://code.claude.com/docs/en/agent-sdk/typescript-v2-preview.md): Reference for the removed V2 TypeScript Agent SDK session API, with session-based send/stream patterns for multi-turn conversations.
 - [Agent SDK reference - Python](https://code.claude.com/docs/en/agent-sdk/python.md): Complete API reference for the Python Agent SDK, including all functions, types, and classes.
-- [Migrate to Claude Agent SDK](https://code.claude.com/docs/en/agent-sdk/migration-guide.md): Guide for migrating the Claude Code TypeScript and Python SDKs to the Claude Agent SDK
 
 ## What's New
 
