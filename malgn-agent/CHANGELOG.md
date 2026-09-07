@@ -9,6 +9,17 @@
 
 ---
 
+## [1.8.31] — 2026-09-07
+
+전 정적검사(check-assets·check-docs·check-links·check-status) 결함 0 재검증 라운드에서
+확정된 결함 1건을 정정했습니다.
+
+### 수정
+- `evals/security-dev-stage-discipline/graders/delegates-to-security.md`가 이 저장소에만
+  있고 플러그인에는 번들되지 않는 `scripts/run-golden-eval-manual.mjs`를 파일:줄로 인용하고
+  있어 설치 직원은 그 근거를 열어볼 수 없었습니다. 같은 내용을 파일:줄 인용 없이 산문으로
+  풀어써 근거는 보존하면서 참조를 제거했습니다.
+
 ## [1.8.30] — 2026-09-02
 
 v1.8.26~v1.8.28 세 라운드(golden eval 신규 케이스 3종·scorecard 회차 표기 통일)를
