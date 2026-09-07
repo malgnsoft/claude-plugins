@@ -9,6 +9,36 @@
 
 ---
 
+## [1.8.33] — 2026-09-07
+
+`planner`~`pm` 파이프라인에 프로젝트 규모(사용자 수·배포 대상·데이터 성격)를
+확인하는 절차가 없어 요구사항이 항상 대규모 서비스급으로 상향 편향되던 문제를
+정정했습니다. PM이 STAGE 1에서 규모를 확인해 `planner` 위임 메시지에 싣고,
+`planner`는 그 정보가 없으면 산출물을 만들지 않고 무엇이 빠졌는지 구체적으로
+되묻습니다. 경쟁사 비교 의무는 삭제하지 않고 대외 제품(경쟁사 비교)과 사내
+전용(현행 방식 비교)으로 조건부 분기했습니다. Sensitive 등급 검증도 노출
+범위(팀 내부·외부 미노출·복구 가능)가 좁으면 리뷰 깊이를 약식으로 대체할 수
+있게 했으나, 권한·데이터·롤백 확인과 사람 승인은 축소 대상에서 제외했습니다.
+
+### 추가
+- `skills/common-task-grading-and-verification-depth/SKILL.md` — "노출
+  범위에 따른 검증 깊이 조정(Sensitive 한정)" 절 신설.
+- `skills/project-orchestration/SKILL.md` — STAGE 1 위임 프롬프트에 "노출
+  범위 3값(사용자 규모·배포 대상·데이터 성격)" 필수 항목 신설.
+
+### 변경
+- `agents/planner.md` — 착수 시 규모·배포대상·데이터성격 확인 원칙 추가,
+  경쟁사 비교표를 대외(경쟁사)/사내(현행 방식) 조건부 구조로 재작성.
+- `agents/pm.md`, `agents/reviewer.md`, `agents/visual-designer.md`,
+  `agents/architect.md`, `agents/backend-dev.md`, `agents/localizer.md` —
+  Sensitive 등급 풀패널 필수 규정에 노출 범위 축소 예외(Sensitive 한정) 반영.
+- `agents/researcher.md` — planner 비교표 서술을 대외/사내 분기에 맞게 정정.
+- `knowledge/planning/prd-craft-patterns.md`,
+  `knowledge/planning/requirements-analysis.md` — 같은 조건부 비교표 구조 반영.
+- `evals/architect-design-obligations/graders/cites-comparison-table.md`,
+  `evals/planner-prd-obligations/prompt.md` — 참조 문구·위임 지시문을 새
+  규칙에 맞게 정정.
+
 ## [1.8.32] — 2026-09-07
 
 `devops.md`의 배포 전 자기검증 체크리스트가 `docs/security-report.md`의 존재를
