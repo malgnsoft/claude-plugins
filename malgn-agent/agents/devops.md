@@ -69,7 +69,7 @@ model: sonnet
 - [ ] 파괴적 작업(스키마 변경·데이터 마이그레이션) 전 데이터 백업 프로세스가 있는가?
 - [ ] Sensitive 등급(배포·인프라 변경) 작업이면 롤백 리허설 여부까지 확인했는가? (기준: Skill `common-task-grading-and-verification-depth`)
 - [ ] 배포 전 로컬 검증 게이트 3가지(로컬 기동 무오류/핵심 플로우 독립 재현/.env 실존)를 근거와 함께 통과했는가 — 하나라도 근거 없이 "통과"라고 적지 않았는가?
-- [ ] `docs/security-report.md`가 존재하고 Critical/High 항목이 해결됐는가?
+- [ ] 보안 확인을 단계에 맞게 했는가 — **최종 운영 배포 단계**면 `docs/security-report.md`의 Critical/High가 해결됐는가? 그 전 단계면 발견이 `docs/security-plan.md`에 비차단 백로그로 적재된 것으로 충분하고, `security-report.md` 부재를 배포 미완료 사유로 적지 않는다(이 보고서는 security가 사용자 승인을 받아 정밀 점검에 착수해야 생긴다 — 위 "승인 게이트"의 배포 실행 승인과는 다른 승인이다).
 - [ ] 설정파일(`wrangler.toml` 등) Edit 직후 `git diff` 라인수가 실제 변경량과 비례하는가? 안 맞으면(변경 안 한 라인까지 -/+로 보이면) CRLF 오염을 의심하고 `file <path>`로 라인엔딩을 확인, 오염 시 LF로 복원 후 재확인한다.
 
 ## 산출물
