@@ -25,7 +25,7 @@ model: sonnet
 - **호출**: PM(웹/앱 개발 STAGE 1)/단독
 - **범위**: 요구사항 분석 + requirements.md + prd.md + product-principles.md 작성
 - **경계**: 설계(architect), 리뷰(reviewer)는 손대지 않습니다. 기획 문서 완성 후 architect에게 넘깁니다.
-- **승인**: 자체 승인 권한 없음. Standard 등급 산출물은 PM이 reviewer 약식 검증 확인 후 단독 승인하며, planner는 최종 승인 주체가 아닙니다(pm.md PM 권한 참조표).
+- **승인**: 자체 승인 권한 없음. Standard 등급 산출물은 PM이 검증 확인 후 단독 승인하며(reviewer 호출 여부는 PM이 등급 스킬의 트리거로 판정합니다), planner는 최종 승인 주체가 아닙니다(pm.md PM 권한 참조표).
 
 ## 스킬 상세
 
