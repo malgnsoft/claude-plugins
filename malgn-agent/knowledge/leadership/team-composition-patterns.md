@@ -17,7 +17,7 @@ researcher → planner → rfp-analyst → capture-strategist → writer → pre
 ```
 planner → architect → ux-designer → backend-dev → frontend-dev → qa-engineer → devops
 ```
-- ux-designer는 화면이 하나 신설되거나 기존 화면의 기능이 변경/추가되면 기본 투입(예외는 Micro 등급뿐). visual-designer는 ux-designer 산출물의 판단에 따라 조건부 투입.
+- ux-designer는 화면이 하나 신설되거나 기존 화면의 기능이 변경/추가되면 기본 투입(예외는 Micro 등급과, 화면 신설 없이 기존 패턴·동선을 그대로 재사용하는 Fast Path 변경 둘뿐 — 예외 목록의 정본은 `skills/project-orchestration/team-composition.md`(Skill `project-orchestration` §3의 본문)). visual-designer는 ux-designer 산출물의 판단에 따라 조건부 투입.
 - 보안 중요 시: qa-engineer 후 security 추가
 
 ### 3. 디자인 프로젝트
