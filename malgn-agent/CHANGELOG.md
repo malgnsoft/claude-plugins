@@ -9,6 +9,45 @@
 
 ---
 
+## [1.8.34] — 2026-09-08
+
+작업 등급 판정이 파일 개수를 기준으로 삼아 간단한 변경도 다중 에이전트
+위임·WBS·reviewer 호출로 지나치게 무겁게 처리되던 문제를 정정했습니다.
+등급 판정을 위험 도메인(인증·권한·결제·개인정보·DB migration·비가역
+데이터 변경·배포 인프라·외부 공개 API contract·외부 사용자 영향)과
+가역성 기준으로 바꾸고, "애매하면 무거운 쪽"은 위험이 불확실할 때만
+적용되도록 방법의 불확실성과 분리했습니다. Standard 등급 안에 신규
+등급이 아닌 Fast Path 경로를 도입해, 5조건(요구사항 명확·새 설계결정
+불요·영향범위 국소·쉬운 rollback·고위험 도메인 없음)을 모두 충족하면
+담당 에이전트 1명 위임만으로 WBS·상류 단계(planner/architect)·별도
+reviewer 호출을 생략합니다. 착수 후 조건이 깨졌을 때 담당 에이전트가
+즉시 멈추고 PM에게 알리는 이탈 규칙과, 그 의무를 위임 메시지에 싣는
+PM 쪽 발신 규칙을 함께 뒀습니다. Standard(Fast Path 아닌 경우)의
+reviewer 호출도 자동에서 트리거 기반 조건부로, WBS 필수생성 트리거도
+"Standard 이상이면 무조건"에서 다세션·다담당자·마일스톤 추적 등으로
+좁혔습니다. Sensitive·Exploration·Refactor 등급의 판정 기준과 검증
+강도는 변경하지 않았습니다.
+
+### 추가
+- `skills/common-task-grading-and-verification-depth/SKILL.md` — 위험·
+  가역성 기준 "빠른 판단", "Standard의 Fast Path", "Standard(Fast Path
+  아님)의 reviewer 호출 — 조건부" 절 신설.
+- `docs/decision/task-grading-fast-path-examples.md` — 등급 판정 기준
+  변경 전후 대표 작업 11건 분류 대조표.
+
+### 변경
+- `agents/pm.md` — WBS 생성 트리거 축소, Standard의 reviewer 호출 조건부화,
+  Fast Path 위임 시 5조건·이탈 보고 의무를 위임 메시지에 싣는 규칙 추가.
+- `agents/{finance,planner,researcher,reviewer,ux-designer,visual-designer}.md`,
+  `hooks/pm-orchestration-block.md`,
+  `knowledge/common/agent-common-principles.md`,
+  `knowledge/leadership/team-composition-patterns.md`,
+  `skills/project-orchestration/{SKILL.md,team-composition.md}` — 위
+  변경과 정합하도록 인용부 갱신(같은 규칙을 다시 풀어쓰지 않고 정본
+  포인터로 통일).
+
+---
+
 ## [1.8.33] — 2026-09-07
 
 `planner`~`pm` 파이프라인에 프로젝트 규모(사용자 수·배포 대상·데이터 성격)를
