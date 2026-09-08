@@ -66,7 +66,7 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/check-wbs-warnings.mjs" --previous wbs-2026-08-0
 |------|----------|-----------|-------------|
 | STAGE 1 (기획) | planner | - | `docs/requirements.md`, `docs/prd.md`, `docs/product-principles.md`(선택 — 있으면 이후 전 에이전트가 참조) |
 | STAGE 2 (설계) | architect | requirements.md, prd.md, product-principles.md(있으면) | `docs/architecture.md`, `docs/tech-stack.md`, `docs/api-spec.md`, `docs/data-model.md` |
-| 디자인 트랙(기본 투입 — Micro 등급 제외 항상, 화면 신설/기존 화면 기능변경 시) | ux-designer | prd.md, requirements.md | `docs/design/ux-flow.md`, `docs/design/wireframes.md`, `docs/design/ia.md`(참조: `${CLAUDE_PLUGIN_ROOT}/knowledge/design/ux-design-guide.md`) — wireframes.md에 "visual-designer 필요 여부 + 근거" 명시 필수 |
+| 디자인 트랙(화면 신설/기존 화면 기능변경 시 기본 투입 — 예외는 Micro 등급과 화면 신설 없이 기존 패턴·동선을 재사용하는 Fast Path 변경뿐, §3) | ux-designer | prd.md, requirements.md | `docs/design/ux-flow.md`, `docs/design/wireframes.md`, `docs/design/ia.md`(참조: `${CLAUDE_PLUGIN_ROOT}/knowledge/design/ux-design-guide.md`) — wireframes.md에 "visual-designer 필요 여부 + 근거" 명시 필수 |
 | 디자인 트랙(ux-designer가 설계 산출물에서 필요 여부 판단: 신규 모듈 또는 비관리자 사용자단 페이지면 필요, 기존 스타일가이드 준수 관리자단 화면이면 생략 가능 — 기존 enum 2개 이상/화면 5개 초과 조건은 보조 신호로 유지) | visual-designer | - | `docs/design/design-system.md`, `docs/design/brand.md`(브랜딩 프로젝트인 경우만) |
 | STAGE 3 (구현) | backend-dev | architecture.md, api-spec.md, data-model.md | 코드 + `docs/security-plan.md`(누적 기록, security와 공유) |
 | STAGE 3 (구현) | frontend-dev | architecture.md, api-spec.md | `docs/design/publishing-style-guide.md`(프로젝트에 없으면 `${CLAUDE_PLUGIN_ROOT}/knowledge/design/publishing-style-guide-template.md`를 복사해 그 자리에서 생성 — 백지 작성 금지, 이후 전 화면이 이를 따름) |

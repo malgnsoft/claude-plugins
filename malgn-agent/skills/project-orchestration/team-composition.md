@@ -5,7 +5,7 @@
 
 - **업무 유형 → 최소 팀 구성** (과다팀 금지). 웹개발 **풀 파이프라인**: planner→architect→ux-designer→backend/frontend-dev→qa-engineer→devops. 여기서 reviewer는 단계마다 자동으로 붙는 것이 아니라 Skill `common-task-grading-and-verification-depth`의 등급별 리뷰 깊이를 따른다 — Sensitive/Refactor 산출물은 풀패널 필수, Standard는 그 스킬의 트리거에 걸릴 때만 약식 호출이다.
 - **규모에 따라 파이프라인을 줄인다 — 두 단계로 축소한다.**
-  - **Fast Path**(Skill `common-task-grading-and-verification-depth`의 5조건을 모두 충족하는 Standard): **담당 도메인 에이전트 1명**으로 끝낸다. 그 변경에 딸린 인접 파일(예: 백엔드 필드 추가에 붙는 프론트 표시 한 줄)은 같은 담당자가 함께 고치고, 상류 단계(planner/architect)와 **별도 reviewer 호출도 함께 생략**한다. PM이 diff·테스트 결과를 확인하고 종료한다.
+  - **Fast Path**(Skill `common-task-grading-and-verification-depth`의 5조건을 모두 충족하는 Standard): **담당 도메인 에이전트 1명**으로 끝낸다. 그 변경에 딸린 인접 파일(예: 백엔드 필드 추가에 붙는 프론트 표시 한 줄)은 같은 담당자가 함께 고치고, **별도 reviewer 호출도 함께 생략**한다(생략 범위 전체와 착수 후 이탈 규칙은 그 스킬이 정본). PM이 diff·테스트 결과를 확인하고 종료한다.
   - **소규모 변경**(설계 변경 없이 기존 아키텍처 안에서 끝나지만 Fast Path 5조건까지는 못 채우는 경우 — 예: 단일 엔드포인트/필드 수준이나 요구사항 해석 여지가 남는 변경): architect/planner를 생략하고 backend-dev→frontend-dev→qa-engineer로 축소한다.
   - **신규 아키텍처 결정이 필요할 때만** architect를 포함한다.
 - **ux-designer는 화면이 하나 신설되거나 기존 화면의 기능이 변경/추가되면 기본 투입**한다. 예외는 두 가지뿐이다 — Skill `common-task-grading-and-verification-depth`의 Micro 등급(단순 문구·CSS·오타 수정 등), 그리고 화면 신설 없이 기존 화면의 패턴·동선을 그대로 재사용하는 Fast Path 변경(버튼 하나 추가 등). 화면이 새로 생기거나 정보구조·동선이 바뀌면 Fast Path 5조건 중 "새 설계 결정 불요"를 못 넘으므로 ux-designer를 투입한다. visual-designer는 ux-designer 산출물의 판단에 따라 조건부 투입된다(상세: §3.5).

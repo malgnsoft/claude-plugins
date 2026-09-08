@@ -18,15 +18,17 @@
 | 3 | 입력 validation 규칙 추가(기존 검증 계층에 필드 규칙 1건) | Standard — backend-dev + reviewer 약식 + WBS | Standard **Fast Path** — backend-dev 1명 | 요구사항 명확(허용값이 정해져 있음), 기존 검증 패턴 재사용. 인증·권한 판단이 섞이면 ⑤ 위반 |
 | 4 | 에러 처리 추가(기존 에러 응답 봉투·코드 체계 그대로 사용) | Standard — backend-dev + reviewer 약식 | Standard **Fast Path** — backend-dev 1명 | 기존 규약 적용일 뿐 새 결정 없음. 새 에러 코드 체계를 세우면 ②에 걸려 일반 Standard |
 | 5 | 목록 화면에 버튼/조건부 표시 하나 추가(기존 화면·컴포넌트 패턴 재사용) | Standard — **ux-designer 기본 투입** + frontend-dev + qa-engineer + reviewer 약식 | Standard **Fast Path** — frontend-dev 1명(ux-designer 생략) | 화면 신설이 없고 동선·정보구조가 그대로라 ②를 넘는다. 화면이 새로 생기거나 동선이 바뀌면 ux-designer 투입 |
-| 6 | 명백한 버그 수정(재현 로그 있고 원인 확정, 1~2줄) | Standard — 담당 dev + reviewer 약식 + WBS(탐색→수정→테스트 3단계로 읽혀 등록) | Standard **Fast Path** — 담당 dev 1명, WBS 생략 | 한 세션 단일 흐름이라 WBS 대상 아님. 원인이 아직 불확실하면 Exploration |
+| 6 | 명백한 버그 수정(재현 로그 있고 원인 확정, 1~2줄) | Standard — 담당 dev + reviewer 약식. WBS는 "trivial/1단계 예외"에 해당하는지 판단이 갈려 관행적으로 등록돼 왔다 | Standard **Fast Path** — 담당 dev 1명, WBS 생략 | 한 세션 단일 흐름이라 WBS 대상 아님. 원인이 아직 불확실하면 Exploration |
 | 7 | 기존 로직의 작은 조건 변경(목록 기본 정렬 기준 1건) | Standard — 담당 dev + reviewer 약식 | Standard **Fast Path** — 담당 dev 1명 | 국소·가역. 정렬이 권한별로 달라지는 요구면 ⑤(권한)에 걸린다 |
 | 8 | 2~5개 파일에 걸친 국소 수정(같은 기능의 상수·문구를 호출부까지 반영) | Standard — "여러 파일"이라 상향 압력, 다중 에이전트 체인 + reviewer 약식 | Standard **Fast Path** — 담당 dev 1명(인접 파일 함께 수정) | **파일 개수는 판정 축이 아니다.** 변경의 성격이 하나이고 영향이 그 기능 안에서 닫힌다 |
-| 9 | (대조군) 로그인 세션 만료 시간 변경 — 코드 1파일 | Standard(단일 파일이라 가볍게 판정될 여지) | **Sensitive** — 위임 + Impact Check + reviewer 풀패널 + 사람 승인 | 인증 도메인이라 ⑤ 위반. 파일이 하나여도 Fast Path 대상이 아니다 |
+| 9 | (대조군) 로그인 세션 만료 시간 변경 — 코드 1파일 | Sensitive(판정표에 `인증`이 이미 있어 변경 전에도 같은 판정. 단 "단일 파일→Micro" 줄과 충돌해 판단이 갈릴 여지가 있었다) | **Sensitive** — 위임 + Impact Check + reviewer 풀패널 + 사람 승인 | 인증 도메인이라 ⑤ 위반. 파일이 하나여도 Fast Path 대상이 아니다 |
 | 10 | (대조군) 주문 테이블에 컬럼 추가 + 마이그레이션 실행 | Standard/Sensitive 사이에서 흔들림 | **Sensitive** — 풀패널 + 사람 승인 + 롤백 확인 | DB migration·비가역 데이터 변경이라 ⑤ 위반 |
 | 11 | (대조군) 검색 필터 기능 신설 — 요구사항에 해석 여지가 있고 여러 모듈이 얽힘 | Standard — 풀 파이프라인 + reviewer 자동 호출 | **일반 Standard**(Fast Path 아님) — planner/담당 dev + qa-engineer, **reviewer 약식 호출**(트리거: 해석 여지·모듈 얽힘·회귀 위험) | ①②③ 불충족. Fast Path가 아닌 Standard에서도 reviewer는 트리거에 걸릴 때 호출된다 — 이 건은 걸린다 |
 
 ## 이 변경으로 줄어드는 것 / 줄지 않는 것
 
 **줄어드는 것**: 1~8번 유형에서 상류 단계(planner/architect), ux-designer 기본 투입, reviewer 자동 호출, WBS 등록·갱신이 사라진다. 위임은 남지만 담당 1명으로 수렴한다.
+
+**교환비(정적 비용 순증 vs 런타임 절감)**: 이 변경으로 `malgn-agent/` 정적 총량은 **+9,304 B** 늘었다(agents +2,199 · skills +6,683 · knowledge+hooks +422. 이 중 상시비용 계열은 `common-task-grading-and-verification-depth` +5,306 B와 `pm.md` +1,246 B). 그 대가로 위 1~8번 유형 한 건마다 상류 에이전트 호출 1~3회, reviewer 호출 1회(페르소나 파일 작성·보고서 포함), WBS 등록·갱신 호출 2회 이상이 사라진다 — 작업 한 건의 절감이 정적 순증을 넘는다. 이 저장소 원칙상 **비용이 늘어도 성능 효과가 있으면 채택**이므로 수치는 판단 근거로 적어둔다.
 
 **줄지 않는 것**: 9~10번 같은 고위험 도메인은 그대로 Sensitive이고 풀패널·사람 승인·롤백 확인이 유지된다. 11번처럼 해석 여지·회귀 위험이 있는 Standard도 reviewer를 부른다. 캡처 깊이(화면 성격이 정함)와 Sensitive의 노출 범위 축소 규칙, 동일 대상 재검토 규칙은 이번 변경의 대상이 아니다.
