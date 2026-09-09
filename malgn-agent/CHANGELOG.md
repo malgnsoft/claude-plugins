@@ -9,6 +9,31 @@
 
 ---
 
+## [1.8.36] — 2026-09-09
+
+`agents/pm.md`는 PM 서브에이전트를 띄울 때마다 43.5 KB가 통째로
+로드됐습니다. 그중 특정 상황에서만 쓰이는 절차를 조건부 스킬로 옮기고,
+같은 지시가 pm.md 안에서 두세 곳에 반복되던 것을 한 곳으로 합쳐
+39.2 KB로 줄였습니다(호출당 상시 비용 기준 최대 −8.5%).
+
+### 변경
+- `agents/pm.md` — 중복 지시 3건(검증 실무 노트·배포 검증 게이트·git
+  안전) 병합, 산출물 유형별 추가 검증 5종과 진행 상태 라벨 대조 4갈래를
+  스킬 트리거 문구로 축약.
+- `agents/reviewer.md` — 전역 자산 승격 절차 참조 항번호 오류 정정.
+- `skills/project-orchestration/`, `skills/domain-git-safety-and-concurrency/`
+  — 위에서 옮긴 절차의 정본을 흡수(`verification-by-output-type.md`
+  신설).
+- `skills/domain-product-body-authoring-rules/SKILL.md` — 핵심 원칙과
+  학습 자료에 같은 지시가 중복될 때 어느 쪽을 정본으로 남길지의 병합
+  방향 규칙 신설.
+
+### 도구
+- `scripts/validate-agent-assets.mjs` — 산출물 유형 열거가 pm.md·스킬
+  색인·부록 세 곳에서 값으로 어긋나면 잡는 드리프트 검사 추가.
+
+---
+
 ## [1.8.35] — 2026-09-09
 
 보안이 걸린 변경마다 "구조를 확정할지 강도를 확인할지"가 불명확해 저위험
