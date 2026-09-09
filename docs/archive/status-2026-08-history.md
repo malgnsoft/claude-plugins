@@ -666,3 +666,13 @@ trainer 위임. 대상 4곳: `skills/project-standards/SKILL.md` 41·133행, `bi
 - `bin/new-project.mjs:204`가 생성하는 CLAUDE.md의 "세션에 'STATUS.md 크기 확인해줘'라고 요청하면 그 스킬이 실행한다" 문구가 `project-standards` 스킬 description의 트리거 목록에 등록돼 있지 않다.
 - `skills/project-standards/SKILL.md:42`의 정본 예시 커맨드에 아직 `--require`가 빠져 있다(체크리스트는 고쳤지만 문서 경로 사용자는 여전히 SKIP으로 통과 가능).
 - `agents/pm.md:94`의 `issue_record` 백업 기록 지시가, hub MCP 자체를 쓸 수 없는 실행에서는 분기가 없다.
+
+## v1.8.34 배포 (2026-09-08, origin/main `b10a36a`) — 등급판정 위험·가역성 기준화 + Standard Fast Path
+
+파일 개수 기준 등급판정이 간단한 작업을 다중위임·WBS·reviewer 자동호출로 과잉처리하던 문제를 사용자 승인받아 개선. trainer 1초안 → reviewer 풀패널+evaluator 병렬 3라운드(반려2·PASS1) 거쳐 확정. 등급 판정을 위험 도메인(인증·권한·결제·개인정보·DB migration·비가역 데이터 변경·배포 인프라 등)과 가역성 기준으로 바꾸고, "애매하면 무거운 쪽"은 위험이 불확실할 때만 적용되도록 방법의 불확실성과 분리했다. Standard 안에 신규 등급이 아닌 Fast Path 경로를 도입해 5조건(요구사항 명확·새 설계결정 불요·영향범위 국소·쉬운 rollback·고위험 도메인 없음)을 모두 충족하면 담당 에이전트 1명 위임만으로 WBS·상류 단계·별도 reviewer 호출을 생략한다. Sensitive·Exploration·Refactor 등급의 판정 기준과 검증 강도는 변경하지 않았다. 전 정적검사 ERROR 0 유지.
+
+## v1.8.35 배포 (2026-09-09, origin/main `fa4e55a`) — 보안 구조적 결정과 로직 강도 분류 기준 신설
+
+사용자와의 대화에서 "매 프로젝트마다 처음부터 너무 복잡하게 만드는" 패턴의 원인을 좁힌 결과: 인증 게이트 위치·공개 경로 경계·소유권/테넌트 필드 존재 같은 "구조적 결정"은 나중에 되돌리기 비싸 초기 설계 단계에 확정해야 하지만, 권한 세분화·레이트리밋·입력검증 촘촘함·감사로그처럼 접근 경계를 그대로 둔 채 촘촘함만 조절하는 "로직 강도"는 대부분 백엔드 내부 구현이라 기능 구현과 함께 점진적으로 강화해도 재작업 비용이 낮다는 결론에 도달, 사용자가 이 구분의 반영을 승인(malgnai-hub decision 기록). trainer 1초안 → reviewer 풀패널 1차 Amber(Major 4)/evaluator CONDITIONAL PASS(2 FAIL) → 반영 → 2차 reviewer Green/evaluator PASS(7/7) → Minor 권고 반영 1회로 마무리. `skills/domain-backend-api-security/SKILL.md`에 "언제 정하는가" 절을 분류 정본으로 신설하고, `common-task-grading-and-verification-depth`·`architect.md`·`backend-dev.md`·`pm.md`·`team-composition.md`·`domain-serverless-edge-api-security`에는 목록을 복제하지 않고 포인터만 반영. PM이 diff 7파일 전문을 직접 대조하고 `check-assets`를 브랜치·base 양쪽에서 실행해 동일함(ERROR 0·WARN 16·INFO 6)을 확인한 뒤 병합·배포했다. 강도 항목만으로는 작업 등급이 올라가지 않으나, 권한 확대·소유권 필터 신설/우회·최소 보안 요건을 깨는 변경은 이름이 강도처럼 보여도 구조적 결정으로 취급해 Sensitive 그대로 둔다. Sensitive/Refactor 등급과 실제 고위험 도메인의 검증 강도는 변경하지 않았다.
+
+**보류 백로그 1건**: 미룬 보안 로직 강도 항목의 적재처(`docs/security-plan.md`)를 어느 문서가 정본으로 서술할지 trainer(`agents/security.md`)와 evaluator(`team-composition.md`) 의견이 갈려 이번 라운드 범위에서 제외. 별도 라운드에서 재검토.
