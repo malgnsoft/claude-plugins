@@ -45,10 +45,17 @@ const VALID_MEMORY = new Set(['user', 'project', 'local']);
 // 1순위는 성능이고 사이즈 축소는 수단일 뿐이다 — 지울 수 있는 것은 성능에 기여하지 않는 것
 // (중복 서술·죽은 참조·미실행 절차)뿐이며, 줄 수 감소 자체는 개선 근거가 아니다.
 // 따라서 이 검사가 잡는 것은 초과 자체가 아니라 **아무도 근거를 적지 않은 초과**다.
-const META_AGENTS = new Set(['pm', 'trainer', 'evaluator', 'reviewer']);
+const META_AGENTS = new Set(['trainer', 'evaluator', 'reviewer']);
 const BUDGET_META_KB = 15;
 const BUDGET_SPECIALIST_KB = 10;
 const BUDGET_SKILL_KB = 25;
+// pm.md는 나머지 메타 에이전트와 같은 15 KB 틀에 넣지 않는다 — 권한표·승인 게이트·역할경계
+// (pm-md-axis-split 설계의 "게이트축") 자체가 훼손 금지 대상이라 옮길 수 없고, 여러 세션에
+// 동시 위임되는 유일한 오케스트레이터라는 구조가 요구하는 하한이 이미 ~24 KB다. 15 KB 틀을
+// 유지한 채 사유서로만 방어하면 매 라운드가 "더 줄일 수 있다"는 잘못된 전제로 시작한다 —
+// 이 값은 그 구조적 하한(게이트+상시판단축+프레임)에 맞춘 것이지 pm.md 실측치에 맞춘 것이
+// 아니다. 이 값을 넘는 초과는 여전히 사유서를 요구한다(무조건 면제가 아니다).
+const BUDGET_PM_KB = 25;
 
 // 예산 초과 사유서 레지스트리 — 사유서가 실재하고 그 문서가 변호하는 크기 안에 있으면
 // WARN이 아니라 INFO로 남긴다. "지워서 조용해지는" 대신 "근거를 적어 조용해지는" 경로를 연다.
@@ -1116,7 +1123,8 @@ function main() {
     checkUnresolvableIds(rel, body);
 
     // 컨텍스트 예산 (상시 비용)
-    checkContextBudget(rel, `agents/${base}.md`, bytes, META_AGENTS.has(base) ? BUDGET_META_KB : BUDGET_SPECIALIST_KB, AGENT_BUDGET_REMEDY);
+    const budgetKb = base === 'pm' ? BUDGET_PM_KB : META_AGENTS.has(base) ? BUDGET_META_KB : BUDGET_SPECIALIST_KB;
+    checkContextBudget(rel, `agents/${base}.md`, bytes, budgetKb, AGENT_BUDGET_REMEDY);
     scanAbsolutePaths(rel, body);
   }
 
