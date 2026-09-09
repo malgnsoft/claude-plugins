@@ -33,3 +33,5 @@ reviewer-persona-panel-standard §5 표준 형식 준수 — 지적마다 파일
 
 ## 적용 이력 (Application Log)
 - 2026-08-10 / target_id: reviewer-repeat-review-reduction / 1차 (review-reviewer-repeat-review-reduction-2026-08-10.md): 축소/증분 메커니즘 자체의 유지보수 지속가능성·문서 정합성 최초 검증
+
+- 2026-09-09 / target_id `pm-md-slimming-p1p2` / 1차(최초, Refactor 풀패널) / PM 텍스트 반환(보고서 .md 미저장 — 호출자 지시) — 역할개념 수준 재사용. 대조축: "이 재배치가 다음 라운드·동시세션에서도 어긋나지 않고 유지되는가." 실측 드리프트 표면 2건 — ①산출물 유형 5종 이름이 `agents/pm.md`:138 · `skills/project-orchestration/SKILL.md`:111 · `verification-by-output-type.md` 체크박스 **3곳에 값으로 중복**(중복 제거 라운드가 새 3중 중복을 만든 구조) ②`docs/refactor/pm-budget-rationale.md`:32가 이번 라운드가 해소한 "리뷰 보고서 Minor #5"를 "재확인: 현재 스킬 본문에 여전히 실재"로 단정한 채 남아 있어, 다음 세션이 이미 끝난 일을 미해소로 읽는다(같은 문서 :55의 재감축 조건도 부분 해소 미반영, 변호값 39.9KB ↔ 실측 38.9KB). ③앵커 `§1-1`은 스킬 heading `### 1-1.`과 대응하나 이를 검사하는 자동 게이트는 없다.
