@@ -894,6 +894,50 @@ function checkSpawnWithoutAgentTool(relPath, selfName, data, body, agentNames) {
   }
 }
 
+// pm.md와 project-orchestration/SKILL.md는 같은 산출물 유형 열거(①~⑤)를 값으로 중복 보유하고,
+// verification-by-output-type.md 부록은 그 개수만큼의 체크박스를 갖는다 — 셋 중 하나만 고치면
+// "지금 이게 그 유형인지" 판정 문구와 실제 체크리스트가 어긋난다. 목록 자체는 pm.md가 스킬을
+// 열지 않고도 해당 여부를 판정하는 데 필요해 없앨 수 없으므로(§1의 감량 금지 이유와 같다),
+// 세 자리를 낱낱이 대조하는 대신 이 드리프트만 잡는다.
+function checkVerificationTypeEnumDrift(pluginRoot) {
+  const pmPath = path.join(pluginRoot, 'agents', 'pm.md');
+  const skillPath = path.join(pluginRoot, 'skills', 'project-orchestration', 'SKILL.md');
+  const appendixPath = path.join(pluginRoot, 'skills', 'project-orchestration', 'verification-by-output-type.md');
+  if (!fs.existsSync(pmPath) || !fs.existsSync(skillPath) || !fs.existsSync(appendixPath)) return;
+
+  // pm.md에는 ①~⑤ 열거가 이것 말고도 더 있다(WBS 등록 5조건 등) — "①설계 산출물"로
+  // 시작을 못박아야 그 열거들과 섞이지 않는다.
+  const extractEnum = (text) => {
+    const m = /①설계 산출물([\s\S]*?)중 하나에 해당하면/.exec(text);
+    return m ? `①설계 산출물${m[1]}`.replace(/\s+/g, ' ').trim() : null;
+  };
+  const pmEnum = extractEnum(fs.readFileSync(pmPath, 'utf8'));
+  const skillEnum = extractEnum(fs.readFileSync(skillPath, 'utf8'));
+  const pmRel = path.relative(REPO_ROOT, pmPath);
+  const skillRel = path.relative(REPO_ROOT, skillPath);
+  const appendixRel = path.relative(REPO_ROOT, appendixPath);
+
+  if (!pmEnum || !skillEnum) {
+    warn('VERIFICATION_TYPE_ENUM_MISSING', pmEnum ? skillRel : pmRel,
+      '산출물 유형별 추가 검증(①~⑤) 열거가 사라졌다 — pm.md 자기검증 체크리스트와 ' +
+      'project-orchestration/SKILL.md §5-6이 각자 판정용으로 이 열거를 값으로 보유해야 한다.');
+    return;
+  }
+  if (pmEnum !== skillEnum) {
+    warn('VERIFICATION_TYPE_ENUM_DRIFT', `${pmRel} ↔ ${skillRel}`,
+      `산출물 유형 열거가 두 파일에서 어긋났다 — pm.md: "${pmEnum}" / SKILL.md: "${skillEnum}". ` +
+      '한쪽만 고치면 "지금 이 유형에 해당하는가" 판정과 실제 부록 체크리스트가 어긋난다. 양쪽을 같은 문구로 맞춘다.');
+  }
+
+  const enumCount = (pmEnum.match(/[①②③④⑤⑥⑦⑧⑨]/g) || []).length;
+  const appendixCount = (fs.readFileSync(appendixPath, 'utf8').match(/^- \[ \] \*\*/gm) || []).length;
+  if (enumCount > 0 && enumCount !== appendixCount) {
+    warn('VERIFICATION_TYPE_COUNT_DRIFT', appendixRel,
+      `pm.md 열거는 유형 ${enumCount}개인데 부록 체크박스는 ${appendixCount}개다 — 유형을 추가·삭제했다면 ` +
+      `양쪽(${pmRel}, ${skillRel}, ${appendixRel})을 같은 라운드에서 맞춘다.`);
+  }
+}
+
 function main() {
   const opts = parseArgs(process.argv.slice(2));
   const pluginRoot = path.join(REPO_ROOT, opts.plugin);
@@ -1127,6 +1171,9 @@ function main() {
     checkAnchors(rel, body, pluginRoot, skillDirNames, sectionCache);
     checkUnresolvableIds(rel, body);
   }
+
+  // ── 특정 파일 간 값 중복 드리프트 ───────────────────────────────────
+  checkVerificationTypeEnumDrift(pluginRoot);
 
   // ── bin·hooks 소스의 조회 불가 식별자 + 참조 ───────────────────────
   // 본문(.md)만 훑으면 코드 주석에 남은 id가 그대로 통과한다 — 실제로 .md 224건을 다 지운 뒤에도
