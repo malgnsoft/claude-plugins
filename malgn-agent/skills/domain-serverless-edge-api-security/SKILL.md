@@ -7,7 +7,7 @@ description: Cloudflare Workers·Hono·D1·MCP 코드베이스를 점검할 때 
 
 **언제 이 문서를 여는가**: 점검 대상 코드베이스가 Cloudflare Workers·Hono·D1·MCP 스택일 때. 이 스택 특유의 함정만 다루며, 스택 불문 공통 항목은 아래 인접 문서가 맡는다.
 
-- 라우트 한 건의 일반 보안 요구사항(인증 게이트·4계층 입력검증·인젝션·테넌시) → Skill `domain-backend-api-security`
+- 라우트 한 건의 일반 보안 요구사항(인증 게이트·4계층 입력검증·인젝션·테넌시), 그리고 **"언제 정하는가"**(구조적 결정 vs 로직 강도 — 등급 판정·security 호출 여부에 쓰는 분류 정본) → Skill `domain-backend-api-security`
 - 프로젝트 전체 태세 정기 감사(의존성·SAST·계정 권한·암호화·로깅) → Skill `domain-security-audit-checklist`
 
 ## 강한 보안 산출물의 조건
