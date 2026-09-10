@@ -92,20 +92,21 @@ const BUDGET_RATIONALE = {
     doc: 'docs/refactor/evaluator-budget-rationale.md',
     bytes: 24362,
   },
-  // 재배치 라운드(de0eea9·0cfc736)로 45.1→39.9KB, 이후 중복 병합+조건부 블록 2건 스킬 이관
-  // 라운드로 40.8→40.2KB. 권고 예산(15KB)은 여전히 넘는다. 남은 분량은 재배치 라운드가
-  // "절대 훼손 금지"로 지정한 권한표·승인 게이트이거나 이미 조건부 비용으로 포인터화된
-  // 자리다 — 근거: docs/refactor/pm-budget-rationale.md.
+  // 재배치 라운드(de0eea9·0cfc736)로 45.1→39.9KB, 중복 병합+조건부 블록 2건 스킬 이관 라운드로
+  // 40.8→40.2KB, 4축(G/S/C/X) 분리 Round A로 40.2→37.0KB. pm.md 전용 예산(BUDGET_PM_KB=25KB)도
+  // 여전히 넘는다. 남은 분량은 G축(권한표·승인 게이트·역할경계, 훼손·이관 금지)과 S축(등급판정 등
+  // 상시판단, 압축만 허용)이다 — 근거: docs/refactor/pm-budget-rationale.md, 구조 결정 근거:
+  // docs/refactor/pm-md-axis-split-design.md.
   'agents/pm.md': {
     doc: 'docs/refactor/pm-budget-rationale.md',
-    bytes: 40178,
+    bytes: 36976,
   },
   // 재배치 라운드(de0eea9)로 30.0→25.8KB까지 줄었으나 권고 예산(15KB)을 여전히 넘는다.
   // 남은 분량은 핵심원칙·역할경계·실행모드표(trainer 정체성 정의) 중심이다 —
   // 근거: docs/refactor/trainer-budget-rationale.md.
   'agents/trainer.md': {
     doc: 'docs/refactor/trainer-budget-rationale.md',
-    bytes: 26998,
+    bytes: 27519,
   },
 };
 // 사유서가 변호하는 크기에서 이만큼까지는 드리프트로 보지 않는다(오탈자·1줄 규칙 수정 여유).

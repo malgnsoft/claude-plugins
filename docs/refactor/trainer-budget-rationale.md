@@ -2,8 +2,9 @@
 
 - 대상: `malgn-agent/agents/trainer.md`
 - 권고 예산: 15 KB (`AGENT_BUDGET_KB`)
-- 이 문서가 변호하는 실측 크기: **26,998 B (26.4 KB)**
-- 작성: PM. 근거: 재배치 라운드 커밋(`de0eea9`)의 실제 diff, `docs/reviewer/review-agents-md-relocation-2026-08-31.md`(풀패널 Amber 판정) 원문 대조, 현재 `trainer.md` 전문 재독.
+- 이 문서가 변호하는 실측 크기: **27,519 B (26.9 KB)**
+- 작성: PM. 근거: 재배치 라운드 커밋(`de0eea9`)의 실제 diff, `docs/reviewer/review-agents-md-relocation-2026-08-31.md`(풀패널 Amber 판정) 원문 대조, pm-md-axis-split Round A(M-2 반영 — 자기검증에 "PM 규율 두 벌 정합 확인" 1줄 추가) diff 대조, 현재 `trainer.md` 전문 재독.
+- 26,998 B 이후 증가분(+521 B)은 pm.md 역할경계·승인규칙을 고칠 때 `hooks/pm-orchestration-block.md`와의 정합을 자기검증 체크리스트에서 확인하게 하는 1줄이다 — 모드 무관하게 상시 발동해야 하는 도달성 게이트라 §1의 "훼손 금지 구역"과 같은 성격(트리거를 모드 1·4 전용 스킬로 내리면 모드 6 경로에서 못 본다).
 
 ## 1. 무엇으로 채워져 있는가 (섹션별 실측)
 
