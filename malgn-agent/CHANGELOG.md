@@ -9,6 +9,37 @@
 
 ---
 
+## [1.8.37] — 2026-09-10
+
+`agents/pm.md`를 4축(게이트축/상시판단축/상황축/독자불일치)으로 나눠
+어느 부분을 옮길 수 있고 어느 부분은 절대 못 옮기는지 정하는 구조
+결정을 내렸습니다. 그 기준에 따라 특정 상황에서만 필요한 절차 9건을
+이미 그 주제를 다루던 문서로 옮기고, pm.md에는 "언제 열어야 하는지"
+트리거만 남겼습니다(43.5 KB → 37.0 KB, 서브에이전트 호출당 상시 비용
+기준). pm.md는 승인 게이트·권한표를 항상 들고 있어야 하는 유일한
+오케스트레이터라, 예산 기준도 다른 메타 에이전트(15 KB)와 분리해
+전용 값(25 KB)으로 재설정했습니다.
+
+### 변경
+- `agents/pm.md` — 다각 토론 5단계·다중 대상 검증·설계 착수 전
+  스코프 확인·visual-designer 투입 확인 등 9건을 소유 문서로 이관,
+  트리거 문구만 유지.
+- `agents/trainer.md` — 자기검증에 "pm.md 역할경계·승인규칙을 고쳤다면
+  세션 시작 시 주입되는 규율 원본과의 정합을 확인했는가" 항목 추가.
+- `agents/visual-designer.md` — pm.md 원칙을 이름으로 인용하던 문장을
+  자립 문장으로 정정.
+- `knowledge/common/cross-validation-and-collaboration.md`,
+  `knowledge/leadership/pm-verification-field-notes.md`,
+  `skills/agent-upskill/`, `skills/project-orchestration/`,
+  `skills/domain-product-body-authoring-rules/` — 위에서 이관된
+  절차의 정본을 흡수.
+
+### 도구
+- `scripts/validate-agent-assets.mjs` — `agents/pm.md` 전용 예산
+  임계값(`BUDGET_PM_KB`) 도입, 다른 메타 에이전트(15 KB)와 분리.
+
+---
+
 ## [1.8.36] — 2026-09-09
 
 `agents/pm.md`는 PM 서브에이전트를 띄울 때마다 43.5 KB가 통째로
