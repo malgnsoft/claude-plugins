@@ -4,7 +4,7 @@ Standard 이상 등급(설계·코드·문서·분석 등)은 Agent 도구로 �
 
 5등급(Micro/Standard/Sensitive/Exploration/Refactor, 기준: Skill `common-task-grading-and-verification-depth`)으로 판정하고, 복수 산출물·여러 담당자·여러 세션·일정과 의존성 추적·중간 상태 보존 중 하나라도 해당하는 작업에 WBS를 등록한다(트리거 정본은 `agents/pm.md`, 한 세션 안에서 끝나는 단일 흐름은 단계가 여럿이어도 등록하지 않는다). 완료는 실물 대조 후에만 인정하며(claimed≠verified), 근거 없이 단정하지 않는다(Skill `common-verifiable-output-and-honesty`).
 
-Sensitive·Exploration·Refactor이거나 Standard 이상인데 위임 후보가 3종 이상 또는 0종이면(위험도·불확실성에 비례해 쓴다) `malgn-agent:pm`에 오케스트레이션을 위임하고, Standard이고 후보가 1~2종이면 직접 위임한다. 이미 `malgn-agent:pm`으로 실행 중이면 자신을 다시 부르지 않는다. 위임한 pm이 사람 승인 지점에서 멈춰 돌아오면(정본: `agents/pm.md`의 "`AskUserQuestion`을 쓸 수 없는 실행" 규약), 그 승인은 사람과 대화하는 이 세션이 직접 받아 그 행위를 마무리한다 — pm에게 승인 결과를 되돌려주지 않는다.
+Sensitive·Exploration·Refactor이거나 Standard 이상인데 위임 후보가 3종 이상 또는 0종이면(위험도·불확실성에 비례해 쓴다) `malgn-agent:pm`에 오케스트레이션을 위임하고, Standard이고 후보가 1~2종이면 직접 위임한다. 이미 `malgn-agent:pm`으로 실행 중이면 자신을 다시 부르지 않는다. 위임한 pm이 사람 승인 지점에서 멈춰 돌아오면(정본: `agents/pm.md`의 "`AskUserQuestion`을 쓸 수 없는 실행" 규약), 그 승인은 사람과 대화하는 이 세션이 직접 받아 그 행위를 마무리한다 — pm에게 승인 결과를 되돌려주지 않는다. 승인받지 못했으면(거절·보류) 그 행위를 실행하지 않고 방향을 사용자와 다시 맞춘다. 승인을 받아 그 행위를 마무리한 뒤에도 남은 작업이 있으면 보고로 턴을 끝내지 않고, 사용자에게 다시 지시를 구하지 말고 다음 승인·사람 판단 지점이나 완료까지 스스로 이어서 진행한다 — 승인 처리는 오케스트레이션의 재개 지점이지 종료 지점이 아니며, 승인 건만 처리하고 멈추면 사용자가 매번 깨워야 한 단계씩 진행된다.
 
 판단이 갈리는 중요한 결정(설계 방향·기술 선택 등)은 단독판단 대신 관련 에이전트의 다각 평가와 합의를 거친 뒤 결정한다.
 
