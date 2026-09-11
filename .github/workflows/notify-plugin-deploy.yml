@@ -1,1 +1,260 @@
-/Users/hopegiver/workspace/claude-plugins/.claude/worktrees/agent-ae82cf624d5be57da/.github/workflows/notify-plugin-deploy.yml
+name: Notify plugin deploy
+
+# main에 push될 때 malgn-agent 플러그인 버전이 실제로 바뀌었는지 확인하고,
+# 바뀐 경우에만 malgnai-hub(POST /api/plugin-deploys/notify)에 배포 사실을 통지한다.
+# 매 커밋마다 호출하면 같은 버전에 다른 commit_hash가 계속 기록돼 배포 이력이
+# 오염되므로, "push 이전 상태(before) 대비 plugin.json version이 바뀌었는가"만을
+# 기준으로 판별한다 — 커밋 메시지(`release: vX.Y.Z`) 컨벤션에는 의존하지 않는다
+# (컨벤션은 참고일 뿐 강제되지 않으므로 파싱 근거로 쓰면 깨지기 쉽다).
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# GitHub 공식 문서: 같은 concurrency 그룹에서는 진행 중이거나 대기 중(pending)인
+# 실행이 있을 때 새 실행이 큐에 들어오면 그 대기 중이던 실행이 취소된다
+# ("any existing pending job or workflow in the same concurrency group will be
+# canceled and the new queued job or workflow will take its place"). 이 워크플로는
+# push마다 서로 다른 버전 변경을 통지해야 하므로, 그룹을 고정값으로 두면 통지 A가
+# 실행되는 동안 대기하던 통지 B가 취소돼 그 버전의 통지가 통째로 유실된다 — 이
+# 워크플로가 막으려던 바로 그 사고다. 그룹을 커밋(github.sha)별로 분리해 서로
+# 다른 push가 같은 그룹에 묶이지 않게 한다 — 사실상 이 job에는 동시성 제한을
+# 두지 않으며, 여러 실행이 동시에 진행돼도 각자 다른 커밋을 다루므로 안전하다.
+concurrency:
+  group: notify-plugin-deploy-${{ github.sha }}
+  cancel-in-progress: false
+
+env:
+  PLUGIN_JSON: malgn-agent/.claude-plugin/plugin.json
+  NOTIFY_URL: https://malgnai-hub.apiserver.kr/api/plugin-deploys/notify
+
+jobs:
+  notify:
+    name: 버전 변경 감지 + malgnai-hub 통지
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      # before/after 두 커밋 모두에서 plugin.json 내용을 읽어야 하므로 전체 히스토리가
+      # 필요하다. fetch-depth 1(기본값)이면 push에 커밋이 여러 개 묶여 오거나
+      # github.event.before 커밋이 얕은 클론 범위 밖에 있을 때 비교 자체가 불가능해진다.
+      - name: 저장소 체크아웃 (전체 히스토리)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 이 저장소 실제 커밋으로 검증한 로직(보고 본문의 드라이런 출력 참고):
+      #   release 커밋(버전 bump) → notify=true
+      #   그 외 일반 커밋(버전 불변) → notify=false
+      - name: 버전 변경 감지
+        id: detect
+        run: |
+          set -euo pipefail
+
+          BEFORE_SHA="${{ github.event.before }}"
+          ZERO_SHA="0000000000000000000000000000000000000000"
+
+          # jq 실패(파일 없음/JSON 파싱 실패)를 `set -e`로 즉사시키지 않고 아래
+          # -z 체크까지 도달시켜, 원인을 구분하지 않는 대신 한 곳에서 의도한
+          # ::error:: 메시지를 실제로 출력한 뒤 exit 1 하도록 한다.
+          NEW_VERSION=$(jq -r '.version // empty' "${PLUGIN_JSON}" 2>/dev/null) || true
+          if [ -z "${NEW_VERSION:-}" ]; then
+            echo "::error::${PLUGIN_JSON}에서 version을 읽을 수 없음 (파일 없음, JSON 파싱 실패, 또는 필드 없음)"
+            exit 1
+          fi
+
+          # semver 본체(major.minor.patch)는 선행 0을 허용하지 않는다(예: 01.8.38 거부).
+          # grep -qE 같은 줄 단위 매칭 대신 bash 자체 정규식(=~)으로 문자열 전체를
+          # 앵커링해 검사한다 — grep은 입력을 줄 단위로 순회하므로, 값에 개행이 섞여
+          # 있으면("1.8.38\n<주입문자열>") 그중 한 줄만 패턴과 일치해도 전체가 통과해
+          # 버린다. bash `[[ =~ ]]`는 문자열 전체를 한 번에 ^...$로 앵커링하므로 개행이
+          # 섞인 값은 패턴 중간에 남는 문자를 허용하지 않아 그대로 거부된다.
+          SEMVER_RE='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
+          if [[ ! "${NEW_VERSION}" =~ ${SEMVER_RE} ]]; then
+            echo "::error::plugin.json version이 semver 형식이 아님: '${NEW_VERSION}'"
+            exit 1
+          fi
+
+          # 새 브랜치 최초 push: before가 all-zero SHA로 온다. 비교 대상인 "이전 상태"가
+          # 존재하지 않으므로 허위 통지를 피하기 위해 스킵한다 — main은 이미 존재하는
+          # 브랜치라 실무에서는 거의 발생하지 않지만, push 이벤트 스펙상 가능한 값이라
+          # 방어적으로 처리한다. 유실되더라도 hub의 일일 자체 동기화로 하루 내 복구된다.
+          if [ "${BEFORE_SHA}" = "${ZERO_SHA}" ]; then
+            echo "새 브랜치 최초 push(before=all-zero) — 비교할 이전 상태가 없어 스킵. hub 일일 동기화로 보완됨."
+            {
+              echo "## malgnai-hub 배포 통지"
+              echo "- 결과: 스킵"
+              echo "- 사유: 새 브랜치 최초 push(before=all-zero), 비교할 이전 상태 없음. hub 일일 동기화로 보완됨."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            echo "notify=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          # force-push로 히스토리가 재작성되면 이전 tip이 현재 ref 히스토리의 조상이
+          # 아니게 되고, 어떤 ref에서도 도달 불가능한 객체는 fetch-depth:0로도 받아오지
+          # 못할 수 있다. 이 경우 "이전 버전이 무엇이었는지" 신뢰성 있게 알 수 없으므로,
+          # 허위 버전변경 통지(오탐)를 만드는 대신 스킵한다. 이 판단은 보수적이다 —
+          # 놓친 통지는 hub 일일 동기화가 하루 내 커버하지만(과업 4), 오탐은 배포
+          # 이력을 오염시키고 불필요한 재동기화를 유발한다(과업 2)는 비대칭 때문이다.
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            echo "이전 커밋(${BEFORE_SHA})을 히스토리에서 찾을 수 없음 — force-push로 조상 관계가 끊어졌을 가능성. 오탐 방지를 위해 스킵, hub 일일 동기화로 보완됨."
+            {
+              echo "## malgnai-hub 배포 통지"
+              echo "- 결과: 스킵"
+              echo "- 사유: 이전 커밋(${BEFORE_SHA})을 히스토리에서 찾을 수 없음(force-push 가능성). hub 일일 동기화로 보완됨."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            echo "notify=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          # push에 커밋이 여러 개 묶여 와도(예: rebase merge, 여러 커밋 한 번에 push)
+          # before(push 이전 tip) → after(github.sha, push 이후 tip) 두 지점만 비교한다.
+          # 이렇게 하면 "이 push로 배포된 최종 상태의 버전이 실제로 바뀌었는가"를
+          # 정확히 판별한다 — 중간 커밋에서 버전이 여러 번 바뀌어도 통지는 1회이고,
+          # 마지막 상태가 이전 push 시점과 같다면(예: 중간에 올렸다 되돌림) 통지하지 않는다.
+          OLD_VERSION=$(git show "${BEFORE_SHA}:${PLUGIN_JSON}" 2>/dev/null | jq -r '.version // empty' 2>/dev/null || true)
+
+          if [ "${OLD_VERSION}" = "${NEW_VERSION}" ]; then
+            echo "버전 변경 없음 (${NEW_VERSION}) — 스킵"
+            {
+              echo "## malgnai-hub 배포 통지"
+              echo "- 결과: 스킵"
+              echo "- 사유: 버전 변경 없음 (${NEW_VERSION})"
+            } >> "${GITHUB_STEP_SUMMARY}"
+            echo "notify=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "버전 변경 감지: '${OLD_VERSION:-<none>}' -> '${NEW_VERSION}' — 통지 대상"
+            echo "notify=true" >> "${GITHUB_OUTPUT}"
+            # NEW_VERSION은 위에서 semver 정규식으로 전체 문자열을 앵커링 검증했으므로
+            # 개행을 포함할 수 없지만, GITHUB_OUTPUT에 값을 쓸 때는 GitHub 권장
+            # heredoc 구분자 방식을 사용해 다중행 주입 경로 자체를 원천 차단한다
+            # (검증 로직이 미래에 느슨해지더라도 출력 계층에서 한 번 더 방어).
+            DELIM="ghaEOF_${GITHUB_RUN_ID}_${RANDOM}"
+            {
+              echo "version<<${DELIM}"
+              echo "${NEW_VERSION}"
+              echo "${DELIM}"
+            } >> "${GITHUB_OUTPUT}"
+          fi
+
+      # 통지가 실패해도 플러그인 배포(main push) 자체는 이미 끝난 뒤이므로 막을 대상이
+      # 없지만, 이 job이 실패로 표시되면 불필요한 알림 소음이 생긴다.
+      # continue-on-error로 job 결론은 항상 성공 처리하고, 실패 원인은 로그/경고로
+      # 남겨 사람이 나중에 확인할 수 있게 한다. hub는 하루 1회 자체 동기화도 하므로
+      # 통지 유실의 최악 결과는 하루 지연이다. continue-on-error 때문에 job 상태만
+      # 봐서는 실패가 드러나지 않으므로, 성공/스킵/실패를 매번 $GITHUB_STEP_SUMMARY에
+      # 남겨 run 요약 화면에서 바로 보이게 한다.
+      - name: malgnai-hub 통지
+        if: steps.detect.outputs.notify == 'true'
+        continue-on-error: true
+        env:
+          DEPLOY_KEY: ${{ secrets.MALGNAI_HUB_DEPLOY_KEY }}
+          VERSION: ${{ steps.detect.outputs.version }}
+        run: |
+          # 셸 옵션 가정: `shell:`을 지정하지 않은 run 스텝은 GitHub Actions 기본값으로
+          # `bash -e {0}`를 쓴다(공식 문서: "The command run internally is bash -e {0}";
+          # `shell: bash`를 명시하면 `bash --noprofile --norc -eo pipefail {0}`이 되지만
+          # 이 스텝은 명시하지 않았으므로 전자다). 즉 아래 `set -uo pipefail`을 실행하기
+          # 전부터 이미 -e가 켜져 있다 — 이 줄은 -u와 pipefail만 "추가"할 뿐, -e를 켜거나
+          # 끄는 효과가 없다(bash에 -e만 부분적으로 끄는 문법은 없고, 끄려면 `set +e`로
+          # 전체를 꺼야 한다). 실패가 예상되고 그 실패를 뒤 코드가 명시적으로 처리해야
+          # 하는 지점(아래 call_api 호출)은 `VAR=$(cmd)` 대입문으로 직접 부르면 안 된다 —
+          # -e 치하에서 대입문 자체가 실패로 판정돼 그 줄에서 스크립트가 즉시 죽어
+          # 뒤따르는 `CURL_EXIT=$?` 줄에도, 재시도·실패요약 로직에도 도달하지 못한다.
+          # `if VAR=$(cmd); then ... else ...; fi` 형태(POSIX가 -e의 즉시종료를 면제하는
+          # 자리)로만 호출해야 한다 — 아래 invoke_and_capture 참고.
+          set -uo pipefail
+
+          # 시크릿이 아직 등록되지 않은 상태(이번 작업 범위 밖 — 사람이 별도로 등록)에서도
+          # 워크플로 구조 자체는 정상 동작해야 한다. 키가 비어 있으면 API를 아예 호출하지
+          # 않고 경고만 남긴 뒤 성공 종료한다. 키가 나중에 등록되면 코드 변경 없이 다음
+          # 버전 push부터 바로 통지가 시작된다.
+          if [ -z "${DEPLOY_KEY:-}" ]; then
+            echo "::warning::MALGNAI_HUB_DEPLOY_KEY 시크릿이 설정되지 않아 통지를 건너뜀 (버전 ${VERSION}). hub 일일 동기화로 하루 내 반영됨."
+            {
+              echo "## malgnai-hub 배포 통지"
+              echo "- 결과: 스킵"
+              echo "- 사유: MALGNAI_HUB_DEPLOY_KEY 시크릿 미설정 (버전 ${VERSION}). hub 일일 동기화로 하루 내 반영됨."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+
+          # 시크릿 값에 개행/CR이 섞여 등록되면(복붙 실수 등) curl -H 헤더 값이
+          # 쪼개져 헤더 분할(header injection/splitting)로 이어질 수 있다. API 호출
+          # 전에 개행류를 제거해 방어한다. 키가 아직 미등록인 지금이 가장 저렴한
+          # 수정 시점이다.
+          DEPLOY_KEY=$(printf '%s' "${DEPLOY_KEY}" | tr -d '\r\n')
+
+          DEPLOYED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          BODY=$(jq -n \
+            --arg plugin_name "malgn-agent" \
+            --arg version "${VERSION}" \
+            --arg commit_hash "${{ github.sha }}" \
+            --arg repository "${{ github.repository }}" \
+            --arg deployed_at "${DEPLOYED_AT}" \
+            '{plugin_name:$plugin_name, version:$version, commit_hash:$commit_hash, repository:$repository, deployed_at:$deployed_at}')
+
+          # -H로 넘기는 DEPLOY_KEY 값은 어떤 echo/print 대상에도 올리지 않는다.
+          # curl 실행 자체나 그 인자를 로그에 남기지 않고(set -x 미사용), 실패 시에도
+          # 응답 본문(길이 제한, 서버 응답이라 내용은 우리가 보장할 수 없음)과 HTTP
+          # 상태코드만 출력한다.
+          call_api() {
+            curl --silent --show-error --max-time 15 \
+              -o /tmp/notify-response.json \
+              -w '%{http_code}' \
+              -X POST "${NOTIFY_URL}" \
+              -H "Content-Type: application/json" \
+              -H "X-Plugin-Deploy-Key: ${DEPLOY_KEY}" \
+              -d "${BODY}"
+          }
+
+          # call_api를 호출해 STATUS(HTTP 상태코드)/CURL_EXIT(curl 종료코드) 전역변수에
+          # 담는다. 위 셸 옵션 주석 참고 — `STATUS=$(call_api); CURL_EXIT=$?`처럼 대입문
+          # 형태로 직접 부르면 -e 치하에서 call_api가 비0 종료할 때 그 줄에서 스크립트가
+          # 즉시 죽어 CURL_EXIT=$? 대입 자체에 도달하지 못한다. if 조건 위치는 -e의
+          # 즉시종료가 면제되므로, 이 함수를 통해서만 call_api를 호출해 항상 그 안에 있게
+          # 한다.
+          invoke_and_capture() {
+            if STATUS=$(call_api); then
+              CURL_EXIT=0
+            else
+              CURL_EXIT=$?
+            fi
+          }
+
+          invoke_and_capture
+
+          # 4xx(키 오류/바디 형식 오류)는 재시도해도 같은 결과이므로 재시도하지 않는다.
+          # 이 통지 엔드포인트는 Cloudflare 뒤에 있어 오리진 장애 시 502/503/504 등
+          # 500 이외의 5xx가 실제로 돌아올 수 있으므로, 5xx 전체와 429(레이트리밋),
+          # 순수 네트워크 실패(CURL_EXIT!=0)만 60초 후 1회 재시도한다.
+          if [ "${CURL_EXIT}" -ne 0 ] || [ "${STATUS}" = "429" ] || [[ "${STATUS}" =~ ^5[0-9][0-9]$ ]]; then
+            echo "1차 시도 실패 (HTTP '${STATUS}', curl exit=${CURL_EXIT}) — 60초 대기 후 1회 재시도"
+            sleep 60
+            invoke_and_capture
+          fi
+
+          if [ "${CURL_EXIT}" -eq 0 ] && { [ "${STATUS}" = "201" ] || [ "${STATUS}" = "200" ]; }; then
+            echo "통지 성공 (HTTP ${STATUS}) — plugin=malgn-agent version=${VERSION} commit=${{ github.sha }}"
+            {
+              echo "## malgnai-hub 배포 통지"
+              echo "- 결과: 성공 (HTTP ${STATUS})"
+              echo "- 버전: ${VERSION}"
+              echo "- 커밋: ${{ github.sha }}"
+            } >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+
+          echo "::warning::malgnai-hub 통지 실패 (HTTP '${STATUS}', curl exit=${CURL_EXIT}), 버전 ${VERSION}. hub 일일 동기화로 최악 하루 지연 후 반영됨."
+          echo "응답 본문 (서버 응답이라 내용은 보장할 수 없음, 최대 2000바이트):"
+          head -c 2000 /tmp/notify-response.json 2>/dev/null || true
+          echo
+          {
+            echo "## malgnai-hub 배포 통지"
+            echo "- 결과: 실패 (HTTP '${STATUS}', curl exit=${CURL_EXIT})"
+            echo "- 버전: ${VERSION}"
+            echo "- 사유: hub 일일 동기화로 최악 하루 지연 후 반영됨. 상세 원인은 job 로그 참고"
+          } >> "${GITHUB_STEP_SUMMARY}"
+          exit 1
