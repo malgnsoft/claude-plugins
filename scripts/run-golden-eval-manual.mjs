@@ -167,7 +167,10 @@ function runClaude({ promptText, model, allowedTools, cwd, timeoutMs, maxBudgetU
     ];
     if (pluginDir) args.push('--plugin-dir', pluginDir);
     if (allowedTools?.length) args.push('--allowedTools', ...allowedTools);
-    const child = spawn('claude', args, { cwd, timeout: timeoutMs });
+    // MALGNAI_HEADLESS_WORKER=1: stop-mcp-reminder.cjs가 Stop 훅에서 추가 턴을 강제하지 않게 막는다.
+    // 이 헤드리스 세션은 stream-json의 마지막 result만 파싱하므로, 추가 턴의 후기 텍스트가
+    // 그 result를 덮어쓰면 파싱이 깨진다.
+    const child = spawn('claude', args, { cwd, timeout: timeoutMs, env: { ...process.env, MALGNAI_HEADLESS_WORKER: '1' } });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (d) => { stdout += d; });
