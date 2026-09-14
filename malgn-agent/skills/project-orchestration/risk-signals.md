@@ -28,7 +28,8 @@
 
 - **크리티컬 패스 모니터링**:
   - wbs_list(projectId, includeDone=false) → 모든 항목의 endDate 추출
-  - ⚠️ 이 필터된 결과는 **눈으로 볼 때만** 쓴다. `check-wbs-warnings.mjs`에는 넣지 말 것 — 스크립트는 전체 스냅샷(`includeDone=true`, 즉 필터 없는 `wbs_list(projectId)`)을 전제로 부모·자식 관계를 계산하므로, done 항목이 빠진 입력을 주면 자식이 전부 done인 그룹이 리프로 오판된다
+  - ⚠️ 이 필터된 결과는 **눈으로 볼 때만** 쓴다. `check-wbs-warnings.mjs`에는 넣지 말 것 — 스크립트는 done 항목까지 `items`에 담긴 전체 스냅샷(`wbs_list(projectId, includeDone=true)`)을 전제로 부모·자식 관계를 계산하므로, done 항목이 빠진 입력을 주면 자식이 전부 done인 그룹이 리프로 오판된다
+  - ⚠️ **필터를 생략한 `wbs_list(projectId)`는 전체 스냅샷이 아니다** — 기본값이 `items`에서 done을 빼므로 스크립트에 넘길 때는 `includeDone=true`를 명시한다. 반면 `summary`는 필터와 무관하게 프로젝트 전체 집계라, `summary.total !== items.length`이면 필터된 스냅샷이라는 뜻이다(스크립트도 이 식으로 필터 여부를 탐지해 리포트 상단에 경고한다)
   - 가장 가까운 deadline 항목들이 progress < 70% 이면 → critical path 리스크
   - 여러 항목의 deadline이 같은 주에 몰려 있으면 → 리소스 경합 리스크
 

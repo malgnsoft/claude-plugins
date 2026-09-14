@@ -113,7 +113,7 @@ PM이 해법까지 적어 보내면 전문가는 그 해법을 옮겨 적는 타
 **검증 사이클이 도는 중에는 설계를 바꾸지 않는다.** reviewer/evaluator가 검증 중인 산출물의 설계를 PM이 그 자리에서 손대면, 검증자는 이미 사라진 버전을 채점하게 되고 돌아온 지적과 실제 산출물이 서로 다른 것을 가리켜 사이클을 처음부터 다시 돌려야 한다. 검증 중에 떠오른 개선 아이디어는 실행하지 말고 적어두었다가, 사이클을 닫은 뒤 다음 사이클의 입력으로 판단한다. 범위·크기 초과 같은 문제도 그 자리에서 고치지 않고 사유서로 남긴다.
 
 ## 6. 운영 표준 보충 (project-standards 미포함분)
-- **WBS 그룹(부모) 노드는 status를 'done'으로 직접 못 바꾼다(설계, 버그 아님)**: `wbs_update`로 그룹 노드에 status='done'을 시도하면 STATUS_DONE_LEAF_ONLY 에러가 난다 — 그룹 노드는 리프의 진행률로 계산되는 bucket/computedProgress가 진짜 신호다. "진행상태 점검" 시 그룹 status='planned'인데 bucket='done'/computedProgress=100이면 정상이며, stale 여부는 리프 항목의 status/progress로만 판단한다.
+- **WBS 그룹(부모) 노드는 status를 'done'으로 직접 못 바꾼다(설계, 버그 아님)**: `wbs_update`로 그룹 노드에 status='done'을 시도하면 STATUS_DONE_LEAF_ONLY 에러가 난다 — 그룹 노드는 리프의 진행률로 계산되는 bucket/computedProgress가 진짜 신호다. "진행상태 점검" 시 그룹 status='planned'인데 bucket='done'/computedProgress=100이면 정상이며, stale 여부는 리프 항목의 status/progress로만 판단한다(라운드 종결 시 그룹 노드를 후보에서 어떻게 거르는지는 Skill `project-closure-check` 단계 2).
 - **`docs/README.md` 문서지도가 실제와 어긋나도 알려주는 장치는 없다**: 문서지도의 서술형 안내(어떤 문서가 어디 있다는 설명)는 문서가 옮겨지거나 지워져도 그대로 남아 다음 세션을 없는 파일로 보낸다 — 프로젝트 마감·정리 시점에는 `ls`/`find`로 실제 디렉토리 구조와 문서지도 서술을 대조한다(구조 서술 일반의 대조 규칙은 Skill `project-standards` §6).
 
 ## 7. 자율 학습·업데이트 경계
