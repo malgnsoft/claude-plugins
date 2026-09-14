@@ -104,9 +104,13 @@ const BUDGET_RATIONALE = {
   // 재배치 라운드(de0eea9)로 30.0→25.8KB까지 줄었으나 권고 예산(15KB)을 여전히 넘는다.
   // 남은 분량은 핵심원칙·역할경계·실행모드표(trainer 정체성 정의) 중심이다 —
   // 근거: docs/refactor/trainer-budget-rationale.md.
+  // 종결 확정 게이트(Skill project-closure-check 단계 4-1) 정합분 +722 B. trainer는 정의상 항상
+  // 미병합 워크트리에서 돌아 "확인한 쪽이 닫는다"는 무조건 지시가 비가역 issue_resolve를 선행시키므로,
+  // 책임 구분 표·설명 단락·자기검증 세 진입점에 확정 단서를 각각 붙였다(한 자리만 고치면 다른 경로로
+  // 들어온 회차가 옛 지시를 그대로 따른다) — 근거: docs/refactor/trainer-budget-rationale.md.
   'agents/trainer.md': {
     doc: 'docs/refactor/trainer-budget-rationale.md',
-    bytes: 27519,
+    bytes: 28241,
   },
 };
 // 사유서가 변호하는 크기에서 이만큼까지는 드리프트로 보지 않는다(오탈자·1줄 규칙 수정 여유).

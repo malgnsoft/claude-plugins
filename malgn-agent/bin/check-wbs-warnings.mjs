@@ -23,9 +23,11 @@
  * 필터된 스냅샷 경고: 이 스크립트는 --current 안의 parentId 관계만으로 그룹/리프를 판별한다
  * (isGroup). wbs_list(status=... / includeDone=false 등)로 필터링된 스냅샷을 넣으면 자식이
  * 전부 걸러진 그룹이 리프로 오판되어 "임박 기한 위반"·"기한 박박"·"크리티컬 패스"·"상태 불일치"에
- * 오탐이 날 수 있다. wbs_list 응답의 top-level summary.total은 필터와 무관하게 항상 프로젝트
- * 전체 개수를 반환하므로(items만 필터됨), summary.total !== items.length 로 필터 여부를 기계적으로
- * 탐지해 리포트 상단에 경고를 남긴다(신호를 죽이지는 않는다 — 사람이 판단할 근거만 추가한다).
+ * 오탐이 날 수 있다. wbs_list 응답의 top-level summary.total은 status·includeDone 필터에는
+ * 영향받지 않으므로(items만 필터됨), summary.total !== items.length 로 그 두 필터에 의한 필터링
+ * 여부를 기계적으로 탐지해 리포트 상단에 경고를 남긴다(신호를 죽이지는 않는다 — 사람이 판단할
+ * 근거만 추가한다). 단 parentId로 서브트리를 뜬 스냅샷은 이 탐지식이 잡지 못한다 — 아래 필터
+ * 탐지 주석 참조.
  *
  * 사용법:
  *   node check-wbs-warnings.mjs --current curr.json
@@ -135,10 +137,15 @@ function loadItems(filePath, label) {
     console.error(`${label} JSON은 배열이거나 { items: [...] } 형태여야 합니다.`);
     process.exit(1);
   }
-  // wbs_list는 status/parentId/includeDone 등으로 필터링해도 summary.total은 항상
-  // 프로젝트 전체 개수를 반환한다(items만 필터됨) — summary.total !== 실제 items 개수면
-  // 필터된 스냅샷이라는 뜻이다. 배열만 온 입력(래핑 없이 items만 붙여넣은 경우)은 summary가
-  // 없으므로 필터 여부를 판단할 수 없다(filtered: null).
+  // wbs_list를 status/includeDone으로 필터링해도 summary.total은 프로젝트 전체 개수를 그대로
+  // 반환한다(items만 필터됨) — 그래서 summary.total !== 실제 items 개수면 필터된 스냅샷이라는
+  // 뜻이다. 배열만 온 입력(래핑 없이 items만 붙여넣은 경우)은 summary가 없으므로 필터 여부를
+  // 판단할 수 없다(filtered: null).
+  //
+  // 알려진 한계(false negative): parentId를 걸면 summary 자체가 그 서브트리 집계로 좁혀지므로
+  // summary.total과 items.length가 같아져 아래 판정식이 filtered=false를 낸다. 즉 이 탐지는
+  // status·includeDone 필터는 잡지만 parentId 서브트리 스냅샷은 잡지 못하며, 그 경우 그룹/리프
+  // 오판 경고 없이 리포트가 나간다. parentId로 뜬 스냅샷을 넘기는 쪽이 그 사실을 알고 써야 한다.
   const summaryTotal =
     !Array.isArray(data) && data && data.summary && typeof data.summary.total === 'number'
       ? data.summary.total

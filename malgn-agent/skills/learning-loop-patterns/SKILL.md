@@ -108,7 +108,7 @@ description: 작업 전 Knowledge 확인 → 작업 중 의사결정 기록 → 
 ### Post-Execution Phase (작업 완료 후)
 
 #### 6. Problem-Solution Pairing
-- [ ] **해소된 이슈를 닫는다:** 이번 작업이 해소한 열린 이슈는 실물 대조 후 `issue_resolve`로 닫는다 — 내가 연 이슈가 아니어도 확인한 쪽이 닫는다. 여는 지시(#3·#4)만 돌면 이미 고쳐진 문제가 열린 채 쌓인다. 정본: Skill `common-learning-loop-knowledge-management` "이슈 종결(Close)"
+- [ ] **해소된 이슈를 닫는다:** 이번 작업이 해소한 열린 이슈는 실물 대조 후 `issue_resolve`로 닫는다 — 내가 연 이슈가 아니어도 확인한 쪽이 닫는다. 여는 지시(#3·#4)만 돌면 이미 고쳐진 문제가 열린 채 쌓인다. 단 해소가 아직 확정되지 않았으면(미커밋·미병합·승인 대기) 닫지 말고 종결 후보로 지목해 넘긴다(Skill `project-closure-check` 단계 4-1). 정본: Skill `common-learning-loop-knowledge-management` "이슈 종결(Close)"
 - [ ] **발견한 각 문제마다 5부 구조(Core Principles 4)로 문서화** — 아래는 그 구조를 채운 예시다:
   - **Context:** "로그인 기능 개발, Ubuntu 22.04, Node 18.12"
   - **Problem:** "CORS 에러: Access-Control-Allow-Origin 미설정"

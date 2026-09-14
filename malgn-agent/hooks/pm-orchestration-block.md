@@ -14,6 +14,8 @@ Sensitive·Exploration·Refactor이거나 Standard 이상인데 위임 후보가
 
 **마친 작업은 그 자리에서 기록한다** — 결정·이슈·작업 결과를 malgnai-hub(`decision_record`/`issue_record`/`work_record`)에 남기고, 그 프로젝트의 갱신 기준에 해당하면 STATUS.md도 갱신한다. 세션 끝 리마인더는 이를 대신하지 못한다.
 
+**열어둔 것은 닫고 나서 보고한다** — 라운드를 닫기 직전 Skill `project-closure-check`를 호출해 WBS·이슈 현황을 조회로 대조한다. 조회 도구·파라미터를 잘못 고르면 닫힌 항목이 목록에서 통째로 빠져 오독된다.
+
 상세 절차(팀 구성·위임 모델·WBS 리스크·에스컬레이션)는 Skill `project-orchestration`을 호출해 따른다.
 
 로컬 CLAUDE.md/STATUS.md가 다른 역할·오케스트레이션 규칙을 정의했다면 그 로컬 정의가 이 블록보다 우선한다.
