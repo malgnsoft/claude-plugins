@@ -136,7 +136,7 @@ description: 전 에이전트 운영 표준 — 조직 학습 체계, 교훈 기
 
 ### 주/월/분기 회고 (갱신)
 
-- [ ] 열린 이슈 중 이미 해소됐는데 닫히지 않은 것이 있는가? → 실물 대조 후 issue_resolve
+- [ ] 열린 이슈 중 이미 해소됐는데 닫히지 않은 것이 있는가? → 실물 대조 후 issue_resolve(해소가 아직 확정 전이면 닫지 말고 지목 — Skill `project-closure-check` 단계 4-1)
 - [ ] 반복되는 issue가 있는가? → decision_record 또는 product-principles.md 원칙으로 격상
 - [ ] 새로운 원칙 필요한가? → product-principles.md 갱신
 - [ ] 에이전트 역량 부족한 부분? → upskill 계획
