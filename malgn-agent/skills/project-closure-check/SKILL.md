@@ -23,7 +23,8 @@ description: 라운드를 닫기 직전 WBS·이슈의 실제 상태를 조회�
 
 - `wbs_list(projectId)`를 부른다. 종결 후보는 **아직 닫히지 않은 항목**이고, 기본 호출의 `items`가 정확히 그것만 담는다.
 - 판정은 응답의 **`summary` 블록**(`total`/`planned`/`inProgress`/`done`/`delayed`)으로 한다. items 배열을 눈으로 세지 않는다.
-- **`summary`는 필터와 무관하게 프로젝트 전체 집계다** — `includeDone`·`status`·`parentId` 중 무엇을 걸어도 `done` 수치는 그대로 온다. 필터가 걸러내는 것은 `items` 배열뿐이다. 그래서 summary 기준 판정에 `includeDone:true`는 필요 없다.
+- **`includeDone`·`status`는 `summary`를 바꾸지 않는다** — 이 둘이 걸러내는 것은 `items` 배열뿐이라 `done` 수치는 그대로 온다. 그래서 summary 기준 판정에 `includeDone:true`는 필요 없다.
+- **`parentId`는 다르다 — `summary` 자체가 그 서브트리 집계로 바뀐다.** 프로젝트 전체를 보려면 위처럼 `parentId` 없이 `wbs_list(projectId)`로 부르고, 이번 라운드 서브트리만 보려면 `wbs_list(projectId, parentId:<라운드 노드>)`로 부른다. 후자의 `summary.total`을 프로젝트 전체 건수로 읽으면 "전체가 몇 건뿐"이라는 그릇된 판정이 된다 — 무엇의 집계를 보고 있는지 호출과 함께 확인한다. `parentId`와 `status`를 같이 걸면 `summary`는 서브트리 기준 그대로이고 `items`만 `status`로 더 좁혀진다.
 - **`includeDone:true`는 닫힌 항목을 `items`에서 눈으로 봐야 할 때만 붙인다** — 그룹의 자식이 전부 done인지 확인하거나, `check-wbs-warnings.mjs`에 넘길 전체 스냅샷을 뜰 때다. 필터 여부는 `summary.total !== items.length`로 확인한다.
 - **`project_get_context(sections=['wbs'])`를 이 용도로 쓰지 않는다** — 이 뷰는 `summary`가 없고 `status:"done"` 항목을 반환하지 않아, 세면 반드시 "완료 0건"이 나온다. `wbs_list`의 `summary`가 done 수치를 그대로 돌려주는 것과 갈리는 지점이 여기다.
 - `summary.total === 0`이면 이 프로젝트는 WBS를 쓰지 않는다 → 단계 3으로 건너뛴다(WBS 미사용 프로젝트를 미종결로 오인하지 않는다).
