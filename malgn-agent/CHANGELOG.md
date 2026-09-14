@@ -9,6 +9,21 @@
 
 ---
 
+## [1.8.41] — 2026-09-15
+
+### Added
+- **`skills/project-closure-check` 신설** — 라운드를 닫기 직전 WBS·이슈의 실제 상태를 조회해 이번 라운드가 해소한 항목을 종결 처리하는 절차. 조회 도구 선택(`wbs_list`의 `summary` 기준 판정), 겹침 선별, 실물 대조 후 `wbs_update`/`issue_resolve`, 부분 해소 처리, 비정상 케이스까지 한 자리에 둔다.
+- **확정 게이트(단계 4-1)** — 해소를 확인했더라도 아직 확정되지 않았으면 닫지 않고 지목해 넘긴다. `issue_resolve`에는 취소가 없고 열린 이슈를 되돌리는 도구도 없어, 미병합 상태에서 닫으면 병합이 거절돼도 미해소 문제가 "해결됨"으로 영구히 남는다. 미확정 판정은 관측 가능한 네 기준(미커밋 / 기본 브랜치 미포함 / 승인 미위임 / 배포된 상태를 문제 삼는 이슈)을 쓴다.
+- **`hooks/pm-orchestration-block.md`에 종결 트리거 1줄** — 기존 "마친 작업은 그 자리에서 기록한다"는 새로 여는 것만 다루고 이미 열린 것을 닫는 것은 다루지 않았다. 이 블록은 매 세션 주입되므로 트리거가 항상 컨텍스트에 있다.
+
+### Changed
+- **종결 관련 정본 경계 정리** — 종결의 *원칙*(누가 닫는가·무엇이 근거인가·부분 해소)은 `common-learning-loop-knowledge-management`, *라운드 종결 시점의 조회·대조·호출*은 `project-closure-check`로 나눴다. 경계 밖에서 같은 절차를 각자의 말로 서술하던 자리(`project-orchestration` §5, `evaluator.md`, `domain-git-safety-and-concurrency`, `learning-loop-patterns`)를 포인터로 통일했다 — 한쪽만 갱신되면 조용히 갈리기 때문이다.
+- **`agents/trainer.md`에 확정 단서 부착** — trainer는 정의상 항상 미병합 워크트리에서 돌아, "확인한 쪽이 닫는다"는 무조건 지시가 비가역 종결을 선행시켰다. 원칙은 그대로 두고 확정 조건만 붙였다.
+
+### Fixed
+- **`wbs_list` 필터가 `summary`에 미치는 영향 서술 정정** — `includeDone`·`status`는 `summary`를 바꾸지 않고 `items`만 거르지만, `parentId`는 `summary` 자체를 그 서브트리 집계로 좁힌다. "필터와 무관하게 프로젝트 전체 집계"라고 단정하던 자리(`project-orchestration/risk-signals.md`, `bin/check-wbs-warnings.mjs` 주석 2곳)를 사실에 맞게 고쳤다. 서브트리 집계를 전체 건수로 읽으면 "전체가 몇 건뿐"이라는 그릇된 판정이 난다.
+- **`project_get_context(sections=['wbs'])`의 종결 점검 용도 사용 금지 명시** — 이 뷰는 `summary`가 없고 `status:"done"` 항목을 반환하지 않아, 세면 반드시 "완료 0건"이 나온다. 종결 점검 지시를 정확히 따를수록 그릇된 결론에 도달하던 경로다.
+
 ## [1.8.40] — 2026-09-11
 
 Stop 훅(`hooks/stop-mcp-reminder.cjs`)이 세션 종료 시 "malgnai-hub 기록
