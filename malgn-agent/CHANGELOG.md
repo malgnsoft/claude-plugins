@@ -9,6 +9,11 @@
 
 ---
 
+## [1.8.43] — 2026-09-15
+
+### Fixed
+- **`bin/analyze-usage.mjs`·`bin/report-usage.mjs`의 토큰 사용량 중복 집계** — assistant 메시지 1개(API 호출 1회, `message.id`로 식별)가 thinking/text/tool_use 콘텐츠 블록별로 여러 물리 JSONL 줄에 나뉘어 기록되는데, 그 줄들이 모두 동일한 usage(input/output/cache_creation/cache_read)를 반복 보유한다. 두 스크립트 모두 이를 구분하지 않고 물리 줄마다 그대로 더해 실제보다 최대 2~3배 부풀려 집계했다. `message.id` 기준 dedup으로 세션당 1회만 반영하도록 고쳤다(id 없는 줄은 안전하게 단독 처리). OTel·malgn-vscode 확장이 측정하는 API 호출 단위 값과 이 스크립트들의 합계가 어긋나던 근본 원인이었다. `analyze-usage.mjs`의 도구별/서브에이전트별 토큰 귀속도 메시지 단위로 모아 처리하도록 같이 바꿔, 도구 블록 수 기준 분할 계산이 dedup 이후에도 정확하게 맞도록 했다.
+
 ## [1.8.42] — 2026-09-15
 
 ### Changed
