@@ -261,12 +261,13 @@ function newAgg(sessionId) {
     tokens: { input: 0, output: 0, cacheCreate: 0, cacheRead: 0 },
     firstPrompt: null, // 세션 제목용 — 첫 사용자 프롬프트 텍스트(120자로 잘라 summary에 사용)
     turns: 0, // 사용자 프롬프트 수 (참고: analyze-usage.mjs의 agg.turns와 동일 계산 로직)
-    apiCalls: 0, // usage 필드가 있는 assistant 라인 수 (참고: agg.apiCalls와 동일 계산 로직)
+    apiCalls: 0, // 고유 message.id 수 (참고: agg.apiCalls와 동일 계산 로직) — usage가 있는 물리 줄 수가 아니다
     toolCalls: 0,
     toolErrors: 0,
     filesRead: 0,
     filesChanged: 0,
     modelCounts: new Map(),
+    seenMessageIds: new Set(), // 같은 message.id가 thinking/text/tool_use 블록별로 여러 물리 줄에 중복 기록되는 것을 dedup하기 위함
   };
 }
 
@@ -333,15 +334,28 @@ async function aggregateAllSessions(projectsDir) {
         const usage = obj.message && obj.message.usage;
         if (!usage || typeof usage !== 'object') continue;
 
-        agg.tokens.input += usage.input_tokens || 0;
-        agg.tokens.output += usage.output_tokens || 0;
-        agg.tokens.cacheCreate += usage.cache_creation_input_tokens || 0;
-        agg.tokens.cacheRead += usage.cache_read_input_tokens || 0;
-        agg.apiCalls++;
+        // 하나의 API 호출(assistant 메시지 1개)이 thinking/text/tool_use 콘텐츠 블록별로 여러 물리
+        // 줄에 나뉘어 기록되며, 그 물리 줄들은 모두 동일한 usage 값을 반복해서 담고 있다. message.id로
+        // 식별해 세션당 1회만 usage/apiCalls/modelCounts에 반영한다. id가 없는(비정상/구버전) 줄은
+        // dedup할 근거가 없으므로 항상 유일한 것으로 취급해 그대로 집계한다(죽지도, 버리지도 않는다).
+        const messageId = obj.message && typeof obj.message.id === 'string' ? obj.message.id : null;
+        const isNewMessage = messageId === null || !agg.seenMessageIds.has(messageId);
+        if (messageId !== null) agg.seenMessageIds.add(messageId);
 
-        const model = obj.message && typeof obj.message.model === 'string' ? obj.message.model : null;
-        if (model) agg.modelCounts.set(model, (agg.modelCounts.get(model) || 0) + 1);
+        if (isNewMessage) {
+          agg.tokens.input += usage.input_tokens || 0;
+          agg.tokens.output += usage.output_tokens || 0;
+          agg.tokens.cacheCreate += usage.cache_creation_input_tokens || 0;
+          agg.tokens.cacheRead += usage.cache_read_input_tokens || 0;
+          agg.apiCalls++;
 
+          const model = obj.message && typeof obj.message.model === 'string' ? obj.message.model : null;
+          if (model) agg.modelCounts.set(model, (agg.modelCounts.get(model) || 0) + 1);
+        }
+
+        // tool_use 블록은 usage와 달리 물리 줄마다 서로 다른 실제 콘텐츠(각 줄이 콘텐츠 배열의
+        // 서로 다른 블록 1개씩을 담음)라서 중복이 아니다 — message.id당 한 번이 아니라 블록 단위로
+        // 그대로 순회해야 실제 도구 호출 수와 맞는다.
         const content = obj.message && obj.message.content;
         const toolBlocks = extractToolUseBlocks(content);
         agg.toolCalls += toolBlocks.length;

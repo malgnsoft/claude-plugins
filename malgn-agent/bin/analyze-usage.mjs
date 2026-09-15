@@ -191,6 +191,7 @@ function newSessionAgg(sessionId) {
     // 중복 호출 탐지용: key = tool명 + JSON.stringify(input)
     toolCallCounts: new Map(), // key -> { count, tool, inputPreview }
     lastToolName: null,
+    pending: null, // 아직 확정(flush)되지 않은, 같은 message.id로 모으는 중인 assistant 메시지 버퍼
   };
 }
 
@@ -265,6 +266,118 @@ async function run() {
   let totalDelegationCount = 0;
   let nestedDelegationCount = 0;
 
+  // 하나의 API 호출(assistant 메시지 1개, message.id로 식별)이 thinking/text/tool_use 콘텐츠
+  // 블록별로 여러 물리 줄에 나뉘어 기록되며, 그 물리 줄들은 모두 동일한 usage 값을 반복해서 담고
+  // 있다. agg.pending에 같은 message.id의 물리 줄들을 다 모은 뒤(실제 tool_use 블록 전부 포함) 이
+  // 함수로 한 번만 확정(flush)해서 토큰/일자별/도구별/서브에이전트별/API호출 목록에 정확히 1회
+  // 반영한다 — 그래야 tool_use 블록별 토큰 분할(divisor)도 메시지 전체의 실제 블록 수 기준이 된다.
+  function flushPending(agg) {
+    const pending = agg.pending;
+    if (!pending) return;
+    agg.pending = null;
+
+    const { usage, isSidechain, ts, dateStr, cwd, toolBlocks } = pending;
+
+    addTokens(agg.tokens, usage);
+    addTokens(isSidechain ? agg.sidechainTokens : agg.mainTokens, usage);
+
+    agg.apiCalls++;
+    totalApiCalls++;
+    if (isSidechain) agg.sidechainApiCalls++;
+    else agg.mainApiCalls++;
+
+    const dailyPrev = dailyTotals.get(dateStr) || 0;
+    dailyTotals.set(
+      dateStr,
+      dailyPrev +
+        (usage.input_tokens || 0) +
+        (usage.output_tokens || 0) +
+        (usage.cache_creation_input_tokens || 0) +
+        (usage.cache_read_input_tokens || 0)
+    );
+    if (!dailySessionIds.has(dateStr)) dailySessionIds.set(dateStr, new Set());
+    dailySessionIds.get(dateStr).add(agg.sessionId);
+
+    const toolNames = toolBlocks.map((b) => b.name);
+    const precedingSnapshot = agg.lastToolName; // 이 메시지가 도구 호출 없이 끝났을 때 "직전 도구"로 쓸 스냅샷
+    if (toolNames.length > 0) agg.lastToolName = toolNames[toolNames.length - 1];
+
+    // 도구별 / 서브에이전트별 집계: 한 API 호출(메시지)에 도구가 여러 개면 그 호출의 토큰을 실제
+    // 도구 수만큼 균등 분할해 귀속한다.
+    if (toolBlocks.length > 0) {
+      const divisor = toolBlocks.length;
+      for (const block of toolBlocks) {
+        let tAgg = toolAgg.get(block.name);
+        if (!tAgg) {
+          tAgg = { count: 0, tokens: newBucket() };
+          toolAgg.set(block.name, tAgg);
+        }
+        tAgg.count++;
+        addSplitTokens(tAgg.tokens, usage, divisor);
+
+        if (SUBAGENT_TOOL_NAMES.has(block.name)) {
+          totalDelegationCount++;
+          if (isSidechain) nestedDelegationCount++; // 서브에이전트 내부에서 또 위임 = 중첩
+
+          const input = block.input || {};
+          const label =
+            (typeof input.subagent_type === 'string' && input.subagent_type.trim()) ||
+            (typeof input.description === 'string' && input.description.trim()) ||
+            '(subagent_type/description 없음)';
+          let sAgg = subagentAgg.get(label);
+          if (!sAgg) {
+            sAgg = { count: 0, tokens: newBucket() };
+            subagentAgg.set(label, sAgg);
+          }
+          sAgg.count++;
+          addSplitTokens(sAgg.tokens, usage, divisor);
+        }
+      }
+    } else {
+      const key = '(텍스트 응답, 도구 없음)';
+      let tAgg = toolAgg.get(key);
+      if (!tAgg) {
+        tAgg = { count: 0, tokens: newBucket() };
+        toolAgg.set(key, tAgg);
+      }
+      tAgg.count++;
+      addSplitTokens(tAgg.tokens, usage, 1);
+    }
+
+    // 개별 API 호출 비용 (스펙: input + cache_creation + output, cache_read 제외)
+    const sortMetric =
+      (usage.input_tokens || 0) + (usage.cache_creation_input_tokens || 0) + (usage.output_tokens || 0);
+
+    apiCalls.push({
+      ts,
+      sessionId: agg.sessionId,
+      cwd,
+      input: usage.input_tokens || 0,
+      output: usage.output_tokens || 0,
+      cacheCreate: usage.cache_creation_input_tokens || 0,
+      cacheRead: usage.cache_read_input_tokens || 0,
+      sortMetric,
+      toolNames,
+      precedingTool: toolNames.length === 0 ? precedingSnapshot : null,
+      isSidechain,
+    });
+
+    // 중복 호출 탐지: 같은 세션 내 동일 tool + 동일 input
+    for (const block of toolBlocks) {
+      const key = `${block.name}::${JSON.stringify(block.input)}`;
+      const prev = agg.toolCallCounts.get(key);
+      if (prev) {
+        prev.count++;
+      } else {
+        agg.toolCallCounts.set(key, {
+          count: 1,
+          tool: block.name,
+          inputPreview: truncate(block.input, 120),
+        });
+      }
+    }
+  }
+
   for (const file of files) {
     let stream;
     try {
@@ -332,109 +445,34 @@ async function run() {
         const usage = obj.message && obj.message.usage;
         if (!usage || typeof usage !== 'object') continue; // usage 없는 assistant 라인은 skip
 
-        addTokens(agg.tokens, usage);
-        addTokens(isSidechain ? agg.sidechainTokens : agg.mainTokens, usage);
-
-        agg.apiCalls++;
-        totalApiCalls++;
-        if (isSidechain) agg.sidechainApiCalls++;
-        else agg.mainApiCalls++;
-
-        const dailyPrev = dailyTotals.get(dateStr) || 0;
-        dailyTotals.set(
-          dateStr,
-          dailyPrev +
-            (usage.input_tokens || 0) +
-            (usage.output_tokens || 0) +
-            (usage.cache_creation_input_tokens || 0) +
-            (usage.cache_read_input_tokens || 0)
-        );
-        if (!dailySessionIds.has(dateStr)) dailySessionIds.set(dateStr, new Set());
-        dailySessionIds.get(dateStr).add(sessionId);
-
+        // 하나의 API 호출(assistant 메시지 1개)이 thinking/text/tool_use 콘텐츠 블록별로 여러 물리
+        // 줄에 나뉘어 기록되고, 그 물리 줄들은 모두 동일한 usage 값을 반복해서 담고 있다. message.id로
+        // 묶어 agg.pending에 실제 tool_use 블록들을 다 모은 뒤 flushPending()에서 한 번만 집계한다.
+        // id가 없는(비정상/구버전) 줄은 dedup할 근거가 없으므로 그 줄 하나만으로 즉시 확정한다.
+        const messageId = obj.message && typeof obj.message.id === 'string' ? obj.message.id : null;
         const content = obj.message && obj.message.content;
-        const toolBlocks = extractToolUseBlocks(content);
-        const toolNames = toolBlocks.map((b) => b.name);
+        const toolBlocksHere = extractToolUseBlocks(content);
 
-        if (toolNames.length > 0) agg.lastToolName = toolNames[toolNames.length - 1];
-
-        // 도구별 / 서브에이전트별 집계: 한 API 호출에 도구가 여러 개면 그 호출의 토큰을 도구 수만큼 균등 분할해 귀속한다.
-        if (toolBlocks.length > 0) {
-          const divisor = toolBlocks.length;
-          for (const block of toolBlocks) {
-            let tAgg = toolAgg.get(block.name);
-            if (!tAgg) {
-              tAgg = { count: 0, tokens: newBucket() };
-              toolAgg.set(block.name, tAgg);
-            }
-            tAgg.count++;
-            addSplitTokens(tAgg.tokens, usage, divisor);
-
-            if (SUBAGENT_TOOL_NAMES.has(block.name)) {
-              totalDelegationCount++;
-              if (isSidechain) nestedDelegationCount++; // 서브에이전트 내부에서 또 위임 = 중첩
-
-              const input = block.input || {};
-              const label =
-                (typeof input.subagent_type === 'string' && input.subagent_type.trim()) ||
-                (typeof input.description === 'string' && input.description.trim()) ||
-                '(subagent_type/description 없음)';
-              let sAgg = subagentAgg.get(label);
-              if (!sAgg) {
-                sAgg = { count: 0, tokens: newBucket() };
-                subagentAgg.set(label, sAgg);
-              }
-              sAgg.count++;
-              addSplitTokens(sAgg.tokens, usage, divisor);
-            }
-          }
-        } else {
-          const key = '(텍스트 응답, 도구 없음)';
-          let tAgg = toolAgg.get(key);
-          if (!tAgg) {
-            tAgg = { count: 0, tokens: newBucket() };
-            toolAgg.set(key, tAgg);
-          }
-          tAgg.count++;
-          addSplitTokens(tAgg.tokens, usage, 1);
+        if (agg.pending && (messageId === null || agg.pending.messageId !== messageId)) {
+          flushPending(agg);
         }
-
-        // 개별 API 호출 비용 (스펙: input + cache_creation + output, cache_read 제외)
-        const sortMetric =
-          (usage.input_tokens || 0) + (usage.cache_creation_input_tokens || 0) + (usage.output_tokens || 0);
-
-        apiCalls.push({
-          ts,
-          sessionId,
-          cwd: agg.cwd,
-          input: usage.input_tokens || 0,
-          output: usage.output_tokens || 0,
-          cacheCreate: usage.cache_creation_input_tokens || 0,
-          cacheRead: usage.cache_read_input_tokens || 0,
-          sortMetric,
-          toolNames,
-          precedingTool: toolNames.length === 0 ? agg.lastToolName : null,
-          isSidechain,
-        });
-
-        // 중복 호출 탐지: 같은 세션 내 동일 tool + 동일 input
-        for (const block of toolBlocks) {
-          const key = `${block.name}::${JSON.stringify(block.input)}`;
-          const prev = agg.toolCallCounts.get(key);
-          if (prev) {
-            prev.count++;
-          } else {
-            agg.toolCallCounts.set(key, {
-              count: 1,
-              tool: block.name,
-              inputPreview: truncate(block.input, 120),
-            });
-          }
+        if (!agg.pending) {
+          agg.pending = { messageId, isSidechain, usage, ts, dateStr, cwd: agg.cwd, toolBlocks: [] };
         }
+        agg.pending.toolBlocks.push(...toolBlocksHere);
+
+        if (messageId === null) flushPending(agg); // id 없는 줄은 병합 대상이 없으니 바로 확정
         continue;
       }
       // system / attachment / queue-operation 등은 집계 대상 아님 (cwd/시각만 세션 범위에 반영됨)
     }
+  }
+
+  // 파일 스트리밍이 끝난 뒤에도 마지막 메시지가 agg.pending에 아직 확정되지 않은 채 남아있을 수
+  // 있다(그 메시지의 다음 메시지가 아예 없어 messageId 전환 트리거가 발생하지 않았으므로) — 세션별로
+  // 남은 pending을 전부 확정한다.
+  for (const agg of sessions.values()) {
+    flushPending(agg);
   }
 
   if (sessions.size === 0) {
