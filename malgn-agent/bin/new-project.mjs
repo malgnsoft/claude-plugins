@@ -178,8 +178,10 @@ for (const [rel, content] of Object.entries(files)) {
 
 // git 추적에서 제외할 항목을 등록한다.
 //   STATUS.md          — 팀 공유 파일이 아니라 개인 로컬 캐시로 전환(§1-b).
-//   .claude/worktrees/ — 작업 격리용 워크트리가 만들어지는 자리. 추적하면 격리 작업의 파일이
-//                        부모 저장소의 git 상태에 섞여 커밋 범위를 오염시킨다.
+//   .claude/worktrees/ — 작업 격리용 워크트리가 만들어지는 자리. 하네스가 같은 패턴을
+//                        .git/info/exclude에 자동 등록하지만 그 파일은 커밋되지 않아 이 클론
+//                        안에서만 유효하다 — .gitignore에 적어야 무시 설정이 저장소에 실려
+//                        팀원과 새 클론에도 같이 간다.
 // .gitignore가 이미 있으면 append, 없으면 신규 생성. 아래 항목만 추가하고 다른 항목은 건드리지 않는다.
 const gitignorePath = join(root, '.gitignore')
 const gitignoreEntries = ['STATUS.md', '.claude/worktrees/']
