@@ -176,18 +176,25 @@ for (const [rel, content] of Object.entries(files)) {
   writeFileSync(dest, content)
 }
 
-// STATUS.md를 git 추적에서 제외한다(§1-b) — 팀 공유 파일이 아니라 개인 로컬 캐시로 전환.
-// .gitignore가 이미 있으면 append, 없으면 신규 생성. STATUS.md 항목만 추가하고 다른 항목은 건드리지 않는다.
+// git 추적에서 제외할 항목을 등록한다.
+//   STATUS.md          — 팀 공유 파일이 아니라 개인 로컬 캐시로 전환(§1-b).
+//   .claude/worktrees/ — 작업 격리용 워크트리가 만들어지는 자리. 추적하면 격리 작업의 파일이
+//                        부모 저장소의 git 상태에 섞여 커밋 범위를 오염시킨다.
+// .gitignore가 이미 있으면 append, 없으면 신규 생성. 아래 항목만 추가하고 다른 항목은 건드리지 않는다.
 const gitignorePath = join(root, '.gitignore')
-const gitignoreEntry = 'STATUS.md'
-let gitignoreTouched = false
+const gitignoreEntries = ['STATUS.md', '.claude/worktrees/']
+const gitignoreAdded = []
 try {
-  const existing = existsSync(gitignorePath) ? readFileSync(gitignorePath, 'utf8') : ''
-  const alreadyIgnored = existing.split('\n').some((line) => line.trim() === gitignoreEntry)
-  if (!alreadyIgnored) {
-    if (existing && !existing.endsWith('\n')) appendFileSync(gitignorePath, '\n')
-    appendFileSync(gitignorePath, gitignoreEntry + '\n')
-    gitignoreTouched = true
+  let existing = existsSync(gitignorePath) ? readFileSync(gitignorePath, 'utf8') : ''
+  for (const entry of gitignoreEntries) {
+    if (existing.split('\n').some((line) => line.trim() === entry)) continue
+    if (existing && !existing.endsWith('\n')) {
+      appendFileSync(gitignorePath, '\n')
+      existing += '\n'
+    }
+    appendFileSync(gitignorePath, entry + '\n')
+    existing += entry + '\n'
+    gitignoreAdded.push(entry)
   }
 } catch {}
 
@@ -198,7 +205,7 @@ if (!existsSync(join(root, '.git'))) {
 console.log(`✅ 표준 뼈대 생성: ${root}`)
 if (skipped.length) console.log(`   건너뜀(이미 존재해 덮어쓰지 않음): ${skipped.join(', ')}`)
 console.log('   STATUS.md · CLAUDE.md · docs/README.md · .claude/settings.json · package.json 중 신규 생성분 (+git init)')
-if (gitignoreTouched) console.log('   .gitignore에 STATUS.md 등록(git 추적 제외 — 개인 로컬 캐시)')
+if (gitignoreAdded.length) console.log(`   .gitignore에 등록(git 추적 제외): ${gitignoreAdded.join(' · ')}`)
 console.log('\n다음 단계:')
 console.log(useHere ? '  1. pnpm install' : `  1. cd ${root} && pnpm install`)
 console.log('  2. malgnai-hub project_bootstrap 호출 → 응답의 provider/project_id/repositoryKey를 STATUS.md frontmatter의 provider/project_id/repository_key에 채워 넣는다(repository_id/web_url은 응답에 포함되어도 저장하지 않는다).')
