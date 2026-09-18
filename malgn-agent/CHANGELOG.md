@@ -9,6 +9,11 @@
 
 ---
 
+## [1.8.44] — 2026-09-18
+
+### Fixed
+- **Micro를 넘는 작업을 기존 프로젝트 안에서 진행할 때 브랜치+워크트리 격리 없이 임의 디렉터리를 만들어 작업하고 병합 없이 완료 처리하는 결함** — `skills/project-orchestration/delegation-transfer.md`에 "작업 등급이 Micro가 아니면 개수·병렬/순차 무관하게 브랜치+워크트리로 격리하고, git 저장소가 아니면 먼저 git init부터 하며, 검증+사람 승인 후에만 병합해야 완료"라는 규율을 추가했다. 격리 수단은 하네스가 이미 제공하는 `EnterWorktree`/Agent `isolation:"worktree"`로 한정해 별도 경로 컨벤션을 두지 않는다. 병합 누락 여부를 라운드 종결 시점에도 확인할 수 있도록 `SKILL.md` §5 자기 검증 체크리스트에 항목을 추가했고, `bin/new-project.mjs`의 `.gitignore` 템플릿에 `.claude/worktrees/`를 등록해 워크트리 산출물이 팀 공유 저장소의 git 상태를 오염시키지 않게 했다.
+
 ## [1.8.43] — 2026-09-15
 
 ### Fixed
