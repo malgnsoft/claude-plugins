@@ -2,7 +2,7 @@
 
 - 대상: `malgn-agent/agents/pm.md`
 - 권고 예산: 25 KB (`BUDGET_PM_KB` — 다른 메타 에이전트(15 KB)와 분리된 pm.md 전용 임계값. 근거: [pm-md-axis-split-design.md](pm-md-axis-split-design.md) §8)
-- 이 문서가 변호하는 실측 크기: **41,518 B (40.5 KB)**
+- 이 문서가 변호하는 실측 크기: **42,151 B (41.2 KB)**
 - 작성: PM. 근거: 재배치 라운드 커밋(`de0eea9`·`0cfc736`)의 실제 diff, `docs/reviewer/review-agents-md-relocation-2026-08-31.md`(풀패널 Amber 판정) 원문 대조, pm-md-slimming 라운드·pm-md-axis-split Round A(4축 분리 + C축 8건·X축 1건 이관) reviewer/evaluator 판정 원문 대조, 현재 `pm.md` 전문 재독.
 - 40,818 B 이후 증가분(+2,419 B)은 등급 판정을 위험·가역성 기준으로 바꾸고 Standard에 Fast Path를 신설한 라운드에서 붙었다 — Fast Path 5조건·이탈 시 즉시 보고 의무·WBS 트리거 축소·reviewer 조건부 호출 트리거를 핵심 원칙에 직접 적었다. 전부 위임 전에 PM이 스킬을 열지 않고도 판단해야 하는 문장이라 §1의 "감량 금지 구역"과 같은 성격이다(옮기면 상시 로드에서 조건부 로드로 바뀌어 위임 시점에 못 보게 된다).
 

@@ -2,7 +2,7 @@
 
 - 대상: `malgn-agent/agents/autopilot.md`
 - 권고 예산: 10 KB (`BUDGET_SPECIALIST_KB`)
-- 이 문서가 변호하는 실측 크기: **18,173 B (17.7 KB)**
+- 이 문서가 변호하는 실측 크기: **18,596 B (18.2 KB)**
 - 작성: PM. 근거: reviewer 리뷰 보고서(`docs/reviewer/review-autopilot-agent-new-2026-09-19.md`, Amber·Major 7) 원문 대조, evaluator 채점 원문, trainer 반영 커밋(`87991f2`·`6ef694b`) diff 재독.
 
 ## 왜 압축 대상이 아닌가
