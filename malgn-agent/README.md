@@ -1,7 +1,7 @@
 # malgn-agent
 
 맑은소프트 전 직원용 클로드코드(Claude Code) 플러그인입니다.
-사내 공통 운영 표준과 함께, 기획부터 배포까지 각 역할을 맡는 전문 에이전트 21종,
+사내 공통 운영 표준과 함께, 기획부터 배포까지 각 역할을 맡는 전문 에이전트 22종,
 노하우 스킬 41종, 참고자료(knowledge) 41종을 한 번에 설치합니다.
 
 - **마켓플레이스**: `malgnsoft-plugins` (https://github.com/malgnsoft/claude-plugins)
@@ -36,7 +36,7 @@ claude plugin list
 
 ## 무엇이 들어 있나
 
-### 에이전트 21종 (`agents/`)
+### 에이전트 22종 (`agents/`)
 
 요청을 분석해 필요한 팀을 꾸리고 작업을 나눠주는 **PM 오케스트레이터**가 중심입니다.
 보통은 PM에게 말을 걸면 나머지 에이전트가 알아서 호출되고, 필요하면 특정 에이전트를
@@ -44,6 +44,7 @@ claude plugin list
 
 | 분류 | 에이전트 |
 | --- | --- |
+| 최상위 자율 루프 | `autopilot` |
 | 총괄 | `pm` |
 | 기획·설계 | `planner`, `architect`, `ux-designer`, `visual-designer` |
 | 구현 | `backend-dev`, `frontend-dev` |

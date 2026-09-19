@@ -1,0 +1,17 @@
+# `agents/autopilot.md` 예산 초과 사유서
+
+- 대상: `malgn-agent/agents/autopilot.md`
+- 권고 예산: 10 KB (`BUDGET_SPECIALIST_KB`)
+- 이 문서가 변호하는 실측 크기: **16,099 B (15.7 KB)**
+- 작성: PM. 근거: reviewer 리뷰 보고서(`docs/reviewer/review-autopilot-agent-new-2026-09-19.md`, Amber·Major 7) 원문 대조, evaluator 채점 원문, trainer 반영 커밋(`87991f2`·`6ef694b`) diff 재독.
+
+## 왜 압축 대상이 아닌가
+
+이 에이전트는 "PM보다 상위의 자율 루프"로서, 사람이 매 턴 지시하지 않는 동안에도 승인 게이트가 뚫리지 않아야 하는 안전장치 문서다. 늘어난 분량은 전부 그 안전장치를 이루는 문장이고, 실제로 reviewer 풀패널 검증에서 그중 다수가 "빠지면 뚫리는 구멍"으로 지적돼 채워졌다:
+
+- **비블로킹 정지 절차**(`AskUserQuestion` 미사용, 4요소×3곳 기록) — autopilot을 만든 목적 자체(사용자가 "AskUserQuestion으로 멈추는 것을 절대 원치 않는다"고 명시)를 구조적으로 보장하는 자리라 압축하면 목적이 무효화된다.
+- **등급은 조각이 아니라 목표 전체로 판정**(목표 분할을 통한 승인 우회 차단, reviewer M-5) — 자율 루프에서만 발생하는 우회 경로라 pm.md에 없는, 이 파일 고유의 안전장치다.
+- **회차·예산·연속 실패 횟수의 세션 간 영속화**(reviewer M-6) — 세션 경계에서 안전장치가 초기화되지 않게 하는 문장으로, 자율 루프가 여러 세션에 걸쳐 산다는 전제 자체가 요구하는 분량이다.
+- **PM 권한표·승인 게이트 참조와의 종속 관계 명시**(reviewer M-3·M-4) — 다른 문서(특히 `knowledge/leadership/autonomous-iteration-philosophy.md`)의 서술이 승인 범위를 좁히는 것으로 오독되지 않게 못박은 단서 문장들이다.
+
+즉 이 파일은 `agents/pm.md`·`agents/trainer.md`와 같은 성격("상시 판단이 필요한 안전·게이트 문서는 압축 대상이 아니다")으로 예산을 넘는다. 재감축을 검토하기 전에 이 문서와 위 리뷰 보고서를 먼저 읽는다.

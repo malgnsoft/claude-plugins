@@ -112,6 +112,13 @@ const BUDGET_RATIONALE = {
     doc: 'docs/refactor/trainer-budget-rationale.md',
     bytes: 28241,
   },
+  // PM보다 상위의 자율 루프 안전장치 문서. 늘어난 분량은 비블로킹 정지 절차·목표 전체 등급
+  // 판정(승인 우회 차단)·회차 카운터 세션간 영속화 등 이 파일 고유의 안전장치라 압축 대상이
+  // 아니다 — 근거: docs/refactor/autopilot-budget-rationale.md.
+  'agents/autopilot.md': {
+    doc: 'docs/refactor/autopilot-budget-rationale.md',
+    bytes: 16099,
+  },
 };
 // 사유서가 변호하는 크기에서 이만큼까지는 드리프트로 보지 않는다(오탈자·1줄 규칙 수정 여유).
 const RATIONALE_DRIFT_TOLERANCE_B = 512;
