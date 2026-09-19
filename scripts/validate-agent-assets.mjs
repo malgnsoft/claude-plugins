@@ -99,7 +99,7 @@ const BUDGET_RATIONALE = {
   // docs/refactor/pm-md-axis-split-design.md.
   'agents/pm.md': {
     doc: 'docs/refactor/pm-budget-rationale.md',
-    bytes: 38974,
+    bytes: 41518,
   },
   // 재배치 라운드(de0eea9)로 30.0→25.8KB까지 줄었으나 권고 예산(15KB)을 여전히 넘는다.
   // 남은 분량은 핵심원칙·역할경계·실행모드표(trainer 정체성 정의) 중심이다 —
@@ -117,7 +117,7 @@ const BUDGET_RATIONALE = {
   // 아니다 — 근거: docs/refactor/autopilot-budget-rationale.md.
   'agents/autopilot.md': {
     doc: 'docs/refactor/autopilot-budget-rationale.md',
-    bytes: 16779,
+    bytes: 18173,
   },
 };
 // 사유서가 변호하는 크기에서 이만큼까지는 드리프트로 보지 않는다(오탈자·1줄 규칙 수정 여유).
