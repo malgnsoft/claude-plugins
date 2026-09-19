@@ -131,7 +131,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 ## Project Overview
 claude-plugins — 맑은소프트 전 직원 배포용 클로드코드 플러그인 마켓플레이스이자, 그 핵심 플러그인 `malgn-agent`(공통 표준 에이전트·스킬·지식·훅)를 만들고 관리하는 프로젝트.
 GitHub: https://github.com/malgnsoft/claude-plugins (이 저장소 자체가 마켓플레이스 주소).
-등록 플러그인은 `malgn-agent` 1종뿐이다(공통 표준 + 범용 에이전트 21종 + PM 오케스트레이터 + 노하우 스킬/knowledge + malgnai-hub 연동). 개인/팀별 플러그인은 아직 없다.
+등록 플러그인은 `malgn-agent` 1종뿐이다(공통 표준 + 범용 에이전트 22종 + PM 오케스트레이터 + 노하우 스킬/knowledge + malgnai-hub 연동). 개인/팀별 플러그인은 아직 없다.
 
 ## Commands
 ```bash
@@ -143,7 +143,7 @@ pnpm run check-docs    # malgn-agent 자산 개수(agents·skills·knowledge) �
 - `.claude-plugin/marketplace.json` — 마켓플레이스 정의(`malgnsoft-plugins`), 등록 플러그인 `malgn-agent` 1종. **버전은 `malgn-agent/.claude-plugin/plugin.json`과 같이 올린다** — 어긋나면 `/plugin update`가 변경을 감지하지 못한다.
 - `malgn-agent/` — 마켓플레이스의 핵심이자 유일한 플러그인.
   - `.claude-plugin/plugin.json` — `mcpServers.malgnai-hub`(원격 HTTP `https://malgnai-hub.apiserver.kr/mcp`, OAuth 로그인이 정상 경로) + `userConfig.device_token`(OAuth가 안 되는 예외 상황의 탈출구 필드 — 값을 채워도 자동으로 쓰이지 않는다, 정상 설치는 비워둔다)
-  - `agents/` 21종 — 전원 `pm.md` 기준 위임모델. ⚠️ `agents/pm.md`는 **이 프로젝트가 만드는 산출물**(설치사 직원이 쓰는 제품용 PM)이지 이 세션 자신의 운영 규칙이 아니다
+  - `agents/` 22종 — `autopilot` 1종을 제외한 전원 `pm.md` 기준 위임모델(`autopilot`은 PM보다 상위의 자율 루프). ⚠️ `agents/pm.md`는 **이 프로젝트가 만드는 산출물**(설치사 직원이 쓰는 제품용 PM)이지 이 세션 자신의 운영 규칙이 아니다
   - `skills/` 41종 — 명명은 참조 에이전트 수 기준(`common-*` 전역 상시비용 / `domain-*` 도메인 / 무접두어 단일 참조)
   - `knowledge/` 41개 — 도메인별 디렉토리, 진입점 `knowledge/README.md`. 절차·체크리스트의 정본은 `skills/`다 — 그 배경이 스킬 본문 상단에 몇 줄로 흡수될 만큼 짧으면 knowledge를 두지 않고 흡수하며, 흡수 후에도 남는 것(도메인 레퍼런스·역추출 사례처럼 스킬 분량을 넘는 독립 내용)만 knowledge에 둔다
   - `bin/` — 무의존성 Node 내장모듈만 쓰는 번들 스크립트(Windows/macOS 동일 실행). 토큰 사용량 자가진단(`analyze-usage`/`report-usage`/`usage-agent-lib`/`install-usage-agent`/`pair-usage-device`) · `capture.mjs`(Playwright 캡처) · `new-project.mjs`(스캐폴더) · `check-*.mjs`(규약·보안 점검)

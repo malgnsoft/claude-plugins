@@ -99,7 +99,7 @@ const BUDGET_RATIONALE = {
   // docs/refactor/pm-md-axis-split-design.md.
   'agents/pm.md': {
     doc: 'docs/refactor/pm-budget-rationale.md',
-    bytes: 36976,
+    bytes: 42151,
   },
   // 재배치 라운드(de0eea9)로 30.0→25.8KB까지 줄었으나 권고 예산(15KB)을 여전히 넘는다.
   // 남은 분량은 핵심원칙·역할경계·실행모드표(trainer 정체성 정의) 중심이다 —
@@ -111,6 +111,13 @@ const BUDGET_RATIONALE = {
   'agents/trainer.md': {
     doc: 'docs/refactor/trainer-budget-rationale.md',
     bytes: 28241,
+  },
+  // PM보다 상위의 자율 루프 안전장치 문서. 늘어난 분량은 비블로킹 정지 절차·목표 전체 등급
+  // 판정(승인 우회 차단)·회차 카운터 세션간 영속화 등 이 파일 고유의 안전장치라 압축 대상이
+  // 아니다 — 근거: docs/refactor/autopilot-budget-rationale.md.
+  'agents/autopilot.md': {
+    doc: 'docs/refactor/autopilot-budget-rationale.md',
+    bytes: 18596,
   },
 };
 // 사유서가 변호하는 크기에서 이만큼까지는 드리프트로 보지 않는다(오탈자·1줄 규칙 수정 여유).
