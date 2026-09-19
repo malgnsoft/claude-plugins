@@ -51,7 +51,7 @@
 - `reporting-integration-guide.md` — 산출물 통합 절차, 최종 보고 템플릿, RAG 상태, 2분 규칙 (`agents/pm.md` 실참조)
 - `retrospective-framework.md` — Start/Stop/Continue + SWOT 회고, 교훈 문서화, 에이전트 성과 추적
 - `agent-training-guide.md` — 에이전트 훈련 시스템의 배경·철학, MD 표준 포맷, 스킬/경험 점수 체계, knowledge 관리 체계, 학습 이력 기록 절차. 에이전트 MD 골격 정본은 이 문서 §2.2의 9단 골격이다(부록은 요약). 모드별 실행 절차는 담지 않고 정본 스킬만 가리킨다 (`agents/trainer.md` 실참조)
-- `autonomous-iteration-philosophy.md` — 자율 반복 상한(3~5회)·수확체감 우선 종료조건, 일일 토큰 예산 게이트와 한도 초과 시 대표 보고 절차 (`agents/pm.md` 실참조)
+- `autonomous-iteration-philosophy.md` — 자율 반복 상한(3~5회)·수확체감 우선 종료조건, 일일 토큰 예산 게이트와 한도 초과 시 대표 보고 절차. 승인 범위에 관한 서술은 `agents/pm.md`의 PM 권한 참조표에 종속된다 (`agents/pm.md`·`agents/autopilot.md` 실참조)
 - `coo-rule-rationale.md` — PM 핵심 운영 규칙의 근거 모음(orchestrator 흡수, 집필 위임 원칙, 공유 가정 주입, 경로 릴레이 순차 위임) — 각 규칙이 유래한 실제 사고 사례 포함 (`agents/pm.md` 실참조)
 - (STATUS.md 표준 포맷·크기 상한·아카이빙·헤더 교체 규칙 정본은 knowledge가 아니라 `skills/project-standards` §3)
 - `judgment-independence-patterns.md` — 판정 독립성 설계 3요소(선기대치 자술/blind 판정/합격에만 서명) 참고 노트, 타 AI 조직 사례 재정리. evaluator 판정 체크리스트를 설계·보강할 때 참고
