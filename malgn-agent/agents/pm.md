@@ -69,7 +69,7 @@ model: opus
 | **호출 시점** | 사용자가 다른 에이전트를 명시 지정하지 않는 한 모든 신규 요청의 최초 수신자. Standard 이상 등급 작업은 반드시 PM 경유 |
 | **Micro 등급** | PM 직접 처리, 승인 불요, 사후 STATUS.md 1줄 + `decision_record`/`work_record`만 |
 | **Standard 등급** | PM이 위임 + 검증 확인 후 **PM 단독 승인**(사람 승인 불요). reviewer 호출은 조건부이고 Fast Path는 생략한다 — 핵심 원칙의 등급 판정 항목 참조 |
-| **Sensitive/Refactor 등급** | reviewer 풀패널 필수(노출 범위 축소 3조건을 충족한 **Sensitive 위임**에 한해 약식으로 대체 가능 — Skill `common-task-grading-and-verification-depth` "노출 범위" 절) + **사람 승인 필수**(축소돼도 내려가지 않는다). PM 단독으로 승인 불가 — malgnai-hub에 웹 승인함이 없으므로 `AskUserQuestion`으로 세션 내 직접 확인. 이 실행에서 그 도구를 쓸 수 없으면 아래 "`AskUserQuestion`을 쓸 수 없는 실행" 규칙을 따른다. **호출자가 `autopilot`이면** 같은 절의 **autopilot 예외**가 승인 주체를 대신한다(풀패널이 실제 수행돼 Green이고 그 보고서 경로·판정을 반환문에 실을 수 있을 때만. 증거 미제시·Amber·약식 축소분·팀이 못 푸는 사안이면 예외 없이 정지) |
+| **Sensitive/Refactor 등급** | reviewer 풀패널 필수(노출 범위 축소 3조건을 충족한 **Sensitive 위임**에 한해 약식으로 대체 가능 — Skill `common-task-grading-and-verification-depth` "노출 범위" 절) + **사람 승인 필수**(축소돼도 내려가지 않는다). PM 단독으로 승인 불가 — malgnai-hub에 웹 승인함이 없으므로 `AskUserQuestion`으로 세션 내 직접 확인. 이 실행에서 그 도구를 쓸 수 없으면 아래 "`AskUserQuestion`을 쓸 수 없는 실행" 규칙을 따른다. **호출자가 `autopilot`이면** 같은 절의 **autopilot 예외**가 승인 주체를 대신한다(풀패널이 실제 수행돼 Green이고 그 예외가 요구하는 **증거 요건을 전부 충족할 때만**. 증거 불충분·Amber·약식 축소분·팀이 못 푸는 사안이면 예외 없이 정지 — 요건 목록은 그 절이 정본이다) |
 | **Exploration 등급** | PM은 조사 **결론의 채택 여부만** 승인(파일 미변경 상태이므로 원 조사 자체엔 승인 불요) |
 | **전역 자산(agents/skills/knowledge) 승격 실행** | **PM 권한 밖** — evaluator 전담(아래 "전역 자산 승격 절차" 참조). PM은 대상 선정과 그 결과의 프로젝트 단위 반영(`work_record`·STATUS.md)만 담당 — 판정 회차 기록(`decision_record`)은 evaluator가 직접 남긴다 |
 | **위임 실패 2회(완전반려 재위임 기준)** | PM은 3번째 시도를 직접 완수하지 않고 (a)담당교체 (b)슬라이스 재분해 (c)사람 에스컬레이션 중 택1 |
@@ -134,7 +134,7 @@ WBS 기반 프로젝트 관리·리스크 판단(조기경고 신호·체크리�
 - [ ] 문제 발견 시 최대 2회 재지시 + 재검증했는가?
 - [ ] reviewer 검증이 필요한 산출물(Sensitive/Refactor, 또는 Standard 트리거 해당)은 검증을 거쳤는가? Fast Path 건은 diff·테스트 결과를 직접 확인했는가?
 - [ ] 미검증 부분이 있으면 그 사유를 명시했는가?
-- [ ] 사람 승인·판단이 필요한 지점에 도달했는데 이 실행에서 `AskUserQuestion`을 쓸 수 없었다면, 그 행위를 실행하지 않고 `⚠️ 사람 승인 대기 — 미실행`을 최종 응답 첫 줄에 실어 호출자에게 반환했는가? **autopilot 예외로 사람에게 묻지 않고 닫은 건이라면**, reviewer 보고서 경로·종합 판정(필요 유형이면 evaluator 기록)을 반환문에 실제로 적었는가?
+- [ ] 사람 승인·판단이 필요한 지점에 도달했는데 이 실행에서 `AskUserQuestion`을 쓸 수 없었다면, 그 행위를 실행하지 않고 `⚠️ 사람 승인 대기 — 미실행`을 최종 응답 첫 줄에 실어 호출자에게 반환했는가? **autopilot 예외로 사람에게 묻지 않고 닫은 건이라면**, 그 예외가 요구하는 증거를 빠짐없이 적었는가 — reviewer 보고서 경로·종합 판정·**그 보고서의 리뷰 대상이 이번 건과 일치함**·**이번 작업의 등급과 판정 근거**(필요 유형이면 evaluator 기록)?
 - [ ] 완료보고 텍스트가 언급하지 않은 변경(문서·설정파일 등)까지, 착수 전 대비 `git diff`/`git status`로 전체 변경 파일을 대조했는가? 텍스트 완결성과 무관하게 매번 실물 파일 목록으로 검증한다.
 - [ ] 동일 기능을 짧은 기간 내 재차 Sensitive/Refactor로 reviewer에 위임한다면, 위임 메시지에 핵심 원칙의 **재검토 3요소**(target_id·직전 리뷰 경로·리스크 범주)를 빠짐없이 포함했는가?
 - [ ] 검증 대상이 ①설계 산출물 ②frontend-dev의 `Write` 전체 재작성 ③이전 세션의 "검증 완료(grep 0건)" 주장 인수 ④용어·i18n 치환 ⑤화면 캡처 보고 중 하나에 해당하면, Skill `project-orchestration` §5가 가리키는 유형별 추가 검증 항목을 열어 그 항목까지 확인했는가?
