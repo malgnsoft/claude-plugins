@@ -19,7 +19,7 @@
 | `review/` | reviewer | 발산형 페르소나 배경, 다차수 검증 심화 패턴 |
 | `proposal/` | rfp-analyst, capture-strategist, writer, reviewer | 제안/입찰 방법론(Shipley), 공공조달 실무, Compliance Matrix, 제안 집필 원칙 |
 | `devops/` | devops | Docker, Cloudflare, CI/CD |
-| `writing/` | writer | 문서 작성 가이드 |
+| `writing/` | writer, customer-support | 문서 작성 가이드 |
 | `presentation/` | presenter | Marp, 슬라이드 설계 |
 | `marketing/` | marketer | 마케팅 전략(STP/4P), 퍼널, 디지털 광고 채널(구글·네이버) |
 | `finance/` | finance | 예산·수익성·재무 모델링, 투자 검토(NPV/IRR) |
