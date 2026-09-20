@@ -125,7 +125,15 @@ const BUDGET_RATIONALE = {
   // 안전장치라 압축 대상이 아니다 — 근거: docs/refactor/business-director-budget-rationale.md.
   'agents/business-director.md': {
     doc: 'docs/refactor/business-director-budget-rationale.md',
-    bytes: 52175,
+    bytes: 52871,
+  },
+  // marketer/finance/researcher와 같은 층위의 도메인 전문가. 초과분은 판정과 집행의 경계(결제
+  // 조작·실제 발송 모두 CS 영역 밖)·PII 축 분리(발송 문안은 채우고 저장본은 최소화)·잔존
+  // 트레이드오프 고지 등 리뷰가 실제로 찾은 안전 경계라 압축 대상이 아니다 — 근거:
+  // docs/refactor/customer-support-budget-rationale.md.
+  'agents/customer-support.md': {
+    doc: 'docs/refactor/customer-support-budget-rationale.md',
+    bytes: 10598,
   },
 };
 // 사유서가 변호하는 크기에서 이만큼까지는 드리프트로 보지 않는다(오탈자·1줄 규칙 수정 여유).
