@@ -119,6 +119,14 @@ const BUDGET_RATIONALE = {
     doc: 'docs/refactor/autopilot-budget-rationale.md',
     bytes: 18596,
   },
+  // 사업 전체를 도메인별 전문가에게 위임하는 최상위 자율 루프. 3층 승인 게이트(director 고유
+  // 사업게이트 4종 + autopilot→PM 게이트 + marketer/finance/researcher/reviewer 각자 게이트)와
+  // 지출·계약의 방향성 판별(서비스계약/외부계약 구조적 배제, 예산 한도 예외)이 이 파일 고유의
+  // 안전장치라 압축 대상이 아니다 — 근거: docs/refactor/business-director-budget-rationale.md.
+  'agents/business-director.md': {
+    doc: 'docs/refactor/business-director-budget-rationale.md',
+    bytes: 52175,
+  },
 };
 // 사유서가 변호하는 크기에서 이만큼까지는 드리프트로 보지 않는다(오탈자·1줄 규칙 수정 여유).
 const RATIONALE_DRIFT_TOLERANCE_B = 512;
