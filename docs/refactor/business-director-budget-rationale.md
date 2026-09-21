@@ -2,8 +2,12 @@
 
 - 대상: `malgn-agent/agents/business-director.md`
 - 권고 예산: 10 KB (`BUDGET_SPECIALIST_KB`)
-- 이 문서가 변호하는 실측 크기: **52,871 B (51.6 KB)**
-- 작성: PM. 근거: reviewer 3라운드 보고서(`docs/reviewer/review-business-director-agent-new-2026-09-21.md`·`-2차.md`·`-3차.md`, 1차 Red→2차 Red→3차 Green) 원문 대조, evaluator 3회차 채점 원문 대조, trainer 반영 커밋(`ef58cb1`·`b448a5f`·`69d8c39`·`c774078`·`834dc9c`) diff 재독. 이후 `customer-support` 신설 통합분(+201B — 위임 지도·정지 신호·등급 판정 주체·VERIFY 게이트·자기검증·학습 자료 6곳에 반영, "담당 없는 도메인"에서 고객지원 제거) 반영.
+- 이 문서가 변호하는 실측 크기: **64,481 B (63.0 KB)**
+- 작성: PM. 근거: reviewer 3라운드 보고서(`docs/reviewer/review-business-director-agent-new-2026-09-21.md`·`-2차.md`·`-3차.md`, 1차 Red→2차 Red→3차 Green) 원문 대조, evaluator 3회차 채점 원문 대조, trainer 반영 커밋(`ef58cb1`·`b448a5f`·`69d8c39`·`c774078`·`834dc9c`) diff 재독. `customer-support` 신설 통합분(+201B) 반영 후, autopilot 인계를 직접 호출에서 위임요청 반환으로 바꾼 릴레이 수정(+11,610B — 아래 항목 추가) 반영.
+
+## 릴레이 수정으로 늘어난 분량 (+11,610B)
+
+Claude Code 서브에이전트 중첩은 메인 대화로부터 기본 3층까지만 허용되고 한계층은 `Agent` 도구를 회수당한다. director가 `autopilot`을 직접 스폰하면 그 아래 PM이 3층이 되어 `Agent`를 잃어 전문가 위임이 전혀 안 되므로(개발·운영·배포 경로 자체가 서지 않는 결함), director는 autopilot에 대해서만 `Agent`를 직접 쓰지 않고 위임요청을 반환해 호출자(최상위 세션)가 대신 스폰하게 바꿨다. reviewer 2라운드(1차 Red — Critical 1/Major 3, 2차 Amber — 전부 해소)가 검증했다. 늘어난 내용은 11개 서로 다른 실행 시점(요청을 쓸 때·기록을 읽을 때·위임문을 쓸 때·대조할 때·기록할 때·턴을 닫을 때·마커를 만났을 때·게이트 사후 판정할 때·라운드를 점검할 때·보고서를 쓸 때·각 절을 참조할 때)에 걸린 분기 규칙이라 압축 대상이 아니다 — 순수 중복으로 확인된 것은 1건(~400B)뿐이고 그것도 흡수 대신 구조를 유지하는 편이 재개 계약(상관 핸들 발급·기록·검색)을 명확히 적는 데 필요해 그대로 뒀다(reviewer 2차 재검토가 확인).
 
 ## 왜 압축 대상이 아닌가
 

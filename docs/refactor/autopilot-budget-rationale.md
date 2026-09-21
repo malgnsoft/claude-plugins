@@ -2,8 +2,12 @@
 
 - 대상: `malgn-agent/agents/autopilot.md`
 - 권고 예산: 10 KB (`BUDGET_SPECIALIST_KB`)
-- 이 문서가 변호하는 실측 크기: **18,596 B (18.2 KB)**
-- 작성: PM. 근거: reviewer 리뷰 보고서(`docs/reviewer/review-autopilot-agent-new-2026-09-19.md`, Amber·Major 7) 원문 대조, evaluator 채점 원문, trainer 반영 커밋(`87991f2`·`6ef694b`) diff 재독.
+- 이 문서가 변호하는 실측 크기: **19,273 B (18.8 KB)**
+- 작성: PM. 근거: reviewer 리뷰 보고서(`docs/reviewer/review-autopilot-agent-new-2026-09-19.md`, Amber·Major 7) 원문 대조, evaluator 채점 원문, trainer 반영 커밋(`87991f2`·`6ef694b`) diff 재독. 이후 business-director→autopilot 릴레이 수정(+677B) 반영.
+
+## 릴레이 수정으로 늘어난 분량 (+677B)
+
+`business-director`가 서브에이전트 중첩 깊이 제한을 우회하려 autopilot을 직접 호출하지 않고 위임요청으로 반환하는 구조로 바뀌면서, autopilot 쪽에도 그 계약의 한쪽 끝이 필요해졌다 — ①호출자 서술을 "director 자신이 아니라 그 director의 호출자가 대신 띄운다"로 정정 ②RECORD 단계에 "위임문에 상관 핸들이 실려 왔으면 `work_record`의 `title`에 그 문자열을 그대로 쓴다" 1줄 추가. 후자가 없으면 director가 다음 라운드에 그 결과를 찾을 방법이 없어 이번 릴레이 수정 전체(재개)가 성립하지 않는다 — reviewer가 실제로 이 공백을 Critical로 지적했다.
 
 ## 왜 압축 대상이 아닌가
 
