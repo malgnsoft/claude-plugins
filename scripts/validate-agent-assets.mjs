@@ -117,15 +117,17 @@ const BUDGET_RATIONALE = {
   // 아니다 — 근거: docs/refactor/autopilot-budget-rationale.md.
   'agents/autopilot.md': {
     doc: 'docs/refactor/autopilot-budget-rationale.md',
-    bytes: 18596,
+    bytes: 19273,
   },
   // 사업 전체를 도메인별 전문가에게 위임하는 최상위 자율 루프. 3층 승인 게이트(director 고유
   // 사업게이트 4종 + autopilot→PM 게이트 + marketer/finance/researcher/reviewer 각자 게이트)와
   // 지출·계약의 방향성 판별(서비스계약/외부계약 구조적 배제, 예산 한도 예외)이 이 파일 고유의
-  // 안전장치라 압축 대상이 아니다 — 근거: docs/refactor/business-director-budget-rationale.md.
+  // 안전장치라 압축 대상이 아니다. 증분은 서브에이전트 중첩 깊이 제한(메인 대화로부터 기본 3층,
+  // 한계층은 `Agent` 도구 회수)을 우회하는 인계 계약(상관 핸들 발급·기록·검색·최상위 세션 전제)이라
+  // 압축 대상이 아니다 — 근거: docs/refactor/business-director-budget-rationale.md.
   'agents/business-director.md': {
     doc: 'docs/refactor/business-director-budget-rationale.md',
-    bytes: 52871,
+    bytes: 64481,
   },
   // marketer/finance/researcher와 같은 층위의 도메인 전문가. 초과분은 판정과 집행의 경계(결제
   // 조작·실제 발송 모두 CS 영역 밖)·PII 축 분리(발송 문안은 채우고 저장본은 최소화)·잔존
