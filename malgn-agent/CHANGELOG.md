@@ -9,6 +9,13 @@
 
 ---
 
+## [1.8.49] — 2026-10-08
+
+### Fixed
+- **워크트리 격리를 하네스 밖에서 `git worktree add`나 `~/workspace/` 아래 별도 폴더로 만드는 실수를 막도록 규율을 보강.** 기존 금지문은 "git과 무관한 디렉터리"만 막아 `git worktree add`로 만든 폴더가 문구상 빠져나갔고, 그렇게 만든 폴더는 하네스가 추적·정리하지 않아 workspace에 별도 프로젝트처럼 남았다. `project-orchestration/delegation-transfer.md`(정본)는 격리 수단을 `EnterWorktree`(세션 직접)와 `isolation:"worktree"`(위임) 둘로 한정하고 그 밖의 작업 폴더 생성을 금지하며, 정리는 병합 또는 미병합 기록 뒤 만든 세션에서 `ExitWorktree`로 한다고 명시한다. 이 플러그인의 전문 에이전트는 `tools:`에 `EnterWorktree`가 없어 스스로 격리할 수 없으므로, 격리되지 않은 채 작업을 받았으면 직접 만들지 않고 호출자에게 보고한다.
+- `project-standards`의 "모든 프로젝트는 `~/workspace/<프로젝트명>/` 아래" 규칙이 새 프로젝트 위치에만 적용되고 브랜치 작업용 워크트리에는 적용되지 않음을 명시했다(새 프로젝트 생성 규칙은 그대로).
+- `bin/new-project.mjs` 주석에 남은 날짜 도장을 제거했다.
+
 ## [1.8.48] — 2026-09-21
 
 ### Fixed
