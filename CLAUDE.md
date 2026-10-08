@@ -21,7 +21,8 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 ## Git 브랜치 원칙 (이 프로젝트의 중요원칙)
 **브랜치를 통한 PR 작업은 전부 로컬에서만 진행한다. 원격(origin)에는 오직 `main` 브랜치만 존재하며, origin push는 배포(=main 갱신) 목적일 때만 한다.**
-- **브랜치를 분리해서 하는 작업은 예외 없이 별도 워크트리(`isolation:"worktree"` 또는 `git worktree add`)에서 진행한다.** 메인 워킹트리에서 `git checkout`으로 브랜치만 바꾸지 않는다. 이유: 이 세션은 여러 세션이 동시에 작업하는 경우가 많아, 한 워킹트리에서 브랜치를 전환하면 병행 세션의 작업 중인 파일·HEAD와 충돌한다.
+- **브랜치를 분리해서 하는 작업은 예외 없이 별도 워크트리에서 진행한다 — 만드는 수단은 하네스 기능 둘뿐이다: 이 세션이 직접 작업할 때는 `EnterWorktree` 도구, 에이전트에게 위임할 때는 `isolation:"worktree"`.** 메인 워킹트리에서 `git checkout`으로 브랜치만 바꾸지 않는다. 이유: 이 세션은 여러 세션이 동시에 작업하는 경우가 많아, 한 워킹트리에서 브랜치를 전환하면 병행 세션의 작업 중인 파일·HEAD와 충돌한다.
+  - **`git worktree add`를 쓰지 않고, `~/workspace/` 아래 등 프로젝트 밖에 별도 폴더를 만들어 작업하지 않는다.** 하네스 기능은 워크트리를 프로젝트 안 `.claude/worktrees/`에 만들고 작업이 끝나면 정리까지 해주지만, 손으로 만든 폴더는 workspace에 별도 프로젝트처럼 쌓여 남는다. 정리할 때도 `ExitWorktree`를 쓴다.
 - trainer 초안 → reviewer 검토 → evaluator 판정도 위 규칙에 따라 워크트리에서 수행하고, `git push origin <branch>`나 `gh pr create`로 원격에 올리지 않는다.
 - 사용자 승인 후에는 `git merge`(로컬)로 main에 합치고, **오직 그 시점에만** `git push origin main`으로 배포한다.
 - **`malgn-agent/` 아래(플러그인 본체)를 바꾼 커밋이 섞인 `git push origin main` 직전에는 반드시 버전업을 선행한다 — 예외 없는 원칙.** `malgn-agent/.claude-plugin/plugin.json`과 `.claude-plugin/marketplace.json`의 `version`을 함께 올리고 `malgn-agent/CHANGELOG.md`에 항목을 적는 "release: vX.Y.Z" 커밋을 그 push에 포함한다. 여러 라운드를 한 번에 배포하면 release 커밋 하나로 묶어도 되지만, push 시점에 최소 1회는 반드시 버전이 올라야 한다. (`malgn-agent/`를 건드리지 않는 순수 저장소 메타 변경 — 루트 `CLAUDE.md`·`STATUS.md`·`docs/`·`scripts/`만의 push — 는 대상이 아니다: 설치된 플러그인 자체가 안 바뀌므로 `/plugin update`가 감지할 것도 없다.) 이유: 두 값이 어긋나거나 안 올리면 `/plugin update`가 변경을 감지하지 못해 설치된 전 직원 환경에 갱신이 전달되지 않는다 — 배포 자체가 무효화되는 결함이다.
