@@ -56,3 +56,5 @@ Skill `reviewer-persona-panel-standard` §5 표준 표. 모든 지적에 **커�
 ## 적용 이력 (append-only)
 
 - 2026-09-01 / target_id `backlog-2items-path-workrecord-20260901` / 1차(최초, Standard 약식) / docs/reviewer/review-backlog-2items-path-workrecord-2026-09-01.md — 신규 생성. 대상: `969cde4`(evaluator.md:42 경로 형식 선언 / project-retrospective SKILL.md:60 포인터 추가). C1에서 검출 — `evaluator.md:42`는 v1.0.0(`0cb2517`) 이래 접두어 선언이었고, 이후 `6e7a40f`가 trainer.md의 편집대상 경로를 **접두어 쪽으로** 통일하며 "소스 clone을 고치는 자리는 접두를 붙여야 읽기 대상과 구분된다"는 규약을 커밋 메시지에 남겼다. 이번 수정은 그 규약과 반대 방향인데 초안·커밋 메시지 어디에도 그 사실이 없다.
+
+- 2026-10-08 / target_id `worktree-means-limit-20261008` / 1차(최초, Standard 약식) / docs/reviewer/review-worktree-means-limit-2026-10-08.md — 역할개념 수준 재사용. 정본 `delegation-transfer.md:21` 수정의 인용·요약처(CLAUDE.md:24-25, team-composition-patterns.md:120, project-orchestration SKILL.md:102·110, project-standards:20) 전수 대조 — 새 불일치 0건. 선행 리뷰(2026-09-18)가 `sub-agents.md:418`을 EnterWorktree 실재 근거로 썼고 같은 줄이 이번 단정을 반증함을 기록.
