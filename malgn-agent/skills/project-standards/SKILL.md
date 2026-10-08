@@ -17,7 +17,7 @@ description: 맑은소프트 프로젝트 운영 표준 — 패키지 매니저(
 
 ## 2. 프로젝트 구조
 
-- 모든 프로젝트는 `~/workspace/<프로젝트명>/` 아래에 둔다. 이 규칙은 새 프로젝트를 어디에 만드는가에만 적용된다 — 기존 프로젝트 안에서 브랜치 작업을 격리할 워크트리는 여기에 만들지 않으며, 그 수단은 Skill `project-orchestration`의 [delegation-transfer.md](../project-orchestration/delegation-transfer.md)가 정본이다.
+- 모든 프로젝트는 `~/workspace/<프로젝트명>/` 아래에 둔다. 이 규칙은 새 프로젝트를 어디에 만드는가에만 적용된다 — 기존 프로젝트 안에서 브랜치 작업을 격리할 워크트리는 여기에 만들지 않으며, 그 수단은 Skill `project-orchestration`의 `${CLAUDE_PLUGIN_ROOT}/skills/project-orchestration/delegation-transfer.md`가 정본이다.
 - 각 프로젝트는 **독립적**이다 — 자체 `package.json`과 `pnpm-lock.yaml`을 가진다.
 - 공유 루트 락파일이나 `pnpm-workspace.yaml`을 쓰는 pnpm 모노레포는 만들지 않는다.
 
