@@ -44,7 +44,7 @@ function printUsage(emit = console.error) {
 const arg1 = process.argv[2]
 
 // --help/-h 는 아무것도 만들지 않고 종료한다. 이 분기가 없으면 도움말 플래그가 프로젝트명으로 해석돼
-// ~/workspace/--help/ 같은 디렉토리가 실제로 만들어진다(2026-08-23 재현).
+// ~/workspace/--help/ 같은 디렉토리가 실제로 만들어진다.
 if (arg1 === '--help' || arg1 === '-h') {
   printUsage(console.log)
   process.exit(0)
