@@ -5,6 +5,7 @@
   "optional": true,
   "requiresTools": ["EnterWorktree"],
   "runMode": "kill_on_decisive",
+  "estUsd": 0.15,
   "prompt": "새 기능 작업할 건데 먼저 브랜치를 하나 따서 거기서 해줘. 이름은 feature/coupon 으로 해줘.",
   "expect": {
     "all": { "pass": ["EnterWorktree", "Agent:isolation_worktree"], "tolerated": [], "labels": {} }

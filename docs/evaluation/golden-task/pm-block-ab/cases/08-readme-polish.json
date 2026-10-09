@@ -1,0 +1,27 @@
+{
+  "id": "08-readme-polish",
+  "title": "오탈자가 아닌 문서 소수정 (문장 하나 다듬기, Micro) - 끝까지 실행, 공통 결과 기준 판정",
+  "tier": "Micro",
+  "runMode": "none",
+  "verdictBasis": "outcome",
+  "outcome": { "kind": "readme-line", "targetLine": "- 가게 주인은 주문 목록을 확인합니다." },
+  "permissionMode": "acceptEdits",
+  "maxBudgetUsd": 2,
+  "timeoutSec": 420,
+  "estUsd": 0.65,
+  "prompt": "README의 '주요 기능' 목록에 있는 '가게 주인은 주문 목록을 확인합니다.' 문장을 좀 더 자연스럽게 다듬어줘.",
+  "expect": {
+    "A": {
+      "pass": ["main_edit"],
+      "tolerated": ["Agent:general-purpose"],
+      "labels": { "Agent:pm": "misroute_pm", "Agent:*": "wrong_agent" }
+    },
+    "B": {
+      "pass": ["Agent:general-purpose"],
+      "tolerated": [],
+      "labels": { "main_edit": "main_edit_violation", "Agent:pm": "misroute_pm", "Agent:*": "wrong_agent" }
+    }
+  },
+  "brief": { "all": ["README", "가게 주인은 주문 목록을 확인합니다", ["자연스럽", "다듬"]] },
+  "note": "오탈자 1줄이 아닌 재서술이라 B 훅의 직접 처리 허용(오탈자 1줄)에 해당하지 않는다는 해석(제안) - 문서 소수정은 general-purpose 위임. A는 1줄 수정이라 직접 처리 허용으로 해석. 변형별 기대는 보조 지표(변형 간 비교 금지). 판정은 공통 결과 기준: README.md의 대상 문장 1줄만 바뀌고 나머지 줄·파일 무변경(오탈자 줄 포함)."
+}

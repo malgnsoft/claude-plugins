@@ -3,6 +3,7 @@
   "title": "README 오탈자 1곳 수정 (Micro)",
   "tier": "Micro",
   "runMode": "kill_on_decisive",
+  "estUsd": 0.15,
   "prompt": "README에 '회원갑입'이라고 잘못 써 있는 것 같아. '회원가입'으로 고쳐줘.",
   "expect": {
     "all": {

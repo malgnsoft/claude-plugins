@@ -3,11 +3,12 @@
   "title": "calcPrice 설명 요청 (조회만)",
   "tier": "Micro",
   "runMode": "run_to_end_kill_on_violation",
+  "estUsd": 0.3,
   "prompt": "price.js 파일에 있는 calcPrice 함수가 도대체 뭐 하는 거야? 쉽게 설명해줘.",
   "expect": {
     "all": { "pass": ["no_action"], "tolerated": [], "labels": { "main_edit": "mutating_action", "Agent:*": "delegated_a_lookup" } }
   },
   "hard": { "maxAgent": 0, "maxMutating": 0 },
   "record": ["readCount", "answerMentions:할인"],
-  "note": "끝까지 실행이 원칙. 단 하드 조건 위반(Agent 또는 변경성 행동) 시점에는 비용 절감을 위해 종료한다 - 판정은 같다(위반 한 번이면 FAIL). 읽기 횟수와 '할인' 포함 여부는 기록만."
+  "note": "끝까지 실행이 원칙. 단 하드 조건 위반(Agent 또는 변경성 행동) 시점에는 비용 절감을 위해 종료한다 - 판정은 같다(위반 한 번이면 FAIL). 답변 텍스트가 없으면 PASS가 아니라 FAIL(no_answer). 작업 폴더가 바뀌었어도 FAIL. 읽기 횟수와 '할인' 포함 여부는 기록만."
 }

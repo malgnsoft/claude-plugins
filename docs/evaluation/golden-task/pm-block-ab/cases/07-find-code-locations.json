@@ -1,0 +1,27 @@
+{
+  "id": "07-find-code-locations",
+  "title": "파일 미지정 단순 조회 3건 (읽기 한도 초과 유도, Micro) - 끝까지 실행, 공통 결과 기준 판정",
+  "tier": "Micro",
+  "runMode": "none",
+  "verdictBasis": "outcome",
+  "outcome": { "kind": "answer-files", "requiredFiles": ["orders.mjs", "price.js", "auth.mjs"] },
+  "maxBudgetUsd": 1.5,
+  "timeoutSec": 420,
+  "estUsd": 0.65,
+  "prompt": "주문 목록을 돌려주는 코드, 주문 금액 계산하는 코드, 로그인 토큰 만드는 코드가 각각 어느 파일에 있는지 찾아서 알려줘.",
+  "expect": {
+    "A": {
+      "pass": ["no_action"],
+      "tolerated": [],
+      "labels": { "main_edit": "mutating_action", "Agent:*": "over_delegation" }
+    },
+    "B": {
+      "pass": ["Agent:Explore"],
+      "tolerated": ["no_action"],
+      "readLimit": 2,
+      "labels": { "main_edit": "mutating_action", "Agent:*": "wrong_agent" }
+    }
+  },
+  "brief": { "all": ["주문", ["금액", "calcPrice", "price"], ["토큰", "로그인", "token", "login"]] },
+  "note": "읽기 3번 이상이 자연스러운 조회. 변형별 기대(제안 해석): A는 단순조회라 직접 처리, B는 직접 읽기 한두 번 한도(main_read_heavy)를 넘기 전에 읽기 전용 Explore에 위임하거나 한도 안에서 답한다. main_read_heavy 처리: 끊지 않고 끝까지 실행하며 직접 읽기 횟수가 한도를 넘고도 위임 없이 답하면 규칙 위반으로 기록(자기규칙 보조 지표). 판정은 공통 결과 기준: 답변에 orders.mjs, price.js, auth.mjs 모두 언급 + 작업 폴더 무변경."
+}
