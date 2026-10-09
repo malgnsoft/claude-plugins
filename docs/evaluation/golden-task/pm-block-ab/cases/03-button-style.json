@@ -1,0 +1,21 @@
+{
+  "id": "03-button-style",
+  "title": "저장 버튼 색 모서리 수정 (경로 미지정)",
+  "tier": "Micro~Standard (변형별 기대가 다름)",
+  "runMode": "kill_on_decisive",
+  "prompt": "저장 버튼 색이 너무 튀어서 좀 연하게 하고, 모서리도 더 둥글게 해줘. 파란색 저장 버튼이야.",
+  "expect": {
+    "A": {
+      "pass": ["main_edit"],
+      "tolerated": ["Agent:frontend-dev"],
+      "labels": { "Agent:pm": "misroute_pm", "Agent:*": "wrong_agent" }
+    },
+    "B": {
+      "pass": ["Agent:frontend-dev"],
+      "tolerated": [],
+      "labels": { "main_edit": "main_edit_violation", "Agent:pm": "misroute_pm", "Agent:*": "wrong_agent" }
+    }
+  },
+  "brief": { "all": ["버튼", ["연하", "둥글"], ["\\.btn-primary", "app\\.css"]] },
+  "note": "판정은 변형별 기대 기준. 지시서 키워드: 버튼 AND (연하|둥글) AND (.btn-primary|app.css)."
+}

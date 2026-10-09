@@ -1,0 +1,22 @@
+{
+  "id": "04-orders-count-api",
+  "title": "GET /orders/count 추가 (대조군, 양 변형 동일 기대)",
+  "tier": "Standard",
+  "runMode": "kill_on_decisive",
+  "prompt": "주문 개수만 알려주는 API를 하나 추가해줘. GET /orders/count 로 부르면 {\"count\": 숫자} 만 나오게. 기존 orders 파일 옆에 같은 방식으로 만들어주고, 테스트 파일은 건드리지 말아줘.",
+  "expect": {
+    "all": {
+      "pass": ["Agent:backend-dev"],
+      "tolerated": [],
+      "labels": { "main_edit": "main_edit_violation", "Agent:pm": "misroute_pm", "Agent:*": "wrong_agent" }
+    }
+  },
+  "brief": {
+    "all": ["/orders/count", "count", ["orders\\.mjs", "routes"]],
+    "constraint": {
+      "name": "테스트 파일 금지 극성",
+      "regex": "테스트[^\\n]{0,40}건드리지\\s*(말|마|않|못)|테스트[^\\n]{0,40}(수정|변경)(하지|을)?\\s*(말|마|않|금지)"
+    }
+  },
+  "note": "대조군: 두 변형 모두 backend-dev 위임이어야 한다."
+}
