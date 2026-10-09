@@ -13,6 +13,7 @@
 // 사용:
 //   node scripts/run-pm-block-ab.mjs --dry-run                       # 비용 0
 //   PM_BLOCK_AB_I_ACCEPT_COST=1 node scripts/run-pm-block-ab.mjs --preflight   # 유료(사용자 승인 후 PM이 실행)
+//   PM_BLOCK_AB_I_ACCEPT_COST=1 node scripts/run-pm-block-ab.mjs --preflight-judge-only   # 판정자 격리만 재확인(약 $0.15)
 //   PM_BLOCK_AB_I_ACCEPT_COST=1 node scripts/run-pm-block-ab.mjs --variant both --reps 2
 // 단위 검증(비용 0): node scripts/verify-pm-block-ab.mjs
 
@@ -698,13 +699,34 @@ export function extractJson(text) {
   try { return JSON.parse(text.slice(s, e + 1)); } catch { return null; }
 }
 
-// 판정자 스트림 격리 검사: SessionStart hook_response가 1건이라도 있거나 플러그인이 로드됐으면 오염.
+// 내장(builtin) 플러그인: source 가 @builtin 으로 끝나거나 path 가 'builtin' 인 항목(예: agents-md, telemetry).
+// claude 가 항상 싣는 것이라 오염이 아니다. 변형 A·B 의 init.plugins 에도 똑같이 들어 있다.
+export function isBuiltinPlugin(p) {
+  if (typeof p === 'string') return p.endsWith('@builtin');
+  return String(p?.source ?? '').endsWith('@builtin') || p?.path === 'builtin' || String(p?.name ?? '').endsWith('@builtin');
+}
+
+export function listPlugins(init) {
+  const pl = init?.plugins;
+  if (Array.isArray(pl)) return pl;
+  if (pl && typeof pl === 'object') return Object.entries(pl).map(([name, v]) => ({ name, ...(typeof v === 'object' ? v : { path: v }) }));
+  return [];
+}
+
+// 판정자 스트림 격리 검사: SessionStart hook_response 가 1건이라도 있거나 비-builtin 플러그인(malgn-agent 등)이 로드됐으면 오염.
+// init 메시지를 못 봤으면(stream-json 이 아니거나 초기화 전 종료) 검사가 불가능하므로 깨끗하다고 보지 않고 오염으로 취급한다.
 export function judgeContamination(analyzer) {
   const reasons = [];
+  const initSeen = analyzer.init !== null;
+  if (!initSeen) reasons.push('init 메시지를 관측하지 못해 격리 검사 불가');
   if (analyzer.hookResponses.length > 0) reasons.push(`SessionStart hook_response ${analyzer.hookResponses.length}건`);
-  const pl = analyzer.init?.plugins;
-  if (Array.isArray(pl) ? pl.length > 0 : pl && typeof pl === 'object' && Object.keys(pl).length > 0) reasons.push('플러그인 로드됨');
-  return { contaminated: reasons.length > 0, reasons };
+  const nonBuiltin = listPlugins(analyzer.init).filter((p) => !isBuiltinPlugin(p));
+  if (nonBuiltin.length) reasons.push(`비-builtin 플러그인 로드됨: ${nonBuiltin.map((p) => (typeof p === 'string' ? p : p.name ?? p.source ?? p.path)).join(', ')}`);
+  return {
+    contaminated: reasons.length > 0,
+    reasons,
+    evidence: { initSeen, plugins: analyzer.init?.plugins ?? null, hookSessionStartCount: analyzer.hookResponses.length },
+  };
 }
 
 // 플러그인 경로 검사(분석기 init 기준). 형태를 모르면 'unverifiable'.
@@ -812,6 +834,7 @@ function parseArgs(argv) {
     else if (a === '--reps') o.reps = Number(next());
     else if (a === '--dry-run') o.dryRun = true;
     else if (a === '--preflight') o.preflight = true;
+    else if (a === '--preflight-judge-only') o.preflightJudgeOnly = true;
     else if (a === '--keep') o.keep = true;
     else if (a === '--judge-model') o.judgeModel = next();
     else if (a === '--model') o.model = next();
@@ -825,7 +848,7 @@ function parseArgs(argv) {
     else if (a === '--ref-a') o.refA = next();
     else if (a === '--ref-b') o.refB = next();
     else if (a === '--help' || a === '-h') {
-      console.log('usage: node scripts/run-pm-block-ab.mjs [--variant A|B|both] [--case id[,id]|all] [--reps N] [--dry-run] [--preflight] ' +
+      console.log('usage: node scripts/run-pm-block-ab.mjs [--variant A|B|both] [--case id[,id]|all] [--reps N] [--dry-run] [--preflight] [--preflight-judge-only] ' +
         '[--judge-model m] [--model m] [--total-budget-usd N] [--max-budget-usd N] [--judge-max-budget-usd N] [--timeout-sec N] ' +
         '[--include-optional] [--no-judge] [--no-isolate-settings] [--keep]');
       process.exit(0);
@@ -1002,6 +1025,7 @@ export async function judgeBrief({ request, brief, model, runsDir, maxBudgetUsd 
   const randId = crypto.randomBytes(6).toString('hex');
   fs.mkdirSync(path.join(runsDir, 'judge'), { recursive: true });
   fs.writeFileSync(path.join(runsDir, 'judge', `${randId}.json`), JSON.stringify({ input: { request, brief }, rawOutput: analyzer.resultText, contamination }, null, 2));
+  fs.writeFileSync(path.join(runsDir, 'judge', `${randId}.stream.ndjson`), proc.stdout); // init·hook 근거 보존(위 .json 은 결과 텍스트뿐)
   return { randId, parsed, costUsd, exitCode: proc.code, contamination, initTools: analyzer.init?.tools ?? null };
 }
 
@@ -1170,6 +1194,45 @@ async function dryRun(opts) {
   console.log('\n--dry-run이라 claude를 실행하지 않았다. 분류기·grader·kill 조건 단위 검증: node scripts/verify-pm-block-ab.mjs');
 }
 
+const PREFLIGHT_JUDGE_BRIEF = "README.md 에서 '회원갑입'을 '회원가입'으로 고쳐라. 다른 파일은 건드리지 마라. 완료되면 README.md 의 해당 줄만 바뀌었는지 확인하라.";
+
+// 판정자 격리·모델 별칭·JSON 출력 확인 (아주 짧은 고정 입력 1회). 근거(init.plugins 전체, hook_response 수)를 report 에 남긴다.
+async function preflightJudge(opts, runsDir, report, fails) {
+  const j = await judgeBrief({ request: 'README에 오타가 있어. 고쳐줘.', brief: PREFLIGHT_JUDGE_BRIEF, model: opts.judgeModel, runsDir, maxBudgetUsd: 0.3 });
+  const val = j.parsed ? validateJudgeOutput(j.parsed, PREFLIGHT_JUDGE_BRIEF, true) : null;
+  report.judge = {
+    model: opts.judgeModel,
+    contaminated: j.contamination.contaminated,
+    contaminationReasons: j.contamination.reasons,
+    initSeen: j.contamination.evidence.initSeen,
+    initPlugins: j.contamination.evidence.plugins,
+    hookSessionStartCount: j.contamination.evidence.hookSessionStartCount,
+    initTools: j.initTools,
+    jsonParsed: Boolean(j.parsed),
+    itemVerdicts: val ? Object.fromEntries(Object.entries(val.items).map(([k, x]) => [k, x.verdict])) : null,
+    costUsd: j.costUsd,
+    exitCode: j.exitCode,
+  };
+  if (j.contamination.contaminated) fails.push(`judge: 격리 실패 (${j.contamination.reasons.join('; ')})`);
+  if (!j.parsed) fails.push(`judge: JSON 출력 파싱 실패 (모델 별칭 ${opts.judgeModel} 또는 --tools "" 거부 가능)`);
+}
+
+// 판정자 격리만 다시 확인한다(변형 A·B 실행 없음, 약 $0.15). 같은 옵트인 환경변수가 필요하다.
+async function preflightJudgeOnly(opts) {
+  requireConsent();
+  installCleanup();
+  const ts = new Date().toISOString().replace(/[:.]/g, '-');
+  const runsDir = path.join(RUNS_ROOT, `pm-block-ab-preflight-judge-${ts}`);
+  fs.mkdirSync(runsDir, { recursive: true });
+  const report = {};
+  const fails = [];
+  await preflightJudge(opts, runsDir, report, fails);
+  fs.writeFileSync(path.join(runsDir, 'preflight-judge.json'), JSON.stringify(report, null, 2));
+  console.log(JSON.stringify(report, null, 2));
+  console.log(fails.length ? `\n판정자 preflight 실패:\n - ${fails.join('\n - ')}` : '\n판정자 preflight 통과 (격리 + JSON 출력).');
+  process.exit(fails.length ? 1 : 0);
+}
+
 async function preflight(opts) {
   requireConsent();
   installCleanup();
@@ -1220,27 +1283,7 @@ async function preflight(opts) {
     if (proc.killEscalated) fails.push(`${v}: SIGTERM 실패(SIGKILL 필요)`);
     rmTmp(w.dir);
   }
-  // 판정자 격리·모델 별칭·JSON 출력 확인 (아주 짧은 고정 입력 1회)
-  if (!opts.noJudge) {
-    const j = await judgeBrief({
-      request: 'README에 오타가 있어. 고쳐줘.',
-      brief: "README.md 에서 '회원갑입'을 '회원가입'으로 고쳐라. 다른 파일은 건드리지 마라. 완료되면 README.md 의 해당 줄만 바뀌었는지 확인하라.",
-      model: opts.judgeModel, runsDir, maxBudgetUsd: 0.3,
-    });
-    const val = j.parsed ? validateJudgeOutput(j.parsed, "README.md 에서 '회원갑입'을 '회원가입'으로 고쳐라. 다른 파일은 건드리지 마라. 완료되면 README.md 의 해당 줄만 바뀌었는지 확인하라.", true) : null;
-    report.judge = {
-      model: opts.judgeModel,
-      contaminated: j.contamination.contaminated,
-      contaminationReasons: j.contamination.reasons,
-      initTools: j.initTools,
-      jsonParsed: Boolean(j.parsed),
-      itemVerdicts: val ? Object.fromEntries(Object.entries(val.items).map(([k, x]) => [k, x.verdict])) : null,
-      costUsd: j.costUsd,
-      exitCode: j.exitCode,
-    };
-    if (j.contamination.contaminated) fails.push(`judge: 격리 실패 (${j.contamination.reasons.join('; ')})`);
-    if (!j.parsed) fails.push(`judge: JSON 출력 파싱 실패 (모델 별칭 ${opts.judgeModel} 또는 --tools "" 거부 가능)`);
-  }
+  if (!opts.noJudge) await preflightJudge(opts, runsDir, report, fails);
   ok = fails.length === 0;
   fs.writeFileSync(path.join(runsDir, 'preflight.json'), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
@@ -1254,6 +1297,7 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   installCleanup();
   if (opts.dryRun) return dryRun(opts);
+  if (opts.preflightJudgeOnly) return preflightJudgeOnly(opts);
   if (opts.preflight) return preflight(opts);
   requireConsent();
 

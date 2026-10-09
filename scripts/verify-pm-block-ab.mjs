@@ -379,6 +379,29 @@ eq('extractJson 코드펜스', extractJson('```json\n{"items":{}}\n```'), { item
   const plug = new StreamAnalyzer('none');
   plug.feed(JSON.stringify({ type: 'system', subtype: 'init', tools: [], plugins: [{ name: 'malgn-agent', path: '/x/malgn-agent' }] }));
   eq('판정자에 플러그인이 로드되면 오염', judgeContamination(plug).contaminated, true);
+  // 실측: init.plugins 에는 항상 builtin 2종이 있다(source '…@builtin', path 'builtin') - 오염이 아니다
+  const BUILTINS = [{ name: 'agents-md', path: 'builtin', source: 'agents-md@builtin' }, { name: 'telemetry', path: 'builtin', source: 'telemetry@builtin' }];
+  const mkInit = (plugins) => { const a = new StreamAnalyzer('none'); a.feed(JSON.stringify({ type: 'system', subtype: 'init', tools: [], plugins })); return a; };
+  const onlyBuiltin = judgeContamination(mkInit(BUILTINS));
+  eq('builtin 만 있는 init 은 오염 아님', [onlyBuiltin.contaminated, onlyBuiltin.reasons], [false, []]);
+  eq('builtin 근거 보존(plugins 전체·hook 수·init 관측)', [onlyBuiltin.evidence.plugins.length, onlyBuiltin.evidence.hookSessionStartCount, onlyBuiltin.evidence.initSeen], [2, 0, true]);
+  const withMalgn = judgeContamination(mkInit([...BUILTINS, { name: 'malgn-agent', path: '/Users/x/.claude/plugins/cache/malgn-agent', source: 'malgn-agent@malgnsoft-plugins' }]));
+  eq('builtin + malgn-agent 는 오염', withMalgn.contaminated, true);
+  t('오염 사유에 malgn-agent 명시', /malgn-agent/.test(withMalgn.reasons.join(' ')), withMalgn.reasons.join(' '));
+  eq('path 만 builtin 인 항목도 builtin', judgeContamination(mkInit([{ name: 'x', path: 'builtin' }])).contaminated, false);
+  eq('문자열 형태 @builtin 도 builtin', judgeContamination(mkInit(['telemetry@builtin'])).contaminated, false);
+  eq('문자열 형태 비-builtin 은 오염', judgeContamination(mkInit(['malgn-agent@malgnsoft-plugins'])).contaminated, true);
+  eq('builtin 만 있어도 SessionStart 훅이 있으면 오염', (() => { const a = mkInit(BUILTINS); a.feed(JSON.stringify({ type: 'system', subtype: 'hook_response', hook_event: 'SessionStart', output: 'x' })); return judgeContamination(a).contaminated; })(), true);
+  // init 을 못 보는 경우(stream-json 이 아닌 단일 JSON 출력 등)는 검사 불가 -> 깨끗하다고 보지 않는다
+  const noInit = new StreamAnalyzer('none');
+  noInit.feed(JSON.stringify({ type: 'result', subtype: 'success', result: '{"items":{}}' }));
+  const ni = judgeContamination(noInit);
+  eq('init 미관측은 오염(검사 불가)으로 취급', [ni.contaminated, ni.evidence.initSeen], [true, false]);
+  // 판정자 호출이 stream-json 을 쓰는지(init 을 볼 수 있는지): runClaude 가 항상 stream-json + verbose 로 호출한다
+  const src = fs.readFileSync(path.join(HERE, 'run-pm-block-ab.mjs'), 'utf8');
+  t('runClaude 는 stream-json + verbose 로 호출한다(판정자 포함)', /'--output-format', 'stream-json', '--verbose'/.test(src));
+  t('판정자 호출은 runClaude 를 거친다', /async function judgeBrief[\s\S]*?await runClaude\(/.test(src) || /export async function judgeBrief[\s\S]*?await runClaude\(/.test(src));
+  t('--preflight-judge-only 옵션이 있다', /--preflight-judge-only/.test(src) && /function preflightJudgeOnly[\s\S]*?requireConsent\(\)/.test(src));
 }
 
 // --- 플러그인 경로 검사 ---

@@ -79,7 +79,7 @@ Bash는 따옴표를 존중해 `|`·`;`·`&&`·`||`로 구간을 나눈다(따�
 - **Fable 판정**: 입력=사용자 원문 요청+지시서 본문+항목표. 변형 이름·훅 본문·에이전트 종류는 주지 않는다. 출력은 난수 id 파일(`runs/<batch>/judge/<id>.json`), id->실행 매핑은 `judge-map.json`. 항목 (a)요구사항 빠짐없음 (b)완료 판정 기준 (c)금지 범위·제약 극성 (d)대상 경로 또는 찾는 방법 (e)수신자가 대화를 몰라도 실행 가능.
   - PASS는 지시서 원문 인용 **8자 이상**이 부분문자열(공백 정규화만 허용)이어야 유효, 아니면 `INVALID`. FAIL은 인용 대신 빠진 요소(`missing`)를 적고 인용 검증 대상이 아니다.
   - **needs_human**: (a) 또는 (c)가 `INVALID`이면 항상 표시(인용 조작). 둘 다 유효하면 regex 결과와 판정자의 (a)&(c)가 어긋날 때 표시. 자동으로 어느 쪽도 채택하지 않는다.
-  - **판정자 격리 검사**: 판정자 스트림에서 SessionStart hook_response가 1건이라도 잡히거나 플러그인이 로드되면 그 판정을 무효(`contaminated`)로 하고 이후 판정을 중단한다. `--preflight`가 고정 입력 1회로 격리·모델 별칭·JSON 출력을 미리 확인한다.
+  - **판정자 격리 검사**: 판정자 스트림에서 SessionStart hook_response가 1건이라도 잡히거나 **비-builtin** 플러그인(malgn-agent 등)이 로드되면 그 판정을 무효(`contaminated`)로 하고 이후 판정을 중단한다. 내장(builtin) 플러그인(source가 `@builtin`으로 끝나거나 path가 `builtin`; 예: agents-md, telemetry)은 변형 A·B의 init에도 항상 있으므로 오염으로 보지 않는다. init 메시지를 관측하지 못하면 검사 불가이므로 오염으로 취급한다. `--preflight`가 고정 입력 1회로 격리·모델 별칭·JSON 출력을 미리 확인하고(근거로 init.plugins 전체와 hook_response 수를 `preflight.json`에 남긴다), `--preflight-judge-only`는 판정자 격리만 다시 확인한다.
   - 판정자 모델은 `--judge-model`로 정한다(기본 별칭 `fable`, 미검증). 실행 기록에 별칭을 남긴다.
 
 ## 6. 해석 규칙 (결과 전에 명시)
