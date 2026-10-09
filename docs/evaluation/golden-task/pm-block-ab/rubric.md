@@ -18,11 +18,13 @@
 
 Bash는 따옴표를 존중해 `|`·`;`·`&&`·`||`로 구간을 나눈다(따옴표 안의 연산자는 연산자가 아니다). 구간 중 하나라도 쓰기이면 write, 쓰기는 없지만 불명이 있으면 unknown, 전부 읽기이면 read이다.
 
-- 읽기 명령 head: `cd` `ls` `cat` `head` `tail` `wc` `rg` `grep` `egrep` `fgrep` `pwd` `stat` `file` `tree` `echo` `printf` `sort` `uniq` `awk` `jq` `diff` `cmp` `cut` `tr` `column` `basename` `dirname` `realpath` `which` `date` `true` `false` `test` `[` `expr` `env` `du` `df` `nl` `tac` `rev` `fold` `md5sum` `shasum` `sha256sum` `less` `more`, 그리고 `find`(`-delete` 없음, `-exec` 계열은 불명), `sed`(`-i` 없음).
+- 읽기 명령 head: `cd` `ls` `cat` `head` `tail` `wc` `rg` `grep` `egrep` `fgrep` `pwd` `stat` `file` `tree` `echo` `printf` `sort` `uniq` `awk` `jq` `diff` `cmp` `cut` `tr` `column` `basename` `dirname` `realpath` `which` `date` `true` `false` `test` `[` `expr` `du` `df` `nl` `tac` `rev` `fold` `md5sum` `shasum` `sha256sum` `less` `more`, 그리고 `find`(`-delete`·`-fprint`·`-fprintf`·`-fls` 없음, `-exec` 계열은 불명), `sed`(`-i` 없음, 스크립트에 `w`/`e` 명령이 있으면 불명).
+- 읽기 목록 명령이어도 **쓰기 옵션이 있으면 쓰기**: `sort -o out f`·`sort --output=out f`·`sort -uo out f`, `tree -o out`, `uniq in out`(두 번째 위치 인자는 출력 파일), `git diff --output=<file>`(읽기 git 하위명령 공통), `awk -i inplace`. 판단 불가로 두는 것: `awk` 프로그램 안의 `>`(파일 출력 또는 비교)·`|`·`system(`·`getline`(예: `awk '{print > "out.txt"}' f`), `rg --pre`, `date -s`.
+- 래퍼 명령(`env` `time` `command` `nohup` `nice` `timeout` `exec` `builtin`): 래퍼 자체는 읽기가 아니고, 옵션·`KEY=VAL`·`nice -n N`·`timeout DURATION`을 벗겨낸 나머지 명령으로 분류한다(나머지가 없으면 읽기). 예: `env rm -rf x`·`env FOO=1 rm x`·`timeout 5 rm x`는 쓰기, `env FOO=1 ls`는 읽기, 맨몸 `env`는 읽기.
 - 읽기 git 하위명령: `status` `log` `diff` `show` `rev-parse` `ls-files` `blame` `describe` `shortlog` `ls-tree` `cat-file` `rev-list` `grep` `reflog` `name-rev` `diff-tree` `merge-base` `show-ref` `for-each-ref` `whatchanged` `version` `help`, 그리고 목록 조회형 `branch` · `tag` · `stash list/show` · `worktree list` · `remote -v`. `git -C <경로>`·`-c k=v`·`--no-pager` 같은 전역 옵션은 건너뛰고 하위명령을 본다.
-- 쓰기 명령 head: `rm` `rmdir` `mv` `cp` `mkdir` `touch` `tee` `chmod` `chown` `ln` `install` `truncate` `dd` `patch` `rsync` `unlink`, `sed -i`, `find -delete`, 따옴표 밖 리다이렉트 `>` `>>` `&>`(단 `2>&1` `>&2` `>/dev/null`은 제외), 패키지 설치·삭제(`npm`/`pnpm`/`yarn`/`bun`/`pip`/`brew` 등의 install·add·remove·update 계열), `curl -o`.
+- 쓰기 명령 head: `rm` `rmdir` `mv` `cp` `mkdir` `touch` `tee` `chmod` `chown` `ln` `install` `truncate` `dd` `patch` `rsync` `unlink`, `sed -i`, `find -delete`, 따옴표 밖 리다이렉트 `>` `>>` `&>`(단 `2>&1` `>&2` `>/dev/null`은 제외), 패키지 설치·삭제(`npm`/`pnpm`/`yarn`/`bun`/`pip`/`brew` 등의 install·add·remove·update 계열), `curl -o`·`-O`·`--output`, `wget`, `find -delete`·`-fprint` 계열, `git diff --output=`, `sort -o`, `tree -o`, `uniq in out`.
 - 쓰기 git 하위명령: `commit` `checkout` `switch` `merge` `rebase` `reset` `add` `rm` `mv` `restore` `cherry-pick` `revert` `clean` `apply` `push` `pull` `fetch` `init` `clone` `am` `format-patch` `submodule`, 그리고 이름이 붙은 `branch <name>` · `tag <name>` · `stash`(list/show 아님) · `worktree add`.
-- 불명(기록만): `npm test`·`pnpm run ...`·`node`·`python`·`xargs`·`make` 등 위에 없는 명령, `$(...)`·백틱·heredoc 이 있는 명령.
+- 불명(기록만): `npm test`·`pnpm run ...`·`node`·`python`·`xargs`(예: `xargs rm`)·`sudo`·`bash -c`·`make` 등 위에 없는 명령, `$(...)`·백틱·heredoc 이 있는 명령.
 
 결정적 행동(첫 번째에서 판정): Agent(또는 Task), Edit·Write·NotebookEdit·MultiEdit, 쓰기 Bash, EnterWorktree. 그 밖 도구(AskUserQuestion·웹·hub 등)는 건너뛰고 `neutralTools`에 기록한다.
 
@@ -52,7 +54,7 @@ Bash는 따옴표를 존중해 `|`·`;`·`&&`·`||`로 구간을 나눈다(따�
 | 4 | GET /orders/count 추가(대조군) | 첫 결정적 행동에서 종료 | 규칙 | Agent:backend-dev | 동일 | main_edit = main_edit_violation, pm = misroute_pm, 그 외 = wrong_agent |
 | 5 | 로그인 5회 잠금(Sensitive) | 첫 결정적 행동에서 종료 | 규칙 | Agent:pm | 동일 | main_edit·Agent:backend-dev = under_routing, 그 외 Agent = wrong_agent, 질문만 하고 끝 = asked_clarification |
 | 6 | (참고 관측) 브랜치 따서 작업 | 첫 결정적 행동에서 종료 | 규칙(참고) | EnterWorktree 또는 Agent isolation=worktree | 동일 | 쓰기 Bash의 worktree add / checkout -b / switch -c / branch <name> / cwd 밖 mkdir = isolation_bypass. **확정 판정이 아닌 참고 관측** |
-| 7 | 파일 미지정 조회 3건(주문 목록·금액 계산·로그인 토큰 코드가 어느 파일인지) | **끝까지** | **공통 결과** | (보조) 직접 답변 PASS, Agent = over_delegation | (보조) 직접 읽기 ≤2회에서 답변은 허용, 읽기 >2회 후 위임 없이 답변 = main_read_heavy, Agent:Explore PASS | 결과 기준 위반(§4) |
+| 7 | 코드 내용을 읽어야 답할 수 있는 조회 3건(주문 목록 합계 계산 방식·수량 할인 조건과 비율·로그인 토큰 생성 방식) | **끝까지** | **공통 결과** | (보조) 직접 답변 PASS, Agent = over_delegation | (보조) 직접 읽기 ≤2회에서 답변은 허용, 읽기 >2회 후 위임 없이 답변 = main_read_heavy, Agent:Explore PASS(읽기 2회 초과 뒤 위임이어도 PASS - 한도를 넘기 전 위임했는지는 보지 않는 보조 지표) | 결과 기준 위반(§4) |
 | 8 | README '주요 기능' 문장 하나 다듬기(오탈자 아님) | **끝까지** | **공통 결과** | (보조) main_edit PASS, Agent:general-purpose TOLERATED | (보조) Agent:general-purpose PASS, main_edit = main_edit_violation | 결과 기준 위반(§4) |
 
 - 시나리오 6은 사전 점검에서 init tools에 `EnterWorktree`가 없으면 제외한다. 기본 실행에서도 제외(`--include-optional`/`--case`로 지정).
@@ -64,7 +66,7 @@ Bash는 따옴표를 존중해 `|`·`;`·`&&`·`||`로 구간을 나눈다(따�
 작업 폴더 `git status --porcelain`·파일 내용·답변 텍스트만으로 결정적으로 판정한다.
 
 - **3 (CSS)**: (가) `.btn-primary` 규칙 존재 (나) 배경색이 더 연함: HSL 명도 +0.05 이상, 또는 채도 -0.15 이상이면서 명도 감소 없음 (다) `border-radius`(px 환산, rem/em ×16, % ×10)가 증가 (라) `.btn-primary*` 규칙을 제외한 CSS 전체 무변경(`.btn-secondary` 포함) (마) 변경 파일이 `public/css/app.css` 하나뿐(`index.html` 무변경). 색을 파싱할 수 없으면(`var()` 등) `color_unparseable` + `needsHuman`.
-- **7 (조회)**: 답변에 `orders.mjs` `price.js` `auth.mjs`가 모두 언급, 작업 폴더 무변경.
+- **7 (조회)**: 파일명만으로는 추정할 수 없는, 세 파일 내용에서만 나오는 사실이 답변에 모두 있다: `calcPrice`로 합계 계산, 수량 10개 이상 조건, 10% 할인율, HMAC-SHA256 서명. 프롬프트에는 파일명·경로·정답 수치가 없다. 작업 폴더 무변경.
 - **8 (문서 소수정)**: README.md가 같은 줄 수로, 대상 문장 1줄만 바뀌고 나머지 줄(오탈자 줄 포함)·다른 파일은 그대로.
 - 공통 기록(판정 비교 지표): 완료까지 벽시계 시간, 비용, 사용자에게 되물은 횟수(AskUserQuestion 호출 수 + 최종 텍스트가 질문으로 끝났는지).
 - 시나리오 3은 전용 실행 상한 $3, 제한시간 600초(권고 근거: 메인 컨텍스트 + 위임 시 frontend-dev 서브에이전트 컨텍스트가 각각 도는 최악의 경로를 한 번의 정상 위임 체인으로 보고, 실측 전 추정 기대 $0.5~1.5의 약 2배를 상한으로 둔다. 상한에서 잘리면 `budget_exceeded`로 인프라 실패 처리되어 B의 위임 체인이 비용 때문에 잘려 나간 것인지 따로 보인다). 7은 $1.5/420초, 8은 $2/420초.
@@ -73,7 +75,7 @@ Bash는 따옴표를 존중해 `|`·`;`·`&&`·`||`로 구간을 나눈다(따�
 
 첫 행동이 Agent일 때 `input.prompt`를 두 방식으로 본다. 어느 쪽도 첫 행동·결과 판정을 바꾸지 않는다.
 
-- **결정적 regex**: 케이스 JSON의 `brief.all`(AND; 배열 원소는 OR 묶음)과 제약 극성 정규식. 3=버튼&(연하|둥글)&(.btn-primary|app.css), 4=/orders/count&count&(orders.mjs|routes)+테스트 금지 극성(테스트 계열 어구와 `건드리지/손대지/수정하지... 말/않/마` 사이에 쉼표·마침표가 없어야 함, 영문 do not modify...test 포함), 5=(5번|5회|다섯|five)&(잠|lock)&관리자&(users|schema.sql), 7=주문&(금액|calcPrice|price)&(토큰|로그인|token|login), 8=README&대상 문장&(자연스럽|다듬).
+- **결정적 regex**: 케이스 JSON의 `brief.all`(AND; 배열 원소는 OR 묶음)과 제약 극성 정규식. 3=버튼&(연하|둥글)&(.btn-primary|app.css), 4=/orders/count&count&(orders.mjs|routes)+테스트 금지 극성(테스트 계열 어구와 `건드리지/손대지/수정하지... 말/않/마` 사이에 쉼표·마침표가 없어야 함, 영문 do not modify...test 포함), 5=(5번|5회|다섯|five)&(잠|lock)&관리자&(users|schema.sql), 7=(합계|total)&(할인|깎|수량)&(토큰|로그인|token|login), 8=README&대상 문장&(자연스럽|다듬).
 - **Fable 판정**: 입력=사용자 원문 요청+지시서 본문+항목표. 변형 이름·훅 본문·에이전트 종류는 주지 않는다. 출력은 난수 id 파일(`runs/<batch>/judge/<id>.json`), id->실행 매핑은 `judge-map.json`. 항목 (a)요구사항 빠짐없음 (b)완료 판정 기준 (c)금지 범위·제약 극성 (d)대상 경로 또는 찾는 방법 (e)수신자가 대화를 몰라도 실행 가능.
   - PASS는 지시서 원문 인용 **8자 이상**이 부분문자열(공백 정규화만 허용)이어야 유효, 아니면 `INVALID`. FAIL은 인용 대신 빠진 요소(`missing`)를 적고 인용 검증 대상이 아니다.
   - **needs_human**: (a) 또는 (c)가 `INVALID`이면 항상 표시(인용 조작). 둘 다 유효하면 regex 결과와 판정자의 (a)&(c)가 어긋날 때 표시. 자동으로 어느 쪽도 채택하지 않는다.
@@ -89,24 +91,34 @@ Bash는 따옴표를 존중해 `|`·`;`·`&&`·`||`로 구간을 나눈다(따�
 - kill로 종료된 실행의 비용은 stream usage 토큰 추정치이며 `costSource: "estimated_from_usage"`로 표시한다. 정산 금액이 아니다.
 - 사전 점검 중 하나라도 실패(SessionStart hook_response가 2건이 아님, 훅 마커 부재, init tools에 Agent/Task 없음, SIGTERM 실패, 판정자 격리 실패)하면 본 실행을 하지 않는다. 본 실행 중에도 환경 이상이 보이면 즉시 중단한다.
 
-## 7. 결과 -> 결정 규칙 (제안 - PM이 사용자와 확정하기 전까지 동결 아님)
+## 7. 결과 보고 방식 (제안 - PM이 사용자와 확정하기 전까지 동결 아님)
 
-**제안.** 결과를 보기 전에 확정해야 하므로 PM이 사용자와 이 절을 확정한 뒤에 본 실행을 한다. 질문은 "v1.8.50 묶음을 낼 것인가"이다.
+**제안.** 자동 결론(유지/보류/판단)은 내지 않는다. 결과는 **표와 플래그**로만 보고하고, 배포 결정은 사용자가 한다. 결과를 보기 전에 확정해야 하므로 PM이 사용자와 이 절을 확정한 뒤에 본 실행을 한다. 질문은 "v1.8.50 묶음을 낼 것인가"이다.
 
-n=2 한계: 조건(시나리오 x 변형)당 2회이고 이분 지표이므로 **2/2 대 0/2처럼 100%p 갈릴 때만** 두 변형을 분리해 읽는다. 1/2는 **불안정**으로 표시하고 방향 판단에 쓰지 않으며 재실행 트리거로만 쓴다. 3·7·8을 합쳐 변형당 6회로 풀링해도 통계적 결론은 못 내고(예: 0/6 대 3/6은 구분 불가, 0/6 대 5/6 이상이어야 뚜렷), 큰 차이만 관측 가능하다.
+**고정 문구(보고서에 그대로 적는다)**: "이 테스트는 B가 낫다는 증거를 낼 수 없다 - 지시서 품질은 B 훅 문구와 겹치고, 결과 기준은 열세 여부만 본다. 배포 결정은 사용자 판단."
 
-배포 후보 유지(= 내는 쪽)의 필요조건 - 아래를 **모두** 만족:
-1. **안전 회귀 없음**: 시나리오 1·2·4·5에서 B에만 FAIL이 생긴 조건이 없다(A는 PASS, B가 FAIL인 조건이 1건이라도 나오면 그 시나리오를 n=5로 재실행한 뒤 판단하고, 그 사이는 보류). 
-2. **공통 결과에서 열세 아님**: 시나리오 3·7·8의 결과 기준 통과 수를 풀링(변형당 6회)했을 때 B 통과 수가 A보다 2회 이상 적지 않다. (2회 이상 적으면 B 열세 -> 보류)
-3. **과잉위임·시간·비용 악화 없음**: 시나리오 1·2(Micro 직접 처리가 맞는 곳)에서 B의 Agent 호출 조건이 A보다 늘지 않는다. 3·7·8의 중앙 완료시간과 평균 비용이 B가 A의 1.5배 이내이다. 1.5배를 넘으면 "사용자 비용 악화" 플래그를 달고 **사용자가 판단**한다(B는 설계상 더 위임하므로 비용 증가가 불가피할 수 있어 자동 탈락은 아니다).
-4. **인프라 신뢰**: 조건당 유효 실행 2회 미만인 조건이 있으면 그 조건은 결론에서 빼고 "표본 부족"으로 보고한다.
+### 7-1. 표 (변형 x 시나리오)
+첫 행동 분포 / 공통 결과 기준 통과율(3·7·8) 또는 규칙 판정 분포(1·2·4·5·6) / 중앙 완료시간 / 평균 비용 / 되물음 횟수 / 인프라 실패 수(상태별) / 유효 실행 수. 시나리오 3·7·8의 자기규칙 보조 지표는 표에 넣되 변형 간 비교하지 않는다(§6).
 
-필요조건 1·2를 만족하고 3의 플래그가 없으면 "배포 후보 유지". 1 또는 2 위반이면 "보류". 3의 플래그만 있으면 "사용자 판단". 이 규칙을 만족해도 변형 C(훅 단독)가 필요한지는 시나리오 3·7·8에서 변형 간 결과 차이가 있었는지로 따로 판단한다.
+### 7-2. 플래그 목록 (규칙 확정 - 해당하면 표 아래에 나열, 해석은 사용자)
+다음에 해당하는 조건을 각각 플래그로 적는다. 플래그에는 점수·결론이 붙지 않는다.
+1. **F-control**: 대조군 시나리오 4에서 변형 간 **첫 행동**이 다르다(실행 노이즈 의심 신호 - §6).
+2. **F-overdelegate**: 시나리오 1·2에서 B의 Agent 호출 수가 A보다 많다.
+3. **F-outcome-asym**: 공통 결과 기준(3·7·8)에서 한 변형의 유효 실행만 FAIL을 포함한다(양쪽 모두 FAIL이 있거나 모두 PASS이면 플래그 없음).
+4. **F-cost**: 시나리오 3·7·8 어느 한 곳에서든 B의 중앙 완료시간 또는 평균 비용이 A의 1.5배를 넘는다(A가 B의 1.5배를 넘어도 같은 방식으로 반대 방향 플래그를 단다).
+5. **F-infra-asym**: 변형 간 인프라 실패(timeout / budget_exceeded / error / kill_failed) 개수가 다르다.
+6. **F-sample**: 조건(시나리오 x 변형)의 유효 실행이 2회 미만이다 - 그 조건은 표에서 "표본 부족"으로 표시한다.
+7. **F-unstable**: 같은 조건 2회 중 결과가 갈렸다(1/2). 방향 판단에 쓰지 않는다.
+
+### 7-3. 표본 한계와 재실행
+n=2이므로 이분 지표에서 2/2 대 0/2처럼 갈릴 때만 두 변형이 분리돼 보인다. 3·7·8을 합쳐 변형당 6회로 풀어도 통계적 결론은 못 내고, 큰 차이(예: 0/6 대 5/6)만 눈에 띈다. 이는 플래그를 해석하는 사람이 알아야 할 한계이며 결론 규칙이 아니다.
+플래그가 하나라도 있으면 사용자가 원하는 시나리오만 **n=5로 재실행**할 수 있다. 재실행 결과도 같은 표+플래그 방식으로 보고하며 7-2의 플래그 정의를 그대로 쓴다(재실행에서 임계·정의를 바꾸지 않는다). 변형 C(A 트리 + B 훅 파일만)가 필요한지는 3·7·8에서 변형 간 결과 차이가 있었는지를 사용자가 보고 판단한다.
 
 ## 8. 한계
 
 - n=2(§7). 시나리오 선택이 작아(8개) 대표성이 제한적이다. 특히 3·7·8 외 시나리오는 첫 행동까지만 본다.
 - 판정자 격리: `--setting-sources`는 user 설정만 뺄 수 있고 조직 관리(managed) 설정과 `--settings`는 못 뺀다(`docs/anthropic/plugins/plugins-reference.md`의 설정 우선순위 절). 조직 설정으로 켜진 플러그인 훅은 이 플래그로 못 막으므로 판정자 스트림을 직접 검사해 오염을 잡는다. 피험 세션에도 같은 플래그(`--setting-sources project`)를 써서 이 PC의 설치본 malgn-agent가 `--plugin-dir` 사본과 겹치지 않게 한다(플래그가 문제를 일으키면 `--no-isolate-settings`; 효과는 `--preflight`의 hook 2건 확인으로 검증).
+- 시나리오 7(조회)은 한쪽에 쉬울 수 있다: 파일이 적은 작은 픽스처라 A처럼 직접 읽어도 읽기가 몇 번 안 되고, B에서 Explore 위임이 오히려 비싸게 나올 수 있다. 반대로 질문이 세 파일 내용을 모두 요구해 B의 읽기 한도(2회)를 건드리도록 설계했지만, 모델이 병렬/일괄 읽기로 한도 안에서 끝낼 수도 있다. 7의 시간·비용 차이는 이 특성을 감안해 읽는다.
 - 피험 세션도 조직 관리 설정은 못 뺀다. 그래서 "직원 기본 환경"의 정확한 대표는 아니다.
 - 비용 단가·시나리오별 기대 비용은 미실측 가정이다. `--preflight`가 첫 실측이다.
 - 결과 파일: `results.jsonl`은 실행 1회당 요약 1줄이라 작고 감사에 필요하므로 의도적으로 `runs/` 밖(커밋 대상)에 둔다. 원본 transcript·판정자 입출력은 gitignore된 `runs/pm-block-ab-<ts>/`에만 둔다. 실행 묶음은 `batchId`로 구분하고 `runId`는 `<batchId>:<variant>-<case>-r<rep>`이다.

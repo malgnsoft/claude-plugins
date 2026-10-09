@@ -120,8 +120,10 @@ export function parseShell(cmd) {
 export const READ_CMDS = new Set([
   'cd', 'ls', 'cat', 'head', 'tail', 'wc', 'rg', 'grep', 'egrep', 'fgrep', 'pwd', 'stat', 'file', 'tree', 'echo', 'printf',
   'sort', 'uniq', 'awk', 'jq', 'diff', 'cmp', 'cut', 'tr', 'column', 'basename', 'dirname', 'realpath', 'which', 'date',
-  'true', 'false', 'test', '[', 'expr', 'env', 'du', 'df', 'nl', 'tac', 'rev', 'fold', 'md5sum', 'shasum', 'sha256sum', 'less', 'more',
+  'true', 'false', 'test', '[', 'expr', 'du', 'df', 'nl', 'tac', 'rev', 'fold', 'md5sum', 'shasum', 'sha256sum', 'less', 'more',
 ]);
+// 뒤따르는 명령을 실행하는 래퍼. 래퍼 자체는 읽기가 아니며 벗겨낸 나머지 명령으로 분류한다(나머지가 없으면 읽기).
+export const WRAPPER_CMDS = new Set(['env', 'time', 'command', 'nohup', 'nice', 'timeout', 'exec', 'builtin']);
 export const WRITE_CMDS = new Set(['rm', 'rmdir', 'mv', 'cp', 'mkdir', 'touch', 'tee', 'chmod', 'chown', 'ln', 'install', 'truncate', 'dd', 'patch', 'rsync', 'unlink']);
 export const READ_GIT = new Set(['status', 'log', 'diff', 'show', 'rev-parse', 'ls-files', 'blame', 'describe', 'shortlog', 'ls-tree', 'cat-file', 'rev-list', 'grep', 'reflog', 'name-rev', 'diff-tree', 'merge-base', 'show-ref', 'for-each-ref', 'whatchanged', 'version', 'help']);
 export const WRITE_GIT = new Set(['commit', 'checkout', 'switch', 'merge', 'rebase', 'reset', 'add', 'rm', 'mv', 'restore', 'cherry-pick', 'revert', 'clean', 'apply', 'push', 'pull', 'fetch', 'init', 'clone', 'am', 'format-patch', 'submodule']);
@@ -153,19 +155,49 @@ function classifySegment(seg) {
   const t = splitEnv(seg.tokens);
   if (!t.length) return 'read';
   const head = t[0].replace(/^.*\//, '');
-  if (head === 'time' || head === 'command' || head === 'nohup') return classifySegment({ tokens: t.slice(1), redirectWrite: false });
+  if (WRAPPER_CMDS.has(head)) {
+    // 래퍼를 벗겨 나머지 명령으로 분류한다. env 의 -u/-C 인자, nice -n N, timeout DURATION 도 건너뛴다.
+    let i = 1;
+    while (i < t.length) {
+      const x = t[i];
+      if (head === 'env' && (x === '-u' || x === '-C' || x === '--unset' || x === '--chdir')) { i += 2; continue; }
+      if (head === 'nice' && x === '-n') { i += 2; continue; }
+      if (x.startsWith('-')) { i++; continue; }
+      if (head === 'env' && /^[A-Za-z_][A-Za-z0-9_]*=/.test(x)) { i++; continue; }
+      break;
+    }
+    if (head === 'timeout' && i < t.length) i++; // DURATION
+    const rest = t.slice(i);
+    return rest.length ? classifySegment({ tokens: rest, redirectWrite: false }) : 'read';
+  }
   if (WRITE_CMDS.has(head)) return 'write';
-  if (head === 'sed' || head === 'perl') return t.some((x) => /^-[a-zA-Z]*i/.test(x) || x === '--in-place') ? 'write' : head === 'sed' ? 'read' : 'unknown';
-  if (head === 'awk' && t.some((x) => x === 'inplace')) return 'write';
+  const flagCluster = (x) => /^-[a-zA-Z]*o[a-zA-Z]*$/.test(x); // -o, -uo, -oout 처럼 짧은 옵션 묶음 안의 o
+  if (head === 'sed') {
+    if (t.some((x) => /^-[a-zA-Z]*i/.test(x) || x === '--in-place')) return 'write';
+    // sed 스크립트의 w(파일 쓰기)·e(명령 실행) 명령은 판단 불가로 둔다
+    const script = t.slice(1).filter((x) => !x.startsWith('-')).join(' ');
+    return /(^|[;{}\n])\s*[we]\b|\/[gpiI0-9]*w\s/.test(script) ? 'unknown' : 'read';
+  }
+  if (head === 'perl') return t.some((x) => /^-[a-zA-Z]*i/.test(x)) ? 'write' : 'unknown';
+  if (head === 'sort') return t.slice(1).some((x) => x === '--output' || x.startsWith('--output=') || flagCluster(x)) ? 'write' : 'read';
+  if (head === 'tree') return t.slice(1).some(flagCluster) ? 'write' : 'read';
+  if (head === 'uniq') return t.slice(1).filter((x) => !x.startsWith('-')).length >= 2 ? 'write' : 'read'; // 두 번째 위치 인자는 출력 파일
+  if (head === 'date') return t.slice(1).some((x) => x === '-s' || x === '--set' || x.startsWith('--set=')) ? 'unknown' : 'read';
+  if (head === 'rg') return t.some((x) => x === '--pre' || x.startsWith('--pre=')) ? 'unknown' : 'read'; // --pre 는 명령 실행
+  if (head === 'awk') {
+    if (t.some((x) => x === 'inplace')) return 'write';
+    // 따옴표 안 프로그램의 > (파일 출력 또는 비교), | (명령 파이프), system()/getline 은 판단 불가
+    return t.slice(1).some((x) => !x.startsWith('-') && /[>|]|system\s*\(|getline/.test(x)) ? 'unknown' : 'read';
+  }
   if (head === 'find') {
-    if (t.includes('-delete')) return 'write';
+    if (t.includes('-delete') || t.some((x) => /^-fprint0?$|^-fprintf$|^-fls$/.test(x))) return 'write';
     if (t.some((x) => ['-exec', '-execdir', '-ok', '-okdir'].includes(x))) return 'unknown';
     return 'read';
   }
   if (head === 'git') {
     const { sub, args } = gitInfo(t);
     if (!sub) return 'read';
-    if (READ_GIT.has(sub)) return 'read';
+    if (READ_GIT.has(sub)) return args.some((a) => a === '--output' || a.startsWith('--output=')) ? 'write' : 'read'; // git diff --output=<file>
     if (sub === 'branch') return args.every((a) => GIT_BRANCH_READ_FLAGS.test(a)) || args.some((a) => a === '-l' || a === '--list') ? 'read' : 'write';
     if (sub === 'tag') return args.length === 0 || args.includes('-l') || args.includes('--list') ? 'read' : 'write';
     if (sub === 'stash') return ['list', 'show'].includes(args[0]) ? 'read' : 'write';
@@ -179,7 +211,8 @@ function classifySegment(seg) {
     const sub = t.slice(1).find((x) => !x.startsWith('-'));
     return PKG_WRITE_SUBS.has(sub) ? 'write' : 'unknown'; // npm test / pnpm run ... 은 불명
   }
-  if (head === 'curl') return t.some((x) => ['-o', '-O', '--output', '--remote-name'].includes(x)) ? 'write' : 'unknown';
+  if (head === 'curl') return t.some((x) => x === '--output' || x.startsWith('--output=') || x === '--remote-name' || x === '--remote-name-all' || flagCluster(x) || /^-[a-zA-Z]*O[a-zA-Z]*$/.test(x)) ? 'write' : 'unknown';
+  if (head === 'wget') return 'write'; // 기본 동작이 파일 저장
   if (READ_CMDS.has(head)) return 'read';
   return 'unknown';
 }
@@ -521,12 +554,13 @@ export function judgeCssButton({ beforeCss, afterCss, changedFiles }) {
   return { kind: 'css-button', pass: failures.length === 0, failures, needsHuman, details };
 }
 
-// 시나리오 7 공통 기준: 답변에 세 파일이 모두 언급되고 작업 폴더 무변경.
-export function judgeAnswerFiles({ text, required, changedFiles }) {
+// 시나리오 7 공통 기준: 답변이 코드 내용에서만 알 수 있는 사실을 모두 담고(파일명 추정으로는 못 맞춘다) 작업 폴더 무변경.
+// facts: [{name, pattern}] - pattern 은 정규식 문자열(대소문자 무시).
+export function judgeAnswerFacts({ text, facts, changedFiles }) {
   const failures = [];
-  for (const f of required) if (!String(text ?? '').includes(f)) failures.push(`missing_${f}`);
+  for (const f of facts) if (!new RegExp(f.pattern, 'i').test(String(text ?? ''))) failures.push(`missing_${f.name}`);
   if ((changedFiles ?? []).length) failures.push('workdir_changed');
-  return { kind: 'answer-files', pass: failures.length === 0, failures, needsHuman: false, details: { required } };
+  return { kind: 'answer-facts', pass: failures.length === 0, failures, needsHuman: false, details: { facts: facts.map((f) => f.name) } };
 }
 
 // 시나리오 8 공통 기준: README.md의 대상 문장 1줄만 바뀌고 나머지 줄·파일은 그대로.
@@ -595,6 +629,8 @@ export function gradeRule(caseDef, variant, analyzer, ctx = {}) {
     if (!ok) return { verdict: 'FAIL', label: 'wrong_file', notes };
   }
 
+  // 보조 지표(자기규칙)일 뿐이다: readLimit 초과 후 Agent:Explore 위임은 PASS로 나오지만 한도를 넘기 전에 위임했는지는 보지 않는다.
+  // 시나리오 7의 판정은 이 값이 아니라 공통 결과 기준이다.
   if (exp.readLimit !== undefined && fa === 'no_action' && analyzer.readCount > exp.readLimit) {
     return { verdict: 'FAIL', label: 'main_read_heavy', notes: [`직접 읽기 ${analyzer.readCount}회 > 한도 ${exp.readLimit}`] };
   }
@@ -879,7 +915,7 @@ function computeOutcome(caseDef, workdir, changed, analyzer) {
   const read = (rel) => (fs.existsSync(path.join(workdir, rel)) ? fs.readFileSync(path.join(workdir, rel), 'utf8') : '');
   const orig = (rel) => fs.readFileSync(path.join(FIXTURE_DIR, rel), 'utf8');
   if (kind === 'css-button') return judgeCssButton({ beforeCss: orig('public/css/app.css'), afterCss: read('public/css/app.css'), changedFiles: changed });
-  if (kind === 'answer-files') return judgeAnswerFiles({ text: analyzer.resultText, required: caseDef.outcome.requiredFiles, changedFiles: changed });
+  if (kind === 'answer-facts') return judgeAnswerFacts({ text: analyzer.resultText, facts: caseDef.outcome.facts, changedFiles: changed });
   if (kind === 'readme-line') return judgeReadmeLine({ before: orig('README.md'), after: read('README.md'), changedFiles: changed, targetLine: caseDef.outcome.targetLine });
   throw new Error(`알 수 없는 outcome.kind: ${kind}`);
 }
@@ -1048,6 +1084,54 @@ export function summarize(rows, cases = []) {
     lines.push(line);
   }
   return lines.join('\n');
+}
+
+export const REPORT_DISCLAIMER = '이 테스트는 B가 낫다는 증거를 낼 수 없다 - 지시서 품질은 B 훅 문구와 겹치고, 결과 기준은 열세 여부만 본다. 배포 결정은 사용자 판단.';
+
+// rubric §7-2 플래그(규칙 확정). 점수·결론은 내지 않는다. 반환: 플래그 문자열 배열.
+export function computeFlags(rows, cases = []) {
+  const byId = Object.fromEntries(cases.map((c) => [c.id, c]));
+  const flags = [];
+  const live = rows.filter((r) => !r.excluded);
+  const valid = live.filter((r) => r.status === 'ok');
+  const sel = (rs, id, v) => rs.filter((r) => r.caseId.startsWith(id) && r.variant === v);
+  const dist = (rs) => JSON.stringify(Object.entries(rs.reduce((m, r) => ({ ...m, [r.firstAction]: (m[r.firstAction] ?? 0) + 1 }), {})).sort());
+  const med = (xs) => median(xs);
+  const mean = (xs) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : null);
+  const ids = [...new Set(live.map((r) => r.caseId))];
+
+  for (const id of ids.filter((x) => x.startsWith('04'))) {
+    const a = sel(valid, id, 'A'), b = sel(valid, id, 'B');
+    if (a.length && b.length && dist(a) !== dist(b)) flags.push(`F-control: ${id} 첫 행동 분포가 A=${dist(a)} B=${dist(b)}로 다르다`);
+  }
+  for (const id of ids.filter((x) => /^0[12]/.test(x))) {
+    const a = sel(valid, id, 'A').reduce((s, r) => s + r.counts.agent, 0);
+    const b = sel(valid, id, 'B').reduce((s, r) => s + r.counts.agent, 0);
+    if (b > a) flags.push(`F-overdelegate: ${id} Agent 호출 A=${a} B=${b}`);
+  }
+  for (const id of ids.filter((x) => byId[x]?.verdictBasis === 'outcome')) {
+    const a = sel(valid, id, 'A'), b = sel(valid, id, 'B');
+    const fa = a.filter((r) => !r.outcome?.pass).length, fb = b.filter((r) => !r.outcome?.pass).length;
+    if ((fa > 0) !== (fb > 0)) flags.push(`F-outcome-asym: ${id} 결과 기준 FAIL A=${fa}/${a.length} B=${fb}/${b.length}`);
+    const ma = med(a.map((r) => r.durationMs ?? 0)), mb = med(b.map((r) => r.durationMs ?? 0));
+    const ca = mean(a.map((r) => r.costUsd)), cb = mean(b.map((r) => r.costUsd));
+    const over = (x, y) => x !== null && y !== null && y > 0 && x > 1.5 * y;
+    if (over(mb, ma)) flags.push(`F-cost: ${id} B 중앙 시간 ${Math.round(mb / 1000)}s > A ${Math.round(ma / 1000)}s x1.5`);
+    if (over(ma, mb)) flags.push(`F-cost: ${id} A 중앙 시간 ${Math.round(ma / 1000)}s > B ${Math.round(mb / 1000)}s x1.5`);
+    if (over(cb, ca)) flags.push(`F-cost: ${id} B 평균 비용 $${cb.toFixed(2)} > A $${ca.toFixed(2)} x1.5`);
+    if (over(ca, cb)) flags.push(`F-cost: ${id} A 평균 비용 $${ca.toFixed(2)} > B $${cb.toFixed(2)} x1.5`);
+  }
+  const infra = (v) => live.filter((r) => r.variant === v && r.status !== 'ok').length;
+  if (infra('A') !== infra('B')) flags.push(`F-infra-asym: 인프라 실패 A=${infra('A')} B=${infra('B')}`);
+  for (const id of ids) {
+    for (const v of ['A', 'B']) {
+      const rs = sel(valid, id, v);
+      if (rs.length < 2) flags.push(`F-sample: ${id} ${v} 유효 실행 ${rs.length}회 - 표본 부족`);
+      const outs = new Set(rs.map((r) => (r.verdict === 'TOLERATED' ? 'PASS' : r.verdict)));
+      if (rs.length >= 2 && outs.size > 1) flags.push(`F-unstable: ${id} ${v} 판정이 갈림 ${JSON.stringify([...outs])}`);
+    }
+  }
+  return flags;
 }
 
 async function dryRun(opts) {
@@ -1245,7 +1329,7 @@ async function main() {
       if (j.contamination.contaminated) {
         row.judge = { id: j.randId, contaminated: true, reasons: j.contamination.reasons, items: null };
         row.needsHuman = true;
-        judgeActive = false; // 격리 실패: 이후 판정 중단(이미 낸 판정은 무효)
+        judgeActive = false; // 격리 실패: 이 판정만 무효(앞서 낸 판정은 유효로 둔다), 이후 판정은 중단
         console.error(`판정자 격리 실패(${j.contamination.reasons.join('; ')}) - 이 판정 무효, 이후 판정 중단`);
       } else {
         const val = j.parsed ? validateJudgeOutput(j.parsed, briefText, brief?.regexPass) : null;
@@ -1265,6 +1349,9 @@ async function main() {
   }
   rmTmp(tmpRoot);
   console.log('\n' + summarize(rows, all));
+  const flags = computeFlags(rows, all);
+  console.log(`\n플래그 ${flags.length}건 (자동 결론 없음):${flags.length ? '\n - ' + flags.join('\n - ') : ' 없음'}`);
+  console.log(`\n${REPORT_DISCLAIMER}`);
   console.log(`\n${rows.length}건을 ${path.relative(REPO, RESULTS_PATH)}에 기록(batchId=${batchId}). transcript: ${path.relative(REPO, runsDir)}`);
   console.log('주의: 이 비교는 훅 단독 효과가 아니라 B 묶음(훅 외 파일 포함) 대 현 배포본이다. kill된 실행의 비용은 usage 토큰 추정치다. 지시서 품질(b~e)은 B 훅 문구와 겹쳐 B가 앞서는 것이 설계상 당연하다 - 우열 근거로 쓰지 않는다.');
 }

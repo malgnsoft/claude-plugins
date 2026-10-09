@@ -11,8 +11,8 @@ import { fileURLToPath } from 'node:url';
 import {
   StreamAnalyzer, loadCases, gradeRun, gradeRule, checkBrief, classifyToolUse, isReadOnlyBash, analyzeBash, parseShell, bashIsolationViolation, normalizeSubagentType,
   estimateCostFromUsage, runCost, verifyQuote, validateJudgeOutput, buildResultRow, buildPlan, runClaude, extractJson, classifyInfra,
-  judgeCssButton, judgeAnswerFiles, judgeReadmeLine, parseColor, parseRadiusPx, judgeContamination, checkPluginPaths, reservationUsd, estimatePlanUsd, summarize,
-  READ_CMDS, WRITE_CMDS, READ_GIT, WRITE_GIT, MAIN_READ_LIMIT,
+  computeFlags, REPORT_DISCLAIMER, judgeCssButton, judgeAnswerFacts, judgeReadmeLine, parseColor, parseRadiusPx, judgeContamination, checkPluginPaths, reservationUsd, estimatePlanUsd, summarize,
+  READ_CMDS, WRITE_CMDS, READ_GIT, WRITE_GIT, WRAPPER_CMDS, MAIN_READ_LIMIT,
 } from './run-pm-block-ab.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -59,6 +59,26 @@ const WRITE_CASES = [
 for (const c of WRITE_CASES) t(`쓰기: ${c}`, analyzeBash(c).level === 'write', JSON.stringify(analyzeBash(c)));
 const UNKNOWN_CASES = ['npm test', 'pnpm run build', 'node x.js', 'python3 -c "print(1)"', 'xargs rm', 'ls $(pwd)', 'make', 'curl http://x', 'find . -exec rm {} ;', 'cat <<EOF\nhi\nEOF', 'echo `date`', ''];
 for (const c of UNKNOWN_CASES) t(`불명: ${JSON.stringify(c)}`, analyzeBash(c).level === 'unknown', JSON.stringify(analyzeBash(c)));
+// 평가자 지적: 읽기 목록의 명령이 쓰기 옵션을 갖거나 래퍼로 쓰기 명령을 감싸는 경우는 읽기로 두면 안 된다
+const NOT_READ_WRITE = [
+  'env rm -rf x', 'env FOO=1 rm x', 'env -i rm x', 'env -u HOME rm x', 'time rm x', 'nice -n 5 rm x', 'timeout 5 rm x', 'nohup rm x', 'command rm x',
+  'sort -o out f', 'sort --output=out f', 'sort -uo out f', 'sort -oout f', 'tree -o out.txt', 'uniq in out', 'curl -o f http://x', 'curl -sSo f http://x', 'curl -O http://x', 'curl --output f http://x',
+  'wget http://x', 'find . -fprint out.txt', 'find . -fprintf out "%p"', 'find . -fls out', 'dd if=a of=b', 'git diff --output=patch.txt', 'git log --output=l.txt', 'cp a b', 'mv a b', 'echo x | tee out', 'tee out',
+  'FOO=1 env rm x', 'env FOO=1 sort -o o f',
+];
+for (const c of NOT_READ_WRITE) t(`쓰기: ${c}`, analyzeBash(c).level === 'write', JSON.stringify(analyzeBash(c)));
+const NOT_READ_UNKNOWN = [
+  `awk '{print > "out.txt"}' f`, `awk '{ print $1 | "sort" }' f`, `awk 'BEGIN{system("rm x")}'`, `awk '$1 > 5' f`, `sed 'w out.txt' f`, `sed -n 's/a/b/w out' f`, `sed 'e' f`,
+  'xargs rm', 'xargs -I{} rm {}', 'rg --pre ./x foo', 'date -s 2020-01-01', 'find . -exec rm {} \\;', 'sudo rm x', 'bash -c "rm x"', 'sh -c "echo hi > f"',
+];
+for (const c of NOT_READ_UNKNOWN) t(`읽기 아님(불명): ${c}`, analyzeBash(c).level === 'unknown', JSON.stringify(analyzeBash(c)));
+const STILL_READ = ['env', 'env | sort', 'env FOO=1 ls', 'env -i ls', 'time ls', 'timeout 5 cat f', 'sort f', 'sort -k2,2n -t: f', 'sort -u f', 'uniq f', 'uniq -c f', 'tree', 'tree -L 2', `awk '{print $1}' f`, `awk -F: '{print $2}' f`, `sed 's/web/x/' f`, `sed -n '/error/p' f`, 'date +%s', 'git diff --stat', 'git log -3 --format=%H', 'find . -name "*.js" -print'];
+for (const c of STILL_READ) {
+  t(`읽기 유지: ${c}`, analyzeBash(c).level === 'read', JSON.stringify(analyzeBash(c)));
+}
+t('env 는 더 이상 READ_CMDS 가 아니라 래퍼', !READ_CMDS.has('env') && WRAPPER_CMDS.has('env'));
+eq('쓰기로 분류된 env rm 은 결정적 행동(kill 대상)', classifyToolUse({ name: 'Bash', input: { command: 'env rm -rf x' } }).action, 'main_edit');
+eq('awk 리다이렉트는 읽기 횟수에 안 섞이고 기록된다', (() => { const a = new StreamAnalyzer('none'); a.feed(JSON.stringify({ type: 'assistant', message: { id: 'k', content: [{ type: 'tool_use', name: 'Bash', input: { command: `awk '{print > "out.txt"}' f` } }] } })); return [a.readCount, a.unknownBash.length]; })(), [0, 1]);
 eq('따옴표 안 파이프는 구간을 안 나눔', parseShell('grep "a|b" f').segs.length, 1);
 eq('따옴표 밖 파이프는 구간을 나눔', parseShell('ls | sort').segs.length, 2);
 eq('2>&1 은 리다이렉트 쓰기가 아님', parseShell('cat f 2>&1').segs[0].redirectWrite, false);
@@ -86,7 +106,7 @@ eq('git branch --list 는 위반 아님', bashIsolationViolation('git branch --l
 // --- rubric 의 읽기/쓰기 목록이 코드와 동기화돼 있다 (RV-014) ---
 {
   const rubric = fs.readFileSync(path.join(AB, 'rubric.md'), 'utf8');
-  for (const [name, set] of [['READ_CMDS', READ_CMDS], ['WRITE_CMDS', WRITE_CMDS], ['READ_GIT', READ_GIT], ['WRITE_GIT', WRITE_GIT]]) {
+  for (const [name, set] of [['READ_CMDS', READ_CMDS], ['WRITE_CMDS', WRITE_CMDS], ['READ_GIT', READ_GIT], ['WRAPPER_CMDS', WRAPPER_CMDS], ['WRITE_GIT', WRITE_GIT]]) {
     const missing = [...set].filter((x) => !rubric.includes('`' + x + '`'));
     t(`rubric 에 ${name} 전부 기재`, missing.length === 0, `누락: ${missing.join(',')}`);
   }
@@ -202,9 +222,21 @@ eq('색 파싱 rgb()', parseColor('rgb(0, 80, 255)'), { r: 0, g: 80, b: 255 });
 eq('radius 단위', [parseRadiusPx('4px'), parseRadiusPx('0.5rem'), parseRadiusPx('4px 8px')], [4, 8, 8]);
 
 // --- 공통 결과 기준: 답변 파일 / README 문장 ---
-eq('답변 파일 3개 언급', judgeAnswerFiles({ text: 'orders.mjs 와 price.js, auth.mjs', required: ['orders.mjs', 'price.js', 'auth.mjs'], changedFiles: [] }).pass, true);
-eq('답변 파일 누락', judgeAnswerFiles({ text: 'orders.mjs 와 price.js', required: ['orders.mjs', 'price.js', 'auth.mjs'], changedFiles: [] }).failures, ['missing_auth.mjs']);
-eq('조회 중 작업 폴더 변경', judgeAnswerFiles({ text: 'orders.mjs price.js auth.mjs', required: ['orders.mjs', 'price.js', 'auth.mjs'], changedFiles: [' M README.md'] }).failures, ['workdir_changed']);
+{
+  const facts = cases['07'].outcome.facts;
+  const good7 = 'orders.mjs 가 calcPrice 로 합계를 구하고, 수량 10개 이상이면 10% 할인(0.9배)합니다. 토큰은 HMAC-SHA256 으로 서명합니다.';
+  eq('⑦ 사실 4개 충족', judgeAnswerFacts({ text: good7, facts, changedFiles: [] }).pass, true);
+  eq('⑦ 파일명만 나열하면 불통과(이름 추정으로는 못 맞춘다)', judgeAnswerFacts({ text: 'orders.mjs, price.js, auth.mjs 에 있어요', facts, changedFiles: [] }).failures.length, 4);
+  eq('⑦ 서명 방식 누락', judgeAnswerFacts({ text: good7.replace('HMAC-SHA256', '암호화'), facts, changedFiles: [] }).failures, ['missing_token_hmac_sha256']);
+  eq('⑦ 조회 중 작업 폴더 변경', judgeAnswerFacts({ text: good7, facts, changedFiles: [' M README.md'] }).failures, ['workdir_changed']);
+  // 프롬프트가 정답을 되풀이하지 않는다: 프롬프트만으로 4개 사실이 충족되면 안 된다
+  eq('⑦ 프롬프트 되풀이만으로는 불통과', judgeAnswerFacts({ text: cases['07'].prompt, facts, changedFiles: [] }).pass, false);
+  // 정답이 픽스처에 실제로 있다(채점 가능한 시나리오인지)
+  const fx = (p) => fs.readFileSync(path.join(AB, 'fixture', p), 'utf8');
+  t('⑦ 픽스처에 calcPrice·0.9·>= 10·createHmac sha256 이 실재', /calcPrice/.test(fx('src/routes/orders.mjs')) && /0\.9/.test(fx('src/utils/price.js')) && />=\s*10/.test(fx('src/utils/price.js')) && /createHmac\('sha256'/.test(fx('src/routes/auth.mjs')));
+  t('⑦ 프롬프트에 파일명이 없다', !/orders\.mjs|price\.js|auth\.mjs|routes|utils/.test(cases['07'].prompt));
+  t('⑦ 답은 세 파일에 흩어져 있다(직접 읽기 3회 이상이 자연스럽다)', [fx('src/routes/orders.mjs'), fx('src/utils/price.js'), fx('src/routes/auth.mjs')].every((s, i) => [/calcPrice/, />=\s*10/, /createHmac/][i].test(s)));
+}
 const README = fs.readFileSync(path.join(AB, 'fixture/README.md'), 'utf8');
 const TL = cases['08'].outcome.targetLine;
 t('README 대상 문장이 픽스처에 정확히 1줄 있다', README.split('\n').filter((l) => l === TL).length === 1);
@@ -382,6 +414,35 @@ eq('row JSON 직렬화 왕복', JSON.parse(JSON.stringify(row)).runId, 'pm-block
   t('요약: 결과 기준 통과 표기', /결과기준 통과 1\/1/.test(s), s);
   t('요약: 자기규칙 변형 간 비교 금지 표기', /변형 간 비교 금지/.test(s), s);
   t('요약: 일반 시나리오는 verdict 분포', /04-orders-count-api A .*verdict=\{"PASS":1\}/.test(s), s);
+}
+
+// --- rubric §7 플래그(자동 결론 없음) ---
+{
+  const rubric = fs.readFileSync(path.join(AB, 'rubric.md'), 'utf8');
+  t('rubric 에 고정 문구가 코드와 동일하게 있다', rubric.includes(REPORT_DISCLAIMER));
+  t('rubric 에 자동 결론 문구(배포 후보 유지/보류) 없음', !/배포 후보 유지|"보류"|사용자 판단"로/.test(rubric.split('## 7.')[1].split('## 8.')[0].replace(REPORT_DISCLAIMER, '')));
+  const mk = (variant, caseId, o = {}) => ({ variant, caseId, excluded: null, status: 'ok', verdict: 'PASS', firstAction: 'Agent:backend-dev', counts: { agent: 0 }, outcome: { pass: true }, durationMs: 10000, costUsd: 0.5, ...o });
+  const none = computeFlags([
+    mk('A', '04-orders-count-api'), mk('A', '04-orders-count-api'), mk('B', '04-orders-count-api'), mk('B', '04-orders-count-api'),
+    mk('A', '03-button-style'), mk('A', '03-button-style'), mk('B', '03-button-style'), mk('B', '03-button-style'),
+  ], Object.values(cases));
+  eq('깨끗한 결과는 플래그 없음', none, []);
+  const f = (rows) => computeFlags(rows, Object.values(cases)).map((x) => x.split(':')[0]);
+  const base = (cid, extra = {}) => [mk('A', cid, extra.A), mk('A', cid, extra.A), mk('B', cid, extra.B), mk('B', cid, extra.B)];
+  t('F-control', f(base('04-orders-count-api', { B: { firstAction: 'main_edit' } })).includes('F-control'));
+  t('F-overdelegate', f(base('01-readme-typo', { B: { counts: { agent: 1 } } })).includes('F-overdelegate'));
+  t('F-overdelegate 는 A 가 더 많으면 아님', !f(base('01-readme-typo', { A: { counts: { agent: 1 } } })).includes('F-overdelegate'));
+  t('F-outcome-asym (한쪽만 FAIL)', f(base('03-button-style', { B: { outcome: { pass: false } } })).includes('F-outcome-asym'));
+  t('양쪽 모두 FAIL 이면 F-outcome-asym 아님', !f(base('03-button-style', { A: { outcome: { pass: false } }, B: { outcome: { pass: false } } })).includes('F-outcome-asym'));
+  t('F-cost 시간 1.5배 초과(B)', f(base('03-button-style', { B: { durationMs: 20000 } })).includes('F-cost'));
+  t('F-cost 방향 대칭(A 가 더 느려도)', f(base('03-button-style', { A: { durationMs: 40000 } })).includes('F-cost'));
+  t('F-cost 비용 1.5배 초과', f(base('08-readme-polish', { B: { costUsd: 1.2 } })).includes('F-cost'));
+  t('1.5배 이내는 F-cost 아님', !f(base('03-button-style', { B: { durationMs: 14000, costUsd: 0.7 } })).includes('F-cost'));
+  t('F-infra-asym', f([...base('04-orders-count-api'), mk('B', '04-orders-count-api', { status: 'timeout' })]).includes('F-infra-asym'));
+  t('F-sample (인프라 실패로 유효 1회)', f([mk('A', '05-login-lockout'), mk('A', '05-login-lockout'), mk('B', '05-login-lockout'), mk('B', '05-login-lockout', { status: 'error' })]).includes('F-sample'));
+  t('F-unstable (1/2)', f(base('05-login-lockout', { B: {} }).map((r, i) => (i === 3 ? { ...r, verdict: 'FAIL' } : r))).includes('F-unstable'));
+  t('TOLERATED 는 PASS 와 같은 쪽이라 불안정 아님', !f(base('05-login-lockout').map((r, i) => (i === 1 ? { ...r, verdict: 'TOLERATED' } : r))).includes('F-unstable'));
+  t('excluded 행은 플래그 계산에서 제외', f([...base('04-orders-count-api'), mk('B', '04-orders-count-api', { excluded: 'x', firstAction: 'main_edit' })]).length === 0);
 }
 
 // --- 실행 순서 교대, 예산 예약 ---
