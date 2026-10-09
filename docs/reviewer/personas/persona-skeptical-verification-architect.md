@@ -28,3 +28,6 @@
 
 ## 6. 출력포맷 (Output Format)
 reviewer-persona-panel-standard §5 표준 형식 준수 — 지적마다 절/줄 인용 + 문제 + 개선안(대안 포함), 페르소나 종합판정(RAG) 명시.
+
+## 적용 이력 (Application Log)
+- 2026-10-09 / target_id `pm-block-ab-golden-20261009` / 1차(최초, Standard) / docs/reviewer/review-pm-block-ab-golden-2026-10-09.md — 역할개념 수준 재사용(§5 참고파일은 최초 라운드 고정). RV-002(시나리오③ 자기 규칙 채점 = 순환, 훅과 무관한 공통 결과 기준 부재), RV-006(사전 결정 규칙·n=2 검출 한계 미기재), RV-012(대조군 노이즈 규칙 범위).

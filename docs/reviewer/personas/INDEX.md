@@ -8,9 +8,9 @@
 
 | 파일 | 역할개념(1줄) | 유형 | 최초 생성 | 최근 재사용(target_id/라운드) |
 |---|---|---|---|---|
-| persona-skeptical-verification-architect.md | 설계 문서 내부 근거가 독립적 증거인지 의심하는 회의적 검증가 | 수렴 | 2026-08-09 | pm-orchestration-block-propagation / 1~2차 |
+| persona-skeptical-verification-architect.md | 설계 문서 내부 근거가 독립적 증거인지 의심하는 회의적 검증가 | 수렴 | 2026-08-09 | pm-block-ab-golden-20261009 / 1차(최초, Standard) · 직전: pm-orchestration-block-propagation / 1~2차 |
 | persona-ops-maintainability-realist.md | "6개월 후에도 살아있는가"를 묻는 운영 현실주의자 | 수렴 | 2026-08-09 | stop-hook-additional-context-20260911 / 1차(최초, Sensitive 풀패널) · 직전: golden-task-benchmark-20260901 / 1차(최초, Exploration 풀패널) |
-| persona-zero-based-redesigner.md | 구조 자체(훅+스킬 조합)가 최선인지, 더 단순하고 이미 검증된 대안이 있는지 의심하는 발산형 | 발산 | 2026-08-09 | worktree-means-limit-20261008 / 1차(최초, Standard 약식) · 직전: audit-r2-hooks-20260825 / 2차(축소) |
+| persona-zero-based-redesigner.md | 구조 자체(훅+스킬 조합)가 최선인지, 더 단순하고 이미 검증된 대안이 있는지 의심하는 발산형 | 발산 | 2026-08-09 | pm-block-ab-golden-20261009 / 1차(최초, Standard) · 직전: worktree-means-limit-20261008 / 1차(최초, Standard 약식) |
 | persona-hook-execution-safety-verifier.md | 전역 자동실행 코드가 자기보고가 아니라 실제 실행 결과(다양한 상태 재현)로 안전한지 검증하는 실행 안전성 검증가 | 수렴 | 2026-08-10 | stop-hook-additional-context-20260911 / 1차(최초, Sensitive 풀패널) · 직전: pm-block-post-approval-continuation / 1차(최초, 전역 주입 블록 변경 풀패널) |
 | persona-mechanism-zero-based-challenger.md | 여러 요구사항을 만족시키려 겹겹이 쌓은 다중 레이어 구조가 정말 필요한지, 더 단순한 단일 채널로 같은 효과를 낼 수 있는지 의심하는 발산형 | 발산 | 2026-08-10 | bd-autopilot-depth-relay-20260921 / 1차(최초, Sensitive 풀패널, 발산형 슬롯) · 직전: business-director-agent-new-20260921 / 2차(재검토, 풀패널 유지, 발산형 2슬롯) |
 | persona-ops-drift-realist.md | 전사 배포 후 다양한 로컬 환경에서 새로 인정된 리스크 상태(승인대기·거절 등)가 사용자에게 감지 가능한가(조용한 열화로 남지 않는가)를 묻는 운영 현실주의자 | 수렴 | 2026-08-10 | pm-block-sessionstart-injection / 1차(최초, Refactor 풀패널) · 직전: pm-orchestration-block-propagation / 3차 |
@@ -19,7 +19,7 @@
 | persona-vue-zero-regression-guardian.md | 다른 사용자/스택 배려를 명분으로 자신이 의존하는 기존 규칙이 실수로 깎이거나 도달 불가능해지지 않는지 보는 현직 사용자 관점의 회귀 파수꾼 | 수렴 | 2026-08-10 | frontend-dev-vue-zero-scope / 1차 |
 | persona-zero-based-md-restructurer.md | 조건부 태그를 문서 곳곳에 흩뿌리는 구조 자체가 대상(스택 등)이 늘어나도 유지보수 가능한지 의심하는 정보구조 설계자(발산형) | 발산 | 2026-08-10 | frontend-dev-vue-zero-scope / 1차 |
 | persona-privacy-leakage-auditor.md | 이 산출물이 회사 채널·중앙 저장소에 그대로 공유되면 무엇이 새는지 실제로 확인하는 개인정보·유출 감사관 | 수렴 | 2026-08-10 | customer-support-agent-new-20260921 / 2차(축소 재검증) · 직전: customer-support-agent-new-20260921 / 1차(최초, Sensitive 풀패널) |
-| persona-script-skill-consistency-auditor.md | 문서가 서술하는 약속(옵션·임계값·근거)과 코드 구현이 실제로 정확히 일치하는지 한 줄씩 대조하는 정합성 감사관 | 수렴 | 2026-08-10 | golden-eval-stage2-and-scorecard-roundlabel / 1차(최초, Sensitive 풀패널) · 직전: golden-task-benchmark-20260901 / 1차(최초, Exploration 풀패널) |
+| persona-script-skill-consistency-auditor.md | 문서가 서술하는 약속(옵션·임계값·근거)과 코드 구현이 실제로 정확히 일치하는지 한 줄씩 대조하는 정합성 감사관 | 수렴 | 2026-08-10 | pm-block-ab-golden-20261009 / 1차(최초, Standard) · 직전: golden-eval-stage2-and-scorecard-roundlabel / 1차(최초, Sensitive 풀패널) |
 | persona-self-service-scope-challenger.md | 조직 차원 문제로 시작한 조사가 개인용 셀프서비스 도구로 축소(scope reduction)된 것은 아닌지 의심하는 발산형 | 발산 | 2026-08-10 | token-usage-diagnosis-skill / 1차 |
 | persona-verifiable-claim-discipline-auditor.md | claimed(해석)와 verified(스크립트 산출)의 구분이 문서 전 지점에서 실제로 지켜지는지(계산하지 않은 숫자를 지어내지 않는지) 보는 검증가능성 감사관 | 수렴 | 2026-08-10 | golden-eval-stage2-and-scorecard-roundlabel / 1차(최초, Sensitive 풀패널) · 직전: sidechain-instream-nesting-count-20260901 / 1차(최초, Sensitive 풀패널) |
 | persona-enforcement-gap-auditor.md | 원칙 문장이 체크리스트/영속 필드로 강제 가능한지, 아니면 자기판단에 맡겨진 서술인지 가르는 강제력 격차 감사관 | 수렴 | 2026-08-10 | business-director-agent-new-20260921 / 3차(축소 모드, 재검토 3요소 충족) · 직전: 동 target_id 2차(재검토, 풀패널 유지) |
@@ -46,7 +46,7 @@
 | persona-cross-skill-directive-conflict-auditor.md | 서로를 정본으로 지목하는 스킬 두 개가 같은 대상에 다른 규칙을 명령해 동시 준수가 불가능해지는 지점을 찾는 충돌 감사관 | 수렴 | 2026-08-29 | bd-autopilot-depth-relay-20260921 / 2차(축소 재검증) · 직전: 동 target_id 1차(최초, Sensitive 풀패널) |
 | persona-skill-library-scale-challenger.md | 스킬 개수·접두어 규약·분할 구조가 백지에서 다시 짜도 같은 모습인지 실측 참조 수로 되묻는 발산형 | 발산 | 2026-08-29 | skills-full-audit-20260829 / 1차(최초) |
 | persona-decision-reversal-auditor.md | 이 수정이 과거에 반대 방향으로 내려진 결정·규약을 확인 없이 뒤집는지, 한 자리만 고쳐 나머지 사이트와 새로 어긋나지 않는지 보는 변경이력 감사관 | 수렴 | 2026-09-01 | worktree-means-limit-20261008 / 1차(최초, Standard 약식) · 직전: backlog-2items-path-workrecord-20260901 / 1차(최초, Standard 약식) |
-| persona-token-attribution-accuracy-auditor.md | 새 집계 로직의 산수가 실제 로그 구조(멀티파일 세션·sidechain·동시 다중 tool_use)에서도 깨지지 않는지 코드와 실측을 대조하는 토큰 귀속 정확성 감사관 | 수렴 | 2026-08-10 | sidechain-instream-nesting-count-20260901 / 1차(최초, Sensitive 풀패널) · 직전: spawndepth-nesting-detection-20260901 / 1차(최초, Sensitive 풀패널) |
+| persona-token-attribution-accuracy-auditor.md | 새 집계 로직의 산수가 실제 로그 구조(멀티파일 세션·sidechain·동시 다중 tool_use)에서도 깨지지 않는지 코드와 실측을 대조하는 토큰 귀속 정확성 감사관 | 수렴 | 2026-08-10 | pm-block-ab-golden-20261009 / 1차(최초, Standard) · 직전: sidechain-instream-nesting-count-20260901 / 1차(최초, Sensitive 풀패널) |
 | persona-subagent-cost-attribution-rethinker.md | 서브에이전트 관련 표·수치가 사용자가 실제로 묻는 질문에 답하는지, 파일 밖 조회 대신 스트림 안의 상관키로 같은 답을 낼 수 있는지 의심하는 발산형 | 발산 | 2026-08-10 | sidechain-instream-nesting-count-20260901 / 1차(최초, Sensitive 풀패널) · 직전: spawndepth-nesting-detection-20260901 / 1차(최초, Sensitive 풀패널) |
 | persona-approval-authority-zero-based-challenger.md | 승인이 품질 확인이 아니라 책임 귀속임을 전제로, 게이트를 기계 검증으로 대체할 때 사람의 동의가 어디서 획득되는지를 묻는 발산형 | 발산 | 2026-09-19 | customer-support-agent-new-20260921 / 1차(최초, Sensitive 풀패널, 발산형 슬롯) · 직전: business-director-agent-new-20260921 / 2차(재검토, 풀패널 유지, 발산형 슬롯) |
 | persona-gate-classification-arbitrage-auditor.md | 한 행위가 강도가 다른 두 승인 게이트에 동시에 해당할 때 낮은 쪽으로 분류돼 통과하는 경로와 그 분류 판정이 층간 이동 중 유실되는 지점을 찾는 분류 차익 감사관 | 수렴 | 2026-09-21 | customer-support-agent-new-20260921 / 1차(최초, Sensitive 풀패널) · 직전: business-director-agent-new-20260921 / 3차(축소 모드, 재검토 3요소 충족) |
