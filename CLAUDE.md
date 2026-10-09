@@ -143,7 +143,7 @@ pnpm run check-docs    # malgn-agent 자산 개수(agents·skills·knowledge) �
 ## Architecture
 - `.claude-plugin/marketplace.json` — 마켓플레이스 정의(`malgnsoft-plugins`), 등록 플러그인 `malgn-agent` 1종. **버전은 `malgn-agent/.claude-plugin/plugin.json`과 같이 올린다** — 어긋나면 `/plugin update`가 변경을 감지하지 못한다.
 - `malgn-agent/` — 마켓플레이스의 핵심이자 유일한 플러그인.
-  - `.claude-plugin/plugin.json` — `mcpServers.malgnai-hub`(원격 HTTP `https://malgnai-hub.apiserver.kr/mcp`, OAuth 로그인이 정상 경로) + `userConfig.device_token`(OAuth가 안 되는 예외 상황의 탈출구 필드 — 값을 채워도 자동으로 쓰이지 않는다, 정상 설치는 비워둔다)
+  - `.claude-plugin/plugin.json` — `mcpServers.malgnai-hub`(원격 HTTP `https://malgnai-hub.apiserver.kr/mcp`, 인증은 `headersHelper`가 `bin/hub-auth-header.mjs`를 호출해 맑은에이전트 앱의 기기 토큰을 헤더로 전달한다 — `oauth` 블록과 `userConfig` 없음)
   - `agents/` 24종 — `autopilot`·`business-director` 2종을 제외한 전원 `pm.md` 기준 위임모델(둘 다 PM보다 상위의 자율 루프 — `autopilot`은 단일 프로젝트, `business-director`는 사업 전체 스코프). ⚠️ `agents/pm.md`는 **이 프로젝트가 만드는 산출물**(설치사 직원이 쓰는 제품용 PM)이지 이 세션 자신의 운영 규칙이 아니다
   - `skills/` 42종 — 명명은 참조 에이전트 수 기준(`common-*` 전역 상시비용 / `domain-*` 도메인 / 무접두어 단일 참조)
   - `knowledge/` 41개 — 도메인별 디렉토리, 진입점 `knowledge/README.md`. 절차·체크리스트의 정본은 `skills/`다 — 그 배경이 스킬 본문 상단에 몇 줄로 흡수될 만큼 짧으면 knowledge를 두지 않고 흡수하며, 흡수 후에도 남는 것(도메인 레퍼런스·역추출 사례처럼 스킬 분량을 넘는 독립 내용)만 knowledge에 둔다

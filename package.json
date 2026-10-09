@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "check-docs": "node scripts/check-docs.mjs",
+    "test:hub-auth": "node --test scripts/hub-auth-header.test.mjs",
     "check-assets": "node scripts/validate-agent-assets.mjs",
     "check-links": "node scripts/check-install-reachability.mjs",
     "check-status": "node scripts/check-status-size.mjs",
