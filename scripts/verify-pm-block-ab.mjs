@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import {
   StreamAnalyzer, loadCases, gradeRun, gradeRule, checkBrief, classifyToolUse, isReadOnlyBash, analyzeBash, parseShell, bashIsolationViolation, normalizeSubagentType,
   estimateCostFromUsage, runCost, verifyQuote, validateJudgeOutput, buildResultRow, buildPlan, runClaude, extractJson, classifyInfra,
-  computeFlags, REPORT_DISCLAIMER, judgeCssButton, judgeAnswerFacts, judgeReadmeLine, parseColor, parseRadiusPx, judgeContamination, checkPluginPaths, reservationUsd, estimatePlanUsd, summarize,
+  reanalyzeRow, computeFlags, REPORT_DISCLAIMER, judgeCssButton, judgeAnswerFacts, judgeReadmeLine, parseColor, parseRadiusPx, judgeContamination, checkPluginPaths, reservationUsd, estimatePlanUsd, summarize,
   READ_CMDS, WRITE_CMDS, READ_GIT, WRITE_GIT, WRAPPER_CMDS, MAIN_READ_LIMIT,
 } from './run-pm-block-ab.mjs';
 
@@ -530,6 +530,48 @@ eq('timeout: killedBy', proc2.killedBy, 'timeout');
 eq('timeout: infra', classifyInfra(sleepy, proc2).status, 'timeout');
 process.env.PATH = oldPath;
 fs.rmSync(fakeDir, { recursive: true, force: true });
+
+// --- 회귀: 체인 안의 fd 리다이렉션(2>/dev/null 등)을 쓰기로 보던 결함 ---
+{
+  const lv = (c) => analyzeBash(c).level;
+  const READ_CHAIN = [
+    'ls x 2>/dev/null; echo hi',
+    'cat src/routes/orders.mjs 2>/dev/null; echo "---"; cat src/routes/auth.mjs 2>/dev/null',
+    'cat a 2>/dev/null', 'cat a 2>/dev/null && echo ok', 'cat a 2>/dev/null || echo no', 'cat a 2>/dev/null | head -3', 'cat a 2>/dev/null|head -3',
+    'cat a 2>&1; echo hi', 'cat a >&2; echo hi', 'cat a 1>&2 && ls', 'cat a &>/dev/null; echo hi', 'cat a 1>/dev/null; ls', 'cat a >/dev/null; ls',
+    'cat a 2>/dev/stderr; ls', 'cat a >/dev/stdout; ls', 'cat a 2>>/dev/null; ls', 'cat a 2> /dev/null; ls', 'cat a 2>"/dev/null"; ls', 'cat a &>>/dev/null; ls',
+    'ls a 2>/dev/null; ls b 2>/dev/null; ls c 2>&1 | head',
+    'echo "a;b" && echo "c && d"', "echo 'x > y; z'", 'grep "a;b" f 2>/dev/null',
+    'find . -name "server.mjs" -not -path "*/node_modules/*" -exec cat {} \\; ; echo "---orders---"; cat src/routes/orders.mjs 2>/dev/null; echo "---db dir---"; ls -la db',
+    'find . -name "*.js" -exec cat {} \\;', 'find . -name "*.js" -exec grep -l foo {} +', 'find . -type f -execdir cat {} \\;',
+    'xargs cat', 'ls | xargs cat', 'ls | xargs -n 1 -I{} head {}', 'bash -c "ls; cat f 2>/dev/null"', 'sh -c "cat a 2>&1"',
+  ];
+  for (const c of READ_CHAIN) t(`회귀 읽기: ${c}`, lv(c) === 'read', JSON.stringify(analyzeBash(c)));
+  const WRITE_CHAIN = [
+    'cat a 2>/dev/null; echo x > out.txt', 'cat a 2>/dev/null && echo x >> out.txt', 'ls 2>/dev/null; rm x', 'ls; cat a > b.txt 2>/dev/null', 'cat a 2>err.log; ls', 'cat a 2>>err.log; ls',
+    'cat a 2>/dev/null | tee out', 'cat a &>out.log; ls', 'cat a >&out.log; ls', 'cat a >| out.txt; ls', 'cat a 2>/dev/null > out.txt', 'cat a >out.txt;ls', 'echo hi >"my file.txt"; ls',
+    'ls && git commit -m x', 'ls || mkdir d',
+  ];
+  for (const c of WRITE_CHAIN) t(`회귀 쓰기: ${c}`, lv(c) === 'write', JSON.stringify(analyzeBash(c)));
+  const UNK_CHAIN = [
+    'cat a 2>/dev/null; npm test', 'ls; make 2>&1', 'find . -exec rm {} \\;', 'find . -exec sh -c "rm {}" \\;', 'find . -exec cat {} \\; -exec rm {} \\;', 'find . -exec cat {}',
+    'ls | xargs rm', 'xargs -I{} rm {}', 'bash -c "rm x"', 'sh -c "echo hi > f"', 'bash script.sh', 'cat a > $OUT; ls', 'echo $(date) 2>/dev/null',
+  ];
+  for (const c of UNK_CHAIN) t(`회귀 불명: ${c}`, lv(c) === 'unknown', JSON.stringify(analyzeBash(c)));
+  // 불명 Bash 는 kill 대상이 아니다(read 취급, 읽기 횟수 미계산, 기록)
+  const unkTu = classifyToolUse({ name: 'Bash', input: { command: 'ls; make 2>&1' } });
+  t('불명 Bash: decisive 아님 + unknownBash 표시', unkTu.kind === 'read' && unkTu.unknownBash === true && unkTu.counted === false, JSON.stringify(unkTu));
+  const chainTu = classifyToolUse({ name: 'Bash', input: { command: 'ls x 2>/dev/null; echo hi' } });
+  t('반례 1: decisive 아님', chainTu.kind === 'read' && chainTu.counted !== false && !chainTu.unknownBash, JSON.stringify(chainTu));
+  // 재분석: 끊겼던 행이 새 분류기에서 결정적이 아니면 INCONCLUSIVE 후보
+  const tu = (command) => JSON.stringify({ type: 'assistant', message: { id: 'm' + command.length, content: [{ type: 'tool_use', name: 'Bash', input: { command } }] } });
+  const nd = [tu('cat a 2>/dev/null; echo hi'), tu('ls b')].join('\n');
+  const fakeRow = { runId: 'b:A-05-login-lockout-r1', variant: 'A', caseId: '05-login-lockout', rep: 1, firstAction: 'main_edit', killedBy: 'decisive', verdict: 'FAIL', label: 'under_routing', counts: { read: 0 }, firstActionDetail: { tool: 'Bash' } };
+  const ra = reanalyzeRow(fakeRow, cases['05'], nd);
+  t('재분석: 오분류 kill -> INCONCLUSIVE 후보', ra.change === 'INCONCLUSIVE_candidate' && ra.newVerdict === 'INCONCLUSIVE' && ra.needsRerun && ra.newFirstAction === 'no_action', JSON.stringify(ra));
+  const ra2 = reanalyzeRow(fakeRow, cases['05'], [tu('echo x > f'), tu('ls')].join('\n'));
+  t('재분석: 진짜 쓰기는 그대로', ra2.change === 'unchanged' && ra2.newFirstAction === 'main_edit', JSON.stringify(ra2));
+}
 
 console.log(`\n단위 검증: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

@@ -98,17 +98,32 @@ export function parseShell(cmd) {
       if (/^\d+$/.test(cur) && has) { cur = ''; has = false; } // 2>... 의 fd 번호
       let j = i;
       while (cmd[j] === '>') j++;
-      if (cmd[j] === '&') { // >&2, >&- : 무해
+      if (cmd[j] === '|') j++; // >| (noclobber 무시)
+      if (cmd[j] === '&') { // >&2, >&- 는 fd 복제(무해). >&file 은 파일 쓰기라 아래로 내려간다
+        if (/[\d-]/.test(cmd[j + 1] ?? '')) {
+          j++;
+          while (/[\d-]/.test(cmd[j] ?? '')) j++;
+          i = j - 1;
+          continue;
+        }
         j++;
-        while (/[\d-]/.test(cmd[j] ?? '')) j++;
-        i = j - 1;
-        continue;
       }
-      while (cmd[j] === ' ') j++;
-      const m = cmd.slice(j).match(/^(\S+)/);
-      if (m && m[1] === '/dev/null') { i = j + m[1].length - 1; continue; }
-      redirectWrite = true;
+      while (cmd[j] === ' ' || cmd[j] === '\t') j++;
+      // 목적지 단어: 공백·연산자(; | & < > ( ))에서 끝난다. 따옴표 안은 한 덩어리.
+      let target = '';
+      let tq = null;
+      while (j < cmd.length) {
+        const d = cmd[j];
+        if (tq) { if (d === tq) tq = null; else target += d; j++; continue; }
+        if (d === "'" || d === '"') { tq = d; j++; continue; }
+        if (/[\s;|&<>()]/.test(d)) break;
+        target += d;
+        j++;
+      }
       i = j - 1;
+      if (SAFE_REDIRECT_TARGETS.has(target)) continue; // 실제 파일이 아닌 곳으로의 리다이렉션은 쓰기가 아니다
+      if (target && /[$`]/.test(target)) { subst = true; continue; } // 목적지를 알 수 없음 -> unknown
+      redirectWrite = true;
       continue;
     }
     cur += c;
@@ -117,6 +132,8 @@ export function parseShell(cmd) {
   pushSeg();
   return { segs, subst };
 }
+
+const SAFE_REDIRECT_TARGETS = new Set(['/dev/null', '/dev/stderr', '/dev/stdout', '/dev/tty']);
 
 export const READ_CMDS = new Set([
   'cd', 'ls', 'cat', 'head', 'tail', 'wc', 'rg', 'grep', 'egrep', 'fgrep', 'pwd', 'stat', 'file', 'tree', 'echo', 'printf',
@@ -192,8 +209,18 @@ function classifySegment(seg) {
   }
   if (head === 'find') {
     if (t.includes('-delete') || t.some((x) => /^-fprint0?$|^-fprintf$|^-fls$/.test(x))) return 'write';
-    if (t.some((x) => ['-exec', '-execdir', '-ok', '-okdir'].includes(x))) return 'unknown';
-    return 'read';
+    // -exec 류는 ; 또는 + 까지의 내부 명령을 보고 분류한다(쓰기 > 모호 > 읽기). 종결자가 없으면 모호.
+    let level = 'read';
+    for (let i = 1; i < t.length; i++) {
+      if (!['-exec', '-execdir', '-ok', '-okdir'].includes(t[i])) continue;
+      let k = i + 1;
+      while (k < t.length && t[k] !== ';' && t[k] !== '+') k++;
+      const inner = t.slice(i + 1, k);
+      const lv = k >= t.length || !inner.length ? 'unknown' : classifySegment({ tokens: inner, redirectWrite: false });
+      if (lv !== 'read') level = 'unknown'; // 래퍼 안의 쓰기도 기록만(끊지 않음): 실행 여부·대상이 불확실하다
+      i = k;
+    }
+    return level;
   }
   if (head === 'git') {
     const { sub, args } = gitInfo(t);
@@ -213,12 +240,26 @@ function classifySegment(seg) {
     return PKG_WRITE_SUBS.has(sub) ? 'write' : 'unknown'; // npm test / pnpm run ... 은 불명
   }
   if (head === 'curl') return t.some((x) => x === '--output' || x.startsWith('--output=') || x === '--remote-name' || x === '--remote-name-all' || flagCluster(x) || /^-[a-zA-Z]*O[a-zA-Z]*$/.test(x)) ? 'write' : 'unknown';
+  if (head === 'xargs') {
+    // 옵션을 건너뛰고 내부 명령으로 분류한다. 내부 명령이 없으면 기본 echo(읽기).
+    const withArg = new Set(['-I', '-n', '-P', '-d', '-L', '-s', '-E', '-a', '-J', '-R', '-S']);
+    let i = 1;
+    while (i < t.length && t[i].startsWith('-')) i += withArg.has(t[i]) ? 2 : 1;
+    const rest = t.slice(i);
+    return rest.length && classifySegment({ tokens: rest, redirectWrite: false }) !== 'read' ? 'unknown' : 'read';
+  }
+  if (['bash', 'sh', 'zsh', 'dash'].includes(head)) {
+    // -c '<스크립트>' 는 스크립트를 재귀 분류한다. 그 외(스크립트 파일 실행 등)는 모호.
+    const ci = t.findIndex((x, idx) => idx > 0 && /^-[a-zA-Z]*c[a-zA-Z]*$/.test(x));
+    return ci > 0 && ci + 1 < t.length && analyzeBash(t[ci + 1]).level === 'read' ? 'read' : 'unknown';
+  }
   if (head === 'wget') return 'write'; // 기본 동작이 파일 저장
   if (READ_CMDS.has(head)) return 'read';
   return 'unknown';
 }
 
 // 반환: {level:'read'|'write'|'unknown'}. 쓰기 신호가 하나라도 확인되면 write.
+// find -exec / xargs / bash -c 같은 래퍼는 내부 명령이 전부 읽기일 때만 read, 그 외는 쓰기여도 unknown(끊지 않는다).
 export function analyzeBash(cmd) {
   if (typeof cmd !== 'string' || !cmd.trim()) return { level: 'unknown', segs: [] };
   const { segs, subst } = parseShell(cmd);
@@ -294,6 +335,7 @@ export class StreamAnalyzer {
     this.hookResponses = [];
     this.mainToolUses = [];
     this.firstDecisive = null; // {classified, input}
+    this.firstDecisiveIndex = null; // mainToolUses 안의 위치(재분석 보고용)
     this.readCount = 0;
     this.readsBeforeDecisive = null;
     this.agentCount = 0;
@@ -362,6 +404,7 @@ export class StreamAnalyzer {
           }
           if (!this.firstDecisive) {
             this.firstDecisive = { classified: cls, input: item.input };
+            this.firstDecisiveIndex = this.mainToolUses.length - 1;
             this.readsBeforeDecisive = this.readCount;
           }
           if (this.runMode === 'run_to_end_kill_on_violation' && !this.violation) {
@@ -836,6 +879,8 @@ function parseArgs(argv) {
     else if (a === '--preflight') o.preflight = true;
     else if (a === '--preflight-judge-only') o.preflightJudgeOnly = true;
     else if (a === '--keep') o.keep = true;
+    else if (a === '--reanalyze') o.reanalyze = next();
+    else if (a === '--runs-dir') o.runsDir = next();
     else if (a === '--judge-model') o.judgeModel = next();
     else if (a === '--model') o.model = next();
     else if (a === '--total-budget-usd') o.totalBudgetUsd = Number(next());
@@ -850,7 +895,8 @@ function parseArgs(argv) {
     else if (a === '--help' || a === '-h') {
       console.log('usage: node scripts/run-pm-block-ab.mjs [--variant A|B|both] [--case id[,id]|all] [--reps N] [--dry-run] [--preflight] [--preflight-judge-only] ' +
         '[--judge-model m] [--model m] [--total-budget-usd N] [--max-budget-usd N] [--judge-max-budget-usd N] [--timeout-sec N] ' +
-        '[--include-optional] [--no-judge] [--no-isolate-settings] [--keep]');
+        '[--include-optional] [--no-judge] [--no-isolate-settings] [--keep]\n' +
+        '       node scripts/run-pm-block-ab.mjs --reanalyze <batchId> [--runs-dir <runs 폴더>]   (오프라인 재분석, 비용 0)');
       process.exit(0);
     } else throw new Error(`알 수 없는 옵션: ${a}`);
   }
@@ -1293,9 +1339,69 @@ async function preflight(opts) {
   process.exit(ok ? 0 : 1);
 }
 
+// ---------- 오프라인 재분석 (비용 0) ----------
+// 저장된 transcript 를 현재 분류기로 다시 분석해 첫 결정적 행동이 바뀌는지 본다. results.jsonl 은 고치지 않는다.
+// kill 로 끊긴 실행이 새 분류기에서 결정적 행동이 없어지면 그 뒤 행동을 알 수 없으므로 INCONCLUSIVE 후보(재실행 필요)다.
+export function reanalyzeRow(row, caseDef, ndjsonText) {
+  const an = new StreamAnalyzer(caseDef.runMode);
+  for (const line of ndjsonText.split('\n')) an.feed(line);
+  const fd = an.firstDecisive;
+  const cmd = fd?.classified.bash ? String(fd.input?.command ?? '').slice(0, 160) : null;
+  const wasKilled = row.killedBy === 'decisive';
+  const changed = row.firstAction !== an.firstAction;
+  let rule = null;
+  try { rule = gradeRule(caseDef, row.variant, an, { workdirChanged: row.workdirChanged ?? [] }); } catch { /* 규칙 판정 불가 */ }
+  let change = 'unchanged';
+  let newVerdict = row.verdict;
+  if (changed && wasKilled && an.firstAction === 'no_action') {
+    change = 'INCONCLUSIVE_candidate';
+    newVerdict = 'INCONCLUSIVE';
+  } else if (changed) {
+    change = 'first_action_changed';
+    newVerdict = caseDef.verdictBasis === 'outcome' ? row.verdict : (rule?.verdict ?? row.verdict);
+  }
+  return {
+    runId: row.runId, variant: row.variant, caseId: row.caseId, rep: row.rep,
+    oldFirstAction: row.firstAction, newFirstAction: an.firstAction, killedBy: row.killedBy ?? null,
+    oldVerdict: row.verdict, oldLabel: row.label, newVerdict, newLabel: change === 'INCONCLUSIVE_candidate' ? 'misclassified_read_bash_kill' : (changed ? rule?.label ?? row.label : row.label),
+    change, needsRerun: change === 'INCONCLUSIVE_candidate',
+    oldReadCount: row.counts?.read ?? null, newReadCount: an.readCount,
+    newUnknownBashCount: an.unknownBash.length,
+    oldFirstDecisiveCommand: row.firstActionDetail?.tool === 'Bash' ? '(Bash)' : null,
+    newFirstDecisiveCommand: cmd,
+    note: caseDef.verdictBasis === 'outcome' && change === 'first_action_changed' ? '결과 기준(outcome) 시나리오: 판정은 최종 결과물 기준이라 첫 행동 변화만 보고(판정 재계산 없음)' : null,
+  };
+}
+
+export function reanalyzeBatch(batchIdArg, { runsDir = RUNS_ROOT } = {}) {
+  const batchId = batchIdArg.startsWith('pm-block-ab-') ? batchIdArg : `pm-block-ab-${batchIdArg}`;
+  const caseMap = Object.fromEntries(loadCases().map((c) => [c.id, c]));
+  const rows = fs.readFileSync(RESULTS_PATH, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)).filter((r) => r.batchId === batchId);
+  if (!rows.length) throw new Error(`results.jsonl 에 ${batchId} 행이 없다`);
+  const out = [];
+  for (const row of rows) {
+    const f = path.join(runsDir, batchId, path.basename(row.transcript));
+    if (!fs.existsSync(f)) throw new Error(`transcript 없음: ${f} (--runs-dir 로 runs 폴더를 지정)`);
+    out.push(reanalyzeRow(row, caseMap[row.caseId], fs.readFileSync(f, 'utf8')));
+  }
+  const result = {
+    batchId, generatedBy: 'run-pm-block-ab.mjs --reanalyze', note: 'results.jsonl 행은 고치지 않았다. 재분석 결과만 기록.',
+    rowCount: out.length, changedCount: out.filter((r) => r.change !== 'unchanged').length, inconclusiveCandidates: out.filter((r) => r.needsRerun).map((r) => r.runId), rows: out,
+  };
+  const outPath = path.join(AB_DIR, `reanalysis-${batchId.replace(/^pm-block-ab-/, '')}.json`);
+  fs.writeFileSync(outPath, JSON.stringify(result, null, 2) + '\n');
+  return { result, outPath };
+}
+
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   installCleanup();
+  if (opts.reanalyze) {
+    const { result, outPath } = reanalyzeBatch(opts.reanalyze, { runsDir: opts.runsDir ? path.resolve(opts.runsDir) : RUNS_ROOT });
+    for (const r of result.rows) console.log(`${r.runId.split(':')[1]}\t${r.oldFirstAction} -> ${r.newFirstAction}\t${r.oldVerdict}${r.oldLabel ? ':' + r.oldLabel : ''} -> ${r.newVerdict}\t${r.change}`);
+    console.log(`\n${result.rowCount}행 중 변경 ${result.changedCount}행, INCONCLUSIVE 후보 ${result.inconclusiveCandidates.length}행. 기록: ${path.relative(REPO, outPath)}`);
+    return;
+  }
   if (opts.dryRun) return dryRun(opts);
   if (opts.preflightJudgeOnly) return preflightJudgeOnly(opts);
   if (opts.preflight) return preflight(opts);
