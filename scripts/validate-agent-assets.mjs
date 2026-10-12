@@ -1463,7 +1463,10 @@ function main() {
     }
     const hooksJsonPath = path.join(pluginRoot, 'hooks', 'hooks.json');
     const hooksJsonRaw = fs.existsSync(hooksJsonPath) ? fs.readFileSync(hooksJsonPath, 'utf8') : '';
-    const scriptHaystackBase = `${haystack}\n${hooksJsonRaw}`;
+    // plugin.json의 mcpServers.*.headersHelper도 스크립트를 실행하는 배선이다(hooks.json과 같은 취급).
+    const pluginJsonPath = path.join(pluginRoot, '.claude-plugin', 'plugin.json');
+    const pluginJsonRaw = fs.existsSync(pluginJsonPath) ? fs.readFileSync(pluginJsonPath, 'utf8') : '';
+    const scriptHaystackBase = `${haystack}\n${hooksJsonRaw}\n${pluginJsonRaw}`;
     for (const sf of scriptFiles) {
       const others = scriptFiles.filter((o) => o !== sf).map((o) => o.body).join('\n');
       if (`${scriptHaystackBase}\n${others}`.includes(sf.name)) continue;
@@ -1471,7 +1474,7 @@ function main() {
       // 아니라 hooks.json·agent/skill 본문·다른 스크립트의 import/require로만 도달한다.
       // 그 도달 경로가 하나도 없으면 사용률은 0이다.
       error('SCRIPT_ORPHAN', `${opts.plugin}/${sf.rel}`,
-        '어떤 Agent/Skill/Knowledge/hooks.json/다른 bin·hooks 스크립트도 이 스크립트를 참조하지 않는다 — 이 스크립트를 실행하는 경로가 malgn-agent 안에 없다');
+        '어떤 Agent/Skill/Knowledge/hooks.json/plugin.json/다른 bin·hooks 스크립트도 이 스크립트를 참조하지 않는다 — 이 스크립트를 실행하는 경로가 malgn-agent 안에 없다');
     }
   }
 

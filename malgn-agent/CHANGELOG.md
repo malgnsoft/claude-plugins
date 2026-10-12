@@ -9,6 +9,16 @@
 
 ---
 
+## [1.8.52] — 2026-10-12
+
+### Changed
+- **malgnai-hub 인증을 OAuth 로그인에서 맑은에이전트 앱의 기기 토큰으로 교체.** `plugin.json`의 `mcpServers.malgnai-hub`에서 `oauth` 블록을 빼고 `headersHelper`로 `bin/hub-auth-header.mjs`를 호출한다. OAuth 토큰(액세스 8시간)은 세션마다 재인증을 요구했고, 기기 토큰은 앱이 보관·갱신해 재인증이 필요 없다. 래퍼는 앱 실행파일에 `--hub-auth-header`를 요청해 `Authorization` 헤더 JSON만 검증해 전달하며, 대상 서버가 허브 `/mcp`가 아니면 앱을 실행하지 않는다. 앱이 없거나 미연결이면 stderr에 "맑은에이전트 앱에서 허브에 연결하세요" 계열 안내를 남기고 실패한다.
+- 레거시 탈출구였던 `userConfig.device_token`(설치 화면의 디바이스 토큰 항목)을 제거했다. 값을 채워도 쓰이지 않던 필드다.
+- `README.md`·`project-standards` 스킬의 허브 연결 안내를 "앱에서 허브에 연결"로 교체했다.
+- **업데이트 전에 앱에서 허브에 연결하세요.** 앱이 없는 PC는 허브 도구를 쓸 수 없다.
+
+---
+
 ## [1.8.51] — 2026-10-12
 
 ### Fixed
