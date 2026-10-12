@@ -9,7 +9,7 @@
 
 ---
 
-## [Unreleased]
+## [1.8.50] — 2026-10-12
 
 ### 제거
 - 토큰 사용량 **자동 수집·전송 파이프라인**을 제거했습니다 — `bin/report-usage.mjs`·`bin/install-usage-agent.mjs`·`bin/pair-usage-device.mjs`·`bin/usage-agent-lib.mjs`, Skill `usage-agent-healthcheck`, knowledge `architecture/usage-collection-agent-architecture.md`와 `pm`·`architect`·`project-standards` 등의 참조. 더 이상 쓰지 않는 기능입니다. 이미 설치된 직원 PC에 등록돼 있던 예약 작업(launchd/schtasks)은 플러그인 업데이트로 사라지지 않으므로, 남아 있으면 직접 해제해야 합니다.
