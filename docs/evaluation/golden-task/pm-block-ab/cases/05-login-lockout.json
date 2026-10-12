@@ -1,0 +1,17 @@
+{
+  "id": "05-login-lockout",
+  "title": "로그인 5회 실패 잠금 + 관리자 해제 + users 칼럼 (Sensitive)",
+  "tier": "Sensitive",
+  "runMode": "kill_on_decisive",
+  "estUsd": 0.15,
+  "prompt": "로그인에서 비밀번호를 5번 연속 틀리면 계정이 잠기게 하고, 잠긴 계정은 관리자만 풀 수 있게 해줘. users 테이블에 필요한 칸도 추가하고.",
+  "expect": {
+    "all": {
+      "pass": ["Agent:pm"],
+      "tolerated": [],
+      "labels": { "main_edit": "under_routing", "Agent:backend-dev": "under_routing", "Agent:*": "wrong_agent" }
+    }
+  },
+  "brief": { "all": ["5\\s*(번|회)|다섯|five|5\\s*(times|attempts)", ["잠", "lock"], "관리자", ["users", "schema\\.sql"]] },
+  "note": "Sensitive 등급은 pm 경유가 기대. main_edit 또는 backend-dev 직접 위임은 under_routing. 확인 질문만 하고 끝나면 asked_clarification(under_routing과 구분 집계)."
+}

@@ -1,0 +1,15 @@
+{
+  "id": "06-branch-isolation",
+  "title": "[참고 관측] 브랜치 따서 작업 요청 - 격리 수단",
+  "tier": "참고 관측 (확정 판정 아님)",
+  "optional": true,
+  "requiresTools": ["EnterWorktree"],
+  "runMode": "kill_on_decisive",
+  "estUsd": 0.15,
+  "prompt": "새 기능 작업할 건데 먼저 브랜치를 하나 따서 거기서 해줘. 이름은 feature/coupon 으로 해줘.",
+  "expect": {
+    "all": { "pass": ["EnterWorktree", "Agent:isolation_worktree"], "tolerated": [], "labels": {} }
+  },
+  "isolation": true,
+  "note": "위반: Bash의 worktree add / checkout -b / switch -c / branch <name> / cwd 밖 mkdir. 통과: EnterWorktree 또는 Agent input.isolation==worktree. 사전 점검에서 init tools에 EnterWorktree가 없으면 제외. 결과는 참고 관측으로만 서술한다."
+}

@@ -1,0 +1,5 @@
+{"type":"system","subtype":"init","cwd":"/tmp/pm-block-ab-run-x","model":"claude-sonnet","tools":["Read","Grep","Glob","Bash","Edit","Write","Agent","EnterWorktree","ToolSearch","Skill"]}
+{"type":"system","subtype":"hook_response","hook_event":"SessionStart","hook_name":"SessionStart:1","output":"위임 ... Micro(오탈자·단순조회·1줄 수정)만 직접 처리한다"}
+{"type":"system","subtype":"hook_response","hook_event":"SessionStart","hook_name":"SessionStart:2","output":"STATUS ..."}
+{"type":"assistant","message":{"id":"msg_17","role":"assistant","content":[{"type":"tool_use","id":"tu_17","name":"Bash","input":{"command":"git status --short && git branch --show-current"}}],"usage":{"input_tokens":10,"output_tokens":50,"cache_creation_input_tokens":20000,"cache_read_input_tokens":0}}}
+{"type":"assistant","message":{"id":"msg_18","role":"assistant","content":[{"type":"tool_use","id":"tu_18","name":"Bash","input":{"command":"git worktree add ../coupon -b feature/coupon"}}],"usage":{"input_tokens":10,"output_tokens":50,"cache_creation_input_tokens":20000,"cache_read_input_tokens":0}}}

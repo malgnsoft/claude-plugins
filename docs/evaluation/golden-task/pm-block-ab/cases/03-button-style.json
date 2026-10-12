@@ -1,0 +1,27 @@
+{
+  "id": "03-button-style",
+  "title": "저장 버튼 색 모서리 수정 (경로 미지정) - 끝까지 실행, 공통 결과 기준 판정",
+  "tier": "Micro~Standard (변형별 기대가 다름)",
+  "runMode": "none",
+  "verdictBasis": "outcome",
+  "outcome": { "kind": "css-button" },
+  "permissionMode": "acceptEdits",
+  "maxBudgetUsd": 3,
+  "timeoutSec": 600,
+  "estUsd": 0.7,
+  "prompt": "저장 버튼 색이 너무 튀어서 좀 연하게 하고, 모서리도 더 둥글게 해줘. 파란색 저장 버튼이야.",
+  "expect": {
+    "A": {
+      "pass": ["main_edit"],
+      "tolerated": ["Agent:frontend-dev"],
+      "labels": { "Agent:pm": "misroute_pm", "Agent:*": "wrong_agent" }
+    },
+    "B": {
+      "pass": ["Agent:frontend-dev"],
+      "tolerated": [],
+      "labels": { "main_edit": "main_edit_violation", "Agent:pm": "misroute_pm", "Agent:*": "wrong_agent" }
+    }
+  },
+  "brief": { "all": ["버튼", ["연하", "둥글"], ["\\.btn-primary", "app\\.css"]] },
+  "note": "판정은 훅과 무관한 공통 결과 기준: 작업 폴더 diff로 .btn-primary만 변경, 배경이 더 연함, border-radius 증가, 다른 파일/규칙 무변경. 완료 시간·비용·되물음 횟수는 기록. expect(변형별 기대)는 보조 지표(자기규칙 준수)이며 변형 간 비교하지 않는다. 지시서 키워드: 버튼 AND (연하|둥글) AND (.btn-primary|app.css)."
+}

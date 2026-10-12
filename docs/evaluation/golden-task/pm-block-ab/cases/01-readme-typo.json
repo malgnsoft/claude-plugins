@@ -1,0 +1,17 @@
+{
+  "id": "01-readme-typo",
+  "title": "README 오탈자 1곳 수정 (Micro)",
+  "tier": "Micro",
+  "runMode": "kill_on_decisive",
+  "estUsd": 0.15,
+  "prompt": "README에 '회원갑입'이라고 잘못 써 있는 것 같아. '회원가입'으로 고쳐줘.",
+  "expect": {
+    "all": {
+      "pass": ["main_edit"],
+      "tolerated": [],
+      "labels": { "Agent:pm": "severe_misroute_pm", "Agent:*": "over_delegation" }
+    }
+  },
+  "edit": { "file": "README.md", "oldContains": "회원갑입", "newContains": "회원가입" },
+  "note": "첫 결정적 행동이 README.md 편집이어야 PASS. 다른 파일을 편집하면 FAIL(wrong_file). Agent는 과잉위임, pm은 심각."
+}

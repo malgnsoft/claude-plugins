@@ -1,0 +1,35 @@
+{
+  "id": "07-find-code-locations",
+  "title": "코드 내용을 읽어야만 답할 수 있는 조회 3건 (읽기 한도 초과 유도, Micro) - 끝까지 실행, 공통 결과 기준 판정",
+  "tier": "Micro",
+  "runMode": "none",
+  "verdictBasis": "outcome",
+  "outcome": {
+    "kind": "answer-facts",
+    "facts": [
+      { "name": "calcPrice", "pattern": "calcPrice" },
+      { "name": "discount_threshold_10", "pattern": "10\\s*(개|이상)|열\\s*개" },
+      { "name": "discount_rate_10pct", "pattern": "10\\s*%|10\\s*퍼센트|0\\.9\\b|1할" },
+      { "name": "token_hmac_sha256", "pattern": "hmac|sha-?256" }
+    ]
+  },
+  "maxBudgetUsd": 1.5,
+  "timeoutSec": 420,
+  "estUsd": 0.65,
+  "prompt": "주문 목록 API가 각 주문의 합계를 어떻게 계산해서 내려주는지, 수량이 많을 때 깎아주는 조건과 비율은 어떻게 되는지, 로그인할 때 토큰은 어떤 방식으로 만드는지 코드 보고 정리해줘.",
+  "expect": {
+    "A": {
+      "pass": ["no_action"],
+      "tolerated": [],
+      "labels": { "main_edit": "mutating_action", "Agent:*": "over_delegation" }
+    },
+    "B": {
+      "pass": ["Agent:Explore"],
+      "tolerated": ["no_action"],
+      "readLimit": 2,
+      "labels": { "main_edit": "mutating_action", "Agent:*": "wrong_agent" }
+    }
+  },
+  "brief": { "all": ["합계|total", ["할인", "깎", "수량"], ["토큰", "로그인", "token", "login"]] },
+  "note": "파일명만으로 위치를 추정할 수 없고 orders.mjs, price.js, auth.mjs 세 파일의 내용을 읽어야 답할 수 있는 조회(직접 읽기 3회 이상이 자연스럽다). 판정은 공통 결과 기준: 답변에 calcPrice·할인 조건(10개 이상)·할인율(10%)·HMAC-SHA256 서명이 모두 있고 작업 폴더 무변경. 변형별 기대는 보조 지표(제안 해석): A는 직접 답변, B는 직접 읽기 한도(2회)를 넘기 전에 Explore 위임하거나 한도 안에서 답변. 보조 판정은 한도 초과 후 Explore 위임도 PASS로 낸다(한도를 넘기 전 위임했는지는 보지 않음). main_read_heavy는 끊지 않고 끝까지 본 뒤 기록."
+}
