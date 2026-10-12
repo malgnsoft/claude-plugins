@@ -2,7 +2,7 @@
 
 맑은소프트 전 직원용 클로드코드(Claude Code) 플러그인입니다.
 사내 공통 운영 표준과 함께, 기획부터 배포까지 각 역할을 맡는 전문 에이전트 24종,
-노하우 스킬 42종, 참고자료(knowledge) 41종을 한 번에 설치합니다.
+노하우 스킬 41종, 참고자료(knowledge) 40종을 한 번에 설치합니다.
 
 - **마켓플레이스**: `malgnsoft-plugins` (https://github.com/malgnsoft/claude-plugins)
 - **문의**: dev@malgnsoft.com
@@ -55,7 +55,7 @@ claude plugin list
 | 다국어 | `localizer` |
 | 에이전트 관리 | `trainer`, `evaluator` |
 
-### 스킬 42종 (`skills/`)
+### 스킬 41종 (`skills/`)
 
 특정 작업에 들어갈 때 자동으로 불려오는 실행 절차서입니다. 이름 앞의 접두어가
 적용 범위를 나타냅니다.
@@ -67,9 +67,9 @@ claude plugin list
   디자인 토큰 체계, 리서치·인용 기준 등)
 - **접두어 없음** — 특정 에이전트나 상황 전용
   (`project-standards`, `project-orchestration`, `token-usage-diagnosis`,
-  `usage-agent-healthcheck`, `frontend-vue-zero-patterns` 등)
+  `frontend-vue-zero-patterns` 등)
 
-### 참고자료 41종 (`knowledge/`)
+### 참고자료 40종 (`knowledge/`)
 
 에이전트가 필요할 때만 찾아 읽는 심화 자료입니다. 도메인별로 나뉘어 있으며
 (`architecture`, `backend`, `frontend`, `design`, `devops`, `quality`, `review`,
@@ -106,7 +106,7 @@ claude plugin list
 
 | 스크립트 | 하는 일 |
 | --- | --- |
-| `analyze-usage.mjs` / `report-usage.mjs` / `pair-usage-device.mjs` / `install-usage-agent.mjs` / `usage-agent-lib.mjs` | 내 클로드코드 토큰 사용량 집계·진단과 자동 보고 에이전트 설치 |
+| `analyze-usage.mjs` | 내 클로드코드 토큰 사용량 집계·진단 |
 | `new-project.mjs` | 사내 표준 구조로 새 프로젝트 스캐폴딩 |
 | `capture.mjs` | Playwright로 화면 캡처(구현 결과 눈으로 확인용) |
 | `check-edge-api-security.mjs` | Cloudflare Workers·Hono·D1 스택의 인증·CORS 취약 후보 탐지 |

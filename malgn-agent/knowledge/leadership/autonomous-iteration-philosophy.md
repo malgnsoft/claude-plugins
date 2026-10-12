@@ -66,7 +66,6 @@
 ### 조회 수단
 
 - Skill `token-usage-diagnosis` — 로컬 세션 로그(`~/.claude/projects/**/*.jsonl`)를 번들 스크립트 `bin/analyze-usage.mjs`로 집계해 기간별 사용량을 낸다. 날짜 범위를 하루로 좁히면 당일 누적치를 얻는다.
-- Skill `usage-agent-healthcheck` — 자동 수집 에이전트가 실제로 전송 중인지 먼저 확인할 때.
 
 > 조직 차원의 집계 대시보드를 별도로 운영한다면 그 조회 경로는 프로젝트마다 다르므로 각 프로젝트 `CLAUDE.md`/`STATUS.md`에 적는다 — 이 문서는 특정 API·테이블 이름을 전제하지 않는다.
 

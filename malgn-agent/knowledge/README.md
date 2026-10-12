@@ -75,7 +75,6 @@
 ### architecture/
 - (C4모델·아키텍처패턴·REST API·데이터모델링·분산동기화 정본은 `skills/domain-architecture-patterns-reference/SKILL.md`, 우수설계 4대의무·7대기법 A~G는 `skills/domain-system-design-principles/SKILL.md`)
 - `vue-zero-architecture.md` — vue-zero 플랫폼 **규칙 정본**(Composables 절대 금지, 페이지별 단일 `.vue` 파일, `utils.js` 중앙화+`window.*` 등록). `frontend/vue-zero-patterns.md`(패턴 상세)와 역할 분담, 모순 시 이 문서 우선. 실제 참조 대상은 frontend-dev다(폴더는 architecture/이지만 읽는 쪽은 frontend-dev)
-- `usage-collection-agent-architecture.md` — 토큰 사용량 자동 수집 에이전트(`bin/{usage-agent-lib,pair-usage-device,report-usage,install-usage-agent}.mjs`) 아키텍처 요약: 4개 스크립트 역할분담, malgnai-hub `POST /api/sessions` 계약, 핵심 설계결정(집계 수치만 전송·summary 120자 예외·turns/api_calls는 migration 0012), **설계 문서 대비 실제 구현이 단순화된 지점**(daily-aggregate 엔드포인트 없음/scope 없는 범용 device_token/세션ID 비해시 등) 명시. `skills/usage-agent-healthcheck`와 짝
 
 ### backend/
 - `search-strategy-vector-vs-fulltext.md` — 벡터 검색 vs Full-text 검색 선택 기준(한글/다국어 쿼리 시 임베딩 모델 언어지원 전제조건, 하이브리드 지향, 데이터규모별 인덱스 재평가), kb-draft 375건 POC 실측 근거

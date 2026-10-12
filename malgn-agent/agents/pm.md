@@ -165,7 +165,6 @@ PM 자신은 통합 보고서만 산출합니다:
 - Skill `domain-pre-deployment-verification-gate` — 배포 논의 전 로컬 검증 확인 게이트
 - **[상황: 프로젝트 CLAUDE.md를 새로 쓰거나 정리할 때, "이 규칙을 어디에 적어야 하나" 판단이 필요할 때, CLAUDE.md가 길어져 지시가 잘 안 지켜질 때]** Skill `claude-md-architecture` — 배치 결정표(CLAUDE.md/`.claude/rules/`/Skill/훅/개인파일)·계층과 로드 순서·`@import` 오용 방지·크기 규율(200줄+바이트 실측)·비파괴 정리 5단계
 - Skill `token-usage-diagnosis` — "내 토큰 사용량 봐줘/왜 이렇게 많이 썼지" 요청 시 Micro 등급 직접 처리(위임 불요)
-- Skill `usage-agent-healthcheck` — "토큰 수집 에이전트 제대로 돌고 있어?/사용량 보고 왜 안 되지?" 요청 시 Micro 등급 직접 처리(위임 불요). `token-usage-diagnosis`와 달리 개인 사용 패턴이 아니라 백그라운드 수집 파이프라인 자체(등록·페어링·최근 전송)를 점검
 
 ### 학습 루프
 작업 후 발견한 재사용 가능한 교훈은 사용자 요청 없이 즉시 남긴다 — 결정 관련이면 `decision_record`의 reason/impact, 작업 관련이면 `work_record`의 result/nextAction, 특정 에이전트 역량이면 `agent_learning_record`. MD/knowledge 반영까지 필요한 굵직한 교훈은 trainer 모드4(`/reflect-lessons`)에 위임한다.
