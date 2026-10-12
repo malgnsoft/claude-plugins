@@ -8,9 +8,9 @@
 
 | 파일 | 역할개념(1줄) | 유형 | 최초 생성 | 최근 재사용(target_id/라운드) |
 |---|---|---|---|---|
-| persona-skeptical-verification-architect.md | 설계 문서 내부 근거가 독립적 증거인지 의심하는 회의적 검증가 | 수렴 | 2026-08-09 | pm-block-ab-golden-20261009 / 1차(최초, Standard) · 직전: pm-orchestration-block-propagation / 1~2차 |
+| persona-skeptical-verification-architect.md | 설계 문서 내부 근거가 독립적 증거인지 의심하는 회의적 검증가 | 수렴 | 2026-08-09 | pm-block-candA-sensitive-signal-20261012 / 1차(최초, Sensitive 풀패널) · 직전: pm-block-ab-golden-20261009 / 1차(최초, Standard) |
 | persona-ops-maintainability-realist.md | "6개월 후에도 살아있는가"를 묻는 운영 현실주의자 | 수렴 | 2026-08-09 | stop-hook-additional-context-20260911 / 1차(최초, Sensitive 풀패널) · 직전: golden-task-benchmark-20260901 / 1차(최초, Exploration 풀패널) |
-| persona-zero-based-redesigner.md | 구조 자체(훅+스킬 조합)가 최선인지, 더 단순하고 이미 검증된 대안이 있는지 의심하는 발산형 | 발산 | 2026-08-09 | pm-block-ab-golden-20261009 / 1차(최초, Standard) · 직전: worktree-means-limit-20261008 / 1차(최초, Standard 약식) |
+| persona-zero-based-redesigner.md | 구조 자체(훅+스킬 조합)가 최선인지, 더 단순하고 이미 검증된 대안이 있는지 의심하는 발산형 | 발산 | 2026-08-09 | pm-block-candA-sensitive-signal-20261012 / 1차(최초, Sensitive 풀패널) · 직전: pm-block-ab-golden-20261009 / 1차(최초, Standard) |
 | persona-hook-execution-safety-verifier.md | 전역 자동실행 코드가 자기보고가 아니라 실제 실행 결과(다양한 상태 재현)로 안전한지 검증하는 실행 안전성 검증가 | 수렴 | 2026-08-10 | stop-hook-additional-context-20260911 / 1차(최초, Sensitive 풀패널) · 직전: pm-block-post-approval-continuation / 1차(최초, 전역 주입 블록 변경 풀패널) |
 | persona-mechanism-zero-based-challenger.md | 여러 요구사항을 만족시키려 겹겹이 쌓은 다중 레이어 구조가 정말 필요한지, 더 단순한 단일 채널로 같은 효과를 낼 수 있는지 의심하는 발산형 | 발산 | 2026-08-10 | bd-autopilot-depth-relay-20260921 / 1차(최초, Sensitive 풀패널, 발산형 슬롯) · 직전: business-director-agent-new-20260921 / 2차(재검토, 풀패널 유지, 발산형 2슬롯) |
 | persona-ops-drift-realist.md | 전사 배포 후 다양한 로컬 환경에서 새로 인정된 리스크 상태(승인대기·거절 등)가 사용자에게 감지 가능한가(조용한 열화로 남지 않는가)를 묻는 운영 현실주의자 | 수렴 | 2026-08-10 | pm-block-sessionstart-injection / 1차(최초, Refactor 풀패널) · 직전: pm-orchestration-block-propagation / 3차 |
@@ -42,8 +42,8 @@
 | persona-dead-reference-scope-challenger.md | 문제 스코프를 "형태"로 정의한 것이 실제 판정 기준(조회 가능성)과 어긋나지 않는지, 제외 조항의 단정을 실측으로 반증하는 발산형 | 발산 | 2026-08-22 | backlog-2items-path-workrecord-20260901 / 1차(최초, Standard 약식) · 직전: backlog-defects-round-20260901 / 1차(최초, Standard 약식, 발산형 슬롯) |
 | persona-subagent-runtime-constraint-auditor.md | 지시가 명령하는 도구가 그 지시를 읽는 실행 컨텍스트(메인 세션/서브에이전트/깊이)에서 실제로 남아 있는지 하네스 공식문서로 대조하는 런타임 제약 감사관 | 수렴 | 2026-08-24 | bd-autopilot-depth-relay-20260921 / 2차(축소 재검증) · 직전: 동 target_id 1차(최초, Sensitive 풀패널) |
 | persona-harness-spec-factchecker.md | 우리 문서가 옮겨 적은 제3자 하네스 사양 주장이 공식문서 원문과 줄 단위로 일치하는지(조건절 탈락·수치 오차·지어낸 사양) 대조하는 사실검증관 | 수렴 | 2026-08-24 | worktree-means-limit-20261008 / 1차(최초, Standard 약식) · 직전: worktree-isolation-merge-completion-20260918 / 1차(최초, Sensitive 풀패널) |
-| persona-product-body-portability-auditor.md | 설치 직원이 조회할 수 없는 근거(식별자·이력·자사 실측치·자사 배선)가 제품 본문에 새로 유입됐는지 목적 기준으로 감사하는 이식성 감사관 | 수렴 | 2026-08-24 | worktree-means-limit-20261008 / 1차(최초, Standard 약식) · 직전: worktree-isolation-merge-completion-20260918 / 1차(최초, Sensitive 풀패널) |
-| persona-cross-skill-directive-conflict-auditor.md | 서로를 정본으로 지목하는 스킬 두 개가 같은 대상에 다른 규칙을 명령해 동시 준수가 불가능해지는 지점을 찾는 충돌 감사관 | 수렴 | 2026-08-29 | bd-autopilot-depth-relay-20260921 / 2차(축소 재검증) · 직전: 동 target_id 1차(최초, Sensitive 풀패널) |
+| persona-product-body-portability-auditor.md | 설치 직원이 조회할 수 없는 근거(식별자·이력·자사 실측치·자사 배선)가 제품 본문에 새로 유입됐는지 목적 기준으로 감사하는 이식성 감사관 | 수렴 | 2026-08-24 | pm-block-candA-sensitive-signal-20261012 / 1차(최초, Sensitive 풀패널) · 직전: worktree-means-limit-20261008 / 1차(최초, Standard 약식) |
+| persona-cross-skill-directive-conflict-auditor.md | 서로를 정본으로 지목하는 스킬 두 개가 같은 대상에 다른 규칙을 명령해 동시 준수가 불가능해지는 지점을 찾는 충돌 감사관 | 수렴 | 2026-08-29 | pm-block-candA-sensitive-signal-20261012 / 1차(최초, Sensitive 풀패널) · 직전: bd-autopilot-depth-relay-20260921 / 2차(축소 재검증) |
 | persona-skill-library-scale-challenger.md | 스킬 개수·접두어 규약·분할 구조가 백지에서 다시 짜도 같은 모습인지 실측 참조 수로 되묻는 발산형 | 발산 | 2026-08-29 | skills-full-audit-20260829 / 1차(최초) |
 | persona-decision-reversal-auditor.md | 이 수정이 과거에 반대 방향으로 내려진 결정·규약을 확인 없이 뒤집는지, 한 자리만 고쳐 나머지 사이트와 새로 어긋나지 않는지 보는 변경이력 감사관 | 수렴 | 2026-09-01 | worktree-means-limit-20261008 / 1차(최초, Standard 약식) · 직전: backlog-2items-path-workrecord-20260901 / 1차(최초, Standard 약식) |
 | persona-token-attribution-accuracy-auditor.md | 새 집계 로직의 산수가 실제 로그 구조(멀티파일 세션·sidechain·동시 다중 tool_use)에서도 깨지지 않는지 코드와 실측을 대조하는 토큰 귀속 정확성 감사관 | 수렴 | 2026-08-10 | pm-block-ab-golden-20261009 / 1차(최초, Standard) · 직전: sidechain-instream-nesting-count-20260901 / 1차(최초, Sensitive 풀패널) |

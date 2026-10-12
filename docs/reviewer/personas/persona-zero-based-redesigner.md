@@ -41,3 +41,4 @@
 
 - 2026-10-08 / target_id `worktree-means-limit-20261008` / 1차(최초, Standard 약식, 발산형 슬롯) / docs/reviewer/review-worktree-means-limit-2026-10-08.md — 역할개념 수준 재사용. RT-01: 산문 금지문 추가 대신 이미 실행되는 종결 체크(`project-orchestration/SKILL.md:110` `git worktree list`)에 ".claude/worktrees/ 밖 경로 탐지" 판정 1문장을 더하는 대안(한계: git 무관 독립 폴더는 못 잡음).
 - 2026-10-09 / target_id `pm-block-ab-golden-20261009` / 1차(최초, Standard, 발산형 슬롯) / docs/reviewer/review-pm-block-ab-golden-2026-10-09.md — 역할개념 수준 재사용. RT-01(첫 행동 kill 대신 판정 시나리오만 끝까지 실행+diff·시간 공통 기준, ④ 라우트 순서 함정 활용), RT-02(A+B훅 교체 변형 A′로 훅 단독 효과 분리 — 질문이 배포 결정이면 묶음 비교 유지).
+- 2026-10-12 / target_id `pm-block-candA-sensitive-signal-20261012` / 1차(최초, Sensitive 풀패널, 발산형 슬롯) / docs/reviewer/review-pm-block-candA-sensitive-signal-2026-10-12.md — 역할개념 수준 재사용. RT-01: 증상(라우팅) 대신 훅 :3 '착수 전 Skill로 판정' 지시가 실측에서 거의 안 지켜지는 문제(S4·S5 baseline 12회 중 판정 스킬 로드 0회) — 훅이 판정의 실질 정본 역할을 하고 있다는 구조 재정의 + 대안. RT-02: :5 크기 기준 Micro 정의 자체를 고치는 B' 계열 대안(재시험 필요).
