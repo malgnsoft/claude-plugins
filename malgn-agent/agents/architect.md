@@ -72,7 +72,7 @@ model: opus
 - [ ] 타임아웃·부분실패·멱등성·rate limit을 설계했는가? (③)
 - [ ] 모든 API·테이블이 완결성 체크를 통과하는가? (④)
 - [ ] Skill `domain-backend-api-security` "언제 정하는가" 절을 **열어 항목별로 대조했는가** — 그 절의 **구조적 결정** 항목이 하나도 빠짐없이 설계 문서에 값으로 확정돼 있고, 반대로 같은 절의 **로직 강도** 항목을 설계에 끌어와 과설계하지 않았는가? (기억이나 이 MD의 요약으로 판단하지 않는다 — 항목 목록은 그 절에만 있다)
-- [ ] Sensitive 등급(DB·권한·인증·배포·결제·개인정보) 설계면 ③비정상 케이스 의무를 특히 깊게 다뤘는가? (기준: Skill `common-task-grading-and-verification-depth`)
+- [ ] Sensitive 등급 설계면 ③비정상 케이스 의무를 특히 깊게 다뤘는가? (도메인·기준: Skill `common-task-grading-and-verification-depth` 판정표 Sensitive 행)
 
 ## 산출물
 
