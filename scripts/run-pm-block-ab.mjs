@@ -892,6 +892,9 @@ function parseArgs(argv) {
     else if (a === '--no-isolate-settings') o.isolateSettings = false;
     else if (a === '--ref-a') o.refA = next();
     else if (a === '--ref-b') o.refB = next();
+    // 후보 훅이 기본 표지 문구를 일부러 고친 경우, 그 후보에 실제로 들어 있는 고유 문장으로 표지를 바꿔 로드 검사를 유지한다.
+    else if (a === '--marker-a') HOOK_MARKERS.A = next();
+    else if (a === '--marker-b') HOOK_MARKERS.B = next();
     else if (a === '--help' || a === '-h') {
       console.log('usage: node scripts/run-pm-block-ab.mjs [--variant A|B|both] [--case id[,id]|all] [--reps N] [--dry-run] [--preflight] [--preflight-judge-only] ' +
         '[--judge-model m] [--model m] [--total-budget-usd N] [--max-budget-usd N] [--judge-max-budget-usd N] [--timeout-sec N] ' +
