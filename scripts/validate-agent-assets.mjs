@@ -18,6 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { load as yamlLoad } from 'js-yaml';
+import { CANON_PATH, parseCanonicalDomains, scanText } from './sensitive-domain-drift.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -976,6 +977,42 @@ function checkVerificationTypeEnumDrift(pluginRoot) {
   }
 }
 
+// Sensitive 도메인 목록의 정본은 판정표 Sensitive 행이다. 다른 자리에 사본 목록이 있으면
+// 한쪽이 좁아진 채 갈라지고 판정에서는 좁은 쪽이 조용히 이긴다 — 사본이 정본과 다르면 ERROR.
+function checkSensitiveDomainDrift(pluginRoot) {
+  const canonAbs = path.join(pluginRoot, CANON_PATH);
+  const canonRel = path.relative(REPO_ROOT, canonAbs);
+  if (!fs.existsSync(canonAbs)) {
+    error('SENSITIVE_DOMAINS_CANON_MISSING', canonRel, 'Sensitive 도메인 정본 파일이 없다');
+    return;
+  }
+  const canon = parseCanonicalDomains(fs.readFileSync(canonAbs, 'utf8'));
+  if (!canon) {
+    error('SENSITIVE_DOMAINS_CANON_UNPARSEABLE', canonRel,
+      '판정표의 Sensitive 행("| Sensitive | A·B·C… (…) |")에서 도메인 목록을 파싱하지 못했다 — ' +
+      '행 형식이 바뀌었다면 scripts/sensitive-domain-drift.mjs의 parseCanonicalDomains를 맞춘다.');
+    return;
+  }
+  const walk = (dir) => (fs.existsSync(dir)
+    ? fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const p = path.join(dir, e.name);
+      return e.isDirectory() ? walk(p) : (e.name.endsWith('.md') ? [p] : []);
+    })
+    : []);
+  for (const sub of ['hooks', 'agents', 'skills', 'knowledge']) {
+    for (const abs of walk(path.join(pluginRoot, sub))) {
+      for (const h of scanText(fs.readFileSync(abs, 'utf8'), canon)) {
+        const rel = path.relative(REPO_ROOT, abs);
+        const diff = [h.missing.length ? `정본에만 있음: ${h.missing.join('·')}` : '', h.extra.length ? `사본에만 있음: ${h.extra.join('·')}` : '']
+          .filter(Boolean).join(' / ');
+        error('SENSITIVE_DOMAINS_DRIFT', `${rel}:${h.line}`,
+          `Sensitive 도메인 목록이 정본과 다르다 (${diff}). 사본 "${h.items.join('·')}" vs 정본 "${canon.join('·')}" — ` +
+          `정본: ${canonRel} 판정표 Sensitive 행. 이 자리를 정본과 같은 집합으로 고친다(정본을 바꾼 것이면 사본 전부를 같은 라운드에서).`);
+      }
+    }
+  }
+}
+
 function main() {
   const opts = parseArgs(process.argv.slice(2));
   const pluginRoot = path.join(REPO_ROOT, opts.plugin);
@@ -1213,6 +1250,7 @@ function main() {
 
   // ── 특정 파일 간 값 중복 드리프트 ───────────────────────────────────
   checkVerificationTypeEnumDrift(pluginRoot);
+  checkSensitiveDomainDrift(pluginRoot);
 
   // ── bin·hooks 소스의 조회 불가 식별자 + 참조 ───────────────────────
   // 본문(.md)만 훑으면 코드 주석에 남은 id가 그대로 통과한다 — 실제로 .md 224건을 다 지운 뒤에도
