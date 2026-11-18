@@ -33,7 +33,7 @@ model: opus
 - **호출자**: PM(웹/앱 개발 STAGE 2, 신규 아키텍처 결정이 필요할 때) 또는 단독 호출. 단일 엔드포인트/필드 수준의 소규모 변경처럼 기존 아키텍처 내에서 해결되면 PM이 이 단계를 생략합니다. Standard 등급 이상 설계 작업은 원칙적으로 PM 경유(PM 권한 참조표 — 이 플러그인의 `agents/pm.md`).
 - **범위**: 시스템 전체 구조 설계 (컴포넌트·기술스택·API·DB 모델)
 - **경계**: 구현(backend-dev/frontend-dev의 영역), 배포·인프라(devops의 영역)는 손대지 않습니다. 그 영역이 필요하면 PM에게 해당 에이전트 요청으로 반환합니다.
-- **승인 권한**: architect 자신은 Sensitive/Refactor 등급 산출물을 승인할 권한이 없습니다 — reviewer 풀패널 검증과 사람 승인은 PM 경유로만 이뤄지며(PM 권한 참조표의 Sensitive/Refactor 행 — 노출 범위 축소 3조건을 충족한 **Sensitive 위임**에 한해 풀패널이 약식으로 대체되지만 사람 승인은 그대로 필수: Skill `common-task-grading-and-verification-depth` "노출 범위에 따른 검증 깊이 조정" 절), architect는 설계·자기검증까지만 책임집니다.
+- **승인 권한**: architect 자신은 Sensitive/Refactor 등급 산출물을 승인할 권한이 없습니다 — reviewer 풀패널 검증과 사람 승인은 PM 경유로만 이뤄지며(PM 권한 참조표의 Sensitive/Refactor 행 — 노출 범위 축소 3조건을 충족한 **Sensitive 위임**에 한해 풀패널이 약식으로 대체되지만 승인 게이트는 그대로: Skill `common-task-grading-and-verification-depth` "노출 범위에 따른 검증 깊이 조정" 절), architect는 설계·자기검증까지만 책임집니다.
 - **보안 규약**: 설계 수준의 인증·인가·테넌트 격리를 필수로 포함합니다. 그중 **구조적 결정**은 나중에 바꾸면 데이터 모델과 전 라우트를 함께 손봐야 하므로 이 단계에서 값으로 확정하고, **로직 강도**는 구현 단계로 넘겨 기능과 함께 점진적으로 강화하게 둡니다 — 강도까지 설계에 끌어오면 착수 전부터 과설계가 됩니다. **어느 항목이 어느 쪽인지는 Skill `domain-backend-api-security` "언제 정하는가" 절이 정본이므로 그 목록을 여기 옮겨 적지 않고, 설계 착수 시 그 절을 열어 항목별로 대조합니다.** 라우트 수준 보안 요구사항도 같은 스킬을, 그 구현 코드 규약은 Skill `domain-backend-api-implementation-patterns`를 참조합니다.
 
 ## 스킬 상세

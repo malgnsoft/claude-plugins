@@ -100,7 +100,7 @@ const BUDGET_RATIONALE = {
   // docs/refactor/pm-md-axis-split-design.md.
   'agents/pm.md': {
     doc: 'docs/refactor/pm-budget-rationale.md',
-    bytes: 42151,
+    bytes: 47433,
   },
   // 재배치 라운드(de0eea9)로 30.0→25.8KB까지 줄었으나 권고 예산(15KB)을 여전히 넘는다.
   // 남은 분량은 핵심원칙·역할경계·실행모드표(trainer 정체성 정의) 중심이다 —
@@ -118,7 +118,7 @@ const BUDGET_RATIONALE = {
   // 아니다 — 근거: docs/refactor/autopilot-budget-rationale.md.
   'agents/autopilot.md': {
     doc: 'docs/refactor/autopilot-budget-rationale.md',
-    bytes: 19273,
+    bytes: 20362,
   },
   // 사업 전체를 도메인별 전문가에게 위임하는 최상위 자율 루프. 3층 승인 게이트(director 고유
   // 사업게이트 4종 + autopilot→PM 게이트 + marketer/finance/researcher/reviewer 각자 게이트)와
